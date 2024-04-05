@@ -18,13 +18,16 @@ datasource db {
 }
 
 model User {
-  id                String             @id @default(cuid())
-  username          String             @unique
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  allTimeTracks     AllTimeTrack[]
-  lastYearTracks    LastYearTrack[]
-  last6MonthsTracks Last6MonthsTrack[]
+  id                 String              @id @default(cuid())
+  username           String              @unique
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  allTimeTracks      AllTimeTrack[]
+  lastYearTracks     LastYearTrack[]
+  last6MonthsTracks  Last6MonthsTrack[]
+  allTimeArtists     AllTimeArtist[]
+  lastYearArtists    LastYearArtist[]
+  last6MonthsArtists Last6MonthsArtist[]
 }
 
 model AllTimeTrack {
@@ -35,7 +38,7 @@ model AllTimeTrack {
   spotify_track_uri String
   image_url         String
   total_played      Int
-  ms_played         Int
+  ms_played         BigInt
   score             Float
   user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId            String
@@ -49,7 +52,7 @@ model LastYearTrack {
   spotify_track_uri String
   image_url         String
   total_played      Int
-  ms_played         Int
+  ms_played         BigInt
   score             Float
   user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId            String
@@ -63,8 +66,47 @@ model Last6MonthsTrack {
   spotify_track_uri String
   image_url         String
   total_played      Int
-  ms_played         Int
+  ms_played         BigInt
   score             Float
   user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId            String
+}
+
+model AllTimeArtist {
+  id                 String @id @default(cuid())
+  total_played       Int
+  ms_played          BigInt
+  name               String
+  score              Float
+  image_url          String
+  href               String
+  spotify_artist_uri String
+  user               User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String
+}
+
+model LastYearArtist {
+  id                 String @id @default(cuid())
+  total_played       Int
+  ms_played          BigInt
+  name               String
+  score              Float
+  image_url          String
+  href               String
+  spotify_artist_uri String
+  user               User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String
+}
+
+model Last6MonthsArtist {
+  id                 String @id @default(cuid())
+  total_played       Int
+  ms_played          BigInt
+  name               String
+  score              Float
+  image_url          String
+  href               String
+  spotify_artist_uri String
+  user               User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String
 }

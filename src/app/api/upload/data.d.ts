@@ -31,23 +31,29 @@ export type CleanDataType = {
   spotify_track_uri: string
 }
 
-export type CleanDataTypeWithScore = CleanDataType & {
+export type TrackType = CleanDataType & {
   score: number
+  image_url: string
 }
 
-export type TrackType = CleanDataTypeWithScore & {
+export type GroupedArtistType = {
+  total_played: number
+  ms_played: number
+  name: string
+  spotify_track_uri: string
+}
+
+export type ArtistType = {
+  total_played: number
+  ms_played: number
+  name: string
   image_url: string
+  href: string
+  score: number
+  spotify_artist_uri: string
 }
 
 export type BasicUser = {
   id: string
   username: string
 }
-
-export type ExtendedUser = BasicUser & {
-  allTimeTracks: TrackType[]
-  last6MonthsTracks: TrackType[]
-  lastYearTracks: TrackType[]
-}
-
-export type User = BasicUser | ExtendedUser

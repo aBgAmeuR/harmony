@@ -48,3 +48,32 @@ export async function getSpotifyTracksInfo(uris: string[]) {
   const data = await response.json()
   return data.tracks
 }
+
+export async function getSpotifyArtistsInfo(TracksUris: string[]) {
+  const accessToken = await getSpotifyAccessToken()
+
+  const tracksIds = TracksUris.map((uri) => uri.split(":").pop()).join(",")
+  const tracksUrl = `https://api.spotify.com/v1/tracks?ids=${tracksIds}`
+
+  const tracksResponse = await fetch(tracksUrl, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+
+  const tracksData = await tracksResponse.json()
+  const tracks = tracksData.tracks
+  
+  const artistsUris: string[] = tracks.map((track: any) => track.artists[0].uri)
+  const artistsIds = artistsUris.map((uri) => uri.split(":").pop()).join(",")
+  const artistsUrl = `https://api.spotify.com/v1/artists?ids=${artistsIds}`
+
+  const artistsResponse = await fetch(artistsUrl, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+
+  const artistsData = await artistsResponse.json()
+  return artistsData.artists
+}

@@ -1,17 +1,18 @@
-import { getSpotifyTracksInfo } from "@/lib/spotify"
+import { getSpotifyArtistsInfo, getSpotifyTracksInfo } from "@/lib/spotify"
 
 import {
+  ArtistType,
   BasicUser,
   CleanDataType,
-  CleanDataTypeWithScore,
   DataType,
+  GroupedArtistType,
   TrackType,
 } from "./data"
 
-export function getTopTracks(
+export async function getTopTracks(
   data: CleanDataType[],
   limit: number = 50
-): CleanDataTypeWithScore[] {
+): Promise<TrackType[]> {
   const scoredData = data.map((track) => ({
     ...track,
     score: (track.total_played + track.ms_played / 1e6) / 2,
@@ -19,12 +20,7 @@ export function getTopTracks(
 
   scoredData.sort((a, b) => b.score - a.score)
 
-  return scoredData.slice(0, limit)
-}
-
-export async function getTracksInfo(
-  tracks: CleanDataTypeWithScore[]
-): Promise<TrackType[]> {
+  const tracks = scoredData.slice(0, limit)
   const uris = tracks.map((track) => track.spotify_track_uri)
   const spotifyTracks = await getSpotifyTracksInfo(uris)
 
@@ -36,6 +32,55 @@ export async function getTracksInfo(
     return {
       ...track,
       image_url: spotifyTrack.album.images[0].url,
+    }
+  })
+}
+
+export async function getTopArtists(
+  data: CleanDataType[],
+  limit: number = 50
+): Promise<ArtistType[]> {
+  const groupedData: Record<string, GroupedArtistType> = {}
+
+  data.forEach((track) => {
+    if (groupedData[track.artist_name]) {
+      groupedData[track.artist_name].total_played += track.total_played
+      groupedData[track.artist_name].ms_played += track.ms_played
+    } else {
+      groupedData[track.artist_name] = {
+        total_played: track.total_played,
+        ms_played: track.ms_played,
+        name: track.artist_name,
+        spotify_track_uri: track.spotify_track_uri,
+      }
+    }
+  })
+
+  const scoredData = Object.values(groupedData).map(
+    (artist: GroupedArtistType) => ({
+      ...artist,
+      score: (artist.total_played + artist.ms_played / 1e6) / 2,
+    })
+  )
+
+  scoredData.sort((a, b) => b.score - a.score)
+
+  const artists = scoredData.slice(0, limit)
+
+  const uris = artists.map((artist) => artist.spotify_track_uri)
+  const spotifyArtists = await getSpotifyArtistsInfo(uris)
+
+  return artists.map((artist) => {
+    const spotifyArtist = spotifyArtists.find(
+      (spotifyArtist: any) => spotifyArtist.name === artist.name
+    )
+    
+    delete (artist as {spotify_track_uri?: string}).spotify_track_uri;
+    return {
+      ...artist,
+      image_url: spotifyArtist.images[0].url,
+      href: spotifyArtist.external_urls.spotify,
+      spotify_artist_uri: spotifyArtist.uri,
     }
   })
 }

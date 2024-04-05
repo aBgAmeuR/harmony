@@ -1,20 +1,13 @@
 import { prisma } from "@/lib/prisma"
 
-import { BasicUser, TrackType } from "./data"
+import { ArtistType, BasicUser, TrackType } from "./data"
 
-type TracksData = {
-  allTimeTracks: TrackType[]
-  lastYearTracks: TrackType[]
-  last6MonthsTracks: TrackType[]
-}
-
-/**
- *
- * Si l'utilisateur n'existe pas, créez-le. Sinon, on supprime les anciennes pistes et on les remplace par les nouvelles.
- *
- */
-export async function storeTracks(tracks: TracksData, user: BasicUser) {
-  const { allTimeTracks, last6MonthsTracks, lastYearTracks } = tracks
+export async function storeTracks(
+  allTimeTracks: TrackType[],
+  lastYearTracks: TrackType[],
+  last6MonthsTracks: TrackType[],
+  user: BasicUser
+) {
   const { username } = user
 
   let userRecord = await prisma.user.findUnique({
@@ -36,28 +29,6 @@ export async function storeTracks(tracks: TracksData, user: BasicUser) {
   await prisma.lastYearTrack.deleteMany({ where: { userId: userRecord.id } })
   await prisma.last6MonthsTrack.deleteMany({ where: { userId: userRecord.id } })
 
-  // Ensuite, pour chaque type de piste, créez les nouvelles entrées.
-  // await prisma.allTimeTrack.createMany({
-  //   data: allTimeTracks.map((track) => ({
-  //     ...track,
-  //     userId: userRecord.id,
-  //   })),
-  // })
-
-  // await prisma.lastYearTrack.createMany({
-  //   data: lastYearTracks.map((track) => ({
-  //     ...track,
-  //     userId: userRecord.id,
-  //   })),
-  // })
-
-  // await prisma.last6MonthsTrack.createMany({
-  //   data: last6MonthsTracks.map((track) => ({
-  //     ...track,
-  //     userId: userRecord.id,
-  //   })),
-  // })
-
   await prisma.user.update({
     where: {
       id: userRecord.id,
@@ -71,6 +42,51 @@ export async function storeTracks(tracks: TracksData, user: BasicUser) {
       },
       last6MonthsTracks: {
         create: last6MonthsTracks,
+      },
+    },
+  })
+}
+
+export async function storeArtists(
+  allTimeArtists: ArtistType[],
+  lastYearArtists: ArtistType[],
+  last6MonthsArtists: ArtistType[],
+  user: BasicUser
+) {
+  const { username } = user
+
+  let userRecord = await prisma.user.findUnique({
+    where: {
+      username,
+    },
+  })
+
+  if (!userRecord) {
+    userRecord = await prisma.user.create({
+      data: {
+        username,
+      },
+    })
+  }
+
+  // Supprimez d'abord toutes les pistes existantes pour cet utilisateur, puis recréez-les.
+  await prisma.allTimeArtist.deleteMany({ where: { userId: userRecord.id } })
+  await prisma.lastYearArtist.deleteMany({ where: { userId: userRecord.id } })
+  await prisma.last6MonthsArtist.deleteMany({ where: { userId: userRecord.id } })
+
+  await prisma.user.update({
+    where: {
+      id: userRecord.id,
+    },
+    data: {
+      allTimeArtists: {
+        create: allTimeArtists,
+      },
+      lastYearArtists: {
+        create: lastYearArtists,
+      },
+      last6MonthsArtists: {
+        create: last6MonthsArtists,
       },
     },
   })

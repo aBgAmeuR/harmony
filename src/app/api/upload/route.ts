@@ -1,5 +1,5 @@
-import { getTopTracks, getTracksInfo, getUserData } from "./extractor"
-import { storeTracks } from "./store"
+import { getTopArtists, getTopTracks, getUserData } from "./extractor"
+import { storeArtists, storeTracks } from "./store"
 import {
   extractAndVerifyZip,
   mergeStreamingDataAndSort,
@@ -22,25 +22,24 @@ export async function POST(req: Request) {
 
   const user = getUserData(lastTrack)
 
-  const topTracksAllTime = getTopTracks(allTimeData)
-  const topTracksLastYear = getTopTracks(lastYearData)
-  const topTracksLast6Months = getTopTracks(last6MonthsData)
-
+  // Tracks
   const [allTimeTracks, lastYearTracks, last6MonthsTracks] = await Promise.all([
-    getTracksInfo(topTracksAllTime),
-    getTracksInfo(topTracksLastYear),
-    getTracksInfo(topTracksLast6Months),
+    getTopTracks(allTimeData),
+    getTopTracks(lastYearData),
+    getTopTracks(last6MonthsData),
   ])
 
-  await storeTracks(
-    {
-      allTimeTracks,
-      lastYearTracks,
-      last6MonthsTracks,
-    },
-    user
-  )
+  await storeTracks(allTimeTracks, lastYearTracks, last6MonthsTracks, user)
 
+  // Artists
+  const [allTimeArtists, lastYearArtists, last6MonthsArtists] =
+    await Promise.all([
+      getTopArtists(allTimeData),
+      getTopArtists(lastYearData),
+      getTopArtists(last6MonthsData),
+    ])
+
+  await storeArtists(allTimeArtists, lastYearArtists, last6MonthsArtists, user)
 
   return new Response("ok")
 }
