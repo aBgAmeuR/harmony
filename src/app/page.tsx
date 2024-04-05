@@ -1,13 +1,22 @@
-import {
-  Button,
-  Text,
-} from '@mantine/core';
+import { FileDropZone } from "@/components/file-dropzone";
+import { prisma } from "@/lib/prisma";
 
-export default function Home() {
+export default async function Home() {
+  // const data = await prisma.user.findUnique({
+  //   where: {
+  //     id: "37.65.94.168"
+  //   },
+  //   select: {
+  //     id: true,
+  //     username: true,
+  //     allTimeTracks: true,
+  //   }
+  // });
+
+
   return (
-    <div>
-      <Button>Button</Button>
-      <Text>Just some text</Text>
+    <div className="h-screen flex justify-center items-center">
+      <FileDropZone className="container" />
     </div>
   );
 }
