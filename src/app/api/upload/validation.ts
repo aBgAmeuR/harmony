@@ -19,11 +19,9 @@ export function validateFile(file: unknown): {
   return { response, file: file as File }
 }
 
-export async function extractAndVerifyZip(
-  file: File
-): Promise<{ response: Response | null; files: JSZip.JSZipObject[] }> {
-  let response: Response | null = null
-  const arrayBuffer = await file.arrayBuffer()
+export async function extractZipAndVerifyFiles(
+  arrayBuffer: ArrayBuffer
+): Promise<JSZip.JSZipObject[]> {
   const zip = new JSZip()
   await zip.loadAsync(arrayBuffer)
   const files = zip.file(
@@ -32,9 +30,9 @@ export async function extractAndVerifyZip(
   const fileNames = files.map((file) => file.name)
 
   if (fileNames.length === 0) {
-    response = new Response("no files found", { status: 400 })
+    throw new Error("No valid files found in the zip")
   }
-  return { response, files }
+  return files
 }
 
 function filterDataByPeriod(data: DataType[], months: number): DataType[] {
@@ -74,7 +72,9 @@ function cleanData(data: DataType[]): CleanDataType[] {
   return Object.values(cleanedData)
 }
 
-export async function mergeStreamingDataAndSort(files: JSZip.JSZipObject[]): Promise<{
+export async function mergeStreamingDataAndSort(
+  files: JSZip.JSZipObject[]
+): Promise<{
   last6MonthsData: CleanDataType[]
   lastYearData: CleanDataType[]
   allTimeData: CleanDataType[]
