@@ -21,7 +21,7 @@ export default function RootLayout({
       <head>
         <ColorSchemeScript />
       </head>
-      <body className={nunito.className}>
+      <body className={nunito.className + 'relative'}>
         <Providers>{children}</Providers>
       </body>
     </html>
