@@ -5,8 +5,6 @@ export const env = createEnv({
   server: {
     SPOTIFY_CLIENT_ID: z.string(),
     SPOTIFY_CLIENT_SECRET: z.string(),
-    NODE_ENV: z.string().optional(),
-    VERCEL_ENV: z.string().optional(),
   },
   client: {},
   experimental__runtimeEnv: {},

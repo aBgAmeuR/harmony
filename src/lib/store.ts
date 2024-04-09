@@ -13,7 +13,6 @@ type StoreData = {
   last6MonthsAlbums: AlbumType[]
 }
 
-// Cookies
 export const storeData = (data: StoreData) => {
   localStorage.clear()
   localStorage.setItem("store", JSON.stringify(data))

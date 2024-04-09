@@ -78,36 +78,6 @@ export async function getSpotifyArtistsInfo(tracksUris: string[]) {
   return artistsData.artists
 }
 
-// export async function getSpotifyAlbumsInfo(tracksUris: string[]) {
-//   const accessToken = await getSpotifyAccessToken()
-
-//   const tracksIds = tracksUris.map((uri) => uri.split(":").pop()).join(",")
-//   const tracksUrl = `https://api.spotify.com/v1/tracks?ids=${tracksIds}`
-
-//   const tracksResponse = await fetch(tracksUrl, {
-//     headers: {
-//       Authorization: `Bearer ${accessToken}`,
-//     },
-//   })
-
-//   const tracksData = await tracksResponse.json()
-//   const tracks = tracksData.tracks
-
-//   const albumsUris: string[] = tracks.map((track: any) => track.album.uri)
-//   const albumsIds = albumsUris.map((uri) => uri.split(":").pop()).join(",")
-//   const albumsUrl = `https://api.spotify.com/v1/albums?ids=${albumsIds}`
-
-//   const albumsResponse = await fetch(albumsUrl, {
-//     headers: {
-//       Authorization: `Bearer ${accessToken}`,
-//     },
-//   })
-
-//   const albumsData = await albumsResponse.json()
-//   return albumsData.albums
-// }
-
-
 export async function getSpotifyAlbumsInfo(uris: string[]) {
   const accessToken = await getSpotifyAccessToken()
 

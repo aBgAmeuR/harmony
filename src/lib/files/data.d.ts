@@ -76,4 +76,3 @@ export type BasicUser = {
   id: string
   username: string
 }
-

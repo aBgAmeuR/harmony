@@ -1,11 +1,11 @@
 'use client'
 
+import { filesProcessing } from "@/lib/files/files";
 import { cn } from "@/lib/utils";
 import { Button, Divider, Input, Text } from "@mantine/core";
 import Link from "next/link";
 import { ComponentPropsWithoutRef } from "react";
 import { FileDropZone } from "./file-dropzone";
-import { filesProcessing } from "@/lib/files/files";
 
 type GetFileInputsProps = ComponentPropsWithoutRef<'div'>;
 
@@ -21,7 +21,6 @@ export const GetFileInputs = (props: GetFileInputsProps) => {
   const handleFile = async (file: File) => {
     const res = await filesProcessing(file);
     console.log(res);
-    
   }
 
   return (
