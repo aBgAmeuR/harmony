@@ -43,6 +43,25 @@ export type GroupedArtistType = {
   spotify_track_uri: string
 }
 
+export type GroupedAlbumsType = {
+  total_played: number
+  ms_played: number
+  name: string
+  artist_name: string
+  spotify_track_uri: string
+}
+
+export type AlbumType = {
+  total_played: number
+  ms_played: number
+  name: string
+  image_url: string
+  artist_name: string
+  href: string
+  score: number
+  spotify_album_uri: string
+}
+
 export type ArtistType = {
   total_played: number
   ms_played: number
@@ -57,3 +76,4 @@ export type BasicUser = {
   id: string
   username: string
 }
+

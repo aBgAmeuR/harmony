@@ -28,6 +28,6 @@ const config: Config = {
       green: "#0db14d",
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 }
 export default config

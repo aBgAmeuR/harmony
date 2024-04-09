@@ -1,17 +1,12 @@
-'use client'
-
-import { Button, Divider, Input, Text, Title } from "@mantine/core";
-import { type PutBlobResult } from '@vercel/blob';
+import { GetFileInputs } from "@/components/get-file-inputs";
+import { Text, Title } from "@mantine/core";
 import Link from "next/link";
-import { useRef, useState } from 'react';
 
 export default function Home() {
-  const inputFileRef = useRef<HTMLInputElement>(null);
-  const [blob, setBlob] = useState<PutBlobResult | null>(null);
 
   return (
     <>
-      <header className="flex items-center justify-center h-16 bg-secondary">
+      {/* <header className="flex items-center justify-center h-16 bg-secondary">
         <svg width="32" height="33" viewBox="0 0 32 33" fill="none" xmlns="http://www.w3.org/2000/svg" className="mx-2">
           <rect y="2.09082" width="29.9786" height="30.0243" rx="4.02579" transform="rotate(-4 0 2.09082)" fill="#141414" />
           <g clip-path="url(#clip0_148_68)">
@@ -27,50 +22,10 @@ export default function Home() {
           </defs>
         </svg>
         <Title order={2}>Harmony</Title>
-      </header>
-      {/* <div className="h-screen flex flex-col gap-12 justify-center items-center">
-        <Title order={1}>Upload Your Spotify Data</Title>
-        <div>
-          <Title order={2}>Production environment</Title>
-          <form
-            onSubmit={async (event) => {
-              event.preventDefault();
-
-              if (!inputFileRef.current?.files) {
-                throw new Error('No file selected');
-              }
-
-              const file = inputFileRef.current.files[0];
-
-              const newBlob = await upload(file.name, file, {
-                access: 'public',
-                handleUploadUrl: '/api/upload',
-              });
-
-              setBlob(newBlob);
-            }}
-            className="flex gap-4"
-          >
-            <Input name="file" ref={inputFileRef} type="file" required />
-            <Button type="submit">Upload</Button>
-          </form>
-          {blob && (
-            <div>
-              Blob url: <a href={blob.url}>{blob.url}</a>
-            </div>
-          )}
-        </div>
-
-        <div>
-          <Title order={2}>Development environment</Title>
-          <form onSubmit={handleUpload} method="post">
-            <Button type="submit">Upload</Button>
-          </form>
-        </div>
-      </div> */}
+      </header> */}
       <main className="flex flex-col p-8 mx-auto w-full max-w-2xl gap-12">
-        <Text>Harmony is a website that generates stats from your Spotify data Package. To get started, click the button below to upload your Spotify Data Package.</Text>
-        <Link href="/help" className="bg-secondary w-full relative flex flex-col items-center justify-center select-none p-5 rounded-lg">
+        {/* <Text>Harmony is a website that generates stats from your Spotify data Package. To get started, click the button below to upload your Spotify Data Package.</Text> */}
+        {/* <Link href="/help" className="bg-secondary w-full relative flex flex-col items-center justify-center select-none p-5 rounded-lg">
           <Text>Get my Spotify Data 👆</Text>
           <Text>(click on this button)</Text>
           <div className="absolute top-0 left-0 -translate-x-1/3 -translate-y-1/3">
@@ -86,37 +41,12 @@ export default function Home() {
               </defs>
             </svg>
           </div>
-        </Link>
-        <div className="flex flex-col gap-8">
-          <div className="border-2 border-dashed border-secondary w-full relative flex flex-col items-center justify-center select-none p-5 rounded-lg">
-            <div className="absolute top-0 left-0 -translate-x-1/3 -translate-y-1/3">
-              <svg width="32" height="34" viewBox="0 0 32 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect y="3.09082" width="29.9786" height="30.0243" rx="4.02579" transform="rotate(-4 0 3.09082)" fill="#141414" />
-                <g clip-path="url(#clip0_151_82)">
-                  <path d="M22.2036 21.9632L22.3876 24.5935L10.7441 25.4076L10.5872 23.1631L15.6804 16.8745C16.1907 16.2202 16.5893 15.648 16.8761 15.1581C17.1624 14.6603 17.3626 14.2195 17.4767 13.8356C17.5981 13.4434 17.6468 13.0758 17.6228 12.7329C17.5869 12.2185 17.4703 11.7842 17.2733 11.4299C17.0756 11.0678 16.8022 10.7971 16.4529 10.6179C16.1114 10.4382 15.6991 10.3652 15.2159 10.399C14.7015 10.435 14.266 10.5907 13.9093 10.8663C13.5605 11.1413 13.3042 11.5077 13.1404 11.9656C12.9844 12.4229 12.9261 12.9321 12.9653 13.4932L9.58682 13.7295C9.51598 12.7163 9.69272 11.772 10.1171 10.8965C10.5409 10.0132 11.1756 9.29141 12.0214 8.73104C12.8667 8.16289 13.8933 7.83657 15.1013 7.7521C16.2937 7.66872 17.3126 7.79326 18.1582 8.12571C19.011 8.44982 19.6732 8.95956 20.1447 9.65492C20.6235 10.3419 20.8978 11.1842 20.9675 12.1818C21.0068 12.7429 20.9556 13.2986 20.8139 13.8489C20.6717 14.3914 20.4516 14.9394 20.1535 15.4927C19.8627 16.0378 19.5023 16.5955 19.0723 17.166C18.6423 17.7364 18.163 18.3299 17.6344 18.9464L14.9089 22.4733L22.2036 21.9632Z" fill="#C9C9C9" />
-                </g>
-                <defs>
-                  <clipPath id="clip0_151_82">
-                    <rect width="18" height="32" fill="white" transform="translate(5.90582 1.6875) rotate(-4)" />
-                  </clipPath>
-                </defs>
-              </svg>
-            </div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-cloud-upload"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="M12 12v9" /><path d="m16 16-4-4-4 4" /></svg>
-            <Text>Click <span className="font-bold">here</span> to select your Spotify Data</Text>
-          </div>
-          <Divider size="sm" label="Or" />
-          {/*  input text and button submit */}
-          <form className="flex flex-col gap-4">
-            <Input type="text" placeholder="Paste your Spotify Data URL here" />
-            <Button type="submit">Submit</Button>
-          </form>
-          <Text>No Spotify Data? <Link href="/demo" className="text-green">Try our demo</Link></Text>
-        </div>
+        </Link> */}
+        <GetFileInputs />
       </main>
-      <footer className="absolute bottom-0 right-0 left-0 flex items-center justify-start h-16 px-4 bg-secondary">
+      {/* <footer className="absolute bottom-0 right-0 left-0 flex items-center justify-start h-16 px-4 bg-secondary">
         <Text>Made with ❤️ by aBgAmeuR. Harmony is an open source software.</Text>
-      </footer>
+      </footer> */}
     </>
   );
 }

@@ -1,20 +1,18 @@
-import { NextResponse } from "next/server"
-import fetch from "node-fetch"
-
-import { getTopArtists, getTopTracks, getUserData } from "./extractor"
-import { storeArtists, storeTracks } from "./store"
+import { storeData } from "../store"
+import {
+  getTopAlbums,
+  getTopArtists,
+  getTopTracks,
+  getUserData,
+} from "./extractor"
 import {
   extractZipAndVerifyFiles,
   mergeStreamingDataAndSort,
 } from "./validation"
 
-export async function POST(req: Request) {
+export async function filesProcessing(file: File) {
   try {
-    const body = await req.json()
-    const response = await fetch(body.url)
-    if (!response.ok) throw new Error("Failed to fetch the uploaded file")
-
-    const buffer = await response.arrayBuffer()
+    const buffer = await file.arrayBuffer()
     const arrayBuffer = Buffer.from(buffer)
 
     const files = await extractZipAndVerifyFiles(arrayBuffer)
@@ -31,7 +29,6 @@ export async function POST(req: Request) {
         getTopTracks(lastYearData),
         getTopTracks(last6MonthsData),
       ])
-    await storeTracks(allTimeTracks, lastYearTracks, last6MonthsTracks, user)
 
     // Artists
     const [allTimeArtists, lastYearArtists, last6MonthsArtists] =
@@ -40,18 +37,30 @@ export async function POST(req: Request) {
         getTopArtists(lastYearData),
         getTopArtists(last6MonthsData),
       ])
-    await storeArtists(
+
+    // Albums
+    const [allTimeAlbums, lastYearAlbums, last6MonthsAlbums] =
+      await Promise.all([
+        getTopAlbums(allTimeData),
+        getTopAlbums(lastYearData),
+        getTopAlbums(last6MonthsData),
+      ])
+
+    storeData({
+      user,
+      allTimeTracks,
+      lastYearTracks,
+      last6MonthsTracks,
       allTimeArtists,
       lastYearArtists,
       last6MonthsArtists,
-      user
-    )
-
-    return NextResponse.json({ message: "Data uploaded successfully" })
+      allTimeAlbums,
+      lastYearAlbums,
+      last6MonthsAlbums,
+    })
+    return { message: "ok" }
   } catch (error) {
-    return NextResponse.json(
-      { error: (error as Error).message },
-      { status: 400 }
-    )
+    console.error(error)
+    return { message: "error", error: error }
   }
 }
