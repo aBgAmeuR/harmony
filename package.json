@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "migrate:postgres": "dotenv -e .env.development.local -- npx prisma migrate dev --name init",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build"
+    "vercel-build": "next build"
   },
   "dependencies": {
     "@mantine/charts": "^7.7.1",
