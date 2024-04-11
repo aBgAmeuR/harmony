@@ -29,7 +29,7 @@ export const FileDropZone = ({ handleFile, isLoading = false }: FileDropZoneProp
   }
 
   const verifyFile = (file: File) => {
-    if (file.type !== 'application/x-zip-compressed') {
+    if (file.type !== 'application/x-zip-compressed' && file.type !== 'application/zip') {
       console.log('file.type', file.type);
       setErrorMessage('Invalid file type. Please upload a .zip file.');
     } else if (file.size > 100000000) {

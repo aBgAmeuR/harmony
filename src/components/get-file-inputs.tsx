@@ -6,10 +6,12 @@ import { Button, Divider, Input, Text } from "@mantine/core";
 import Link from "next/link";
 import { ComponentPropsWithoutRef } from "react";
 import { FileDropZone } from "./file-dropzone";
+import { useRouter } from "next/navigation";
 
 type GetFileInputsProps = ComponentPropsWithoutRef<'div'>;
 
 export const GetFileInputs = (props: GetFileInputsProps) => {
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,7 +22,11 @@ export const GetFileInputs = (props: GetFileInputsProps) => {
 
   const handleFile = async (file: File) => {
     const res = await filesProcessing(file);
-    console.log(res);
+    if (res.message === 'ok') {
+      router.push('/overview');
+    } else {
+      alert('Error processing file');
+    }
   }
 
   return (
