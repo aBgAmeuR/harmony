@@ -10,7 +10,7 @@ type Props = {
 
 export const MainNavigation = (props: Props) => {
   return (
-    <header className="bg-secondary">
+    <header className="bg-secondary z-10 sticky top-0">
       <div className="border-b border-secondary">
         <div className="px-4 h-16 mx-auto w-full max-w-4xl flex items-center justify-between">
           <div className="flex items-center gap-1">
@@ -36,9 +36,9 @@ export const MainNavigation = (props: Props) => {
               </Navigation>
             ) : null}
             <Navigation>
-              <NavigationButton title="Last 6 months" value="6months" />
-              <NavigationButton title="Last year" value="1year" />
-              <NavigationButton title="All time" value="alltime" />
+              <NavigationButton title="6 months" value="6months" />
+              <NavigationButton title="Year" value="1year" />
+              <NavigationButton title="Lifetime" value="alltime" />
             </Navigation>
           </nav>
         </div>

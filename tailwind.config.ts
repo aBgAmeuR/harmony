@@ -26,6 +26,9 @@ const config: Config = {
     },
     colors: {
       green: "#0db14d",
+      primary: "#1ED760",
+      secondary: "#141414",
+      tertiary: "#242424",
     },
   },
   plugins: [require("tailwindcss-animate")],
