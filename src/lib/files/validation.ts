@@ -2,22 +2,6 @@ import JSZip from "jszip"
 
 import { CleanDataType, DataType } from "./data"
 
-export function validateFile(file: unknown): {
-  response: Response | null
-  file: File
-} {
-  let response: Response | null = null
-
-  if (!(file instanceof File))
-    response = new Response("invalid file", { status: 400 })
-  else if (file.size > 10 * 1024 ** 2)
-    response = new Response("file too large", { status: 400 })
-  else if (!file.type.match("application/zip"))
-    response = new Response("invalid file type", { status: 400 })
-  else if (!file.name.match("my_spotify_data.zip"))
-    response = new Response("invalid file name", { status: 400 })
-  return { response, file: file as File }
-}
 
 export async function extractZipAndVerifyFiles(
   arrayBuffer: ArrayBuffer

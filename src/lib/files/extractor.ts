@@ -1,11 +1,14 @@
 import {
+  AlbumDetailsType,
   AlbumType,
+  ArtistDetailsType,
   ArtistType,
   BasicUser,
   CleanDataType,
   DataType,
   GroupedAlbumsType,
   GroupedArtistType,
+  TrackDetailsType,
   TrackType,
 } from "./data"
 
@@ -159,4 +162,103 @@ export function getUserData(data: DataType): BasicUser {
     id: data.username,
     username: data.username,
   }
+}
+
+export function filterDataWithFilter(
+  data: CleanDataType[],
+  filter: keyof CleanDataType
+): CleanDataType[] {
+  const groupedData: Record<string, CleanDataType> = {}
+
+  data.forEach((track) => {
+    if (groupedData[track[filter]]) {
+      groupedData[track[filter]].total_played += track.total_played
+      groupedData[track[filter]].ms_played += track.ms_played
+    } else {
+      groupedData[track[filter]] = {
+        ...track,
+      }
+    }
+  })
+
+  return Object.values(groupedData)
+}
+
+export async function getArtistsDetails(
+  data: ArtistType[],
+  allData: CleanDataType[]
+): Promise<ArtistDetailsType[]> {
+  const artists = data.map((artist) => {
+    const artistData = allData.filter(
+      (track) => track.artist_name === artist.name
+    )
+
+    const albums = filterDataWithFilter(artistData, "album_name")
+    const tracks = filterDataWithFilter(artistData, "track_name")
+
+    return {
+      ...artist,
+      albums: albums
+        .map((album) => ({
+          total_played: album.total_played,
+          ms_played: album.ms_played,
+          name: album.album_name,
+          score: (album.total_played + album.ms_played / 1e6) / 2,
+        }))
+        .sort((a, b) => b.score - a.score),
+      tracks: tracks
+        .map((track) => ({
+          total_played: track.total_played,
+          ms_played: track.ms_played,
+          name: track.track_name,
+          score: (track.total_played + track.ms_played / 1e6) / 2,
+        }))
+        .sort((a, b) => b.score - a.score),
+    }
+  })
+
+  return artists
+}
+
+export async function getAlbumsDetails(
+  data: AlbumType[],
+  allData: CleanDataType[]
+): Promise<AlbumDetailsType[]> {
+  const albums = data.map((album) => {
+    const albumData = allData.filter((track) => track.album_name === album.name)
+
+    const tracks = filterDataWithFilter(albumData, "track_name")
+    return {
+      ...album,
+      tracks: tracks
+        .map((track) => ({
+          total_played: track.total_played,
+          ms_played: track.ms_played,
+          name: track.track_name,
+          score: (track.total_played + track.ms_played / 1e6) / 2,
+        }))
+        .sort((a, b) => b.score - a.score),
+    }
+  })
+
+  return albums
+}
+
+export async function getTracksDetails(
+  data: TrackType[],
+  allData: CleanDataType[]
+): Promise<TrackDetailsType[]> {
+  const tracks = data.map((track) => {
+    const trackData = allData.filter(
+      (trackData) => trackData.spotify_track_uri === track.spotify_track_uri
+    )
+
+    return {
+      ...track,
+      total_played: trackData[0].total_played,
+      ms_played: trackData[0].ms_played,
+    }
+  })
+
+  return tracks
 }

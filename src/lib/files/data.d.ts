@@ -76,3 +76,29 @@ export type BasicUser = {
   id: string
   username: string
 }
+
+export type ArtistDetailsType = ArtistType & {
+  albums: {
+    total_played: number
+    ms_played: number
+    name: string
+    score: number
+  }[]
+  tracks: {
+    total_played: number
+    ms_played: number
+    name: string
+    score: number
+  }[]
+}
+
+export type AlbumDetailsType = AlbumType & {
+  tracks: {
+    total_played: number
+    ms_played: number
+    name: string
+    score: number
+  }[]
+}
+
+export type TrackDetailsType = TrackType
