@@ -22,29 +22,27 @@ export async function filesProcessing(file: File) {
 
     const user = getUserData(lastTrack)
 
-    // Tracks
-    const [allTimeTracks, lastYearTracks, last6MonthsTracks] =
-      await Promise.all([
-        getTopTracks(allTimeData),
-        getTopTracks(lastYearData),
-        getTopTracks(last6MonthsData),
-      ])
-
-    // Artists
-    const [allTimeArtists, lastYearArtists, last6MonthsArtists] =
-      await Promise.all([
-        getTopArtists(allTimeData),
-        getTopArtists(lastYearData),
-        getTopArtists(last6MonthsData),
-      ])
-
-    // Albums
-    const [allTimeAlbums, lastYearAlbums, last6MonthsAlbums] =
-      await Promise.all([
-        getTopAlbums(allTimeData),
-        getTopAlbums(lastYearData),
-        getTopAlbums(last6MonthsData),
-      ])
+    const [
+      allTimeTracks,
+      lastYearTracks,
+      last6MonthsTracks,
+      allTimeArtists,
+      lastYearArtists,
+      last6MonthsArtists,
+      allTimeAlbums,
+      lastYearAlbums,
+      last6MonthsAlbums,
+    ] = await Promise.all([
+      getTopTracks(allTimeData),
+      getTopTracks(lastYearData),
+      getTopTracks(last6MonthsData),
+      getTopArtists(allTimeData),
+      getTopArtists(lastYearData),
+      getTopArtists(last6MonthsData),
+      getTopAlbums(allTimeData),
+      getTopAlbums(lastYearData),
+      getTopAlbums(last6MonthsData),
+    ])
 
     storeData({
       user,
@@ -58,6 +56,7 @@ export async function filesProcessing(file: File) {
       lastYearAlbums,
       last6MonthsAlbums,
     })
+
     return { message: "ok" }
   } catch (error) {
     console.error(error)

@@ -23,13 +23,14 @@ export const RankingCard = ({ title, subtitle, image_url, score, ms_played, tota
   return (
     <Card className='w-full flex flex-row items-center justify-between rounded-xl cursor-pointer hover:bg-secondary group'>
       <div className='flex items-center gap-4'>
-        <Image src={image_url} alt={title} width={50} height={50} className='rounded-sm' />
+        <div className='size-12 flex justify-center items-center object-cover overflow-hidden rounded-sm'>
+          <Image src={image_url} alt={title} width={48} height={48} />
+        </div>
         <div className='flex flex-col'>
           <Text lineClamp={1} fw={600} size="md">{title}</Text>
           {subtitle ? <Text lineClamp={1} c="dimmed">{subtitle}</Text> : null}
         </div>
       </div>
-      {/* <p>Score: {score}</p> */}
       <div className='flex items-center justify-between w-64 gap-1'>
         <div className="flex flex-col">
           <Text lineClamp={1}>Time Played: {formatTime(ms_played)}</Text>

@@ -17,12 +17,12 @@ type StoreData = {
 
 export const storeData = (data: StoreData) => {
   localStorage.clear()
-  localStorage.setItem("store", JSON.stringify(data))
+  localStorage.setItem("ranking", JSON.stringify(data))
 }
 
 export const getTracks = (timeframe: "alltime" | "1year" | "6months") => {
   if (typeof window === "undefined") return []
-  const store = JSON.parse(localStorage.getItem("store") || "[]") as StoreData
+  const store = JSON.parse(localStorage.getItem("ranking") || "[]") as StoreData
   switch (timeframe) {
     case "alltime":
       return store.allTimeTracks
@@ -37,7 +37,7 @@ export const getTracks = (timeframe: "alltime" | "1year" | "6months") => {
 
 export const getArtists = (timeframe: "alltime" | "1year" | "6months") => {
   if (typeof window === "undefined") return []
-  const store = JSON.parse(localStorage.getItem("store") || "[]") as StoreData
+  const store = JSON.parse(localStorage.getItem("ranking") || "[]") as StoreData
   switch (timeframe) {
     case "alltime":
       return store.allTimeArtists
@@ -52,7 +52,7 @@ export const getArtists = (timeframe: "alltime" | "1year" | "6months") => {
 
 export const getAlbums = (timeframe: "alltime" | "1year" | "6months") => {
   if (typeof window === "undefined") return []
-  const store = JSON.parse(localStorage.getItem("store") || "[]") as StoreData
+  const store = JSON.parse(localStorage.getItem("ranking") || "[]") as StoreData
   switch (timeframe) {
     case "alltime":
       return store.allTimeAlbums
