@@ -18,7 +18,7 @@ const config: Config = {
       primary: "#242424",
       secondary: "#1f1f1f",
       tertiary: "#141414",
-      green: "#1ED760",
+      green: "#0db14d",
       red900: "#7f1d1d",
     },
     borderColor: {

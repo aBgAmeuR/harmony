@@ -4,6 +4,7 @@ import { Navigation, NavigationButton, NavigationLink } from "./ui/navigation";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { BackBtn } from "./ui/back-btn";
 
 type Props = {
   currentPath: string;
@@ -32,10 +33,10 @@ export const MainNavigation = (props: Props) => {
         <div className="border-b border-secondary">
           <nav className={cn("px-4 h-16 mx-auto w-full max-w-4xl flex items-center justify-center", props.currentPath.includes('/ranking') ? 'justify-between' : null)}>
             {props.redirect ? (
-              <Link href={props.redirect} className="cursor-pointer py-2 pl-1 pr-3 flex items-center gap-2 rounded-lg hover:bg-tertiary">
+              <BackBtn>
                 <ChevronLeft />
                 <p>Back</p>
-              </Link>
+              </BackBtn>
             ) : null}
             {!props.redirect && props.currentPath.includes('/ranking') ? (
               <Navigation currentPath={props.currentPath}>
