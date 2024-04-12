@@ -30,7 +30,7 @@ function cleanData(data: DataType[]): CleanDataType[] {
 
   data.forEach((entry) => {
     const isInvalidEntry = [
-      entry.ms_played < 1000 ||
+      entry.ms_played < 3000 ||
         entry.spotify_track_uri === "null" ||
         entry.spotify_track_uri === null,
     ].some(Boolean)

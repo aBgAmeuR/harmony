@@ -3,7 +3,7 @@ import { Logo } from "./logo";
 import { Navigation, NavigationButton, NavigationLink } from "./ui/navigation";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { BarChart, ChevronLeft, PieChart, Settings, TrendingUp } from "lucide-react";
 import { BackBtn } from "./ui/back-btn";
 
 type Props = {
@@ -22,10 +22,10 @@ export const MainNavigation = (props: Props) => {
             <Title order={2}>Harmony</Title>
           </div>
           <Navigation currentPath={props.currentPath}>
-            <NavigationLink title="Overview" path="/overview" />
-            <NavigationLink title="Ranking" path="/ranking" fakePath="/ranking/tracks" />
-            <NavigationLink title="Stats" path="/stats" />
-            <NavigationLink title="Settings" path="/settings" />
+            <NavigationLink title="Overview" path="/overview" icon={<PieChart size={20} />} />
+            <NavigationLink title="Ranking" path="/ranking" fakePath="/ranking/tracks" icon={<TrendingUp size={20} />} />
+            <NavigationLink title="Stats" path="/stats" icon={<BarChart size={20} />} />
+            <NavigationLink title="Settings" path="/settings" icon={<Settings size={20} />} />
           </Navigation>
         </div>
       </div>

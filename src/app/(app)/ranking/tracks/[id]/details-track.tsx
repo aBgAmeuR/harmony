@@ -19,7 +19,7 @@ const DetailsTrack = ({ id }: { id: string }) => {
       <section className="bg-secondary">
         <div className="px-4 py-8 mx-auto w-full max-w-4xl flex gap-4 items-center justify-between">
           <div className="flex gap-4 items-center">
-            <div className='size-40 flex justify-center items-center object-cover overflow-hidden rounded-sm shadow-[0_0px_40px_rgba(64,_64,_64,_0.5)]'>
+            <div className='size-40 flex justify-center items-center object-cover overflow-hidden rounded-sm'>
               <Image src={track.image_url} alt={track.name} width={160} height={160} />
             </div>
             <Title order={1}>{track.name}</Title>

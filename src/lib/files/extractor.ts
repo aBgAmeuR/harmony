@@ -1,3 +1,4 @@
+import { getUserInfo } from "../spotify"
 import {
   AlbumDetailsType,
   AlbumType,
@@ -158,10 +159,20 @@ export async function getTopAlbums(
   })
 }
 
-export function getUserData(data: DataType): BasicUser {
+export async function getUserData(data: DataType): Promise<BasicUser> {
+  const userInfo = await fetch("/api/spotify/user", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id: data.username }),
+  }).then((res) => res.json())
+
   return {
     id: data.username,
-    username: data.username,
+    username: userInfo.display_name,
+    href: userInfo.external_urls.spotify,
+    image_url: userInfo.images[0].url,
   }
 }
 

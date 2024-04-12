@@ -93,3 +93,18 @@ export async function getSpotifyAlbumsInfo(uris: string[]) {
   const data = await response.json()
   return data.tracks
 }
+
+export async function getUserInfo(id: string) {
+  const accessToken = await getSpotifyAccessToken()
+
+  const url = `https://api.spotify.com/v1/users/${id}`
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+
+  const data = await response.json()
+  return data
+}

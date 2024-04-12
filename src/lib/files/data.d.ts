@@ -76,6 +76,8 @@ export type ArtistType = {
 export type BasicUser = {
   id: string
   username: string
+  image_url: string
+  href: string
 }
 
 export type ArtistDetailsType = ArtistType & {

@@ -1,4 +1,5 @@
-import type { Config } from "tailwindcss"
+import { type Config } from "tailwindcss"
+import plugin from "tailwindcss/plugin"
 
 const config: Config = {
   content: [
@@ -35,6 +36,11 @@ const config: Config = {
       red200: "#fecaca",
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    plugin(function ({ addVariant }) {
+      addVariant("no-hover", "@media (hover: none)")
+    }),
+    require("tailwindcss-animate"),
+  ],
 }
 export default config

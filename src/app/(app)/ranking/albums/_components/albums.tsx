@@ -5,11 +5,7 @@ import { useTimeRangeStore } from '@/lib/state';
 import { getAlbums } from '@/lib/store';
 import { Title } from '@mantine/core';
 import { ErrorList } from '@/app/(app)/ranking/_components/error-list';
-
-const getHref = (spotify_artist_uri: string) => {
-  const id = spotify_artist_uri.split(':')[2]
-  return `/ranking/albums/${id}`
-}
+import { getHref } from '@/lib/utils';
 
 const Albums = () => {
   const { timeRange } = useTimeRangeStore()
@@ -27,7 +23,7 @@ const Albums = () => {
             score={track.score}
             ms_played={track.ms_played}
             total_played={track.total_played}
-            href={getHref(track.spotify_album_uri)}
+            href={getHref(track.spotify_album_uri, 'albums')}
           />
         </div>
       )) : <ErrorList />}

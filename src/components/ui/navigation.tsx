@@ -49,11 +49,13 @@ type NavigationLinkProps = {
   path: string;
   current?: boolean;
   fakePath?: string;
+  icon?: React.ReactNode;
 }
 
-export const NavigationLink: React.FC<NavigationLinkProps> = ({ title, path, current = false, fakePath }) => {
+export const NavigationLink: React.FC<NavigationLinkProps> = ({ title, path, current = false, fakePath, icon }) => {
   return (
-    <Link href={fakePath || path} className={cn('text-white px-3 py-1 rounded-lg', current ? 'bg-green' : 'hover:bg-tertiary')}>
+    <Link href={fakePath || path} className={cn('text-white px-3 py-1 rounded-lg flex gap-1 items-center', current ? 'bg-green' : 'hover:bg-tertiary')}>
+      {icon}
       <Text fw={500} size="lg">{title}</Text>
     </Link>
   )

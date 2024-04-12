@@ -47,6 +47,11 @@ export const storeData = ({ user, ranking, details }: StoreData) => {
   localStorage.setItem("details", JSON.stringify(details))
 }
 
+export const getUserInfo = () => {
+  if (typeof window === "undefined") return null
+  return JSON.parse(localStorage.getItem("user") || "{}") as BasicUser
+}
+
 export const getTracks = (timeframe: "alltime" | "1year" | "6months") => {
   if (typeof window === "undefined") return []
   const store = JSON.parse(
@@ -108,7 +113,7 @@ export const getArtistDetails = (
   ) as StoreDetails
 
   const findArtist = (artists: ArtistDetailsType[]) => {
-    return artists.find((artist) =>
+    return artists?.find((artist) =>
       artist.spotify_artist_uri.includes(artistId)
     )
   }
@@ -135,7 +140,7 @@ export const getAlbumDetails = (
   ) as StoreDetails
 
   const findAlbum = (albums: AlbumDetailsType[]) => {
-    return albums.find((album) => album.spotify_album_uri.includes(albumId))
+    return albums?.find((album) => album.spotify_album_uri.includes(albumId))
   }
 
   switch (timeframe) {
@@ -160,7 +165,7 @@ export const getTrackDetails = (
   ) as StoreDetails
 
   const findTrack = (tracks: TrackDetailsType[]) => {
-    return tracks.find((track) => track.spotify_track_uri.includes(trackId))
+    return tracks?.find((track) => track.spotify_track_uri.includes(trackId))
   }
 
   switch (timeframe) {

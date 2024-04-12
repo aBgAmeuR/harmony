@@ -23,7 +23,7 @@ export async function filesProcessing(file: File) {
     const { allTimeData, lastYearData, last6MonthsData, lastTrack } =
       await mergeStreamingDataAndSort(files)
 
-    const user = getUserData(lastTrack)
+    const user = await getUserData(lastTrack)
 
     const [
       allTimeTracks,
