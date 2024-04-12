@@ -41,6 +41,7 @@ export async function getTopTracks(
     return {
       ...track,
       image_url: spotifyTrack.album.images[0].url,
+      href: spotifyTrack.external_urls.spotify,
     }
   })
 }
@@ -225,7 +226,11 @@ export async function getAlbumsDetails(
   allData: CleanDataType[]
 ): Promise<AlbumDetailsType[]> {
   const albums = data.map((album) => {
-    const albumData = allData.filter((track) => track.album_name === album.name)
+    const albumData = allData.filter(
+      (track) =>
+        track.album_name === album.name &&
+        track.artist_name === album.artist_name
+    )
 
     const tracks = filterDataWithFilter(albumData, "track_name")
     return {
@@ -250,13 +255,27 @@ export async function getTracksDetails(
 ): Promise<TrackDetailsType[]> {
   const tracks = data.map((track) => {
     const trackData = allData.filter(
-      (trackData) => trackData.spotify_track_uri === track.spotify_track_uri
+      (data) => data.spotify_track_uri === track.spotify_track_uri
     )
+
+    const artist = filterDataWithFilter(trackData, "artist_name")[0]
+    const album = filterDataWithFilter(trackData, "album_name")[0]
 
     return {
       ...track,
-      total_played: trackData[0].total_played,
-      ms_played: trackData[0].ms_played,
+      name: track.track_name,
+      artist: {
+        total_played: artist.total_played,
+        ms_played: artist.ms_played,
+        name: artist.artist_name,
+        score: (artist.total_played + artist.ms_played / 1e6) / 2,
+      },
+      album: {
+        total_played: album.total_played,
+        ms_played: album.ms_played,
+        name: album.album_name,
+        score: (album.total_played + album.ms_played / 1e6) / 2,
+      },
     }
   })
 

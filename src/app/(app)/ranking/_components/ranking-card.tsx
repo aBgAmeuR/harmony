@@ -1,6 +1,7 @@
 import { Card, Text } from '@mantine/core'
 import Image from 'next/image'
 import { ChevronRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 type RankingCardProps = {
   title: string
@@ -9,6 +10,7 @@ type RankingCardProps = {
   score: number
   ms_played: number
   total_played: number
+  href?: string
 }
 
 const formatTime = (ms: number) => {
@@ -19,9 +21,14 @@ const formatTime = (ms: number) => {
   return `${hours}h ${minutes}m ${seconds}s`
 }
 
-export const RankingCard = ({ title, subtitle, image_url, score, ms_played, total_played }: RankingCardProps) => {
+export const RankingCard = ({ title, subtitle, image_url, score, ms_played, total_played, href }: RankingCardProps) => {
+  const router = useRouter()
+  const handleClick = () => {
+    if (href) router.push(href)
+  }
+
   return (
-    <Card className='w-full flex flex-row items-center justify-between rounded-xl cursor-pointer hover:bg-secondary group'>
+    <Card className='w-full flex flex-row items-center justify-between rounded-xl cursor-pointer hover:bg-secondary group' onClick={handleClick}>
       <div className='flex items-center gap-4'>
         <div className='size-12 flex justify-center items-center object-cover overflow-hidden rounded-sm'>
           <Image src={image_url} alt={title} width={48} height={48} />

@@ -97,3 +97,80 @@ export const getAlbums = (timeframe: "alltime" | "1year" | "6months") => {
       return store.allTimeAlbums
   }
 }
+
+export const getArtistDetails = (
+  timeframe: "alltime" | "1year" | "6months",
+  artistId: string
+) => {
+  if (typeof window === "undefined") return null
+  const store = JSON.parse(
+    localStorage.getItem("details") || "[]"
+  ) as StoreDetails
+
+  const findArtist = (artists: ArtistDetailsType[]) => {
+    return artists.find((artist) =>
+      artist.spotify_artist_uri.includes(artistId)
+    )
+  }
+
+  switch (timeframe) {
+    case "alltime":
+      return findArtist(store.artistsDetails_all) || null
+    case "1year":
+      return findArtist(store.artistsDetails_year) || null
+    case "6months":
+      return findArtist(store.artistsDetails_6months) || null
+    default:
+      return null
+  }
+}
+
+export const getAlbumDetails = (
+  timeframe: "alltime" | "1year" | "6months",
+  albumId: string
+) => {
+  if (typeof window === "undefined") return null
+  const store = JSON.parse(
+    localStorage.getItem("details") || "[]"
+  ) as StoreDetails
+
+  const findAlbum = (albums: AlbumDetailsType[]) => {
+    return albums.find((album) => album.spotify_album_uri.includes(albumId))
+  }
+
+  switch (timeframe) {
+    case "alltime":
+      return findAlbum(store.albumsDetails_all) || null
+    case "1year":
+      return findAlbum(store.albumsDetails_year) || null
+    case "6months":
+      return findAlbum(store.albumsDetails_6months) || null
+    default:
+      return null
+  }
+}
+
+export const getTrackDetails = (
+  timeframe: "alltime" | "1year" | "6months",
+  trackId: string
+) => {
+  if (typeof window === "undefined") return null
+  const store = JSON.parse(
+    localStorage.getItem("details") || "[]"
+  ) as StoreDetails
+
+  const findTrack = (tracks: TrackDetailsType[]) => {
+    return tracks.find((track) => track.spotify_track_uri.includes(trackId))
+  }
+
+  switch (timeframe) {
+    case "alltime":
+      return findTrack(store.tracksDetails_all) || null
+    case "1year":
+      return findTrack(store.tracksDetails_year) || null
+    case "6months":
+      return findTrack(store.tracksDetails_6months) || null
+    default:
+      return null
+  }
+}

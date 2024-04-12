@@ -2,10 +2,13 @@ import { Title } from "@mantine/core";
 import { Logo } from "./logo";
 import { Navigation, NavigationButton, NavigationLink } from "./ui/navigation";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 
 type Props = {
   currentPath: string;
   showSecondaryNav?: boolean;
+  redirect?: string;
 };
 
 export const MainNavigation = (props: Props) => {
@@ -28,7 +31,13 @@ export const MainNavigation = (props: Props) => {
       {props.showSecondaryNav ? (
         <div className="border-b border-secondary">
           <nav className={cn("px-4 h-16 mx-auto w-full max-w-4xl flex items-center justify-center", props.currentPath.includes('/ranking') ? 'justify-between' : null)}>
-            {props.currentPath.includes('/ranking') ? (
+            {props.redirect ? (
+              <Link href={props.redirect} className="cursor-pointer py-2 pl-1 pr-3 flex items-center gap-2 rounded-lg hover:bg-tertiary">
+                <ChevronLeft />
+                <p>Back</p>
+              </Link>
+            ) : null}
+            {!props.redirect && props.currentPath.includes('/ranking') ? (
               <Navigation currentPath={props.currentPath}>
                 <NavigationLink title="Tracks" path="/ranking/tracks" />
                 <NavigationLink title="Albums" path="/ranking/albums" />
@@ -42,7 +51,8 @@ export const MainNavigation = (props: Props) => {
             </Navigation>
           </nav>
         </div>
-      ) : null}
-    </header>
+      ) : null
+      }
+    </header >
   )
 }

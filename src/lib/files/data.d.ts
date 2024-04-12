@@ -34,6 +34,7 @@ export type CleanDataType = {
 export type TrackType = CleanDataType & {
   score: number
   image_url: string
+  href: string
 }
 
 export type GroupedArtistType = {
@@ -101,4 +102,24 @@ export type AlbumDetailsType = AlbumType & {
   }[]
 }
 
-export type TrackDetailsType = TrackType
+export type TrackDetailsType = {
+  total_played: number
+  ms_played: number
+  name: string
+  spotify_track_uri: string
+  score: number
+  image_url: string
+  href: string
+  artist: {
+    total_played: number
+    ms_played: number
+    name: string
+    score: number
+  }
+  album: {
+    total_played: number
+    ms_played: number
+    name: string
+    score: number
+  }
+}
