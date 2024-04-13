@@ -1,17 +1,17 @@
 'use client';
 
 import { useTimeRangeStore } from "@/lib/state";
-import { getArtistDetails } from "@/lib/store";
 import { Title } from "@mantine/core";
 import Image from "next/image";
 import { ErrorList } from "../../_components/error-list";
 import { DetailCard } from "../../_components/detail-card";
 import { SpotifyBtn } from "@/components/ui/spotify-btn";
 import { ErrorDetail } from "../../_components/error-detail";
+import { getArtists } from "@/lib/store";
 
 const DetailsArtist = ({ id }: { id: string }) => {
   const { timeRange } = useTimeRangeStore()
-  const artist = getArtistDetails(timeRange, id)
+  const artist = getArtists(timeRange, id)[0]
   if (!artist) return <ErrorDetail msg="Artist not found" href="/ranking/artists" />
 
   return (

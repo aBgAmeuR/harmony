@@ -1,6 +1,5 @@
+import { JSZipObject, parseZipFiles } from "@/services/zip"
 import { CleanDataType, DataType } from "@/types"
-
-import { JSZipObject, parseZipFiles } from "@/lib/zipService"
 
 /**
  * Filters data entries based on a specific period.
@@ -53,9 +52,9 @@ function cleanData(data: DataType[]): CleanDataType[] {
  * @returns Object with filtered and cleaned data.
  */
 export async function mergeStreamingDataAndSort(files: JSZipObject[]): Promise<{
-  last6MonthsData: CleanDataType[]
-  lastYearData: CleanDataType[]
-  allTimeData: CleanDataType[]
+  long_term_data: CleanDataType[]
+  medium_term_data: CleanDataType[]
+  short_term_data: CleanDataType[]
   lastTrack: DataType
 }> {
   const allData = await parseZipFiles(files)
@@ -63,9 +62,9 @@ export async function mergeStreamingDataAndSort(files: JSZipObject[]): Promise<{
   const last6MonthsData = filterDataByPeriod(lastYearData, 6)
 
   return {
-    last6MonthsData: cleanData(last6MonthsData),
-    lastYearData: cleanData(lastYearData),
-    allTimeData: cleanData(allData),
+    long_term_data: cleanData(allData),
+    medium_term_data: cleanData(lastYearData),
+    short_term_data: cleanData(last6MonthsData),
     lastTrack: last6MonthsData[0],
   }
 }

@@ -1,17 +1,17 @@
 'use client';
 
 import { useTimeRangeStore } from "@/lib/state";
-import { getAlbumDetails } from "@/lib/store";
 import { Title } from "@mantine/core";
 import Image from "next/image";
 import { DetailCard } from "../../_components/detail-card";
 import { ErrorList } from "../../_components/error-list";
 import { SpotifyBtn } from "@/components/ui/spotify-btn";
 import { ErrorDetail } from "../../_components/error-detail";
+import { getAlbums } from "@/lib/store";
 
 const DetailsAlbum = ({ id }: { id: string }) => {
   const { timeRange } = useTimeRangeStore()
-  const album = getAlbumDetails(timeRange, id)
+  const album = getAlbums(timeRange, id)[0]
   if (!album) return <ErrorDetail msg="Album not found" href="/ranking/albums" />
 
   return (
@@ -31,7 +31,7 @@ const DetailsAlbum = ({ id }: { id: string }) => {
         <div className="flex flex-col gap-2">
           <Title order={3} className="mb-2">Artist</Title>
           <DetailCard
-            title={album.artist_name}
+            title={album.artist.name}
             ms_played={album.ms_played}
             total_played={album.total_played}
           />

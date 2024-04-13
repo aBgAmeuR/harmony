@@ -1,20 +1,14 @@
 "use client"
 
 import {
-  AlbumDetailsType,
-  AlbumType,
-  ArtistDetailsType,
-  ArtistType,
+  Album,
+  Artist,
   BasicUser,
   DataResults,
-  DetailedData,
-  EntityType,
-  RankingData,
-  TablesType,
+  SongsData,
   TimeRange,
-  TrackDetailsType,
-  TrackType,
-} from "@/types/data-type"
+  Track,
+} from "@/types"
 
 /**
  * Clears and stores new data into localStorage.
@@ -23,17 +17,7 @@ import {
 export const storeData = (data: DataResults): void => {
   localStorage.clear()
   localStorage.setItem("user", JSON.stringify(data.user))
-  localStorage.setItem("ranking", JSON.stringify(data.ranking))
-  localStorage.setItem("details", JSON.stringify(data.details))
-}
-
-/**
- * Retrieves user data from localStorage.
- * @returns BasicUser or null if not found.
- */
-export const getUserInfo = (): BasicUser | null => {
-  const user = localStorage.getItem("user")
-  return user ? JSON.parse(user) : null
+  localStorage.setItem("songs", JSON.stringify(data.songs))
 }
 
 /**
@@ -52,132 +36,62 @@ function safelyParseJson<T>(key: string): T | null {
 }
 
 /**
+ * Retrieves user data from localStorage.
+ * @returns BasicUser or null if not found.
+ */
+export const getUserInfo = (): BasicUser | null => {
+  return safelyParseJson<BasicUser>("user")
+}
+
+/**
  * Retrieves tracks based on timeframe.
  * @param timeframe Timeframe of the data to retrieve.
- * @returns Array of TrackType.
+ * @returns Array of Track.
  */
-export const getTracks = (timeframe: TimeRange): TrackType[] => {
-  const ranking = safelyParseJson<RankingData>("ranking")
-  return ranking
-    ? timeframeMapping<TrackType>(ranking, "tracks", "Ranking", timeframe)
-    : []
+export const getTracks = (timeframe: TimeRange, id: string | null = null): Track[] => {
+  const songs = safelyParseJson<SongsData>("songs")
+  if (!songs) return []
+  const tracks = timeframeMapping<Track>(songs, "tracks", timeframe)
+  return id ? tracks.filter((track) => track.spotify_uri.includes(id)) : tracks
 }
 
 /**
  * Retrieves artists based on timeframe.
  * @param timeframe Timeframe of the data to retrieve.
- * @returns Array of ArtistType.
+ * @returns Array of Artist.
  */
-export const getArtists = (timeframe: TimeRange): ArtistType[] => {
-  const ranking = safelyParseJson<RankingData>("ranking")
-  return ranking
-    ? timeframeMapping<ArtistType>(ranking, "artists", "Ranking", timeframe)
-    : []
+export const getArtists = (timeframe: TimeRange, id: string | null = null): Artist[] => {
+  const songs = safelyParseJson<SongsData>("songs")
+  if (!songs) return []
+  const artists = timeframeMapping<Artist>(songs, "artists", timeframe)
+  return id ? artists.filter((artist) => artist.spotify_uri.includes(id)) : artists
 }
 
 /**
  * Retrieves albums based on timeframe.
  * @param timeframe Timeframe of the data to retrieve.
- * @returns Array of AlbumType.
+ * @returns Array of Album.
  */
-export const getAlbums = (timeframe: TimeRange): AlbumType[] => {
-  const ranking = safelyParseJson<RankingData>("ranking")
-  return ranking
-    ? timeframeMapping<AlbumType>(ranking, "albums", "Ranking", timeframe)
-    : []
+export const getAlbums = (timeframe: TimeRange, id: string | null = null): Album[] => {
+  const songs = safelyParseJson<SongsData>("songs")
+  if (!songs) return []
+  const albums = timeframeMapping<Album>(songs, "albums", timeframe)
+  return id ? albums.filter((album) => album.spotify_uri.includes(id)) : albums
 }
 
 /**
- * Retrieves artist details based on timeframe and artist ID.
- * @param timeframe Timeframe of the data to retrieve.
- * @param artistId Spotify URI of the artist.
- * @returns ArtistDetailsType or null if not found.
- */
-export const getArtistDetails = (
-  timeframe: TimeRange,
-  artistId: string
-): ArtistDetailsType | null => {
-  const details = safelyParseJson<DetailedData>("details")
-  return details
-    ? findDetail<ArtistDetailsType>(details, "artists", artistId, timeframe)
-    : null
-}
-
-/**
- * Retrieves album details based on timeframe and album ID.
- * @param timeframe Timeframe of the data to retrieve.
- * @param albumId Spotify URI of the album.
- * @returns AlbumDetailsType or null if not found.
- */
-export const getAlbumDetails = (
-  timeframe: TimeRange,
-  albumId: string
-): AlbumDetailsType | null => {
-  const details = safelyParseJson<DetailedData>("details")
-  return details
-    ? findDetail<AlbumDetailsType>(details, "albums", albumId, timeframe)
-    : null
-}
-
-/**
- * Retrieves track details based on timeframe and track ID.
- * @param timeframe Timeframe of the data to retrieve.
- * @param trackId Spotify URI of the track.
- * @returns TrackDetailsType or null if not found.
- */
-export const getTrackDetails = (
-  timeframe: TimeRange,
-  trackId: string
-): TrackDetailsType | null => {
-  const details = safelyParseJson<DetailedData>("details")
-  return details
-    ? findDetail<TrackDetailsType>(details, "tracks", trackId, timeframe)
-    : null
-}
-
-/**
- * Retrieves data based on entity type, table name, and timeframe.
- * @param data Data to retrieve from.
- * @param entity Entity type to retrieve.
- * @param tableName Table name to retrieve.
- * @param timeframe Timeframe of the data to retrieve.
+ * Maps data based on timeframe.
+ * @param data SongsData to map.
+ * @param type Type of data to map.
+ * @param timeframe Timeframe of the data to map.
  * @returns Array of T.
  */
 function timeframeMapping<T>(
-  data: RankingData | DetailedData,
-  entity: EntityType,
-  tableName: TablesType,
+  data: SongsData,
+  type: "tracks" | "artists" | "albums",
   timeframe: TimeRange
 ): T[] {
-  const key = `${entity}_${tableName}_${timeframe}`
-  return ((data as any)[key] as T[]) || []
-}
+  console.log(data, timeframe, type)
 
-/**
- * Finds detail based on entity type, ID, and timeframe.
- * @param details DetailedData to search.
- * @param entityType Entity type to search.
- * @param id ID of the entity to search.
- * @param timeframe Timeframe of the data to search.
- * @returns T or null if not found.
- */
-function findDetail<T>(
-  details: DetailedData,
-  entityType: EntityType,
-  id: string,
-  timeframe: TimeRange
-): T | null {
-  const detailList = timeframeMapping<T>(
-    details,
-    entityType,
-    "Details",
-    timeframe
-  )
-  return (
-    detailList.find(
-      (item: any) =>
-        item.spotify_uri ===
-        `spotify:${entityType.substring(0, entityType.length - 1)}:${id}`
-    ) || null
-  )
+  return data[timeframe][type]
 }

@@ -18,7 +18,7 @@ const Albums = () => {
           <Title order={1} className='w-24 text-center'>{`#${index + 1}`}</Title>
           <RankingCard
             title={track.name}
-            subtitle={track.artist_name}
+            subtitle={track.artist?.name || "Unknown"}
             image_url={track.image_url}
             score={track.score}
             ms_played={track.ms_played}

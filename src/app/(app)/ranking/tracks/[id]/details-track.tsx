@@ -1,17 +1,17 @@
 'use client';
 
 import { useTimeRangeStore } from "@/lib/state";
-import { getTrackDetails } from "@/lib/store";
 import { Title } from "@mantine/core";
 import Image from "next/image";
 import { DetailCard } from "../../_components/detail-card";
 import { ErrorList } from "../../_components/error-list";
 import { SpotifyBtn } from "@/components/ui/spotify-btn";
 import { ErrorDetail } from "../../_components/error-detail";
+import { getTracks } from "@/lib/store";
 
 const DetailsTrack = ({ id }: { id: string }) => {
   const { timeRange } = useTimeRangeStore()
-  const track = getTrackDetails(timeRange, id)
+  const track = getTracks(timeRange, id)[0]
   if (!track) return <ErrorDetail msg="Track not found" href="/ranking/tracks" />
 
   return (

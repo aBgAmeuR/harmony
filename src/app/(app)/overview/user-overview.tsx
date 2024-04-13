@@ -3,11 +3,11 @@
 import ScrollArea from '@/components/ui/scrollArea'
 import { SpotifyBtn } from '@/components/ui/spotify-btn'
 import { useTimeRangeStore } from '@/lib/state'
-import { getAlbums, getArtists, getTracks, getUserInfo } from '@/lib/store'
 import { Image, Text, Title } from '@mantine/core'
 import { ErrorList } from '../ranking/_components/error-list'
 import { getHref } from '@/lib/utils'
 import Link from 'next/link'
+import { getAlbums, getArtists, getTracks, getUserInfo } from '@/lib/store'
 
 const UserOverview = () => {
   const { timeRange } = useTimeRangeStore()
@@ -44,11 +44,11 @@ const UserOverview = () => {
               {tracks.slice(0, 12).map((track, index) => (
                 <Link key={index} href={getHref(track.spotify_uri, 'tracks')} className='flex flex-col gap-2 p-3 rounded-md hover:bg-secondary'>
                   <div className='size-32 flex justify-center items-center overflow-hidden rounded-sm'>
-                    <Image src={track.image_url} alt={track.track_name} width={128} height={128} className='w-full min-h-full' />
+                    <Image src={track.image_url} alt={track.name} width={128} height={128} className='w-full min-h-full' />
                   </div>
                   <div>
-                    <Title order={5} lineClamp={1}>{track.track_name}</Title>
-                    <Text lineClamp={1}>{track.artist_name}</Text>
+                    <Title order={5} lineClamp={1}>{track.name}</Title>
+                    <Text lineClamp={1}>{track.name}</Text>
                   </div>
                 </Link>
               ))}
@@ -89,7 +89,7 @@ const UserOverview = () => {
                   </div>
                   <div>
                     <Title order={5} lineClamp={1}>{album.name}</Title>
-                    <Text lineClamp={1}>{album.artist_name}</Text>
+                    <Text lineClamp={1}>{album.name}</Text>
                   </div>
                 </Link>
               ))}

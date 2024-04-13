@@ -2,6 +2,7 @@
 
 import { useTimeRangeStore } from '@/lib/state';
 import { cn } from '@/lib/utils';
+import { TimeRange } from '@/types';
 import { Text } from '@mantine/core';
 import Link from 'next/link';
 import React, { PropsWithChildren } from 'react';
@@ -27,14 +28,14 @@ export const Navigation = ({ currentPath, children }: NavigationProps) => {
 
 type NavigationButtonProps = {
   title: string;
-  value?: string;
+  value: TimeRange;
 }
 
-export const NavigationButton: React.FC<NavigationButtonProps> = ({ title, value = title }) => {
+export const NavigationButton: React.FC<NavigationButtonProps> = ({ title, value }) => {
   const { timeRange, setTimeRange } = useTimeRangeStore();
 
   const handleClick = () => {
-    setTimeRange(value as any);
+    setTimeRange(value);
   }
 
   return (

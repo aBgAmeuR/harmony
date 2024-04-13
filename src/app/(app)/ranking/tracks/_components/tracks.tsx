@@ -17,8 +17,8 @@ const Tracks = () => {
         <div className='flex items-center w-full' key={index}>
           <Title order={1} className='w-24 text-center'>{`#${index + 1}`}</Title>
           <RankingCard
-            title={track.track_name}
-            subtitle={track.artist_name}
+            title={track.name}
+            subtitle={track.artist.name}
             image_url={track.image_url}
             score={track.score}
             ms_played={track.ms_played}

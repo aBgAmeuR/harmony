@@ -1,12 +1,13 @@
 'use client'
 
-import { filesProcessing } from "@/lib/files/processing-service";
+
 import { cn } from "@/lib/utils";
 import { Button, Divider, Input, Text } from "@mantine/core";
 import Link from "next/link";
 import { ComponentPropsWithoutRef, useTransition } from "react";
 import { FileDropZone } from "./file-dropzone";
 import { useRouter } from "next/navigation";
+import { filesProcessing } from "@/services/file-processing";
 
 type GetFileInputsProps = ComponentPropsWithoutRef<'div'>;
 

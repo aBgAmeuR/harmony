@@ -46,9 +46,9 @@ export const MainNavigation = (props: Props) => {
               </Navigation>
             ) : null}
             <Navigation>
-              <NavigationButton title="6 months" value="6months" />
-              <NavigationButton title="Year" value="1year" />
-              <NavigationButton title="Lifetime" value="alltime" />
+              <NavigationButton title="6 months" value="short_term" />
+              <NavigationButton title="Year" value="medium_term" />
+              <NavigationButton title="Lifetime" value="long_term" />
             </Navigation>
           </nav>
         </div>
