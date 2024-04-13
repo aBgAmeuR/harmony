@@ -95,9 +95,8 @@ export type Artist = {
   tracks: TrackSimplified[]
 }
 
-export type ChartData = {
-  [key: string]: {
-    total_streams: number
-    total_ms_played: number
-  }
-}
+export type ChartData = Array<{
+  total_streams: number
+  total_ms_played: number
+  time: string
+}>

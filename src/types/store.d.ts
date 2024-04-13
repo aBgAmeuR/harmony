@@ -22,7 +22,7 @@ export type StatsData = {
     total_artists: number
     total_albums: number
     hourly_distribution: ChartData
-    daily_distribution: ChartData
+    monthly_distribution: ChartData
     average_daily_streams: number
     average_daily_ms_played: number
   }

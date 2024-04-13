@@ -265,7 +265,7 @@ export async function getStatsData(
   const totalTracks = countUniqueValuesForKey(data, "track_name")
   const totalArtists = countUniqueValuesForKey(data, "artist_name")
   const totalAlbums = countUniqueValuesForKey(data, "album_name")
-  const { daily_distribution, hourly_distribution } = getChartData(raw_data)
+  const { monthly_distribution, hourly_distribution } = getChartData(raw_data)
   const { averageDailyStreams, averageDailyMsPlayed } =
     getAverageDailyData(raw_data)
 
@@ -278,6 +278,6 @@ export async function getStatsData(
     average_daily_streams: averageDailyStreams,
     average_daily_ms_played: averageDailyMsPlayed,
     hourly_distribution,
-    daily_distribution,
+    monthly_distribution,
   }
 }

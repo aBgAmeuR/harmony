@@ -117,24 +117,66 @@ export function countUniqueValuesForKey(
   return values.size
 }
 
+type DataMap = {
+  [key: string]: {
+    total_streams: number
+    total_ms_played: number
+    time: string
+  }
+}
+
+/**
+ * Formats month to MM/YY.
+ * @param month Month to format.
+ * @returns Formatted month.
+ * @example
+ * ```ts
+ * formatMonth("1/2021") // "01/21"
+ * ```
+ */
+function formatMonth(month: string): string {
+  const [m, y] = month.split("/")
+  return `${m.padStart(2, "0")}/${y.slice(-2)}`
+}
+
+/**
+ * Converts time to a number.
+ * @param time Time to convert.
+ * @returns Converted time.
+ * @example
+ * ```ts
+ * convertTimeToNumber("01/21") // 2101
+ * ```
+ */
+function convertTimeToNumber(time: string): number {
+  const [day, year] = time.split("/")
+  return parseInt(year + day)
+}
+
 /**
  * Filters data based on multiple keys.
  * @param data Data to filter.
  * @param keys Keys to filter by.
  * @param name Name of the key.
  * @returns Filtered data.
+ * 
+export type ChartData = Array<{
+  total_streams: number
+  total_ms_played: number
+  time: string
+}>
  */
 export function getChartData(data: DataType[]): {
   hourly_distribution: ChartData
-  daily_distribution: ChartData
+  monthly_distribution: ChartData
 } {
-  const hourlyData: ChartData = {}
-  const dailyData: ChartData = {}
+  const hourlyData: DataMap = {}
+  const monthlyData: DataMap = {}
 
   data.forEach((item) => {
     const ts = new Date(item.ts)
     const hour = ts.getHours()
-    const day = ts.getDay()
+    const month = formatMonth(`${ts.getMonth() + 1}/${ts.getFullYear()}`)
 
     if (hourlyData[hour]) {
       hourlyData[hour].total_streams += 1
@@ -143,21 +185,32 @@ export function getChartData(data: DataType[]): {
       hourlyData[hour] = {
         total_streams: 1,
         total_ms_played: item.ms_played,
+        time: `${hour}h`,
       }
     }
 
-    if (dailyData[day]) {
-      dailyData[day].total_streams += 1
-      dailyData[day].total_ms_played += item.ms_played
+    if (monthlyData[month]) {
+      monthlyData[month].total_streams += 1
+      monthlyData[month].total_ms_played += item.ms_played
     } else {
-      dailyData[day] = {
+      monthlyData[month] = {
         total_streams: 1,
         total_ms_played: item.ms_played,
+        time: month,
       }
     }
   })
 
-  return { hourly_distribution: hourlyData, daily_distribution: dailyData }
+  const hourly_distribution = Object.values(hourlyData)
+  hourly_distribution.sort(
+    (a, b) => convertTimeToNumber(a.time) - convertTimeToNumber(b.time)
+  )
+  const monthly_distribution = Object.values(monthlyData)
+  monthly_distribution.sort(
+    (a, b) => convertTimeToNumber(a.time) - convertTimeToNumber(b.time)
+  )
+
+  return { hourly_distribution, monthly_distribution }
 }
 
 /**
@@ -169,7 +222,9 @@ export function getAverageDailyData(data: DataType[]): {
   averageDailyStreams: number
   averageDailyMsPlayed: number
 } {
-  const dailyData: ChartData = {}
+  const dailyData: {
+    [key: string]: { total_streams: number; total_ms_played: number }
+  } = {}
   const totalStreams = data.length
   const totalMsPlayed = data.reduce((acc, curr) => acc + curr.ms_played, 0)
 
