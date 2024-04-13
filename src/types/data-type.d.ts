@@ -31,25 +31,11 @@ export type CleanDataType = {
   spotify_track_uri: string
 }
 
-export type TrackType = CleanDataType & {
+export type TrackType = Omit<CleanDataType, "spotify_track_uri"> & {
   score: number
   image_url: string
   href: string
-}
-
-export type GroupedArtistType = {
-  total_played: number
-  ms_played: number
-  name: string
-  spotify_track_uri: string
-}
-
-export type GroupedAlbumsType = {
-  total_played: number
-  ms_played: number
-  name: string
-  artist_name: string
-  spotify_track_uri: string
+  spotify_uri: string
 }
 
 export type AlbumType = {
@@ -60,7 +46,7 @@ export type AlbumType = {
   artist_name: string
   href: string
   score: number
-  spotify_album_uri: string
+  spotify_uri: string
 }
 
 export type ArtistType = {
@@ -70,7 +56,7 @@ export type ArtistType = {
   image_url: string
   href: string
   score: number
-  spotify_artist_uri: string
+  spotify_uri: string
 }
 
 export type BasicUser = {
@@ -108,7 +94,7 @@ export type TrackDetailsType = {
   total_played: number
   ms_played: number
   name: string
-  spotify_track_uri: string
+  spotify_uri: string
   score: number
   image_url: string
   href: string
@@ -125,3 +111,37 @@ export type TrackDetailsType = {
     score: number
   }
 }
+
+export interface DataResults {
+  user: BasicUser
+  ranking: RankingData
+  details: DetailedData
+}
+
+export interface RankingData {
+  tracks_Ranking_alltime: TrackType[]
+  tracks_Ranking_1year: TrackType[]
+  tracks_Ranking_6months: TrackType[]
+  artists_Ranking_alltime: ArtistType[]
+  artists_Ranking_1year: ArtistType[]
+  artists_Ranking_6months: ArtistType[]
+  albums_Ranking_alltime: AlbumType[]
+  albums_Ranking_1year: AlbumType[]
+  albums_Ranking_6months: AlbumType[]
+}
+
+export interface DetailedData {
+  artists_Details_6months: ArtistDetailsType[]
+  artists_Details_1year: ArtistDetailsType[]
+  artists_Details_alltime: ArtistDetailsType[]
+  albums_Details_6months: AlbumDetailsType[]
+  albums_Details_1year: AlbumDetailsType[]
+  albums_Details_alltime: AlbumDetailsType[]
+  tracks_Details_6months: TrackDetailsType[]
+  tracks_Details_1year: TrackDetailsType[]
+  tracks_Details_alltime: TrackDetailsType[]
+}
+
+export type TimeRange = "6months" | "1year" | "alltime"
+export type EntityType = "artists" | "albums" | "tracks"
+export type TablesType = "Details" | "Ranking"

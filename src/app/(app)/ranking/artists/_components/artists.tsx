@@ -22,7 +22,7 @@ const Artists = () => {
             score={track.score}
             ms_played={track.ms_played}
             total_played={track.total_played}
-            href={getHref(track.spotify_artist_uri, 'artists')}
+            href={getHref(track.spotify_uri, 'artists')}
             rounded
           />
         </div>

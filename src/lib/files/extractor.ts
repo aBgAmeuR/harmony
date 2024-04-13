@@ -1,4 +1,3 @@
-import { getUserInfo } from "../spotify"
 import {
   AlbumDetailsType,
   AlbumType,
@@ -7,175 +6,163 @@ import {
   BasicUser,
   CleanDataType,
   DataType,
-  GroupedAlbumsType,
-  GroupedArtistType,
   TrackDetailsType,
   TrackType,
-} from "./data"
+} from "@/types"
 
+import {
+  getSpotifyAlbums,
+  getSpotifyArtists,
+  getSpotifyTracks,
+  getSpotifyUser,
+} from "@/lib/api"
+import {
+  calculateScore,
+  filterDataByKey,
+  sortDataDescending,
+} from "@/lib/utils"
+
+/**
+ * Fetches top tracks based on clean data and a limit.
+ * @param data Array of CleanDataType
+ * @param limit Maximum number of tracks to return
+ * @returns Array of TrackType
+ */
 export async function getTopTracks(
   data: CleanDataType[],
   limit: number = 50
 ): Promise<TrackType[]> {
   const scoredData = data.map((track) => ({
     ...track,
-    score: (track.total_played + track.ms_played / 1e6) / 2,
+    score: calculateScore(track.total_played, track.ms_played),
   }))
 
-  scoredData.sort((a, b) => b.score - a.score)
+  sortDataDescending(scoredData, "score")
 
   const tracks = scoredData.slice(0, limit)
   const uris = tracks.map((track) => track.spotify_track_uri)
-  const spotifyTracks = await fetch("/api/spotify/tracks", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ uris }),
-  }).then((res) => res.json())
+  const spotifyTracks = await getSpotifyTracks(uris)
 
   return tracks.map((track) => {
     const spotifyTrack = spotifyTracks.find(
-      (spotifyTrack: any) => spotifyTrack.uri === track.spotify_track_uri
+      (spotifyTrack) => spotifyTrack.uri === track.spotify_track_uri
     )
+    if (!spotifyTrack) {
+      throw new Error("Spotify track not found")
+    }
 
     return {
       ...track,
+      spotify_uri: spotifyTrack.uri,
       image_url: spotifyTrack.album.images[0].url,
       href: spotifyTrack.external_urls.spotify,
     }
   })
 }
 
+/**
+ * Fetches top artists from the provided data.
+ * @param data Array of CleanDataType
+ * @param limit Maximum number of artists to return
+ * @returns Array of ArtistType
+ */
 export async function getTopArtists(
   data: CleanDataType[],
   limit: number = 50
 ): Promise<ArtistType[]> {
-  const groupedData: Record<string, GroupedArtistType> = {}
+  const groupedData = filterDataByKey(data, "artist_name")
+  const scoredData = Object.values(groupedData).map((artist) => ({
+    ...artist,
+    score: calculateScore(artist.total_played, artist.ms_played),
+  }))
 
-  data.forEach((track) => {
-    if (groupedData[track.artist_name]) {
-      groupedData[track.artist_name].total_played += track.total_played
-      groupedData[track.artist_name].ms_played += track.ms_played
-    } else {
-      groupedData[track.artist_name] = {
-        total_played: track.total_played,
-        ms_played: track.ms_played,
-        name: track.artist_name,
-        spotify_track_uri: track.spotify_track_uri,
-      }
-    }
-  })
-
-  const scoredData = Object.values(groupedData).map(
-    (artist: GroupedArtistType) => ({
-      ...artist,
-      score: (artist.total_played + artist.ms_played / 1e6) / 2,
-    })
-  )
-
-  scoredData.sort((a, b) => b.score - a.score)
+  sortDataDescending(scoredData, "score")
 
   const artists = scoredData.slice(0, limit)
-
   const uris = artists.map((artist) => artist.spotify_track_uri)
-  const spotifyArtists = await fetch("/api/spotify/artists", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ uris }),
-  }).then((res) => res.json())
+  const spotifyArtists = await getSpotifyArtists(uris)
 
   return artists.map((artist) => {
     const spotifyArtist = spotifyArtists.find(
-      (spotifyArtist: any) => spotifyArtist.name === artist.name
+      (spotifyArtist) => spotifyArtist.name === artist.artist_name
     )
-
+    if (!spotifyArtist) {
+      throw new Error("Spotify artist not found")
+    }
     delete (artist as { spotify_track_uri?: string }).spotify_track_uri
     return {
       ...artist,
+      name: artist.artist_name,
       image_url: spotifyArtist.images[0].url,
       href: spotifyArtist.external_urls.spotify,
-      spotify_artist_uri: spotifyArtist.uri,
+      spotify_uri: spotifyArtist.uri,
     }
   })
 }
 
+/**
+ * Fetches top albums from the provided data.
+ * @param data Array of CleanDataType
+ * @param limit Maximum number of albums to return
+ * @returns Array of AlbumType
+ */
 export async function getTopAlbums(
   data: CleanDataType[],
   limit: number = 50
 ): Promise<AlbumType[]> {
-  const groupedData: Record<string, GroupedAlbumsType> = {}
+  const groupedData = filterDataByKey(data, "album_name")
+  const scoredData = Object.values(groupedData).map((album) => ({
+    ...album,
+    score: calculateScore(album.total_played, album.ms_played),
+  }))
 
-  data.forEach((track) => {
-    if (groupedData[track.album_name]) {
-      groupedData[track.album_name].total_played += track.total_played
-      groupedData[track.album_name].ms_played += track.ms_played
-    } else {
-      groupedData[track.album_name] = {
-        total_played: track.total_played,
-        ms_played: track.ms_played,
-        name: track.album_name,
-        artist_name: track.artist_name,
-        spotify_track_uri: track.spotify_track_uri,
-      }
-    }
-  })
-
-  const scoredData = Object.values(groupedData).map(
-    (album: GroupedAlbumsType) => ({
-      ...album,
-      score: (album.total_played + album.ms_played / 1e6) / 2,
-    })
-  )
-
-  scoredData.sort((a, b) => b.score - a.score)
+  sortDataDescending(scoredData, "score")
 
   const albums = scoredData.slice(0, limit)
-
   const uris = albums.map((album) => album.spotify_track_uri)
-  const spotifyAlbums = await fetch("/api/spotify/albums", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ uris }),
-  }).then((res) => res.json())
+  const spotifyAlbums = await getSpotifyAlbums(uris)
 
   return albums.map((album) => {
     const spotifyAlbum = spotifyAlbums.find(
-      (spotifyAlbum: any) => spotifyAlbum.uri === album.spotify_track_uri
+      (spotifyAlbum) => spotifyAlbum.uri === album.spotify_track_uri
     )
-
+    if (!spotifyAlbum) {
+      throw new Error("Spotify album not found")
+    }
     delete (album as { spotify_track_uri?: string }).spotify_track_uri
     return {
       ...album,
+      name: album.album_name,
       artist_name: album.artist_name,
       image_url: spotifyAlbum.album.images[0].url,
       href: spotifyAlbum.album.external_urls.spotify,
-      spotify_album_uri: spotifyAlbum.album.uri,
+      spotify_uri: spotifyAlbum.album.uri,
     }
   })
 }
 
+/**
+ * Fetches user data from Spotify API.
+ * @param data DataType from which the user's username is extracted.
+ * @returns BasicUser with detailed user information.
+ */
 export async function getUserData(data: DataType): Promise<BasicUser> {
-  const userInfo = await fetch("/api/spotify/user", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ id: data.username }),
-  }).then((res) => res.json())
+  const userInfo = await getSpotifyUser(data.username)
 
   return {
     id: data.username,
-    username: userInfo.display_name,
+    username: userInfo.display_name || userInfo.id,
     href: userInfo.external_urls.spotify,
-    image_url: userInfo.images[0].url,
+    image_url: userInfo.images[0]?.url || "",
   }
 }
 
+/**
+ * Groups data by a specified filter key and aggregates play metrics.
+ * @param data Array of CleanDataType
+ * @param filter Key to group by
+ * @returns Array of grouped CleanDataType
+ */
 export function filterDataWithFilter(
   data: CleanDataType[],
   filter: keyof CleanDataType
@@ -183,12 +170,15 @@ export function filterDataWithFilter(
   const groupedData: Record<string, CleanDataType> = {}
 
   data.forEach((track) => {
-    if (groupedData[track[filter]]) {
-      groupedData[track[filter]].total_played += track.total_played
-      groupedData[track[filter]].ms_played += track.ms_played
+    const key = track[filter] as string
+    if (groupedData[key]) {
+      groupedData[key].total_played += track.total_played
+      groupedData[key].ms_played += track.ms_played
     } else {
-      groupedData[track[filter]] = {
+      groupedData[key] = {
         ...track,
+        total_played: track.total_played,
+        ms_played: track.ms_played,
       }
     }
   })
@@ -196,15 +186,20 @@ export function filterDataWithFilter(
   return Object.values(groupedData)
 }
 
+/**
+ * Fetches detailed artist information including albums and tracks.
+ * @param data Array of ArtistType
+ * @param allData Array of CleanDataType for detailed computation.
+ * @returns Array of ArtistDetailsType with aggregated scores and details.
+ */
 export async function getArtistsDetails(
   data: ArtistType[],
   allData: CleanDataType[]
 ): Promise<ArtistDetailsType[]> {
-  const artists = data.map((artist) => {
+  return data.map((artist) => {
     const artistData = allData.filter(
       (track) => track.artist_name === artist.name
     )
-
     const albums = filterDataWithFilter(artistData, "album_name")
     const tracks = filterDataWithFilter(artistData, "track_name")
 
@@ -215,7 +210,7 @@ export async function getArtistsDetails(
           total_played: album.total_played,
           ms_played: album.ms_played,
           name: album.album_name,
-          score: (album.total_played + album.ms_played / 1e6) / 2,
+          score: calculateScore(album.total_played, album.ms_played),
         }))
         .sort((a, b) => b.score - a.score),
       tracks: tracks
@@ -223,26 +218,29 @@ export async function getArtistsDetails(
           total_played: track.total_played,
           ms_played: track.ms_played,
           name: track.track_name,
-          score: (track.total_played + track.ms_played / 1e6) / 2,
+          score: calculateScore(track.total_played, track.ms_played),
         }))
         .sort((a, b) => b.score - a.score),
     }
   })
-
-  return artists
 }
 
+/**
+ * Fetches detailed album information including the tracks.
+ * @param data Array of AlbumType
+ * @param allData Array of CleanDataType for detailed computation.
+ * @returns Array of AlbumDetailsType with aggregated scores and details.
+ */
 export async function getAlbumsDetails(
   data: AlbumType[],
   allData: CleanDataType[]
 ): Promise<AlbumDetailsType[]> {
-  const albums = data.map((album) => {
+  return data.map((album) => {
     const albumData = allData.filter(
       (track) =>
         track.album_name === album.name &&
         track.artist_name === album.artist_name
     )
-
     const tracks = filterDataWithFilter(albumData, "track_name")
     return {
       ...album,
@@ -251,24 +249,27 @@ export async function getAlbumsDetails(
           total_played: track.total_played,
           ms_played: track.ms_played,
           name: track.track_name,
-          score: (track.total_played + track.ms_played / 1e6) / 2,
+          score: calculateScore(track.total_played, track.ms_played),
         }))
         .sort((a, b) => b.score - a.score),
     }
   })
-
-  return albums
 }
 
+/**
+ * Fetches detailed track information including artist and album data.
+ * @param data Array of TrackType
+ * @param allData Array of CleanDataType for correlation.
+ * @returns Array of TrackDetailsType with aggregated scores and details.
+ */
 export async function getTracksDetails(
   data: TrackType[],
   allData: CleanDataType[]
 ): Promise<TrackDetailsType[]> {
-  const tracks = data.map((track) => {
+  return data.map((track) => {
     const trackData = allData.filter(
-      (data) => data.spotify_track_uri === track.spotify_track_uri
+      (data) => data.spotify_track_uri === track.spotify_uri
     )
-
     const artist = filterDataWithFilter(trackData, "artist_name")[0]
     const album = filterDataWithFilter(trackData, "album_name")[0]
 
@@ -279,16 +280,14 @@ export async function getTracksDetails(
         total_played: artist.total_played,
         ms_played: artist.ms_played,
         name: artist.artist_name,
-        score: (artist.total_played + artist.ms_played / 1e6) / 2,
+        score: calculateScore(artist.total_played, artist.ms_played),
       },
       album: {
         total_played: album.total_played,
         ms_played: album.ms_played,
         name: album.album_name,
-        score: (album.total_played + album.ms_played / 1e6) / 2,
+        score: calculateScore(album.total_played, album.ms_played),
       },
     }
   })
-
-  return tracks
 }

@@ -42,7 +42,7 @@ const UserOverview = () => {
           <ScrollArea orientation="horizontal">
             <div className="flex">
               {tracks.slice(0, 12).map((track, index) => (
-                <Link key={index} href={getHref(track.spotify_track_uri, 'tracks')} className='flex flex-col gap-2 p-3 rounded-md hover:bg-secondary'>
+                <Link key={index} href={getHref(track.spotify_uri, 'tracks')} className='flex flex-col gap-2 p-3 rounded-md hover:bg-secondary'>
                   <div className='size-32 flex justify-center items-center overflow-hidden rounded-sm'>
                     <Image src={track.image_url} alt={track.track_name} width={128} height={128} className='w-full min-h-full' />
                   </div>
@@ -52,7 +52,6 @@ const UserOverview = () => {
                   </div>
                 </Link>
               ))}
-              <ScrollArea.Spacer />
             </div>
           </ScrollArea>
         </div>
@@ -64,7 +63,7 @@ const UserOverview = () => {
           <ScrollArea orientation="horizontal">
             <div className="flex">
               {artists.slice(0, 12).map((artist, index) => (
-                <Link key={index} href={getHref(artist.spotify_artist_uri, 'artists')} className='flex flex-col gap-2 p-3 rounded-md hover:bg-secondary'>
+                <Link key={index} href={getHref(artist.spotify_uri, 'artists')} className='flex flex-col gap-2 p-3 rounded-md hover:bg-secondary'>
                   <div className='size-32 flex justify-center items-center overflow-hidden rounded-full'>
                     <Image src={artist.image_url} alt={artist.name} width={128} height={128} className='w-full min-h-full' />
                   </div>
@@ -73,7 +72,6 @@ const UserOverview = () => {
                   </div>
                 </Link>
               ))}
-              <ScrollArea.Spacer />
             </div>
           </ScrollArea>
         </div>
@@ -85,7 +83,7 @@ const UserOverview = () => {
           <ScrollArea orientation="horizontal">
             <div className="flex">
               {albums.slice(0, 12).map((album, index) => (
-                <Link key={index} href={getHref(album.spotify_album_uri, 'albums')} className='flex flex-col gap-2 p-3 rounded-md hover:bg-secondary'>
+                <Link key={index} href={getHref(album.spotify_uri, 'albums')} className='flex flex-col gap-2 p-3 rounded-md hover:bg-secondary'>
                   <div className='size-32 flex justify-center items-center overflow-hidden rounded-sm'>
                     <Image src={album.image_url} alt={album.name} width={128} height={128} className='w-full min-h-full' />
                   </div>
@@ -95,7 +93,6 @@ const UserOverview = () => {
                   </div>
                 </Link>
               ))}
-              <ScrollArea.Spacer />
             </div>
           </ScrollArea>
         </div>

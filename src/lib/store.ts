@@ -6,176 +6,178 @@ import {
   ArtistDetailsType,
   ArtistType,
   BasicUser,
+  DataResults,
+  DetailedData,
+  EntityType,
+  RankingData,
+  TablesType,
+  TimeRange,
   TrackDetailsType,
   TrackType,
-} from "@/lib/files/data"
+} from "@/types/data-type"
 
-type StoreRanking = {
-  allTimeTracks: TrackType[]
-  lastYearTracks: TrackType[]
-  last6MonthsTracks: TrackType[]
-  allTimeArtists: ArtistType[]
-  lastYearArtists: ArtistType[]
-  last6MonthsArtists: ArtistType[]
-  allTimeAlbums: AlbumType[]
-  lastYearAlbums: AlbumType[]
-  last6MonthsAlbums: AlbumType[]
-}
-
-type StoreDetails = {
-  artistsDetails_6months: ArtistDetailsType[]
-  artistsDetails_year: ArtistDetailsType[]
-  artistsDetails_all: ArtistDetailsType[]
-  albumsDetails_6months: AlbumDetailsType[]
-  albumsDetails_year: AlbumDetailsType[]
-  albumsDetails_all: AlbumDetailsType[]
-  tracksDetails_6months: TrackDetailsType[]
-  tracksDetails_year: TrackDetailsType[]
-  tracksDetails_all: TrackDetailsType[]
-}
-
-type StoreData = {
-  user: BasicUser
-  ranking: StoreRanking
-  details: StoreDetails
-}
-
-export const storeData = ({ user, ranking, details }: StoreData) => {
+/**
+ * Clears and stores new data into localStorage.
+ * @param data DataResults to store.
+ */
+export const storeData = (data: DataResults): void => {
   localStorage.clear()
-  localStorage.setItem("user", JSON.stringify(user))
-  localStorage.setItem("ranking", JSON.stringify(ranking))
-  localStorage.setItem("details", JSON.stringify(details))
+  localStorage.setItem("user", JSON.stringify(data.user))
+  localStorage.setItem("ranking", JSON.stringify(data.ranking))
+  localStorage.setItem("details", JSON.stringify(data.details))
 }
 
-export const getUserInfo = () => {
-  if (typeof window === "undefined") return null
-  return JSON.parse(localStorage.getItem("user") || "{}") as BasicUser
+/**
+ * Retrieves user data from localStorage.
+ * @returns BasicUser or null if not found.
+ */
+export const getUserInfo = (): BasicUser | null => {
+  const user = localStorage.getItem("user")
+  return user ? JSON.parse(user) : null
 }
 
-export const getTracks = (timeframe: "alltime" | "1year" | "6months") => {
-  if (typeof window === "undefined") return []
-  const store = JSON.parse(
-    localStorage.getItem("ranking") || "[]"
-  ) as StoreRanking
-  switch (timeframe) {
-    case "alltime":
-      return store.allTimeTracks
-    case "1year":
-      return store.lastYearTracks
-    case "6months":
-      return store.last6MonthsTracks
-    default:
-      return store.allTimeTracks
+/**
+ * Retrieves data from localStorage.
+ * @param key Key of the data to retrieve.
+ * @returns DataResults or null if not found.
+ */
+function safelyParseJson<T>(key: string): T | null {
+  const item = localStorage.getItem(key)
+  try {
+    return item ? JSON.parse(item) : null
+  } catch (error) {
+    console.error("Failed to parse JSON from local storage:", error)
+    return null
   }
 }
 
-export const getArtists = (timeframe: "alltime" | "1year" | "6months") => {
-  if (typeof window === "undefined") return []
-  const store = JSON.parse(
-    localStorage.getItem("ranking") || "[]"
-  ) as StoreRanking
-  switch (timeframe) {
-    case "alltime":
-      return store.allTimeArtists
-    case "1year":
-      return store.lastYearArtists
-    case "6months":
-      return store.last6MonthsArtists
-    default:
-      return store.allTimeArtists
-  }
+/**
+ * Retrieves tracks based on timeframe.
+ * @param timeframe Timeframe of the data to retrieve.
+ * @returns Array of TrackType.
+ */
+export const getTracks = (timeframe: TimeRange): TrackType[] => {
+  const ranking = safelyParseJson<RankingData>("ranking")
+  return ranking
+    ? timeframeMapping<TrackType>(ranking, "tracks", "Ranking", timeframe)
+    : []
 }
 
-export const getAlbums = (timeframe: "alltime" | "1year" | "6months") => {
-  if (typeof window === "undefined") return []
-  const store = JSON.parse(
-    localStorage.getItem("ranking") || "[]"
-  ) as StoreRanking
-  switch (timeframe) {
-    case "alltime":
-      return store.allTimeAlbums
-    case "1year":
-      return store.lastYearAlbums
-    case "6months":
-      return store.last6MonthsAlbums
-    default:
-      return store.allTimeAlbums
-  }
+/**
+ * Retrieves artists based on timeframe.
+ * @param timeframe Timeframe of the data to retrieve.
+ * @returns Array of ArtistType.
+ */
+export const getArtists = (timeframe: TimeRange): ArtistType[] => {
+  const ranking = safelyParseJson<RankingData>("ranking")
+  return ranking
+    ? timeframeMapping<ArtistType>(ranking, "artists", "Ranking", timeframe)
+    : []
 }
 
+/**
+ * Retrieves albums based on timeframe.
+ * @param timeframe Timeframe of the data to retrieve.
+ * @returns Array of AlbumType.
+ */
+export const getAlbums = (timeframe: TimeRange): AlbumType[] => {
+  const ranking = safelyParseJson<RankingData>("ranking")
+  return ranking
+    ? timeframeMapping<AlbumType>(ranking, "albums", "Ranking", timeframe)
+    : []
+}
+
+/**
+ * Retrieves artist details based on timeframe and artist ID.
+ * @param timeframe Timeframe of the data to retrieve.
+ * @param artistId Spotify URI of the artist.
+ * @returns ArtistDetailsType or null if not found.
+ */
 export const getArtistDetails = (
-  timeframe: "alltime" | "1year" | "6months",
+  timeframe: TimeRange,
   artistId: string
-) => {
-  if (typeof window === "undefined") return null
-  const store = JSON.parse(
-    localStorage.getItem("details") || "[]"
-  ) as StoreDetails
-
-  const findArtist = (artists: ArtistDetailsType[]) => {
-    return artists?.find((artist) =>
-      artist.spotify_artist_uri.includes(artistId)
-    )
-  }
-
-  switch (timeframe) {
-    case "alltime":
-      return findArtist(store.artistsDetails_all) || null
-    case "1year":
-      return findArtist(store.artistsDetails_year) || null
-    case "6months":
-      return findArtist(store.artistsDetails_6months) || null
-    default:
-      return null
-  }
+): ArtistDetailsType | null => {
+  const details = safelyParseJson<DetailedData>("details")
+  return details
+    ? findDetail<ArtistDetailsType>(details, "artists", artistId, timeframe)
+    : null
 }
 
+/**
+ * Retrieves album details based on timeframe and album ID.
+ * @param timeframe Timeframe of the data to retrieve.
+ * @param albumId Spotify URI of the album.
+ * @returns AlbumDetailsType or null if not found.
+ */
 export const getAlbumDetails = (
-  timeframe: "alltime" | "1year" | "6months",
+  timeframe: TimeRange,
   albumId: string
-) => {
-  if (typeof window === "undefined") return null
-  const store = JSON.parse(
-    localStorage.getItem("details") || "[]"
-  ) as StoreDetails
-
-  const findAlbum = (albums: AlbumDetailsType[]) => {
-    return albums?.find((album) => album.spotify_album_uri.includes(albumId))
-  }
-
-  switch (timeframe) {
-    case "alltime":
-      return findAlbum(store.albumsDetails_all) || null
-    case "1year":
-      return findAlbum(store.albumsDetails_year) || null
-    case "6months":
-      return findAlbum(store.albumsDetails_6months) || null
-    default:
-      return null
-  }
+): AlbumDetailsType | null => {
+  const details = safelyParseJson<DetailedData>("details")
+  return details
+    ? findDetail<AlbumDetailsType>(details, "albums", albumId, timeframe)
+    : null
 }
 
+/**
+ * Retrieves track details based on timeframe and track ID.
+ * @param timeframe Timeframe of the data to retrieve.
+ * @param trackId Spotify URI of the track.
+ * @returns TrackDetailsType or null if not found.
+ */
 export const getTrackDetails = (
-  timeframe: "alltime" | "1year" | "6months",
+  timeframe: TimeRange,
   trackId: string
-) => {
-  if (typeof window === "undefined") return null
-  const store = JSON.parse(
-    localStorage.getItem("details") || "[]"
-  ) as StoreDetails
+): TrackDetailsType | null => {
+  const details = safelyParseJson<DetailedData>("details")
+  return details
+    ? findDetail<TrackDetailsType>(details, "tracks", trackId, timeframe)
+    : null
+}
 
-  const findTrack = (tracks: TrackDetailsType[]) => {
-    return tracks?.find((track) => track.spotify_track_uri.includes(trackId))
-  }
+/**
+ * Retrieves data based on entity type, table name, and timeframe.
+ * @param data Data to retrieve from.
+ * @param entity Entity type to retrieve.
+ * @param tableName Table name to retrieve.
+ * @param timeframe Timeframe of the data to retrieve.
+ * @returns Array of T.
+ */
+function timeframeMapping<T>(
+  data: RankingData | DetailedData,
+  entity: EntityType,
+  tableName: TablesType,
+  timeframe: TimeRange
+): T[] {
+  const key = `${entity}_${tableName}_${timeframe}`
+  return ((data as any)[key] as T[]) || []
+}
 
-  switch (timeframe) {
-    case "alltime":
-      return findTrack(store.tracksDetails_all) || null
-    case "1year":
-      return findTrack(store.tracksDetails_year) || null
-    case "6months":
-      return findTrack(store.tracksDetails_6months) || null
-    default:
-      return null
-  }
+/**
+ * Finds detail based on entity type, ID, and timeframe.
+ * @param details DetailedData to search.
+ * @param entityType Entity type to search.
+ * @param id ID of the entity to search.
+ * @param timeframe Timeframe of the data to search.
+ * @returns T or null if not found.
+ */
+function findDetail<T>(
+  details: DetailedData,
+  entityType: EntityType,
+  id: string,
+  timeframe: TimeRange
+): T | null {
+  const detailList = timeframeMapping<T>(
+    details,
+    entityType,
+    "Details",
+    timeframe
+  )
+  return (
+    detailList.find(
+      (item: any) =>
+        item.spotify_uri ===
+        `spotify:${entityType.substring(0, entityType.length - 1)}:${id}`
+    ) || null
+  )
 }

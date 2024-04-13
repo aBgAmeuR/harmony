@@ -1,6 +1,6 @@
 'use client'
 
-import { filesProcessing } from "@/lib/files/files";
+import { filesProcessing } from "@/lib/files/processing-service";
 import { cn } from "@/lib/utils";
 import { Button, Divider, Input, Text } from "@mantine/core";
 import Link from "next/link";

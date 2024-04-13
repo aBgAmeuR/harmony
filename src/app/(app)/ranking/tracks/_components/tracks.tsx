@@ -23,7 +23,7 @@ const Tracks = () => {
             score={track.score}
             ms_played={track.ms_played}
             total_played={track.total_played}
-            href={getHref(track.spotify_track_uri, 'tracks')}
+            href={getHref(track.spotify_uri, 'tracks')}
           />
         </div>
       )) : <ErrorList />}

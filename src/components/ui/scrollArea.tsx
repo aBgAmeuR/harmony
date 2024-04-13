@@ -31,7 +31,7 @@ function ScrollArea({ children, orientation }: Props) {
       </ScrollAreaPrimitve.Viewport>
       <ScrollAreaPrimitve.Scrollbar
         orientation={orientation}
-        className="flex touch-none select-none p-0.5 transition-colors duration-150 ease-out data-[orientation=horizontal]:h-2.5 data-[orientation=vertical]:w-2.5 data-[orientation=horizontal]:flex-col no-hover:hidden"
+        className="flex touch-none select-none p-0.5 transition-colors duration-200 ease-out data-[orientation=horizontal]:h-2.5 data-[orientation=vertical]:w-2.5 data-[orientation=horizontal]:flex-col no-hover:hidden"
       >
         <ScrollAreaPrimitve.Thumb className="relative flex-1 rounded-[10px] bg-tertiary transition-colors before:absolute before:left-1/2 before:top-1/2 before:h-full before:min-h-[44px] before:w-full before:min-w-[44px] before:-translate-x-1/2 before:-translate-y-1/2 before:content-[''] hover:cursor-pointer hover:bg-gray-500" />
       </ScrollAreaPrimitve.Scrollbar>
