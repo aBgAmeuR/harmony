@@ -95,14 +95,9 @@ export type Artist = {
   tracks: TrackSimplified[]
 }
 
-export type StatsHourlyType = {
-  hour: string
-  total_played: number
-  ms_played: number
-}
-
-export type StatsDailyType = {
-  day: string
-  total_played: number
-  ms_played: number
+export type ChartData = {
+  [key: string]: {
+    total_streams: number
+    total_ms_played: number
+  }
 }

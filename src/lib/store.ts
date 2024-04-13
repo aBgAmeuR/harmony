@@ -18,6 +18,7 @@ export const storeData = (data: DataResults): void => {
   localStorage.clear()
   localStorage.setItem("user", JSON.stringify(data.user))
   localStorage.setItem("songs", JSON.stringify(data.songs))
+  localStorage.setItem("stats", JSON.stringify(data.stats))
 }
 
 /**
@@ -91,7 +92,5 @@ function timeframeMapping<T>(
   type: "tracks" | "artists" | "albums",
   timeframe: TimeRange
 ): T[] {
-  console.log(data, timeframe, type)
-
   return data[timeframe][type]
 }

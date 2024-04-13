@@ -6,6 +6,7 @@ import {
   BasicUser,
   CleanDataType,
   DataType,
+  StatsData,
   Track,
   TrackSimplified,
 } from "@/types"
@@ -18,7 +19,10 @@ import {
 } from "@/lib/api"
 import {
   calculateScore,
+  countUniqueValuesForKey,
   filterDataByKey,
+  getAverageDailyData,
+  getChartData,
   sortDataDescending,
 } from "@/lib/utils"
 
@@ -140,8 +144,10 @@ export async function getTopAlbums(
   const spotifyAlbums = await getSpotifyAlbums(uris)
 
   return albums.map((album) => {
-    const spotifyAlbum = spotifyAlbums.find((spotifyAlbum) =>
-      spotifyAlbum.album.name?.includes(album.album_name) && spotifyAlbum.album.artists[0].name.includes(album.artist_name)
+    const spotifyAlbum = spotifyAlbums.find(
+      (spotifyAlbum) =>
+        spotifyAlbum.album.name?.includes(album.album_name) &&
+        spotifyAlbum.album.artists[0].name.includes(album.artist_name)
     )
     if (!spotifyAlbum) throw new Error("Spotify album not found")
 
@@ -241,5 +247,37 @@ export async function getUserData(data: DataType): Promise<BasicUser> {
     username: userInfo.display_name || userInfo.id,
     href: userInfo.external_urls.spotify,
     image_url: userInfo.images[0]?.url || null,
+  }
+}
+
+/**
+ * Fetches stats data based on clean data.
+ * @param data Array of CleanDataType
+ * @param raw_data Array of DataType
+ * @returns StatsData["long_term"]
+ */
+export async function getStatsData(
+  data: CleanDataType[],
+  raw_data: DataType[]
+): Promise<StatsData["long_term"]> {
+  const totalStreams = raw_data.length
+  const totalMsPlayed = raw_data.reduce((acc, curr) => acc + curr.ms_played, 0)
+  const totalTracks = countUniqueValuesForKey(data, "track_name")
+  const totalArtists = countUniqueValuesForKey(data, "artist_name")
+  const totalAlbums = countUniqueValuesForKey(data, "album_name")
+  const { daily_distribution, hourly_distribution } = getChartData(raw_data)
+  const { averageDailyStreams, averageDailyMsPlayed } =
+    getAverageDailyData(raw_data)
+
+  return {
+    total_streams: totalStreams,
+    total_ms_played: totalMsPlayed,
+    total_tracks: totalTracks,
+    total_artists: totalArtists,
+    total_albums: totalAlbums,
+    average_daily_streams: averageDailyStreams,
+    average_daily_ms_played: averageDailyMsPlayed,
+    hourly_distribution,
+    daily_distribution,
   }
 }

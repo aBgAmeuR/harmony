@@ -1,4 +1,4 @@
-import { CleanDataType } from "@/types"
+import { ChartData, CleanDataType, DataType } from "@/types"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -83,7 +83,7 @@ export function filterDataByKey(
   const groupedData: Record<string, CleanDataType> = {}
 
   data.forEach((item) => {
-    const keyValue = item[key] as string // Assuming the key value is a string
+    const keyValue = item[key] as string
     if (groupedData[keyValue]) {
       groupedData[keyValue].total_played += item.total_played
       groupedData[keyValue].ms_played += item.ms_played
@@ -97,4 +97,103 @@ export function filterDataByKey(
   })
 
   return groupedData
+}
+
+/**
+ * Counts unique values for a given key in the data array.
+ * @param data Data to count unique values from.
+ * @param key Key to count unique values for.
+ * @returns Number of unique values.
+ */
+export function countUniqueValuesForKey(
+  data: CleanDataType[],
+  key: keyof CleanDataType
+): number {
+  const values = new Set<string>()
+  data.forEach((item) => {
+    const keyValue = item[key] as string
+    values.add(keyValue)
+  })
+  return values.size
+}
+
+/**
+ * Filters data based on multiple keys.
+ * @param data Data to filter.
+ * @param keys Keys to filter by.
+ * @param name Name of the key.
+ * @returns Filtered data.
+ */
+export function getChartData(data: DataType[]): {
+  hourly_distribution: ChartData
+  daily_distribution: ChartData
+} {
+  const hourlyData: ChartData = {}
+  const dailyData: ChartData = {}
+
+  data.forEach((item) => {
+    const ts = new Date(item.ts)
+    const hour = ts.getHours()
+    const day = ts.getDay()
+
+    if (hourlyData[hour]) {
+      hourlyData[hour].total_streams += 1
+      hourlyData[hour].total_ms_played += item.ms_played
+    } else {
+      hourlyData[hour] = {
+        total_streams: 1,
+        total_ms_played: item.ms_played,
+      }
+    }
+
+    if (dailyData[day]) {
+      dailyData[day].total_streams += 1
+      dailyData[day].total_ms_played += item.ms_played
+    } else {
+      dailyData[day] = {
+        total_streams: 1,
+        total_ms_played: item.ms_played,
+      }
+    }
+  })
+
+  return { hourly_distribution: hourlyData, daily_distribution: dailyData }
+}
+
+/**
+ * Calculates the average daily streams and milliseconds played.
+ * @param data Data to calculate the average from.
+ * @returns Average daily streams and milliseconds played.
+ */
+export function getAverageDailyData(data: DataType[]): {
+  averageDailyStreams: number
+  averageDailyMsPlayed: number
+} {
+  const dailyData: ChartData = {}
+  const totalStreams = data.length
+  const totalMsPlayed = data.reduce((acc, curr) => acc + curr.ms_played, 0)
+
+  data.forEach((item) => {
+    const ts = new Date(item.ts)
+    const day = `${ts.getFullYear()}-${ts.getMonth()}-${ts.getDate()}`
+
+    if (dailyData[day]) {
+      dailyData[day].total_streams += 1
+      dailyData[day].total_ms_played += item.ms_played
+    } else {
+      dailyData[day] = {
+        total_streams: 1,
+        total_ms_played: item.ms_played,
+      }
+    }
+  })
+
+  const averageDailyStreams = Math.round(
+    totalStreams / Object.keys(dailyData).length
+  )
+  const averageDailyMsPlayed = Math.round(
+    totalMsPlayed / Object.keys(dailyData).length
+  )
+
+  return { averageDailyStreams, averageDailyMsPlayed }
 }

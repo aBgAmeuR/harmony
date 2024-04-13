@@ -1,9 +1,16 @@
 import { extractZipAndVerifyFiles } from "@/services/zip"
-import { CleanDataType, DataResults, DataType, SongsData } from "@/types"
+import {
+  CleanDataType,
+  DataResults,
+  DataType,
+  SongsData,
+  StatsData,
+} from "@/types"
 
 import { storeData } from "@/lib/store"
 
 import {
+  getStatsData,
   getTopAlbums,
   getTopArtists,
   getTopTracks,
@@ -45,6 +52,9 @@ async function fetchData(data: {
   medium_term_data: CleanDataType[]
   short_term_data: CleanDataType[]
   lastTrack: DataType
+  long_term_raw_data: DataType[]
+  medium_term_raw_data: DataType[]
+  short_term_raw_data: DataType[]
 }): Promise<DataResults> {
   const { long_term_data, medium_term_data, short_term_data, lastTrack } = data
 
@@ -54,10 +64,19 @@ async function fetchData(data: {
     medium_term_data,
     short_term_data,
   })
+  const statsData = await fetchStatsData({
+    long_term_data,
+    medium_term_data,
+    short_term_data,
+    long_term_raw_data: data.long_term_raw_data,
+    medium_term_raw_data: data.medium_term_raw_data,
+    short_term_raw_data: data.short_term_raw_data,
+  })
 
   return {
     user,
     songs: songsData,
+    stats: statsData,
   }
 }
 
@@ -108,5 +127,32 @@ async function fetchSongsData(data: {
       artists: short_term_artists,
       albums: short_term_albums,
     },
+  }
+}
+
+/**
+ * Fetches statistics data based on clean data.
+ * @param data Clean data from files.
+ * @returns Statistics data based on clean data.
+ */
+async function fetchStatsData(data: {
+  long_term_data: CleanDataType[]
+  medium_term_data: CleanDataType[]
+  short_term_data: CleanDataType[]
+  long_term_raw_data: DataType[]
+  medium_term_raw_data: DataType[]
+  short_term_raw_data: DataType[]
+}): Promise<StatsData> {
+  const [long_term_stats, medium_term_stats, short_term_stats] =
+    await Promise.all([
+      getStatsData(data.long_term_data, data.long_term_raw_data),
+      getStatsData(data.medium_term_data, data.medium_term_raw_data),
+      getStatsData(data.short_term_data, data.short_term_raw_data),
+    ])
+
+  return {
+    long_term: long_term_stats,
+    medium_term: medium_term_stats,
+    short_term: short_term_stats,
   }
 }
