@@ -26,7 +26,7 @@ export const RankingCard = ({ title, subtitle, image_url, score, ms_played, tota
   }
 
   return (
-    <Card className='w-full flex flex-row items-center justify-between rounded-xl cursor-pointer hover:bg-secondary group' onClick={handleClick}>
+    <Card className='w-full flex flex-row items-center justify-between rounded-xl cursor-pointer hover:bg-secondary group h-20' onClick={handleClick}>
       <div className='flex items-center gap-4'>
         <div className={'size-12 flex justify-center items-center overflow-hidden ' + (rounded ? 'rounded-full' : 'rounded-sm')}>
           <Image src={image_url} alt={title} sizes='64px' width={64} height={64} className='h-full min-h-full' quality={80} />

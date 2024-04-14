@@ -39,6 +39,7 @@ const config: Config = {
       tertiary: "#242424",
       red100: "#fee2e2",
       red200: "#fecaca",
+      white: "#ffffff",
     },
   },
   plugins: [

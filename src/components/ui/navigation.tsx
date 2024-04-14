@@ -39,7 +39,7 @@ export const NavigationButton: React.FC<NavigationButtonProps> = ({ title, value
   }
 
   return (
-    <button onClick={handleClick} className={`text-white px-3 py-1 rounded-lg ${timeRange === value ? 'bg-green' : 'hover:bg-tertiary'}`} >
+    <button onClick={handleClick} className={`px-3 py-1 rounded-lg ${timeRange === value ? 'bg-green text-white' : 'hover:bg-tertiary'}`} >
       <Text fw={500} size="lg">{title}</Text>
     </button >
   )
@@ -55,7 +55,7 @@ type NavigationLinkProps = {
 
 export const NavigationLink: React.FC<NavigationLinkProps> = ({ title, path, current = false, fakePath, icon }) => {
   return (
-    <Link href={fakePath || path} className={cn('text-white px-3 py-1 rounded-lg flex gap-1 items-center', current ? 'bg-green' : 'hover:bg-tertiary')}>
+    <Link href={fakePath || path} className={cn('px-3 py-1 rounded-lg flex gap-1 items-center', current ? 'bg-green text-white' : 'hover:bg-tertiary')}>
       {icon}
       <Text fw={500} size="lg">{title}</Text>
     </Link>

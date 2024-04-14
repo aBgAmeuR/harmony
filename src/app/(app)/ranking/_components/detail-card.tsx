@@ -6,7 +6,7 @@ const formatTime = (ms: number) => {
   const minutes = Math.floor((ms % 3600000) / 60000)
   const seconds = Math.floor(((ms % 3600000) % 60000) / 1000)
 
-  return `${hours}h ${minutes}m ${seconds}s`
+  return `${hours}h ${minutes}m`
 }
 
 type Props = {
@@ -23,8 +23,8 @@ export const DetailCard = ({ title, ms_played, total_played, cursor = false }: P
         <Text lineClamp={1} fw={600} size="md">{title}</Text>
       </div>
       <div className='flex w-full items-center justify-between gap-1'>
-        <Text lineClamp={1}>Time Played: {formatTime(ms_played)}</Text>
-        <Text lineClamp={1}>Times Played: {total_played}</Text>
+        <Text lineClamp={1}>{formatTime(ms_played)} Played</Text>
+        <Text lineClamp={1}>{total_played} Streams</Text>
       </div>
     </Card>
   )

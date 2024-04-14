@@ -48,7 +48,7 @@ const UserOverview = () => {
                   </div>
                   <div>
                     <Title order={5} lineClamp={1}>{track.name}</Title>
-                    <Text lineClamp={1}>{track.name}</Text>
+                    <Text lineClamp={1}>{track.artist.name}</Text>
                   </div>
                 </Link>
               ))}
@@ -89,7 +89,7 @@ const UserOverview = () => {
                   </div>
                   <div>
                     <Title order={5} lineClamp={1}>{album.name}</Title>
-                    <Text lineClamp={1}>{album.name}</Text>
+                    <Text lineClamp={1}>{album.artist.name}</Text>
                   </div>
                 </Link>
               ))}
