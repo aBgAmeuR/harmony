@@ -31,7 +31,7 @@ export const MainNavigation = (props: Props) => {
       </div>
       {props.showSecondaryNav ? (
         <div className="border-b border-secondary">
-          <nav className={cn("px-4 h-16 mx-auto w-full max-w-4xl flex items-center justify-center", props.currentPath.includes('/ranking') ? 'justify-between' : null)}>
+          <nav className={cn("px-4 h-12 mx-auto w-full max-w-4xl flex items-center justify-center", props.currentPath.includes('/ranking') ? 'justify-between' : null)}>
             {props.redirect ? (
               <BackBtn>
                 <ChevronLeft />

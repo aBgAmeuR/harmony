@@ -25,6 +25,6 @@ export type StatsData = {
     monthly_distribution: ChartData
     average_daily_streams: number
     average_daily_ms_played: number
+    day_with_most_streams: { date: string; streams: number, ms_played: number }
   }
 }
-

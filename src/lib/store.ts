@@ -6,6 +6,7 @@ import {
   BasicUser,
   DataResults,
   SongsData,
+  StatsData,
   TimeRange,
   Track,
 } from "@/types"
@@ -49,7 +50,10 @@ export const getUserInfo = (): BasicUser | null => {
  * @param timeframe Timeframe of the data to retrieve.
  * @returns Array of Track.
  */
-export const getTracks = (timeframe: TimeRange, id: string | null = null): Track[] => {
+export const getTracks = (
+  timeframe: TimeRange,
+  id: string | null = null
+): Track[] => {
   const songs = safelyParseJson<SongsData>("songs")
   if (!songs) return []
   const tracks = timeframeMapping<Track>(songs, "tracks", timeframe)
@@ -61,11 +65,16 @@ export const getTracks = (timeframe: TimeRange, id: string | null = null): Track
  * @param timeframe Timeframe of the data to retrieve.
  * @returns Array of Artist.
  */
-export const getArtists = (timeframe: TimeRange, id: string | null = null): Artist[] => {
+export const getArtists = (
+  timeframe: TimeRange,
+  id: string | null = null
+): Artist[] => {
   const songs = safelyParseJson<SongsData>("songs")
   if (!songs) return []
   const artists = timeframeMapping<Artist>(songs, "artists", timeframe)
-  return id ? artists.filter((artist) => artist.spotify_uri.includes(id)) : artists
+  return id
+    ? artists.filter((artist) => artist.spotify_uri.includes(id))
+    : artists
 }
 
 /**
@@ -73,11 +82,21 @@ export const getArtists = (timeframe: TimeRange, id: string | null = null): Arti
  * @param timeframe Timeframe of the data to retrieve.
  * @returns Array of Album.
  */
-export const getAlbums = (timeframe: TimeRange, id: string | null = null): Album[] => {
+export const getAlbums = (
+  timeframe: TimeRange,
+  id: string | null = null
+): Album[] => {
   const songs = safelyParseJson<SongsData>("songs")
   if (!songs) return []
   const albums = timeframeMapping<Album>(songs, "albums", timeframe)
   return id ? albums.filter((album) => album.spotify_uri.includes(id)) : albums
+}
+
+export const getStats = (
+  timeframe: TimeRange
+): StatsData[TimeRange] | null => {
+  const stats = safelyParseJson<StatsData>("stats")
+  return stats ? stats[timeframe] : null
 }
 
 /**

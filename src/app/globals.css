@@ -4,8 +4,17 @@
 
 @layer tailwind {
   @tailwind base;
+
+  svg:not(:root) {
+    overflow: visible;
+  }
 }
 
 /* @import "@mantine/core/styles.layer.css"; */
 @import "@mantine/core/styles.css";
 @import "@mantine/dropzone/styles.css";
+
+:root {
+  --chart-cursor-fill: hsla(0, 0%, 41%, 0.15);
+  --chart-grid-color: hsla(0, 0%, 41%, 0.6);
+}

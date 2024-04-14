@@ -173,32 +173,59 @@ export function getChartData(data: DataType[]): {
   const hourlyData: DataMap = {}
   const monthlyData: DataMap = {}
 
+  for (let i = 0; i < 24; i++) {
+    if (!hourlyData[i]) {
+      hourlyData[i] = {
+        total_streams: 0,
+        total_ms_played: 0,
+        time: `${i}h`,
+      }
+    }
+  }
+
+  const lastSongs = data.sort(
+    (a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime()
+  )[0]
+  const lastSongDate = new Date(lastSongs.ts)
+  const currentMonth = lastSongDate.getMonth()
+  const currentYear = lastSongDate.getFullYear()
+  for (let i = 0; i <= currentMonth; i++) {
+    const month = formatMonth(`${i + 1}/${currentYear}`)
+    if (!monthlyData[month]) {
+      monthlyData[month] = {
+        total_streams: 0,
+        total_ms_played: 0,
+        time: month,
+      }
+    }
+  }
+
   data.forEach((item) => {
     const ts = new Date(item.ts)
     const hour = ts.getHours()
     const month = formatMonth(`${ts.getMonth() + 1}/${ts.getFullYear()}`)
 
-    if (hourlyData[hour]) {
-      hourlyData[hour].total_streams += 1
-      hourlyData[hour].total_ms_played += item.ms_played
-    } else {
+    if (!hourlyData[hour]) {
       hourlyData[hour] = {
-        total_streams: 1,
-        total_ms_played: item.ms_played,
+        total_streams: 0,
+        total_ms_played: 0,
         time: `${hour}h`,
       }
     }
 
-    if (monthlyData[month]) {
-      monthlyData[month].total_streams += 1
-      monthlyData[month].total_ms_played += item.ms_played
-    } else {
+    if (!monthlyData[month]) {
       monthlyData[month] = {
-        total_streams: 1,
-        total_ms_played: item.ms_played,
+        total_streams: 0,
+        total_ms_played: 0,
         time: month,
       }
     }
+
+    hourlyData[hour].total_streams += 1
+    hourlyData[hour].total_ms_played += item.ms_played
+
+    monthlyData[month].total_streams += 1
+    monthlyData[month].total_ms_played += item.ms_played
   })
 
   const hourly_distribution = Object.values(hourlyData)
@@ -251,4 +278,46 @@ export function getAverageDailyData(data: DataType[]): {
   )
 
   return { averageDailyStreams, averageDailyMsPlayed }
+}
+
+/**
+ * Gets the day with the most streams.
+ * @param data Data to calculate the day with most streams from.
+ * @returns Day with the most streams.
+ */
+export function getDayWithMostStreams(data: DataType[]): {
+  date: string
+  streams: number
+  ms_played: number
+} {
+  const dailyData: {
+    [key: string]: {
+      streams: number
+      ms_played: number
+    }
+  } = {}
+
+  data.forEach((item) => {
+    const ts = new Date(item.ts)
+    const day = `${ts.getFullYear()}-${ts.getMonth()}-${ts.getDate()}`
+
+    if (dailyData[day]) {
+      dailyData[day].streams += 1
+      dailyData[day].ms_played += item.ms_played
+    } else {
+      dailyData[day] = {
+        streams: 1,
+        ms_played: item.ms_played,
+      }
+    }
+  })
+
+  const dailyDataArray: { date: string; streams: number; ms_played: number }[] =
+    []
+  for (const [date, { streams, ms_played }] of Object.entries(dailyData)) {
+    dailyDataArray.push({ date, streams, ms_played })
+  }
+  const sortedData = sortDataDescending(dailyDataArray, "ms_played")
+
+  return sortedData[0]
 }

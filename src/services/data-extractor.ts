@@ -23,6 +23,7 @@ import {
   filterDataByKey,
   getAverageDailyData,
   getChartData,
+  getDayWithMostStreams,
   sortDataDescending,
 } from "@/lib/utils"
 
@@ -268,6 +269,7 @@ export async function getStatsData(
   const { monthly_distribution, hourly_distribution } = getChartData(raw_data)
   const { averageDailyStreams, averageDailyMsPlayed } =
     getAverageDailyData(raw_data)
+  const day_with_most_streams = getDayWithMostStreams(raw_data)
 
   return {
     total_streams: totalStreams,
@@ -279,5 +281,6 @@ export async function getStatsData(
     average_daily_ms_played: averageDailyMsPlayed,
     hourly_distribution,
     monthly_distribution,
+    day_with_most_streams,
   }
 }
