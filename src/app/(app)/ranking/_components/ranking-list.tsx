@@ -5,13 +5,15 @@ import { getRankingData } from "@/lib/store";
 import { getHref } from "@/lib/utils";
 import { Title } from "@mantine/core";
 import { ErrorList } from "./error-list";
+import { useTimeRangeStore } from "@/lib/state";
 
 type RankingListProps = {
   type: 'artists' | 'albums' | 'tracks'
 }
 
 const RankingList = ({ type }: RankingListProps) => {
-  const data = getRankingData(type)
+  const { timeRange } = useTimeRangeStore()
+  const data = getRankingData(type, timeRange)
   if (!Array.isArray(data)) return <ErrorList />
 
   return (

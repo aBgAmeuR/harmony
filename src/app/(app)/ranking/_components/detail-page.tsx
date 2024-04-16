@@ -4,6 +4,7 @@ import { PresentationSection } from '@/components/presentation-section'
 import { getRankingData } from '@/lib/store'
 import { DetailList } from './detail-list'
 import { ErrorDetail } from './error-detail'
+import { useTimeRangeStore } from '@/lib/state'
 
 const listConfig = {
   'artists': {
@@ -44,7 +45,8 @@ type DetailPageProps = {
 }
 
 const DetailPage = ({ type, id }: DetailPageProps) => {
-  const data = getRankingData(type, id)[0]
+  const { timeRange } = useTimeRangeStore()
+  const data = getRankingData(type, timeRange, id)[0]
   if (!data) return <ErrorDetail msg="Details not found" href={`/ranking/${type}`} />
 
   return (
