@@ -1,4 +1,4 @@
-    ![image_cover](https://github.com/aBgAmeuR/Portfolio/assets/113059124/e0638523-5026-416c-b435-af14cafbd453)
+![image_cover](https://github.com/aBgAmeuR/Portfolio/assets/113059124/e0638523-5026-416c-b435-af14cafbd453)
 
 ## Overview
 
