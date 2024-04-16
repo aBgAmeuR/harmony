@@ -38,61 +38,32 @@ export type BasicUser = {
   href: string
 }
 
-export type TrackSimplified = {
+export interface Simplified {
   name: string
   total_played: number
   ms_played: number
   score: number
 }
 
-export type AlbumSimplified = {
-  name: string
-  total_played: number
-  ms_played: number
-  score: number
-}
-
-export type ArtistSimplified = {
-  name: string
-  total_played: number
-  ms_played: number
-  score: number
-}
-
-export type Track = {
-  name: string
+export interface SimplifiedWithSpotifyInfo extends Simplified {
   spotify_uri: string
   image_url: string
   href: string
-  total_played: number
-  ms_played: number
-  score: number
-  artist: ArtistSimplified
-  album: AlbumSimplified
 }
 
-export type Album = {
-  name: string
-  spotify_uri: string
-  image_url: string
-  href: string
-  total_played: number
-  ms_played: number
-  score: number
-  artist: ArtistSimplified
-  tracks: TrackSimplified[]
+export interface Track extends SimplifiedWithSpotifyInfo {
+  artist: Simplified
+  album: Simplified
 }
 
-export type Artist = {
-  name: string
-  spotify_uri: string
-  image_url: string
-  href: string
-  total_played: number
-  ms_played: number
-  score: number
-  albums: AlbumSimplified[]
-  tracks: TrackSimplified[]
+export interface Album extends SimplifiedWithSpotifyInfo {
+  artist: Simplified
+  tracks: Simplified[]
+}
+
+export interface Artist extends SimplifiedWithSpotifyInfo {
+  albums: Simplified[]
+  tracks: Simplified[]
 }
 
 export type ChartData = Array<{

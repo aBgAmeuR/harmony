@@ -1,14 +1,15 @@
 import { MainNavigation } from "@/components/main-navigation";
+import { ShadowEffect } from "@/components/ui/shadow-effect";
 import dynamic from "next/dynamic";
 
-const DetailsAlbum = dynamic(() => import('./details-album'), { ssr: false })
+const DetailsPage = dynamic(() => import('../../_components/detail-page'), { ssr: false })
 
 export default function Home({ params }: { params: { id: string } }) {
   return (
-    <main className="flex flex-col min-h-screen">
+    <main className="flex flex-col">
       <MainNavigation currentPath="/ranking/artists" redirect="/ranking/albums" showSecondaryNav />
-      <DetailsAlbum id={params.id} />
-      <div className="fixed inset-x-0 bottom-0 h-8 z-10 bg-gradient-to-t from-secondary to-tertary"></div>
+      <DetailsPage type="albums" id={params.id} />
+      <ShadowEffect />
     </main>
   );
 }

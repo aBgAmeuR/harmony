@@ -21,7 +21,7 @@ export default function RootLayout({
       <head>
         <ColorSchemeScript />
       </head>
-      <body className={nunito.className + 'relative bg-primary'}>
+      <body className={nunito.className + 'relative bg-primary min-h-screen'}>
         <Providers>{children}</Providers>
       </body>
     </html>

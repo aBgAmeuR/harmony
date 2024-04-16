@@ -1,17 +1,16 @@
 import { Card, Text } from '@mantine/core'
-import Image from 'next/image'
 import { ChevronRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { Image } from '@/components/ui/image'
 
 type RankingCardProps = {
   title: string
   subtitle?: string
   image_url: string
-  score: number
   ms_played: number
   total_played: number
   href?: string
-  rounded?: boolean
+  image_variant?: 'rounded' | 'circle' | 'square'
 }
 
 const formatTime = (ms: number) => {
@@ -19,18 +18,14 @@ const formatTime = (ms: number) => {
   return minutes.toLocaleString('en-US')
 }
 
-export const RankingCard = ({ title, subtitle, image_url, score, ms_played, total_played, href, rounded = false }: RankingCardProps) => {
+export const RankingCard = ({ title, subtitle, image_url, ms_played, total_played, href, image_variant = 'rounded' }: RankingCardProps) => {
   const router = useRouter()
-  const handleClick = () => {
-    if (href) router.push(href)
-  }
+  const onClick = () => { if (href) router.push(href) }
 
   return (
-    <Card className='w-full flex flex-row items-center justify-between rounded-xl cursor-pointer hover:bg-secondary group h-20' onClick={handleClick}>
+    <Card className='w-full flex flex-row items-center justify-between rounded-xl cursor-pointer hover:bg-secondary group h-20' onClick={onClick}>
       <div className='flex items-center gap-4'>
-        <div className={'size-12 flex justify-center items-center overflow-hidden ' + (rounded ? 'rounded-full' : 'rounded-sm')}>
-          <Image src={image_url} alt={title} sizes='64px' width={64} height={64} className='h-full min-h-full' quality={80} />
-        </div>
+        <Image url={image_url} alt={title} size='sm' variant={image_variant} />
         <div className='flex flex-col'>
           <Text lineClamp={1} fw={600} size="md">{title}</Text>
           {subtitle ? <Text lineClamp={1} c="dimmed">{subtitle}</Text> : null}
@@ -45,6 +40,5 @@ export const RankingCard = ({ title, subtitle, image_url, score, ms_played, tota
         <ChevronRight className='group-hover:translate-x-1 duration-100' />
       </div>
     </Card>
-
   )
 }

@@ -11,6 +11,8 @@ import {
   Track,
 } from "@/types"
 
+import { useTimeRangeStore } from "./state"
+
 /**
  * Clears and stores new data into localStorage.
  * @param data DataResults to store.
@@ -92,9 +94,19 @@ export const getAlbums = (
   return id ? albums.filter((album) => album.spotify_uri.includes(id)) : albums
 }
 
-export const getStats = (
-  timeframe: TimeRange
-): StatsData[TimeRange] | null => {
+export const getRankingData = <T extends Track | Album | Artist>(
+  type: "tracks" | "artists" | "albums",
+  id: string | null = null
+): T[] => {
+  const { timeRange } = useTimeRangeStore()
+  const songs = safelyParseJson<SongsData>("songs")
+  if (!songs) return [] as T[]
+
+  const data = timeframeMapping<T>(songs, type, timeRange)
+  return id ? data.filter((item) => item.spotify_uri.includes(id as string)) : data
+}
+
+export const getStats = (timeframe: TimeRange): StatsData[TimeRange] | null => {
   const stats = safelyParseJson<StatsData>("stats")
   return stats ? stats[timeframe] : null
 }

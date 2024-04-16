@@ -1,10 +1,9 @@
-import { Title } from "@mantine/core";
-import { Logo } from "./logo";
-import { Navigation, NavigationButton, NavigationLink } from "./ui/navigation";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
+import { Title } from "@mantine/core";
 import { BarChart, ChevronLeft, PieChart, Settings, TrendingUp } from "lucide-react";
+import { Logo } from "./logo";
 import { BackBtn } from "./ui/back-btn";
+import { Navigation, NavigationButton, NavigationLink } from "./ui/navigation";
 
 type Props = {
   currentPath: string;
