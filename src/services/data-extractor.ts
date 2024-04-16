@@ -1,14 +1,12 @@
 import {
   Album,
-  AlbumSimplified,
   Artist,
-  ArtistSimplified,
   BasicUser,
   CleanDataType,
   DataType,
+  Simplified,
   StatsData,
   Track,
-  TrackSimplified,
 } from "@/types"
 
 import {
@@ -35,9 +33,7 @@ import {
  * @returns Array of TrackSimplified, AlbumSimplified, or ArtistSimplified
  * depending on the name parameter
  */
-function filterDataByKeys<
-  T extends AlbumSimplified | ArtistSimplified | TrackSimplified,
->(
+function filterDataByKeys<T extends Simplified>(
   data: CleanDataType[],
   keys: Array<{ [key in keyof CleanDataType]?: string }>,
   name: "artist_name" | "album_name" | "track_name"
@@ -96,13 +92,13 @@ export async function getTopTracks(
     )
     if (!spotifyTrack) throw new Error("Spotify track not found")
 
-    const artist = filterDataByKeys<ArtistSimplified>(
+    const artist = filterDataByKeys<Simplified>(
       data,
       [{ artist_name: track.artist_name }],
       "artist_name"
     )[0]
 
-    const album = filterDataByKeys<AlbumSimplified>(
+    const album = filterDataByKeys<Simplified>(
       data,
       [{ album_name: track.album_name }, { artist_name: track.artist_name }],
       "album_name"
@@ -152,7 +148,7 @@ export async function getTopAlbums(
     )
     if (!spotifyAlbum) throw new Error("Spotify album not found")
 
-    const artist = filterDataByKeys<ArtistSimplified>(
+    const artist = filterDataByKeys<Simplified>(
       data,
       [
         { album_name: album.album_name },
@@ -161,7 +157,7 @@ export async function getTopAlbums(
       "artist_name"
     )[0]
 
-    const tracks = filterDataByKeys<TrackSimplified>(
+    const tracks = filterDataByKeys<Simplified>(
       data,
       [{ album_name: album.album_name }],
       "track_name"
@@ -209,13 +205,13 @@ export async function getTopArtists(
     )
     if (!spotifyArtist) throw new Error("Spotify artist not found")
 
-    const albums = filterDataByKeys<AlbumSimplified>(
+    const albums = filterDataByKeys<Simplified>(
       data,
       [{ artist_name: artist.artist_name }],
       "album_name"
     )
 
-    const tracks = filterDataByKeys<TrackSimplified>(
+    const tracks = filterDataByKeys<Simplified>(
       data,
       [{ artist_name: artist.artist_name }],
       "track_name"
