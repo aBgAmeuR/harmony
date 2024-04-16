@@ -11,7 +11,7 @@ import {
   Track,
 } from "@/types"
 
-import { useTimeRangeStore } from "./state"
+import { useTimeRangeStore as getTimeRange } from "./state"
 
 /**
  * Clears and stores new data into localStorage.
@@ -98,7 +98,7 @@ export const getRankingData = <T extends Track | Album | Artist>(
   type: "tracks" | "artists" | "albums",
   id: string | null = null
 ): T[] => {
-  const { timeRange } = useTimeRangeStore()
+  const { timeRange } = getTimeRange()
   const songs = safelyParseJson<SongsData>("songs")
   if (!songs) return [] as T[]
 
