@@ -1,6 +1,4 @@
-# Harmony
-
-[image_cover](https://github.com/aBgAmeuR/Portfolio/assets/113059124/e0638523-5026-416c-b435-af14cafbd453)
+    ![image_cover](https://github.com/aBgAmeuR/Portfolio/assets/113059124/e0638523-5026-416c-b435-af14cafbd453)
 
 ## Overview
 
@@ -8,7 +6,7 @@ Harmony is a web app that gives you advanced statistics on your Spotify account.
 
 ## Screenshots
 
-[image_screenshot](https://github.com/aBgAmeuR/Portfolio/assets/113059124/ed6977da-048c-4e55-b6c0-529200b988f7)
+![image_screenshot](https://github.com/aBgAmeuR/Portfolio/assets/113059124/ed6977da-048c-4e55-b6c0-529200b988f7)
 
 ## Features
 
