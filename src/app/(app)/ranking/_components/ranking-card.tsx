@@ -21,8 +21,8 @@ const formatTime = (ms: number) => {
 
 export const RankingCard = ({ title, subtitle, image_url, ms_played, total_played, href, image_variant = 'rounded' }: RankingCardProps) => {
   const router = useRouter()
-  const onClick = () => { if (href) router.push(href) }
   const isMobile = useMediaQuery(`(max-width: 640px)`)
+  const onClick = () => { if (href) router.push(href) }
 
   return (
     <button className='w-full flex flex-row items-center justify-between rounded-xl cursor-pointer p-2 sm:p-4 bg-card text-left hover:bg-secondary group h-16 sm:h-20' onClick={onClick}>

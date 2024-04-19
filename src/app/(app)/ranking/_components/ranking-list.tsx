@@ -14,9 +14,9 @@ type RankingListProps = {
 
 const RankingList = ({ type }: RankingListProps) => {
   const { timeRange } = useTimeRangeStore()
+  const isMobile = useMediaQuery(`(max-width: 640px)`)
   const data = getRankingData(type, timeRange)
   if (!Array.isArray(data)) return <ErrorList />
-  const isMobile = useMediaQuery(`(max-width: 640px)`)
 
   return (
     <div className="px-4 mx-auto w-full max-w-4xl flex flex-col gap-2 mt-4 mb-32 md:my-8">
