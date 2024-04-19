@@ -1,5 +1,6 @@
 import { MantineProvider, createTheme, MantineColorsTuple } from '@mantine/core';
 import { PropsWithChildren } from 'react';
+import { Notifications } from '@mantine/notifications';
 
 const primaryColor: MantineColorsTuple = [
   '#e6fff0',
@@ -20,12 +21,17 @@ const theme = createTheme({
     'primary': primaryColor
   },
   primaryColor: 'primary',
-
+  breakpoints: {
+    sm: "640px",
+    md: "768px",
+    lg: "896px",
+  },
 });
 
 export default function Providers({ children }: PropsWithChildren) {
   return (
     <MantineProvider theme={theme} defaultColorScheme="auto">
+      <Notifications limit={2} />
       {children}
     </MantineProvider>
   );

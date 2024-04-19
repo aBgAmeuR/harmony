@@ -23,6 +23,13 @@ export const storeData = (data: DataResults): void => {
 }
 
 /**
+ * Deletes all data from localStorage.
+ */
+export const deleteData = (): void => {
+  localStorage.clear()
+}
+
+/**
  * Retrieves data from localStorage.
  * @param key Key of the data to retrieve.
  * @returns DataResults or null if not found.

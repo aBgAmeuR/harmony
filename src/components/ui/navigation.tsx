@@ -9,11 +9,12 @@ import React, { PropsWithChildren } from 'react';
 
 export type NavigationProps = PropsWithChildren<{
   currentPath?: string;
+  className?: string;
 }>
 
-export const Navigation = ({ currentPath, children }: NavigationProps) => {
+export const Navigation = ({ currentPath, className, children }: NavigationProps) => {
   return (
-    <nav className="flex gap-4">
+    <nav className={cn("flex gap-2 sm:gap-4", className)}>
       {React.Children.map(children, child => {
         if (React.isValidElement(child)) {
           return React.cloneElement<any>(child, {

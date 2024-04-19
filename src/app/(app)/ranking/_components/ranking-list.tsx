@@ -6,6 +6,7 @@ import { getHref } from "@/lib/utils";
 import { Title } from "@mantine/core";
 import { ErrorList } from "./error-list";
 import { useTimeRangeStore } from "@/lib/state";
+import { useMediaQuery } from "@mantine/hooks";
 
 type RankingListProps = {
   type: 'artists' | 'albums' | 'tracks'
@@ -15,12 +16,13 @@ const RankingList = ({ type }: RankingListProps) => {
   const { timeRange } = useTimeRangeStore()
   const data = getRankingData(type, timeRange)
   if (!Array.isArray(data)) return <ErrorList />
+  const isMobile = useMediaQuery(`(max-width: 640px)`)
 
   return (
-    <div className="px-4 mx-auto w-full max-w-4xl flex flex-col gap-2 my-8">
+    <div className="px-4 mx-auto w-full max-w-4xl flex flex-col gap-2 mb-32 mt-4 md:my-8">
       {data.map((item, index) => (
         <div className='flex items-center w-full' key={index}>
-          <Title order={1} className='w-24 text-center'>{`#${index + 1}`}</Title>
+          <Title order={isMobile ? 3 : 1} className='w-14 sm:w-24 text-center'>{`#${index + 1}`}</Title>
           <RankingCard
             title={item.name}
             subtitle={type !== 'artists' && 'artist' in item ? item.artist.name : undefined}

@@ -36,6 +36,7 @@ export type BasicUser = {
   username: string
   image_url: string | null
   href: string
+  date: string
 }
 
 export interface Simplified {

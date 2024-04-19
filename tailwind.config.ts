@@ -24,6 +24,7 @@ const config: Config = {
       primary: "#242424",
       secondary: "#1f1f1f",
       tertiary: "#141414",
+      card: "#2e2e2e",
       green: "#0db14d",
       red900: "#7f1d1d",
     },
@@ -33,13 +34,17 @@ const config: Config = {
       red600: "#dc2626",
     },
     colors: {
+      white: "#ffffff",
       green: "#0db14d",
       primary: "#1ED760",
       secondary: "#141414",
       tertiary: "#242424",
       red100: "#fee2e2",
       red200: "#fecaca",
-      white: "#ffffff",
+      outlinegreen: "#1ED760",
+    },
+    textColor: {
+      lightwhite: "#c9c9c9",
     },
   },
   plugins: [

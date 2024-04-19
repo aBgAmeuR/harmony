@@ -238,12 +238,18 @@ export async function getTopArtists(
  */
 export async function getUserData(data: DataType): Promise<BasicUser> {
   const userInfo = await getSpotifyUser(data.username)
+  const date = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })
 
   return {
     id: data.username,
     username: userInfo.display_name || userInfo.id,
     href: userInfo.external_urls.spotify,
     image_url: userInfo.images[0]?.url || null,
+    date,
   }
 }
 

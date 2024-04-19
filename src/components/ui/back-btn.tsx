@@ -10,8 +10,8 @@ export const BackBtn = ({ children }: Props) => {
   const router = useRouter()
 
   return (
-    <a onClick={() => router.back()} className="cursor-pointer py-2 pl-1 pr-3 flex items-center gap-2 rounded-lg hover:bg-tertiary">
+    <button onClick={() => router.back()} className="cursor-pointer py-2 pl-1 pr-3 flex items-center gap-2 rounded-lg hover:bg-tertiary">
       {children}
-    </a>
+    </button>
   )
 }

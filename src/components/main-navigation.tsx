@@ -13,10 +13,10 @@ type Props = {
 
 export const MainNavigation = (props: Props) => {
   return (
-    <header className="bg-secondary z-10 sticky top-0">
+    <header className="bg-secondary z-10 fixed flex md:flex-col flex-col-reverse md:sticky bottom-0 right-0 left-0 md:top-0">
       <div className="border-b border-secondary">
-        <div className="px-4 h-16 mx-auto w-full max-w-4xl flex items-center justify-between">
-          <div className="flex items-center gap-1">
+        <div className="px-4 h-16 mx-auto w-full max-w-4xl flex items-center justify-center md:justify-between">
+          <div className="hidden md:flex items-center gap-1">
             <Logo className="size-8 mx-2" />
             <Title order={2}>Harmony</Title>
           </div>
@@ -30,7 +30,7 @@ export const MainNavigation = (props: Props) => {
       </div>
       {props.showSecondaryNav ? (
         <div className="border-b border-secondary">
-          <nav className={cn("px-4 h-12 mx-auto w-full max-w-4xl flex items-center justify-center", props.currentPath.includes('/ranking') ? 'justify-between' : null)}>
+          <nav className={cn("px-4 h-12 mx-auto w-full max-w-4xl flex items-center justify-center", props.currentPath.includes('/ranking') ? 'justify-center md:justify-between' : null)}>
             {props.redirect ? (
               <BackBtn>
                 <ChevronLeft />
@@ -38,7 +38,7 @@ export const MainNavigation = (props: Props) => {
               </BackBtn>
             ) : null}
             {!props.redirect && props.currentPath.includes('/ranking') ? (
-              <Navigation currentPath={props.currentPath}>
+              <Navigation currentPath={props.currentPath} className="hidden md:flex">
                 <NavigationLink title="Tracks" path="/ranking/tracks" />
                 <NavigationLink title="Albums" path="/ranking/albums" />
                 <NavigationLink title="Artists" path="/ranking/artists" />
