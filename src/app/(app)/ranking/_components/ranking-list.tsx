@@ -19,7 +19,7 @@ const RankingList = ({ type }: RankingListProps) => {
   const isMobile = useMediaQuery(`(max-width: 640px)`)
 
   return (
-    <div className="px-4 mx-auto w-full max-w-4xl flex flex-col gap-2 mb-32 mt-4 md:my-8">
+    <div className="px-4 mx-auto w-full max-w-4xl flex flex-col gap-2 mt-4 mb-32 md:my-8">
       {data.map((item, index) => (
         <div className='flex items-center w-full' key={index}>
           <Title order={isMobile ? 3 : 1} className='w-14 sm:w-24 text-center'>{`#${index + 1}`}</Title>

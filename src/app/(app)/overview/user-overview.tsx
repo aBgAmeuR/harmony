@@ -33,7 +33,7 @@ const UserOverview = () => {
           <SpotifyBtn href={user.href} />
         </div>
       </section>
-      <section className="px-4 py-8 mx-auto w-full max-w-4xl flex flex-col gap-4">
+      <section className="px-4 pt-4 pb-32 md:py-8 mx-auto w-full max-w-4xl flex flex-col gap-4">
         <StatsCardsSection version='scroll' />
         <OverviewScrollSection title='Top tracks' type='tracks' data={tracks} image_rounded='rounded' />
         <OverviewScrollSection title='Top artists' type='artists' data={artists} image_rounded='circle' />

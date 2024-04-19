@@ -5,7 +5,6 @@ import { ExternalLink, Files, Github, Info, UserRound } from "lucide-react"
 import { SettingsCard } from "./settings-card"
 import { deleteData, getUserInfo } from "@/lib/store"
 import { useRouter } from "next/navigation"
-import { notifications } from '@mantine/notifications';
 
 const aboutItems = [
   {
@@ -15,10 +14,6 @@ const aboutItems = [
     righticon: <Files size={28} />,
     onClick: () => {
       navigator.clipboard.writeText('v1.0.0 (prod)')
-      notifications.show({
-        title: 'Copied to clipboard',
-        message: 'Version copied to clipboard',
-      })
     }
   },
   {
@@ -49,10 +44,6 @@ const Settings = () => {
       righticon: <Files size={28} />,
       onClick: () => {
         navigator.clipboard.writeText(user.id)
-        notifications.show({
-          title: 'Copied to clipboard',
-          message: 'Spotify ID copied to clipboard',
-        })
       }
     },
     {
@@ -61,10 +52,6 @@ const Settings = () => {
       righticon: <Files size={28} />,
       onClick: () => {
         navigator.clipboard.writeText(user.username)
-        notifications.show({
-          title: 'Copied to clipboard',
-          message: 'Spotify username copied to clipboard',
-        })
       }
     },
     {
@@ -73,10 +60,6 @@ const Settings = () => {
       righticon: <Files size={28} />,
       onClick: () => {
         navigator.clipboard.writeText(user.date)
-        notifications.show({
-          title: 'Copied to clipboard',
-          message: 'Date added copied to clipboard',
-        })
       }
     },
   ]
@@ -87,7 +70,7 @@ const Settings = () => {
   }
 
   return (
-    <section className="px-4 py-8 mx-auto w-full max-w-4xl flex flex-col gap-12">
+    <section className="px-4 mt-4 mb-20 md:py-8 mx-auto w-full max-w-4xl flex flex-col gap-12">
       <div>
         <Title order={2} mb={8}>About</Title>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
