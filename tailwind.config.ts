@@ -45,6 +45,7 @@ const config: Config = {
     },
     textColor: {
       lightwhite: "#c9c9c9",
+      green: "#0db14d",
     },
   },
   plugins: [

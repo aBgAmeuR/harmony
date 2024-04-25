@@ -13,7 +13,7 @@ export default function Home() {
         <Title order={2}>Harmony</Title>
       </header>
       <section className="flex flex-col p-8 mx-auto w-full max-w-2xl gap-12">
-        <Text>Harmony is a website that generates stats from your Spotify data Package. To get started, click the button below to upload your Spotify Data Package.</Text>
+        <Text>Harmony is a website that generates stats from your Spotify data Package. It is your device that processes the data, nothing is sent to any server!</Text>
         <Link href="/help" className="bg-secondary w-full relative flex flex-col items-center justify-center select-none p-5 rounded-lg">
           <Text>Get my Spotify Data 👆</Text>
           <Text>(click on this button)</Text>

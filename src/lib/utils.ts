@@ -100,6 +100,36 @@ export function filterDataByKey(
 }
 
 /**
+ * Filters data based on multiple keys.
+ * @param data Data to filter.
+ * @param keys Keys to filter by.
+ * @param name Name of the key.
+ * @returns Filtered data.
+ */
+export function filterDataByKeys(
+  data: CleanDataType[],
+  keys: Array<keyof CleanDataType>
+): Record<string, CleanDataType> {
+  const groupedData: Record<string, CleanDataType> = {}
+
+  data.forEach((item) => {
+    const keyValues = keys.map((key) => item[key] as string).join("-")
+    if (groupedData[keyValues]) {
+      groupedData[keyValues].total_played += item.total_played
+      groupedData[keyValues].ms_played += item.ms_played
+    } else {
+      groupedData[keyValues] = {
+        ...item,
+        total_played: item.total_played,
+        ms_played: item.ms_played,
+      }
+    }
+  })
+
+  return groupedData
+}
+
+/**
  * Counts unique values for a given key in the data array.
  * @param data Data to count unique values from.
  * @param key Key to count unique values for.

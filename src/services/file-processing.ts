@@ -31,7 +31,10 @@ export async function filesProcessing(file: File) {
     const files = await extractZipAndVerifyFiles(arrayBuffer)
     const data = await mergeStreamingDataAndSort(files)
     const results = await fetchData(data)
-    console.log(results)
+    console.log("songs")
+    console.log(results.songs)
+    console.log("stats")
+    console.log(results.stats)
 
     storeData(results)
 

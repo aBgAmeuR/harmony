@@ -4,6 +4,9 @@ import { BarChart, ChevronLeft, PieChart, Settings, TrendingUp } from "lucide-re
 import { Logo } from "./logo";
 import { BackBtn } from "./ui/back-btn";
 import { Navigation, NavigationButton, NavigationLink } from "./ui/navigation";
+import dynamic from "next/dynamic";
+
+const DemoBanner = dynamic(() => import('./ui/demo-banner'), { ssr: false })
 
 type Props = {
   currentPath: string;
@@ -14,6 +17,7 @@ type Props = {
 export const MainNavigation = (props: Props) => {
   return (
     <header className="bg-secondary z-10 fixed flex md:flex-col flex-col-reverse md:sticky bottom-0 right-0 left-0 md:top-0">
+      <DemoBanner />
       <div className="border-b border-secondary">
         <div className="px-4 h-16 mx-auto w-full max-w-4xl flex items-center justify-center md:justify-between">
           <div className="hidden md:flex items-center gap-1">

@@ -1,0 +1,766 @@
+{
+  "long_term": {
+    "total_streams": 129565,
+    "total_ms_played": 20109242896,
+    "total_tracks": 11105,
+    "total_artists": 3224,
+    "total_albums": 6636,
+    "average_daily_streams": 85,
+    "average_daily_ms_played": 13126138,
+    "hourly_distribution": [
+      {
+        "total_streams": 2693,
+        "total_ms_played": 341622605,
+        "time": "0h"
+      },
+      {
+        "total_streams": 911,
+        "total_ms_played": 134173127,
+        "time": "1h"
+      },
+      {
+        "total_streams": 490,
+        "total_ms_played": 58463683,
+        "time": "2h"
+      },
+      {
+        "total_streams": 113,
+        "total_ms_played": 17030947,
+        "time": "3h"
+      },
+      {
+        "total_streams": 40,
+        "total_ms_played": 6123961,
+        "time": "4h"
+      },
+      {
+        "total_streams": 46,
+        "total_ms_played": 6986964,
+        "time": "5h"
+      },
+      {
+        "total_streams": 458,
+        "total_ms_played": 51485735,
+        "time": "6h"
+      },
+      {
+        "total_streams": 5454,
+        "total_ms_played": 895619246,
+        "time": "7h"
+      },
+      {
+        "total_streams": 3749,
+        "total_ms_played": 565220354,
+        "time": "8h"
+      },
+      {
+        "total_streams": 1957,
+        "total_ms_played": 280245835,
+        "time": "9h"
+      },
+      {
+        "total_streams": 4132,
+        "total_ms_played": 619724000,
+        "time": "10h"
+      },
+      {
+        "total_streams": 6063,
+        "total_ms_played": 941297387,
+        "time": "11h"
+      },
+      {
+        "total_streams": 8179,
+        "total_ms_played": 1279654555,
+        "time": "12h"
+      },
+      {
+        "total_streams": 6108,
+        "total_ms_played": 910106235,
+        "time": "13h"
+      },
+      {
+        "total_streams": 8373,
+        "total_ms_played": 1342160591,
+        "time": "14h"
+      },
+      {
+        "total_streams": 9341,
+        "total_ms_played": 1488184236,
+        "time": "15h"
+      },
+      {
+        "total_streams": 8879,
+        "total_ms_played": 1381408627,
+        "time": "16h"
+      },
+      {
+        "total_streams": 9343,
+        "total_ms_played": 1447698481,
+        "time": "17h"
+      },
+      {
+        "total_streams": 13603,
+        "total_ms_played": 2080441835,
+        "time": "18h"
+      },
+      {
+        "total_streams": 11687,
+        "total_ms_played": 1864466218,
+        "time": "19h"
+      },
+      {
+        "total_streams": 4341,
+        "total_ms_played": 657548498,
+        "time": "20h"
+      },
+      {
+        "total_streams": 8802,
+        "total_ms_played": 1380701223,
+        "time": "21h"
+      },
+      {
+        "total_streams": 8975,
+        "total_ms_played": 1438666489,
+        "time": "22h"
+      },
+      {
+        "total_streams": 5828,
+        "total_ms_played": 920212064,
+        "time": "23h"
+      }
+    ],
+    "monthly_distribution": [
+      {
+        "total_streams": 3510,
+        "total_ms_played": 514475009,
+        "time": "12/19"
+      },
+      {
+        "total_streams": 2918,
+        "total_ms_played": 450197729,
+        "time": "01/20"
+      },
+      {
+        "total_streams": 2529,
+        "total_ms_played": 378586335,
+        "time": "02/20"
+      },
+      {
+        "total_streams": 2554,
+        "total_ms_played": 415393008,
+        "time": "03/20"
+      },
+      {
+        "total_streams": 2984,
+        "total_ms_played": 460125044,
+        "time": "04/20"
+      },
+      {
+        "total_streams": 2202,
+        "total_ms_played": 364812845,
+        "time": "05/20"
+      },
+      {
+        "total_streams": 1434,
+        "total_ms_played": 233699951,
+        "time": "06/20"
+      },
+      {
+        "total_streams": 2243,
+        "total_ms_played": 347472594,
+        "time": "07/20"
+      },
+      {
+        "total_streams": 1872,
+        "total_ms_played": 285624822,
+        "time": "08/20"
+      },
+      {
+        "total_streams": 2520,
+        "total_ms_played": 354994661,
+        "time": "09/20"
+      },
+      {
+        "total_streams": 4281,
+        "total_ms_played": 682715307,
+        "time": "10/20"
+      },
+      {
+        "total_streams": 2918,
+        "total_ms_played": 481010945,
+        "time": "11/20"
+      },
+      {
+        "total_streams": 2837,
+        "total_ms_played": 476699697,
+        "time": "12/20"
+      },
+      {
+        "total_streams": 3107,
+        "total_ms_played": 507209461,
+        "time": "01/21"
+      },
+      {
+        "total_streams": 3488,
+        "total_ms_played": 548357183,
+        "time": "02/21"
+      },
+      {
+        "total_streams": 2924,
+        "total_ms_played": 459210410,
+        "time": "03/21"
+      },
+      {
+        "total_streams": 3139,
+        "total_ms_played": 519973793,
+        "time": "04/21"
+      },
+      {
+        "total_streams": 2018,
+        "total_ms_played": 355005808,
+        "time": "05/21"
+      },
+      {
+        "total_streams": 2555,
+        "total_ms_played": 429627265,
+        "time": "06/21"
+      },
+      {
+        "total_streams": 2457,
+        "total_ms_played": 365018804,
+        "time": "07/21"
+      },
+      {
+        "total_streams": 1802,
+        "total_ms_played": 264886993,
+        "time": "08/21"
+      },
+      {
+        "total_streams": 2602,
+        "total_ms_played": 394169854,
+        "time": "09/21"
+      },
+      {
+        "total_streams": 3103,
+        "total_ms_played": 453689150,
+        "time": "10/21"
+      },
+      {
+        "total_streams": 2830,
+        "total_ms_played": 405387417,
+        "time": "11/21"
+      },
+      {
+        "total_streams": 3142,
+        "total_ms_played": 507073427,
+        "time": "12/21"
+      },
+      {
+        "total_streams": 2951,
+        "total_ms_played": 452173339,
+        "time": "01/22"
+      },
+      {
+        "total_streams": 2110,
+        "total_ms_played": 310782154,
+        "time": "02/22"
+      },
+      {
+        "total_streams": 2476,
+        "total_ms_played": 391868179,
+        "time": "03/22"
+      },
+      {
+        "total_streams": 1981,
+        "total_ms_played": 308165817,
+        "time": "04/22"
+      },
+      {
+        "total_streams": 2914,
+        "total_ms_played": 496131587,
+        "time": "05/22"
+      },
+      {
+        "total_streams": 2313,
+        "total_ms_played": 380475293,
+        "time": "06/22"
+      },
+      {
+        "total_streams": 1250,
+        "total_ms_played": 186766540,
+        "time": "07/22"
+      },
+      {
+        "total_streams": 1429,
+        "total_ms_played": 229205431,
+        "time": "08/22"
+      },
+      {
+        "total_streams": 1639,
+        "total_ms_played": 252885792,
+        "time": "09/22"
+      },
+      {
+        "total_streams": 1920,
+        "total_ms_played": 262984894,
+        "time": "10/22"
+      },
+      {
+        "total_streams": 1601,
+        "total_ms_played": 256579605,
+        "time": "11/22"
+      },
+      {
+        "total_streams": 2628,
+        "total_ms_played": 399300298,
+        "time": "12/22"
+      },
+      {
+        "total_streams": 2183,
+        "total_ms_played": 321645142,
+        "time": "01/23"
+      },
+      {
+        "total_streams": 1868,
+        "total_ms_played": 271174558,
+        "time": "02/23"
+      },
+      {
+        "total_streams": 2486,
+        "total_ms_played": 366707827,
+        "time": "03/23"
+      },
+      {
+        "total_streams": 3048,
+        "total_ms_played": 453844643,
+        "time": "04/23"
+      },
+      {
+        "total_streams": 3046,
+        "total_ms_played": 460014359,
+        "time": "05/23"
+      },
+      {
+        "total_streams": 2631,
+        "total_ms_played": 395562158,
+        "time": "06/23"
+      },
+      {
+        "total_streams": 2211,
+        "total_ms_played": 335717245,
+        "time": "07/23"
+      },
+      {
+        "total_streams": 2897,
+        "total_ms_played": 497656208,
+        "time": "08/23"
+      },
+      {
+        "total_streams": 2085,
+        "total_ms_played": 329846671,
+        "time": "09/23"
+      },
+      {
+        "total_streams": 2082,
+        "total_ms_played": 312477073,
+        "time": "10/23"
+      },
+      {
+        "total_streams": 3001,
+        "total_ms_played": 448926891,
+        "time": "11/23"
+      },
+      {
+        "total_streams": 3026,
+        "total_ms_played": 458863647,
+        "time": "12/23"
+      },
+      {
+        "total_streams": 2370,
+        "total_ms_played": 351111316,
+        "time": "01/24"
+      },
+      {
+        "total_streams": 2072,
+        "total_ms_played": 322085221,
+        "time": "02/24"
+      },
+      {
+        "total_streams": 1378,
+        "total_ms_played": 200873496,
+        "time": "03/24"
+      }
+    ],
+    "day_with_most_streams": {
+      "date": "2020-3-18",
+      "streams": 304,
+      "ms_played": 52584652
+    }
+  },
+  "medium_term": {
+    "total_streams": 26998,
+    "total_ms_played": 4135503046,
+    "total_tracks": 3517,
+    "total_artists": 749,
+    "total_albums": 1574,
+    "average_daily_streams": 82,
+    "average_daily_ms_played": 12608241,
+    "hourly_distribution": [
+      {
+        "total_streams": 1000,
+        "total_ms_played": 122921232,
+        "time": "0h"
+      },
+      {
+        "total_streams": 312,
+        "total_ms_played": 46551000,
+        "time": "1h"
+      },
+      {
+        "total_streams": 99,
+        "total_ms_played": 17304900,
+        "time": "2h"
+      },
+      {
+        "total_streams": 27,
+        "total_ms_played": 3799589,
+        "time": "3h"
+      },
+      {
+        "total_streams": 0,
+        "total_ms_played": 0,
+        "time": "4h"
+      },
+      {
+        "total_streams": 0,
+        "total_ms_played": 0,
+        "time": "5h"
+      },
+      {
+        "total_streams": 17,
+        "total_ms_played": 3423899,
+        "time": "6h"
+      },
+      {
+        "total_streams": 323,
+        "total_ms_played": 53393382,
+        "time": "7h"
+      },
+      {
+        "total_streams": 622,
+        "total_ms_played": 90790847,
+        "time": "8h"
+      },
+      {
+        "total_streams": 403,
+        "total_ms_played": 57369245,
+        "time": "9h"
+      },
+      {
+        "total_streams": 688,
+        "total_ms_played": 108287889,
+        "time": "10h"
+      },
+      {
+        "total_streams": 1166,
+        "total_ms_played": 180449397,
+        "time": "11h"
+      },
+      {
+        "total_streams": 1663,
+        "total_ms_played": 245549447,
+        "time": "12h"
+      },
+      {
+        "total_streams": 1399,
+        "total_ms_played": 210309366,
+        "time": "13h"
+      },
+      {
+        "total_streams": 1706,
+        "total_ms_played": 274150664,
+        "time": "14h"
+      },
+      {
+        "total_streams": 1879,
+        "total_ms_played": 294818992,
+        "time": "15h"
+      },
+      {
+        "total_streams": 1848,
+        "total_ms_played": 283398851,
+        "time": "16h"
+      },
+      {
+        "total_streams": 1642,
+        "total_ms_played": 260824660,
+        "time": "17h"
+      },
+      {
+        "total_streams": 2388,
+        "total_ms_played": 368751149,
+        "time": "18h"
+      },
+      {
+        "total_streams": 2349,
+        "total_ms_played": 376453376,
+        "time": "19h"
+      },
+      {
+        "total_streams": 1058,
+        "total_ms_played": 155209523,
+        "time": "20h"
+      },
+      {
+        "total_streams": 1978,
+        "total_ms_played": 301427251,
+        "time": "21h"
+      },
+      {
+        "total_streams": 2373,
+        "total_ms_played": 374575935,
+        "time": "22h"
+      },
+      {
+        "total_streams": 2058,
+        "total_ms_played": 305742452,
+        "time": "23h"
+      }
+    ],
+    "monthly_distribution": [
+      {
+        "total_streams": 199,
+        "total_ms_played": 22368761,
+        "time": "04/23"
+      },
+      {
+        "total_streams": 3046,
+        "total_ms_played": 460014359,
+        "time": "05/23"
+      },
+      {
+        "total_streams": 2631,
+        "total_ms_played": 395562158,
+        "time": "06/23"
+      },
+      {
+        "total_streams": 2211,
+        "total_ms_played": 335717245,
+        "time": "07/23"
+      },
+      {
+        "total_streams": 2897,
+        "total_ms_played": 497656208,
+        "time": "08/23"
+      },
+      {
+        "total_streams": 2085,
+        "total_ms_played": 329846671,
+        "time": "09/23"
+      },
+      {
+        "total_streams": 2082,
+        "total_ms_played": 312477073,
+        "time": "10/23"
+      },
+      {
+        "total_streams": 3001,
+        "total_ms_played": 448926891,
+        "time": "11/23"
+      },
+      {
+        "total_streams": 3026,
+        "total_ms_played": 458863647,
+        "time": "12/23"
+      },
+      {
+        "total_streams": 2370,
+        "total_ms_played": 351111316,
+        "time": "01/24"
+      },
+      {
+        "total_streams": 2072,
+        "total_ms_played": 322085221,
+        "time": "02/24"
+      },
+      {
+        "total_streams": 1378,
+        "total_ms_played": 200873496,
+        "time": "03/24"
+      }
+    ],
+    "day_with_most_streams": {
+      "date": "2023-4-28",
+      "streams": 240,
+      "ms_played": 42446735
+    }
+  },
+  "short_term": {
+    "total_streams": 12398,
+    "total_ms_played": 1863187840,
+    "total_tracks": 2324,
+    "total_artists": 553,
+    "total_albums": 1058,
+    "average_daily_streams": 85,
+    "average_daily_ms_played": 12761561,
+    "hourly_distribution": [
+      {
+        "total_streams": 458,
+        "total_ms_played": 57378648,
+        "time": "0h"
+      },
+      {
+        "total_streams": 153,
+        "total_ms_played": 22832180,
+        "time": "1h"
+      },
+      {
+        "total_streams": 29,
+        "total_ms_played": 4796507,
+        "time": "2h"
+      },
+      {
+        "total_streams": 13,
+        "total_ms_played": 1633304,
+        "time": "3h"
+      },
+      {
+        "total_streams": 0,
+        "total_ms_played": 0,
+        "time": "4h"
+      },
+      {
+        "total_streams": 0,
+        "total_ms_played": 0,
+        "time": "5h"
+      },
+      {
+        "total_streams": 0,
+        "total_ms_played": 0,
+        "time": "6h"
+      },
+      {
+        "total_streams": 125,
+        "total_ms_played": 22109896,
+        "time": "7h"
+      },
+      {
+        "total_streams": 208,
+        "total_ms_played": 32630971,
+        "time": "8h"
+      },
+      {
+        "total_streams": 206,
+        "total_ms_played": 27593108,
+        "time": "9h"
+      },
+      {
+        "total_streams": 320,
+        "total_ms_played": 50491489,
+        "time": "10h"
+      },
+      {
+        "total_streams": 475,
+        "total_ms_played": 75073464,
+        "time": "11h"
+      },
+      {
+        "total_streams": 654,
+        "total_ms_played": 93721419,
+        "time": "12h"
+      },
+      {
+        "total_streams": 685,
+        "total_ms_played": 98613041,
+        "time": "13h"
+      },
+      {
+        "total_streams": 659,
+        "total_ms_played": 104983723,
+        "time": "14h"
+      },
+      {
+        "total_streams": 942,
+        "total_ms_played": 144893849,
+        "time": "15h"
+      },
+      {
+        "total_streams": 894,
+        "total_ms_played": 137675421,
+        "time": "16h"
+      },
+      {
+        "total_streams": 796,
+        "total_ms_played": 123182588,
+        "time": "17h"
+      },
+      {
+        "total_streams": 1120,
+        "total_ms_played": 170746680,
+        "time": "18h"
+      },
+      {
+        "total_streams": 1016,
+        "total_ms_played": 155065878,
+        "time": "19h"
+      },
+      {
+        "total_streams": 537,
+        "total_ms_played": 79154970,
+        "time": "20h"
+      },
+      {
+        "total_streams": 800,
+        "total_ms_played": 120098249,
+        "time": "21h"
+      },
+      {
+        "total_streams": 1204,
+        "total_ms_played": 183644259,
+        "time": "22h"
+      },
+      {
+        "total_streams": 1104,
+        "total_ms_played": 156868196,
+        "time": "23h"
+      }
+    ],
+    "monthly_distribution": [
+      {
+        "total_streams": 551,
+        "total_ms_played": 81327269,
+        "time": "10/23"
+      },
+      {
+        "total_streams": 3001,
+        "total_ms_played": 448926891,
+        "time": "11/23"
+      },
+      {
+        "total_streams": 3026,
+        "total_ms_played": 458863647,
+        "time": "12/23"
+      },
+      {
+        "total_streams": 2370,
+        "total_ms_played": 351111316,
+        "time": "01/24"
+      },
+      {
+        "total_streams": 2072,
+        "total_ms_played": 322085221,
+        "time": "02/24"
+      },
+      {
+        "total_streams": 1378,
+        "total_ms_played": 200873496,
+        "time": "03/24"
+      }
+    ],
+    "day_with_most_streams": {
+      "date": "2023-10-21",
+      "streams": 222,
+      "ms_played": 40056226
+    }
+  }
+}

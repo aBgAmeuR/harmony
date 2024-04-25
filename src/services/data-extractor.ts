@@ -19,6 +19,7 @@ import {
   calculateScore,
   countUniqueValuesForKey,
   filterDataByKey,
+  filterDataByKeys,
   getAverageDailyData,
   getChartData,
   getDayWithMostStreams,
@@ -33,7 +34,7 @@ import {
  * @returns Array of TrackSimplified, AlbumSimplified, or ArtistSimplified
  * depending on the name parameter
  */
-function filterDataByKeys<T extends Simplified>(
+function filterDataByKeysValues<T extends Simplified>(
   data: CleanDataType[],
   keys: Array<{ [key in keyof CleanDataType]?: string }>,
   name: "artist_name" | "album_name" | "track_name"
@@ -92,13 +93,13 @@ export async function getTopTracks(
     )
     if (!spotifyTrack) throw new Error("Spotify track not found")
 
-    const artist = filterDataByKeys<Simplified>(
+    const artist = filterDataByKeysValues<Simplified>(
       data,
       [{ artist_name: track.artist_name }],
       "artist_name"
     )[0]
 
-    const album = filterDataByKeys<Simplified>(
+    const album = filterDataByKeysValues<Simplified>(
       data,
       [{ album_name: track.album_name }, { artist_name: track.artist_name }],
       "album_name"
@@ -128,7 +129,7 @@ export async function getTopAlbums(
   data: CleanDataType[],
   limit: number = 50
 ): Promise<Album[]> {
-  const groupedData = filterDataByKey(data, "album_name")
+  const groupedData = filterDataByKeys(data, ["album_name", "artist_name"])
   const scoredData = Object.values(groupedData).map((album) => ({
     ...album,
     score: calculateScore(album.total_played, album.ms_played),
@@ -148,7 +149,7 @@ export async function getTopAlbums(
     )
     if (!spotifyAlbum) throw new Error("Spotify album not found")
 
-    const artist = filterDataByKeys<Simplified>(
+    const artist = filterDataByKeysValues<Simplified>(
       data,
       [
         { album_name: album.album_name },
@@ -157,7 +158,7 @@ export async function getTopAlbums(
       "artist_name"
     )[0]
 
-    const tracks = filterDataByKeys<Simplified>(
+    const tracks = filterDataByKeysValues<Simplified>(
       data,
       [{ album_name: album.album_name }],
       "track_name"
@@ -205,13 +206,13 @@ export async function getTopArtists(
     )
     if (!spotifyArtist) throw new Error("Spotify artist not found")
 
-    const albums = filterDataByKeys<Simplified>(
+    const albums = filterDataByKeysValues<Simplified>(
       data,
       [{ artist_name: artist.artist_name }],
       "album_name"
     )
 
-    const tracks = filterDataByKeys<Simplified>(
+    const tracks = filterDataByKeysValues<Simplified>(
       data,
       [{ artist_name: artist.artist_name }],
       "track_name"

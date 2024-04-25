@@ -39,11 +39,11 @@ export const GetFileInputs = (props: GetFileInputsProps) => {
   return (
     <div className={cn('flex flex-col gap-8', props.className)} {...props}>
       <FileDropZone handleFile={handleFile} isLoading={inTransition} />
-      <Divider size="sm" label="Or" />
+      {/* <Divider size="sm" label="Or" />
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <Input type="text" name="url" placeholder="Paste your Spotify Data URL here" disabled={inTransition} required />
         <Button type="submit" loading={inTransition} >Submit</Button>
-      </form>
+      </form> */}
       <Text>No Spotify Data? <Link href="/demo" className="text-green">Try our demo</Link></Text>
     </div>
   )
