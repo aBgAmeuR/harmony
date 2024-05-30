@@ -2,6 +2,7 @@
 
 import { storeData } from "@/lib/store"
 import { DataResults } from "@/types";
+import { LoadingOverlay } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { useTransition, useEffect } from "react";
 
@@ -28,7 +29,9 @@ export default function Page() {
   }, [])
 
   return (
-    <div>Page</div>
+    <div className="size-full flex items-center justify-center">
+      <LoadingOverlay visible />
+    </div>
   )
 }
 

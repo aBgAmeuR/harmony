@@ -101,7 +101,7 @@ export const StatsCardsSection = ({ version }: Props) => {
       <ScrollArea orientation="horizontal">
         <div className="flex gap-3">
           {statsCard.slice(0, 5).map((card, index) => (
-            <StatsCard key={index} {...card} className='h-[70px] w-[266px]' />
+            <StatsCard key={index} {...card} className='h-[70px] w-[270px]' />
           ))}
         </div>
       </ScrollArea>
