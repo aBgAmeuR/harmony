@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation"
 
 const aboutItems = [
   {
-    title: 'v1.0.0 (prod)',
+    title: 'v1.1.0 (prod)',
     subtitle: 'Version',
     lefticon: <Info size={28} />,
     righticon: <Files size={28} />,
