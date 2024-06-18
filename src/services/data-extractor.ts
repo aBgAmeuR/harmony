@@ -91,7 +91,31 @@ export async function getTopTracks(
     const spotifyTrack = spotifyTracks.find(
       (spotifyTrack) => spotifyTrack.uri === track.spotify_track_uri
     )
-    if (!spotifyTrack) throw new Error("Spotify track not found")
+    if (!spotifyTrack) {
+      console.error("Spotify track not found", track.track_name)
+
+      return {
+        name: track.track_name,
+        spotify_uri: '#',
+        image_url: '/notfound.png',
+        href: '#',
+        total_played: track.total_played,
+        ms_played: track.ms_played,
+        score: track.score,
+        artist: {
+          name: track.artist_name,
+          total_played: 0,
+          ms_played: 0,
+          score: 0,
+        },
+        album: {
+          name: track.album_name,
+          total_played: 0,
+          ms_played: 0,
+          score: 0,
+        },
+      }
+    }
 
     const artist = filterDataByKeysValues<Simplified>(
       data,
@@ -147,7 +171,26 @@ export async function getTopAlbums(
         spotifyAlbum.album.name?.includes(album.album_name) &&
         spotifyAlbum.album.artists[0].name.includes(album.artist_name)
     )
-    if (!spotifyAlbum) throw new Error("Spotify album not found")
+    if (!spotifyAlbum) {
+      console.error("Spotify album not found", album.album_name)
+
+      return {
+        name: album.album_name,
+        spotify_uri: '#',
+        image_url: '/notfound.png',
+        href: '#',
+        total_played: album.total_played,
+        ms_played: album.ms_played,
+        score: album.score,
+        artist: {
+          name: album.artist_name,
+          total_played: 0,
+          ms_played: 0,
+          score: 0,
+        },
+        tracks: [],
+      }
+    }
 
     const artist = filterDataByKeysValues<Simplified>(
       data,
@@ -204,7 +247,21 @@ export async function getTopArtists(
     const spotifyArtist = spotifyArtists.find((spotifyArtist) =>
       spotifyArtist.name.includes(artist.artist_name)
     )
-    if (!spotifyArtist) throw new Error("Spotify artist not found")
+    if (!spotifyArtist) {
+      console.error("Spotify artist not found", artist.artist_name)
+
+      return {
+        name: artist.artist_name,
+        spotify_uri: '#',
+        image_url: '/notfound.png',
+        href: '#',
+        total_played: artist.total_played,
+        ms_played: artist.ms_played,
+        score: artist.score,
+        albums: [],
+        tracks: [],
+      }
+    }
 
     const albums = filterDataByKeysValues<Simplified>(
       data,
