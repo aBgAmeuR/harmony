@@ -1,11 +1,13 @@
 import Balancer from "react-wrap-balancer";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
+import { Footer } from "@/components/footer";
 import { Icons } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 
-export default function Home() {
+export default function HomePage() {
   return (
     <div className="flex h-screen w-screen flex-col">
       <main className="flex flex-1 flex-col items-center justify-center gap-6">
@@ -24,8 +26,8 @@ export default function Home() {
         </div>
         <div className="flex gap-2">
           <ThemeToggle variant="outline" />
-          <Button aria-label="Get Started" disabled>
-            Get Started
+          <Button aria-label="Get Started" asChild>
+            <Link href="/upload">Get Started</Link>
           </Button>
           <Button
             className="group"
@@ -45,15 +47,7 @@ export default function Home() {
           </Button>
         </div>
       </main>
-      <footer className="my-4">
-        <p className="text-center">
-          Built by{" "}
-          <Button variant="link" className="p-0" asChild>
-            <a href="https://github.com/aBgAmeuR">@aBgAmeuR</a>
-          </Button>{" "}
-          - <span className="text-muted-foreground">v2.0</span>
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }
