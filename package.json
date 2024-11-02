@@ -1,6 +1,6 @@
 {
   "name": "harmony",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -19,6 +19,7 @@
     "next-themes": "^0.3.0",
     "react": "19.0.0-rc-02c0e824-20241028",
     "react-dom": "19.0.0-rc-02c0e824-20241028",
+    "react-wrap-balancer": "^1.1.1",
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
