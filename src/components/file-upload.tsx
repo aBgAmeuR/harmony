@@ -21,6 +21,7 @@ export const FileUpload = () => {
         setProcessingTime((prevTime) => prevTime + 1);
       }, 1000);
     } else {
+      console.log("time : ", processingTime, "s");
       setProcessingTime(0);
     }
     return () => {
