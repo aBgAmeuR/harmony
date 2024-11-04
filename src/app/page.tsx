@@ -18,7 +18,7 @@ export default function HomePage() {
               Harmony
             </h1>
           </div>
-          <Balancer className="max-w-3xl text-center text-muted-foreground md:text-balance md:text-xl">
+          <Balancer className="max-w-3xl px-2 text-center text-muted-foreground md:text-balance md:text-xl">
             Harmony is a website that generates stats from your Spotify data
             Package. It is your device that processes the data, nothing is sent
             to any server!

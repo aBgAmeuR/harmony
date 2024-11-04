@@ -1,33 +1,41 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { FileArchive, LoaderCircle, Upload, X } from "lucide-react";
-import { toast } from "sonner";
 
 import { Button } from "./ui/button";
-
-import { filesProcessing } from "@/services/file-processing";
 
 export const FileUpload = () => {
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [processingTime, setProcessingTime] = useState(0);
+  const [inTransition, startTransition] = useTransition();
+  const workerRef = useRef<Worker>();
+
+  useEffect(() => {
+    workerRef.current = new Worker(
+      new URL("../../public/worker.ts", import.meta.url)
+    );
+    // workerRef.current.onmessage = (event: MessageEvent<number>) =>
+    //   alert(`WebWorker Response => ${event.data}`);
+    return () => {
+      workerRef.current?.terminate();
+    };
+  }, []);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
-    if (isProcessing) {
+    if (inTransition) {
       interval = setInterval(() => {
         setProcessingTime((prevTime) => prevTime + 1);
       }, 1000);
     } else {
-      console.log("time : ", processingTime, "s");
       setProcessingTime(0);
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isProcessing]);
+  }, [inTransition]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -44,15 +52,9 @@ export const FileUpload = () => {
 
   const handleUpload = async () => {
     if (file) {
-      setIsProcessing(true);
-      const res = await filesProcessing(file);
-      setIsProcessing(false);
-
-      if (res.message === "ok") {
-        toast.success("Files processed successfully");
-      } else {
-        toast.error("Failed to process files");
-      }
+      startTransition(async () => {
+        workerRef.current?.postMessage({ file });
+      });
     }
   };
 
@@ -73,13 +75,15 @@ export const FileUpload = () => {
         >
           <div className="space-y-1 text-center">
             <Upload className="mx-auto size-12 text-gray-400" />
-            <div className="flex text-sm text-gray-600">
+            <div className="flex text-sm text-gray-600 dark:text-gray-400">
               <span className="hover:text-primary-dark relative font-medium text-primary">
                 Upload a file
               </span>
               <p className="pl-1">or drag and drop</p>
             </div>
-            <p className="text-xs text-gray-500">ZIP file up to 100MB</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              ZIP file up to 100MB
+            </p>
           </div>
         </label>
       </div>
@@ -107,10 +111,10 @@ export const FileUpload = () => {
 
       <Button
         onClick={handleUpload}
-        disabled={!file || isProcessing}
+        disabled={!file || inTransition}
         className="mt-4 w-full"
       >
-        {isProcessing ? (
+        {inTransition ? (
           <>
             <LoaderCircle className="mr-2 size-4 animate-spin" />
             Processing... ({processingTime}s)
