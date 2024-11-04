@@ -2,21 +2,21 @@
 
 import * as React from "react";
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal
+  AudioLines,
+  Binary,
+  ChartLine,
+  ChartNoAxesCombined,
+  Disc3,
+  LayoutDashboard,
+  TrendingUp,
+  TrendingUpDown,
+  UserRoundPen
 } from "lucide-react";
 
+import { Icons } from "./icons";
+import { ThemeToggle } from "./theme-toggle";
+
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
-import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
@@ -33,125 +33,61 @@ const data = {
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg"
   },
-  teams: [
+  teams: {
+    name: "Harmony",
+    logo: Icons.logo
+  },
+  overview: [
     {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise"
+      title: "Overview",
+      url: "/overview",
+      icon: LayoutDashboard
     },
     {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup"
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free"
-    }
-  ],
-  navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
+      title: "Rankings",
+      url: "/rankings",
+      icon: TrendingUp,
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#"
+          title: "Tracks",
+          url: "#",
+          icon: AudioLines
         },
         {
-          title: "Starred",
-          url: "#"
+          title: "Albums",
+          url: "#",
+          icon: Disc3
         },
         {
-          title: "Settings",
-          url: "#"
+          title: "Artists",
+          url: "#",
+          icon: UserRoundPen
         }
       ]
     },
     {
-      title: "Models",
-      url: "#",
-      icon: Bot,
+      title: "Stats",
+      url: "/stats",
+      icon: ChartNoAxesCombined,
+      isActive: true,
       items: [
         {
-          title: "Genesis",
-          url: "#"
+          title: "Numbers",
+          url: "#",
+          icon: Binary
         },
         {
-          title: "Explorer",
-          url: "#"
+          title: "Listening Habits",
+          url: "#",
+          icon: ChartLine
         },
         {
-          title: "Quantum",
-          url: "#"
+          title: "Activity",
+          url: "#",
+          icon: TrendingUpDown
         }
       ]
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#"
-        },
-        {
-          title: "Get Started",
-          url: "#"
-        },
-        {
-          title: "Tutorials",
-          url: "#"
-        },
-        {
-          title: "Changelog",
-          url: "#"
-        }
-      ]
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#"
-        },
-        {
-          title: "Team",
-          url: "#"
-        },
-        {
-          title: "Billing",
-          url: "#"
-        },
-        {
-          title: "Limits",
-          url: "#"
-        }
-      ]
-    }
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map
     }
   ]
 };
@@ -160,14 +96,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher logo={data.teams.logo} name={data.teams.name} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavMain items={data.overview} label="Stats" />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
+      <SidebarFooter className="flex items-center">
+        {/* <NavUser user={data.user} /> */}
+        <ThemeToggle />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
