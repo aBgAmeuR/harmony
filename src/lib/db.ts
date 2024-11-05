@@ -1,5 +1,4 @@
-import Dexie, { Table } from "dexie";
-import relationships from "dexie-relationships";
+import Dexie, { EntityTable } from "dexie";
 
 interface User {
   id: number;
@@ -43,26 +42,23 @@ interface Playback {
   track_id: number;
 }
 
-class MyAppDatabase extends Dexie {
-  user!: Table<User, "id">;
-  track!: Table<Track, "id">;
-  artist!: Table<Artist, "id">;
-  album!: Table<Album, "id">;
-  playback!: Table<Playback, "id">;
+const db = new Dexie("harmony") as Dexie & {
+  user: EntityTable<User, "id">;
+  track: EntityTable<Track, "id">;
+  artist: EntityTable<Artist, "id">;
+  album: EntityTable<Album, "id">;
+  playback: EntityTable<Playback, "id">;
+};
 
-  constructor() {
-    super("MyAppDatabase", { addons: [relationships] });
-    this.version(1).stores({
-      user: "++id, username, conn_country, ip_addr_decrypted, user_agent_decrypted",
-      track:
-        "++id, [name+artist_id+album_id], artist_id -> artist.id, album_id -> album.id, spotify_track_uri",
-      artist: "++id, name",
-      album: "++id, [name+artist_id], artist_id -> artist.id",
-      playback:
-        "++id, timestamp, platform, ms_played, reason_start, reason_end, shuffle, skipped, offline, offline_timestamp, incognito_mode, track_id -> track.id"
-    });
-  }
-}
+db.version(1).stores({
+  user: "++id, username, conn_country, ip_addr_decrypted, user_agent_decrypted",
+  track:
+    "++id, [name+artist_id+album_id], artist_id, album_id, spotify_track_uri",
+  artist: "++id, name",
+  album: "++id, [name+artist_id], artist_id",
+  playback:
+    "++id, timestamp, platform, ms_played, reason_start, reason_end, shuffle, skipped, offline, offline_timestamp, incognito_mode, track_id"
+});
 
 export type { Album, Artist, Playback, Track, User };
-export const db = new MyAppDatabase();
+export { db };
