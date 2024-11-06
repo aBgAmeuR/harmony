@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 
 import { MonthRangePicker } from "@/components/ui/month-range-picker";
 import { useMinMaxDateRange } from "@/hooks/use-min-max-date-range";
-import { db, Track } from "@/lib/db";
+import { Album, Artist, db, Track } from "@/lib/db";
+import { getSpotifyTracksInfo } from "@/lib/spotify";
 
 export const RankList = () => {
   const [dates, setDates] = useState<{ start: Date; end: Date }>();
@@ -15,6 +16,7 @@ export const RankList = () => {
       album: string;
       totalStreams: number;
       totalTime: number;
+      cover: string | undefined;
     }[]
   >();
   const minMaxDates = useMinMaxDateRange();
@@ -89,13 +91,22 @@ const getRankData = async (start: Date, end: Date) => {
   const minimalTracks = await db.track.where("id").anyOf(top50).toArray();
   const tracks = await getTracksInfo(minimalTracks, true, true);
 
-  const rankData = tracks.map((track) => ({
-    title: track.name,
-    artist: track.artist?.name ?? "Unknown Artist",
-    album: track.album?.name ?? "Unknown Album",
-    totalStreams: tratksStats[track.id].totalStreams,
-    totalTime: tratksStats[track.id].totalTime
-  }));
+  const uris = tracks.map((track) => track.spotify_track_uri);
+  const spotifyTracks = await getSpotifyTracksInfo(uris);
+
+  const rankData = tracks.map((track) => {
+    const spotifyTrack = spotifyTracks.find((spotifyTrack) =>
+      spotifyTrack.name.includes(track.name)
+    );
+    return {
+      title: track.name,
+      artist: track.artist?.name ?? "Unknown Artist",
+      album: track.album?.name ?? "Unknown Album",
+      totalStreams: tratksStats[track.id].totalStreams,
+      totalTime: tratksStats[track.id].totalTime,
+      cover: spotifyTrack?.album.images[0].url
+    };
+  });
 
   return rankData.sort((a, b) => b.totalTime - a.totalTime);
 };
@@ -104,7 +115,17 @@ const getTracksInfo = async (
   tracks: Track[],
   withArtist: boolean,
   withAlbum: boolean
-) => {
+): Promise<
+  {
+    artist: Artist;
+    album: Album;
+    id: number;
+    name: string;
+    artist_id: number;
+    album_id: number;
+    spotify_track_uri: string;
+  }[]
+> => {
   const artistIds = tracks.map((track) => track.artist_id);
   const albumIds = tracks.map((track) => track.album_id);
 
@@ -113,13 +134,16 @@ const getTracksInfo = async (
     withAlbum ? db.album.where("id").anyOf(albumIds).toArray() : []
   ]);
 
-  return tracks.map((track) => ({
-    ...track,
-    artist: withArtist
-      ? artists.find((artist) => artist.id === track.artist_id)
-      : undefined,
-    album: withAlbum
-      ? albums.find((album) => album.id === track.album_id)
-      : undefined
-  }));
+  return tracks.map((track) => {
+    const artist = artists.find((artist) => artist.id === track.artist_id);
+    const album = albums.find((album) => album.id === track.album_id);
+    if (!artist || !album) {
+      throw new Error(`Artist or Album not found for track ${track.id}`);
+    }
+    return {
+      ...track,
+      artist,
+      album
+    };
+  });
 };
