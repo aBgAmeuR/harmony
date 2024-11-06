@@ -33,7 +33,7 @@ export default async function HomePage() {
           <form
             action={async () => {
               "use server";
-              await signIn();
+              await signIn("spotify");
             }}
           >
             <Button aria-label="Get Started">Get Started</Button>

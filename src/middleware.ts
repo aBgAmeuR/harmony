@@ -1,9 +1,17 @@
-import { auth } from "@/lib/auth";
+import NextAuth from "next-auth";
 
-export default auth((req) => {
-  console.log("ROUTE:", req.nextUrl.pathname);
+import authConfig from "@/lib/auth.config";
+
+const { auth } = NextAuth(authConfig);
+export default auth(async (req) => {
+  if (!req.auth && req.nextUrl.pathname !== "/") {
+    const newUrl = new URL("/api/login", req.nextUrl.origin);
+    newUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
+
+    return Response.redirect(newUrl);
+  }
 });
 
 export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"]
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"]
 };
