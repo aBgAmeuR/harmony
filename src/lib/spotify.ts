@@ -1,38 +1,40 @@
 "use server";
 
+import { auth } from "./auth";
 import { env } from "./env";
+import { prisma } from "./prisma";
 
 import { Track } from "@/types/spotify";
 
-const spotifyAuth = {
-  accessToken: "",
-  expiresAt: 0
-};
-
 async function getSpotifyAccessToken() {
+  const session = await auth();
+  if (!session || !session.user) {
+    throw new Error("Unauthorized");
+  }
+  const account = await prisma.account.findFirst({
+    where: { userId: session.user.id }
+  });
+  if (!account || !account.refresh_token) {
+    throw new Error("Unauthorized");
+  }
+
   const now = new Date().getTime();
-  if (spotifyAuth.accessToken && spotifyAuth.expiresAt > now) {
-    return spotifyAuth.accessToken;
+  if (account.access_token && account.expires_at && account.expires_at > now) {
+    return account.access_token;
   }
 
   const client_id = env.SPOTIFY_CLIENT_ID;
-  const client_secret = env.SPOTIFY_CLIENT_SECRET;
 
   const response = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Authorization:
-        "Basic " +
-        Buffer.from(`${client_id}:${client_secret}`).toString("base64")
-    },
-    body: "grant_type=client_credentials"
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: account.refresh_token,
+      client_id: client_id
+    })
   });
 
   const data = await response.json();
-
-  spotifyAuth.accessToken = data.access_token;
-  spotifyAuth.expiresAt = now + data.expires_in * 1000;
 
   return data.access_token;
 }
@@ -114,4 +116,26 @@ export async function getUserInfo(id: string) {
 
   const data = await response.json();
   return data;
+}
+
+type getUserTopItemsProps = {
+  type: "tracks" | "artists";
+  time_range: "short_term" | "medium_term" | "long_term";
+};
+export async function getUserTopItems<T>({
+  type,
+  time_range
+}: getUserTopItemsProps) {
+  const accessToken = await getSpotifyAccessToken();
+
+  const url = `https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=50`;
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    }
+  });
+
+  const data = await response.json();
+  return data.items as T[];
 }
