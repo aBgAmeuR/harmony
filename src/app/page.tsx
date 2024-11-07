@@ -6,8 +6,9 @@ import { Footer } from "@/components/footer";
 import { Icons } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { signOut } from "@/lib/auth";
 
-export default function HomePage() {
+export default async function HomePage() {
   return (
     <div className="flex h-screen w-screen flex-col">
       <main className="flex flex-1 flex-col items-center justify-center gap-6">
@@ -26,9 +27,20 @@ export default function HomePage() {
         </div>
         <div className="flex gap-2">
           <ThemeToggle variant="outline" />
+
           <Button aria-label="Get Started" asChild>
             <Link href="/upload">Get Started</Link>
           </Button>
+          <form
+            action={async () => {
+              "use server";
+              await signOut();
+            }}
+          >
+            <Button aria-label="Sign Out" variant="secondary">
+              Sign Out
+            </Button>
+          </form>
           <Button
             className="group"
             variant="ghost"

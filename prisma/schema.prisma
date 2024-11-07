@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  email         String     @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  playbacks     Playback[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Track {
+  id         Int        @id @default(autoincrement())
+  title      String
+  spotifyUri String     @db.VarChar(22)
+  coverUri   String?
+  href       String?
+  albumid    Int
+  Playback   Playback[]
+
+  album Album @relation(fields: [albumid], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+}
+
+model Album {
+  id         Int     @id @default(autoincrement())
+  title      String
+  spotifyUri String  @db.VarChar(22)
+  coverUri   String?
+  href       String?
+  artistid   Int
+  Track      Track[]
+
+  artist Artist @relation(fields: [artistid], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Artist {
+  id         Int      @id @default(autoincrement())
+  name       String
+  spotifyUri String   @db.VarChar(22)
+  coverUri   String?
+  href       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  album Album[]
+}
+
+model Playback {
+  id               Int      @id @default(autoincrement())
+  timestamp        DateTime @db.Time(0)
+  msPlayed         Int
+  reasonStart      String   @db.VarChar(16)
+  reasonEnd        String   @db.VarChar(16)
+  shuffle          Boolean?
+  skipped          Boolean?
+  offline          Boolean?
+  offlineTimestamp Int?
+  incognitoMode    Boolean?
+  trackid          Int
+  userid           String
+
+  track Track @relation(fields: [trackid], references: [id])
+  user  User  @relation(fields: [userid], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

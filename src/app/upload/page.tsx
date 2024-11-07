@@ -11,8 +11,14 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
+import { auth, signIn } from "@/lib/auth";
 
-export default function UploadPage() {
+export default async function UploadPage() {
+  const session = await auth();
+  if (!session) {
+    await signIn();
+  }
+
   return (
     <div className="flex h-screen w-screen flex-col">
       <main className="flex flex-1 flex-col items-center justify-center gap-6 px-4">
