@@ -14,20 +14,18 @@ datasource db {
 }
 
 model User {
-  id            String          @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String?
-  email         String          @unique
+  email         String     @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
-  sessions      Session[]
-  // Optional for WebAuthn support
-  Authenticator Authenticator[]
- 
+  playbacks     Playback[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
- 
+
 model Account {
   userId            String
   type              String
@@ -40,45 +38,75 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@id([provider, providerAccountId])
 }
- 
-model Session {
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
+model Track {
+  id         Int        @id @default(autoincrement())
+  title      String
+  spotifyUri String     @db.VarChar(22)
+  coverUri   String?
+  href       String?
+  albumid    Int
+  Playback   Playback[]
+
+  album Album @relation(fields: [albumid], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+}
+
+model Album {
+  id         Int     @id @default(autoincrement())
+  title      String
+  spotifyUri String  @db.VarChar(22)
+  coverUri   String?
+  href       String?
+  artistid   Int
+  Track      Track[]
+
+  artist Artist @relation(fields: [artistid], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
- 
-model VerificationToken {
-  identifier String
-  token      String
-  expires    DateTime
- 
-  @@id([identifier, token])
+
+model Artist {
+  id         Int      @id @default(autoincrement())
+  name       String
+  spotifyUri String   @db.VarChar(22)
+  coverUri   String?
+  href       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  album Album[]
 }
- 
-// Optional for WebAuthn support
-model Authenticator {
-  credentialID         String  @unique
-  userId               String
-  providerAccountId    String
-  credentialPublicKey  String
-  counter              Int
-  credentialDeviceType String
-  credentialBackedUp   Boolean
-  transports           String?
- 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
-  @@id([userId, credentialID])
+
+model Playback {
+  id               Int      @id @default(autoincrement())
+  timestamp        DateTime @db.Time(0)
+  msPlayed         Int
+  reasonStart      String   @db.VarChar(16)
+  reasonEnd        String   @db.VarChar(16)
+  shuffle          Boolean?
+  skipped          Boolean?
+  offline          Boolean?
+  offlineTimestamp Int?
+  incognitoMode    Boolean?
+  trackid          Int
+  userid           String
+
+  track Track @relation(fields: [trackid], references: [id])
+  user  User  @relation(fields: [userid], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
