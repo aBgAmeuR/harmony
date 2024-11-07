@@ -23,6 +23,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.stats} label="Stats" />
+        <NavMain items={data.package} label="Package" />
         <NavMain items={data.advanced} label="Advanced" />
         <NavMain items={data.settings} label="Settings" />
       </SidebarContent>

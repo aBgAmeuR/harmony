@@ -1,9 +1,9 @@
 import { AppHeader } from "@/components/app-header";
 
-export default function StatsNumbersPage() {
+export default function RecentryPlayerPage() {
   return (
     <>
-      <AppHeader items={["Package", "Stats", "Activity"]} />
+      <AppHeader items={["Stats", "Recently Played"]} />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div className="grid auto-rows-min gap-4 md:grid-cols-3">
           <div className="aspect-video rounded-xl bg-muted/50" />

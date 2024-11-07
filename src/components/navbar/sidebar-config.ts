@@ -6,8 +6,11 @@ import {
   ChartLine,
   ChartNoAxesCombined,
   Disc3,
+  Guitar,
+  History,
   Info,
   LayoutDashboard,
+  ListOrdered,
   Milestone,
   Package,
   TrendingUp,
@@ -25,6 +28,35 @@ export const data = {
   },
   stats: [
     {
+      title: "Top",
+      url: "/top",
+      icon: ListOrdered,
+      items: [
+        {
+          title: "Tracks",
+          url: "/top/tracks",
+          icon: AudioLines
+        },
+        {
+          title: "Artists",
+          url: "/top/artists",
+          icon: UserRoundPen
+        },
+        {
+          title: "Genres",
+          url: "/top/genres",
+          icon: Guitar
+        }
+      ]
+    },
+    {
+      title: "Recently Played",
+      url: "/recently-played",
+      icon: History
+    }
+  ],
+  package: [
+    {
       title: "Overview",
       url: "/overview",
       icon: LayoutDashboard
@@ -33,7 +65,6 @@ export const data = {
       title: "Rankings",
       url: "/rankings",
       icon: TrendingUp,
-      isActive: true,
       items: [
         {
           title: "Tracks",
@@ -56,7 +87,6 @@ export const data = {
       title: "Stats",
       url: "/stats",
       icon: ChartNoAxesCombined,
-      isActive: true,
       items: [
         {
           title: "Numbers",
@@ -86,7 +116,6 @@ export const data = {
       title: "Comparisons",
       url: "/comparisons",
       icon: ArrowRightLeft,
-      isActive: true,
       items: [
         {
           title: "Year-over-Year",
