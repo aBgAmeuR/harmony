@@ -6,6 +6,7 @@ import {
   ChartLine,
   ChartNoAxesCombined,
   Disc3,
+  Github,
   History,
   Info,
   LayoutDashboard,
@@ -134,6 +135,13 @@ export const data = {
       title: "About",
       url: "/settings/about",
       icon: Info
+    }
+  ],
+  navSecondary: [
+    {
+      title: "Github",
+      url: "https://github.com/aBgAmeuR/Harmony",
+      icon: Github
     }
   ]
 };

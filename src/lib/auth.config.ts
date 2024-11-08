@@ -5,7 +5,7 @@ export default {
   providers: [
     Spotify({
       authorization:
-        "https://accounts.spotify.com/authorize?scope=user-read-email%20user-top-read"
+        "https://accounts.spotify.com/authorize?scope=user-read-recently-played%20user-top-read"
     })
   ],
   callbacks: {
