@@ -144,9 +144,6 @@ export async function getUserTopItems<T>(
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`
-    },
-    next: {
-      revalidate: 3600 // 1 hour
     }
   });
 
@@ -162,9 +159,6 @@ export async function getUserRecentlyPlayed() {
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`
-    },
-    next: {
-      revalidate: 3600 // 1 hour
     }
   });
 
