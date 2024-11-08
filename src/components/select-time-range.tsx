@@ -10,8 +10,8 @@ import {
 import { useTopTimeRange } from "@/lib/store";
 
 const SELECT_OPTIONS = [
-  { label: "Last 7 days", value: "short_term" },
-  { label: "Last 30 days", value: "medium_term" },
+  { label: "Last 4 weeks", value: "short_term" },
+  { label: "Last 6 months", value: "medium_term" },
   { label: "1 year", value: "long_term" }
 ];
 

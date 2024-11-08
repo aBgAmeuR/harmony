@@ -31,7 +31,7 @@ async function getSpotifyAccessToken() {
   if (difference > 10) {
     return account.access_token;
   }
-
+  console.log("REFRESHING TOKEN", difference);
   const response = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
     headers: {

@@ -40,7 +40,7 @@ export const AppHeader = ({ items, children }: AppHeaderProps) => {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      {children}
+      <div className="flex items-center gap-2">{children}</div>
     </header>
   );
 };
