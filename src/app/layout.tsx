@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { SessionProvider } from "next-auth/react";
 
-import { JotaiProvider } from "@/components/jotai-provider";
 import { QueryClientProvider } from "@/components/query-client-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -60,11 +59,9 @@ export default function RootLayout({
           enableSystem
           // disableTransitionOnChange
         >
-          <JotaiProvider>
-            <SessionProvider>
-              <QueryClientProvider>{children}</QueryClientProvider>
-            </SessionProvider>
-          </JotaiProvider>
+          <SessionProvider>
+            <QueryClientProvider>{children}</QueryClientProvider>
+          </SessionProvider>
         </ThemeProvider>
         <Toaster richColors closeButton />
       </body>
