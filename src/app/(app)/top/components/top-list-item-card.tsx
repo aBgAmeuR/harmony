@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { Clock, ExternalLink } from "lucide-react";
 import Image from "next/image";
 
@@ -6,11 +7,12 @@ type TopListItemCardProps = {
   imageUri: string;
   title: string;
   subtitle: string;
-  rank: number;
+  rank?: number;
   link: string;
   album?: string;
   showSubtitle?: boolean;
   duration?: number;
+  playedAt?: Date;
 };
 
 export const TopListItemCard = ({
@@ -22,7 +24,8 @@ export const TopListItemCard = ({
   subtitle,
   title,
   duration,
-  album
+  album,
+  playedAt
 }: TopListItemCardProps) => {
   if (layout === "grid") {
     return (
@@ -46,9 +49,11 @@ export const TopListItemCard = ({
 
   return (
     <div className="flex items-center space-x-4 py-4">
-      <span className="w-6 text-right text-sm font-medium text-muted-foreground">
-        {rank}
-      </span>
+      {rank ? (
+        <span className="w-6 text-right text-sm font-medium text-muted-foreground">
+          {rank}
+        </span>
+      ) : null}
       <Image
         src={imageUri}
         alt={`${title} cover`}
@@ -76,6 +81,11 @@ export const TopListItemCard = ({
             {Math.floor(duration / 60000)}:
             {((duration % 60000) / 1000).toFixed(0).padStart(2, "0")}
           </span>
+        </div>
+      ) : null}
+      {playedAt ? (
+        <div className="text-right text-sm font-medium text-muted-foreground">
+          {format(new Date(playedAt), "dd/MM/yyyy, HH:mm")}
         </div>
       ) : null}
       <a

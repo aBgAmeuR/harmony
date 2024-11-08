@@ -3,7 +3,7 @@
 import { auth } from "./auth";
 import { prisma } from "./prisma";
 
-import { Track } from "@/types/spotify";
+import { RecentlyPlayed, Track } from "@/types/spotify";
 
 async function getSpotifyAccessToken() {
   const session = await auth();
@@ -133,21 +133,6 @@ export async function getSpotifyAlbumsInfo(uris: string[]) {
   return data.tracks;
 }
 
-export async function getUserInfo(id: string) {
-  const accessToken = await getSpotifyAccessToken();
-
-  const url = `https://api.spotify.com/v1/users/${id}`;
-
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  });
-
-  const data = await response.json();
-  return data;
-}
-
 export async function getUserTopItems<T>(
   type: "tracks" | "artists",
   time_range: "short_term" | "medium_term" | "long_term"
@@ -167,4 +152,22 @@ export async function getUserTopItems<T>(
 
   const data = await response.json();
   return data.items as T[];
+}
+
+export async function getUserRecentlyPlayed() {
+  const accessToken = await getSpotifyAccessToken();
+
+  const url = "https://api.spotify.com/v1/me/player/recently-played?limit=50";
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    },
+    next: {
+      revalidate: 3600 // 1 hour
+    }
+  });
+
+  const data = await response.json();
+  return data.items as RecentlyPlayed[];
 }
