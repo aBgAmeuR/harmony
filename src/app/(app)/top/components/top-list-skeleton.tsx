@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 type TopListSkeletonProps = {
   length: number;
+  layout: "grid" | "list";
 };
 
 export const TopListSkeleton = ({ length = 3 }: TopListSkeletonProps) => {

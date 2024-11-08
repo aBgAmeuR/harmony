@@ -14,24 +14,20 @@ async function getSpotifyAccessToken() {
   const account = await prisma.account.findFirst({
     where: { userId: session.user.id }
   });
-  if (!account || !account.access_token) {
-    throw new Error("Unauthorized");
-  }
   if (!account || !account.refresh_token) {
     throw new Error("Unauthorized");
   }
 
   const now = Math.floor(Date.now() / 1000);
-  if (account.expires_at === null) {
-    throw new Error("Unauthorized");
-  }
   const expiresAt = Number(account.expires_at);
   const difference = Math.floor((expiresAt - now) / 60);
 
-  if (difference > 10) {
+  if (difference > 10 && account.access_token) {
     return account.access_token;
   }
+
   console.log("REFRESHING TOKEN", difference);
+
   const response = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
     headers: {
@@ -45,10 +41,11 @@ async function getSpotifyAccessToken() {
     }),
     cache: "no-cache"
   });
-  console.log("RESPONSE", await response.json());
 
   if (!response.ok) {
     throw new Error("Failed to refresh access token");
+  } else {
+    console.log("TOKEN REFRESHED");
   }
 
   const data = await response.json();
@@ -156,13 +153,15 @@ export async function getUserTopItems<T>(
   time_range: "short_term" | "medium_term" | "long_term"
 ) {
   const accessToken = await getSpotifyAccessToken();
-  console.log("ACCESS TOKEN", type, time_range);
 
   const url = `https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=50`;
 
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`
+    },
+    next: {
+      revalidate: 3600 // 1 hour
     }
   });
 
