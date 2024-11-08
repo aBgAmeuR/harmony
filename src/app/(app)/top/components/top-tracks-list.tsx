@@ -21,7 +21,7 @@ export const TopTracksList = () => {
   });
 
   if (isError) return <div>Failed to load tracks</div>;
-  if (!tracks) return <TopListSkeleton length={50} layout={layout} />;
+  if (!tracks) return <TopListSkeleton layout={layout} />;
 
   return (
     <div

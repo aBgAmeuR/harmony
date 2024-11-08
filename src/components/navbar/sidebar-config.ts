@@ -6,7 +6,6 @@ import {
   ChartLine,
   ChartNoAxesCombined,
   Disc3,
-  Guitar,
   History,
   Info,
   LayoutDashboard,
@@ -41,11 +40,6 @@ export const data = {
           title: "Artists",
           url: "/top/artists",
           icon: UserRoundPen
-        },
-        {
-          title: "Genres",
-          url: "/top/genres",
-          icon: Guitar
         }
       ]
     },
