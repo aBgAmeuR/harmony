@@ -6,13 +6,16 @@ import { Footer } from "@/components/footer";
 import { Icons } from "@/components/icons";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { signOut } from "@/lib/auth";
+import { auth, signOut } from "@/lib/auth";
 
 export default async function HomePage() {
+  const session = await auth();
+
   return (
     <div className="flex h-screen w-screen flex-col">
       <main className="flex flex-1 flex-col items-center justify-center gap-6">
         <div className="flex flex-col items-center gap-2">
+          <pre>{JSON.stringify(session, null, 2)}</pre>
           <div className="flex gap-2">
             <Icons.logo className="size-12 md:size-16" />
             <h1 className="text-5xl font-semibold tracking-tight md:text-7xl">

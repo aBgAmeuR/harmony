@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -19,11 +13,10 @@ model User {
   email         String     @unique
   emailVerified DateTime?
   image         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   accounts      Account[]
   playbacks     Playback[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Account {
@@ -33,16 +26,14 @@ model Account {
   providerAccountId String
   refresh_token     String?
   access_token      String?
-  expires_at        Int?
+  expires_at        BigInt?
   token_type        String?
   scope             String?
   id_token          String?
   session_state     String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([provider, providerAccountId])
 }
@@ -54,28 +45,23 @@ model Track {
   coverUri   String?
   href       String?
   albumid    Int
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
   Playback   Playback[]
-
-  album Album @relation(fields: [albumid], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  album      Album      @relation(fields: [albumid], references: [id])
 }
 
 model Album {
-  id         Int     @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   title      String
-  spotifyUri String  @db.VarChar(22)
+  spotifyUri String   @db.VarChar(22)
   coverUri   String?
   href       String?
   artistid   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  artist     Artist   @relation(fields: [artistid], references: [id])
   Track      Track[]
-
-  artist Artist @relation(fields: [artistid], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Artist {
@@ -86,8 +72,7 @@ model Artist {
   href       String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
-  album Album[]
+  album      Album[]
 }
 
 model Playback {
@@ -103,10 +88,8 @@ model Playback {
   incognitoMode    Boolean?
   trackid          Int
   userid           String
-
-  track Track @relation(fields: [trackid], references: [id])
-  user  User  @relation(fields: [userid], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  track            Track    @relation(fields: [trackid], references: [id])
+  user             User     @relation(fields: [userid], references: [id])
 }

@@ -3,6 +3,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 
+import { JotaiProvider } from "@/components/jotai-provider";
+import { QueryClientProvider } from "@/components/query-client-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -57,7 +59,9 @@ export default function RootLayout({
           enableSystem
           // disableTransitionOnChange
         >
-          {children}
+          <JotaiProvider>
+            <QueryClientProvider>{children}</QueryClientProvider>
+          </JotaiProvider>
         </ThemeProvider>
         <Toaster richColors closeButton />
       </body>
