@@ -1,6 +1,6 @@
-import { Image } from './shared';
-import { ExternalUrls } from './shared/ExternalUrls';
-import { Followers } from './shared/Followers';
+import { Image } from "./shared";
+import { ExternalUrls } from "./shared/ExternalUrls";
+import { Followers } from "./shared/Followers";
 
 export interface ArtistSimplified {
   external_urls: ExternalUrls;

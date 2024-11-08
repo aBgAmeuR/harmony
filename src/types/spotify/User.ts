@@ -1,5 +1,5 @@
-import { ExternalUrls, Image } from './shared';
-import { Followers } from './shared/Followers';
+import { ExternalUrls, Image } from "./shared";
+import { Followers } from "./shared/Followers";
 
 export interface UserPublic {
   display_name?: string;

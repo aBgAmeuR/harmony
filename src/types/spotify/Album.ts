@@ -1,14 +1,14 @@
-import { Artist, ArtistSimplified } from './Artist';
-import { ExternalUrls, ExternalIds, PagingObject } from './shared';
-import { Copyright } from './shared/Copyrights';
-import { Image } from './shared/Image';
-import { TrackSimplified } from './Track';
+import { Artist, ArtistSimplified } from "./Artist";
+import { ExternalIds, ExternalUrls, PagingObject } from "./shared";
+import { Copyright } from "./shared/Copyrights";
+import { Image } from "./shared/Image";
+import { TrackSimplified } from "./Track";
 
 export interface AlbumBase {
   /**
    * The type of the album.
    */
-  album_type: 'album' | 'single' | 'compilation';
+  album_type: "album" | "single" | "compilation";
   /**
    * The number of tracks in the album.
    */
@@ -46,7 +46,7 @@ export interface AlbumBase {
   /**
    * The precision with which `release_date` value is known.
    */
-  release_date_precision: 'year' | 'month' | 'day';
+  release_date_precision: "year" | "month" | "day";
   /**
    * Included in the response when a content restriction is applied.
    */
@@ -55,12 +55,12 @@ export interface AlbumBase {
      * The reason for the restriction.
      * Albums may be restricted if the content is not available in a given market, to the user's subscription type, or when the user's account is set to not play explicit content.
      */
-    reason: 'market' | 'product' | 'explicit';
+    reason: "market" | "product" | "explicit";
   };
   /**
    * The object type.
    */
-  type: 'album';
+  type: "album";
   /**
    * The Spotify URI for the album.
    */
@@ -92,7 +92,7 @@ export interface AlbumSimplified extends AlbumBase {
    * **The field is present when getting an artist's albums.**
    * Compare to album_type this field represents relationship between the artist and the album.
    */
-  album_group?: 'album' | 'single' | 'compilation' | 'appears_on';
+  album_group?: "album" | "single" | "compilation" | "appears_on";
   /**
    * The artists of the album.
    */

@@ -1,31 +1,54 @@
-import { GetFileInputs } from "@/components/get-file-inputs";
-import { Logo } from "@/components/logo";
-import { Steps } from "@/components/steps";
-import { Text, Title } from "@mantine/core";
+import Balancer from "react-wrap-balancer";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-export default function Home() {
+import { Footer } from "@/components/footer";
+import { Icons } from "@/components/icons";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
 
+export default async function HomePage() {
   return (
-    <main className="grid grid-rows-[64px_1fr_64px] min-h-screen">
-      <header className="flex items-center justify-center h-16 bg-secondary">
-        <Logo className="size-8 mx-2" />
-        <Title order={2}>Harmony</Title>
-      </header>
-      <section className="flex flex-col p-8 mx-auto w-full max-w-2xl gap-12">
-        <Text>Harmony is a website that generates stats from your Spotify data Package. It is your device that processes the data, nothing is sent to any server!</Text>
-        <Link href="/help" className="bg-secondary w-full relative flex flex-col items-center justify-center select-none p-5 rounded-lg">
-          <Text>Get my Spotify Data 👆</Text>
-          <Text>(click on this button)</Text>
-          <div className="absolute top-0 left-0 -translate-x-1/3 -translate-y-1/3">
-            <Steps number={1} />
+    <div className="flex h-screen w-screen flex-col">
+      <main className="flex flex-1 flex-col items-center justify-center gap-6">
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex gap-2">
+            <Icons.logo className="size-12 md:size-16" />
+            <h1 className="text-5xl font-semibold tracking-tight md:text-7xl">
+              Harmony
+            </h1>
           </div>
-        </Link>
-        <GetFileInputs />
-      </section>
-      <footer className="flex items-center justify-start h-16 px-4 bg-secondary">
-        <Text>Made with ❤️ by aBgAmeuR. Harmony is an open source software.</Text>
-      </footer>
-    </main>
+          <Balancer className="max-w-3xl px-2 text-center text-muted-foreground md:text-balance md:text-xl">
+            Harmony is a website that generates stats from your Spotify data
+            Package. It is your device that processes the data, nothing is sent
+            to any server!
+          </Balancer>
+        </div>
+        <div className="flex gap-2">
+          <ThemeToggle variant="outline" />
+
+          <Button aria-label="Get Started" asChild>
+            <Link href="/overview">Get Started</Link>
+          </Button>
+          <Button
+            className="group"
+            variant="ghost"
+            aria-label="View on Github"
+            asChild
+          >
+            <a href="https://github.com/aBgAmeuR/Harmony">
+              Github
+              <ArrowRight
+                className="opacity-60 transition-transform group-hover:translate-x-0.5"
+                size={16}
+                strokeWidth={2}
+                aria-hidden="true"
+              />
+            </a>
+          </Button>
+        </div>
+      </main>
+      <Footer />
+    </div>
   );
 }

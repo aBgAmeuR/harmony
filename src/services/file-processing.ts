@@ -1,22 +1,6 @@
-import { extractZipAndVerifyFiles } from "@/services/zip"
-import {
-  CleanDataType,
-  DataResults,
-  DataType,
-  SongsData,
-  StatsData,
-} from "@/types"
-
-import { storeData } from "@/lib/store"
-
-import {
-  getStatsData,
-  getTopAlbums,
-  getTopArtists,
-  getTopTracks,
-  getUserData,
-} from "./data-extractor"
-import { mergeStreamingDataAndSort } from "./file-validation"
+import { Album, Artist, db, Playback, Track } from "@/lib/db";
+import { extractZipAndGetFiles, parseZipFiles } from "@/lib/zip";
+import { DataType } from "@/types/data";
 
 /**
  * Processes files and organizes data fetching and storage.
@@ -25,133 +9,137 @@ import { mergeStreamingDataAndSort } from "./file-validation"
  */
 export async function filesProcessing(file: File) {
   try {
-    const buffer = await file.arrayBuffer()
-    const arrayBuffer = Buffer.from(buffer)
+    const buffer = await file.arrayBuffer();
+    const filesRegexPattern =
+      /Spotify Extended Streaming History\/Streaming_History_Audio_(\d{4}(-\d{4})?)_(\d+)\.json/;
 
-    const files = await extractZipAndVerifyFiles(arrayBuffer)
-    const data = await mergeStreamingDataAndSort(files)
-    const results = await fetchData(data)
+    console.time("Processing time");
+    console.log("Processing files...");
+    const files = await extractZipAndGetFiles(buffer, filesRegexPattern);
+    const data = parseZipFiles<DataType>(files);
 
-    storeData(results)
+    db.delete();
+    db.open();
 
-    return { message: "ok" }
+    await saveData(data);
+
+    console.log("artist :", await db.artist.count());
+    console.log("album :", await db.album.count());
+    console.log("track :", await db.track.count());
+    console.log("playback :", await db.playback.count());
+
+    console.timeEnd("Processing time");
+
+    return { message: "ok" };
   } catch (error) {
-    console.error("Error processing files:", error as Error)
-    return { message: "error", error: (error as Error).toString() }
+    console.error("Error processing files:", error as Error);
+    return { message: "error", error: (error as Error).toString() };
   }
 }
 
-/**
- * Fetches data and details based on processed files.
- * @param data Merged and sorted data from files.
- * @returns An object containing all user, ranking, and detailed data.
- */
-async function fetchData(data: {
-  long_term_data: CleanDataType[]
-  medium_term_data: CleanDataType[]
-  short_term_data: CleanDataType[]
-  lastTrack: DataType
-  long_term_raw_data: DataType[]
-  medium_term_raw_data: DataType[]
-  short_term_raw_data: DataType[]
-}): Promise<DataResults> {
-  const { long_term_data, medium_term_data, short_term_data, lastTrack } = data
+async function saveData(data: DataType[][]) {
+  try {
+    await db.transaction(
+      "rw",
+      db.track,
+      db.artist,
+      db.album,
+      db.playback,
+      async () => {
+        const artistMap = new Map<string, number>();
+        const albumMap = new Map<string, number>();
+        const trackMap = new Map<string, number>();
 
-  const user = await getUserData(lastTrack)
-  const songsData = await fetchSongsData({
-    long_term_data,
-    medium_term_data,
-    short_term_data,
-  })
-  const statsData = await fetchStatsData({
-    long_term_data,
-    medium_term_data,
-    short_term_data,
-    long_term_raw_data: data.long_term_raw_data,
-    medium_term_raw_data: data.medium_term_raw_data,
-    short_term_raw_data: data.short_term_raw_data,
-  })
+        // Préparez des tableaux pour stocker les entités à ajouter en batch
+        const artistsToAdd: Artist[] = [];
+        const albumsToAdd: Album[] = [];
+        const tracksToAdd: Track[] = [];
+        const playbacksToAdd: Playback[] = [];
 
-  return {
-    user,
-    songs: songsData,
-    stats: statsData,
-  }
-}
+        for (const dataArray of data) {
+          dataArray.sort((a, b) =>
+            a.master_metadata_track_name?.localeCompare(
+              b.master_metadata_track_name
+            )
+          );
+          for (const item of dataArray) {
+            if (item.ms_played <= 3000 || !item.spotify_track_uri) {
+              continue;
+            }
 
-/**
- * Fetches basic data for the user.
- * @param data Clean data from files.
- * @returns Basic data for the user.
- */
-async function fetchSongsData(data: {
-  long_term_data: CleanDataType[]
-  medium_term_data: CleanDataType[]
-  short_term_data: CleanDataType[]
-}): Promise<SongsData> {
-  const [long_term_tracks, long_term_artists, long_term_albums] =
-    await Promise.all([
-      getTopTracks(data.long_term_data),
-      getTopArtists(data.long_term_data),
-      getTopAlbums(data.long_term_data),
-    ])
+            // Gestion de l'artiste
+            let artistId = artistMap.get(
+              item.master_metadata_album_artist_name
+            );
+            if (!artistId) {
+              artistId = artistsToAdd.length; // Id temporaire
+              const newArtist = {
+                id: artistId,
+                name: item.master_metadata_album_artist_name
+              };
+              artistsToAdd.push(newArtist);
+              artistMap.set(item.master_metadata_album_artist_name, artistId);
+            }
 
-  const [medium_term_tracks, medium_term_artists, medium_term_albums] =
-    await Promise.all([
-      getTopTracks(data.medium_term_data),
-      getTopArtists(data.medium_term_data),
-      getTopAlbums(data.medium_term_data),
-    ])
+            // Gestion de l'album
+            const albumKey = `${item.master_metadata_album_album_name}-${artistId}`;
+            let albumId = albumMap.get(albumKey);
+            if (!albumId) {
+              albumId = albumsToAdd.length; // Id temporaire
+              const newAlbum = {
+                id: albumId,
+                name: item.master_metadata_album_album_name,
+                artist_id: artistId
+              };
+              albumsToAdd.push(newAlbum);
+              albumMap.set(albumKey, albumId);
+            }
 
-  const [short_term_tracks, short_term_artists, short_term_albums] =
-    await Promise.all([
-      getTopTracks(data.short_term_data),
-      getTopArtists(data.short_term_data),
-      getTopAlbums(data.short_term_data),
-    ])
+            // Gestion du morceau
+            const trackKey = `${item.master_metadata_track_name}-${artistId}-${albumId}`;
+            let trackId = trackMap.get(trackKey);
+            if (!trackId) {
+              trackId = tracksToAdd.length; // Id temporaire
+              const newTrack = {
+                id: trackId,
+                name: item.master_metadata_track_name,
+                artist_id: artistId,
+                album_id: albumId,
+                spotify_track_uri: item.spotify_track_uri
+              };
+              tracksToAdd.push(newTrack);
+              trackMap.set(trackKey, trackId);
+            }
 
-  return {
-    long_term: {
-      tracks: long_term_tracks,
-      artists: long_term_artists,
-      albums: long_term_albums,
-    },
-    medium_term: {
-      tracks: medium_term_tracks,
-      artists: medium_term_artists,
-      albums: medium_term_albums,
-    },
-    short_term: {
-      tracks: short_term_tracks,
-      artists: short_term_artists,
-      albums: short_term_albums,
-    },
-  }
-}
+            // Gestion de la lecture
+            const newPlayback = {
+              id: playbacksToAdd.length, // Temporary id
+              timestamp: new Date(item.ts),
+              platform: item.platform,
+              ms_played: item.ms_played,
+              reason_start: item.reason_start,
+              reason_end: item.reason_end,
+              shuffle: item.shuffle,
+              skipped: item.skipped,
+              offline: item.offline,
+              offline_timestamp: item.offline_timestamp,
+              incognito_mode: item.incognito_mode,
+              track_id: trackId
+            };
+            playbacksToAdd.push(newPlayback);
+          }
+        }
 
-/**
- * Fetches statistics data based on clean data.
- * @param data Clean data from files.
- * @returns Statistics data based on clean data.
- */
-async function fetchStatsData(data: {
-  long_term_data: CleanDataType[]
-  medium_term_data: CleanDataType[]
-  short_term_data: CleanDataType[]
-  long_term_raw_data: DataType[]
-  medium_term_raw_data: DataType[]
-  short_term_raw_data: DataType[]
-}): Promise<StatsData> {
-  const [long_term_stats, medium_term_stats, short_term_stats] =
-    await Promise.all([
-      getStatsData(data.long_term_data, data.long_term_raw_data),
-      getStatsData(data.medium_term_data, data.medium_term_raw_data),
-      getStatsData(data.short_term_data, data.short_term_raw_data),
-    ])
-
-  return {
-    long_term: long_term_stats,
-    medium_term: medium_term_stats,
-    short_term: short_term_stats,
+        // Ajoutez les entités en batch dans la base de données
+        await Promise.all([
+          db.artist.bulkAdd(artistsToAdd, { allKeys: true }),
+          db.album.bulkAdd(albumsToAdd, { allKeys: true }),
+          db.track.bulkAdd(tracksToAdd, { allKeys: true }),
+          db.playback.bulkAdd(playbacksToAdd)
+        ]);
+      }
+    );
+  } catch (error) {
+    console.error("Failed to save data:", error);
   }
 }

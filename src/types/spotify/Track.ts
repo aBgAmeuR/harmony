@@ -1,7 +1,7 @@
-import { AlbumSimplified } from './Album';
-import { ArtistSimplified } from './Artist';
-import { ExternalIds } from './shared/ExternalIds';
-import { ExternalUrls } from './shared/ExternalUrls';
+import { AlbumSimplified } from "./Album";
+import { ArtistSimplified } from "./Artist";
+import { ExternalIds } from "./shared/ExternalIds";
+import { ExternalUrls } from "./shared/ExternalUrls";
 
 export interface TrackSimplified {
   /**
@@ -41,7 +41,7 @@ export interface TrackSimplified {
    * Included in the response when a content restriction is applied.
    */
   restrictions?: {
-    reason: 'market' | 'product' | 'explicit';
+    reason: "market" | "product" | "explicit";
   };
   /**
    * Name of the track.
@@ -58,7 +58,7 @@ export interface TrackSimplified {
   /**
    * The object type: "track".
    */
-  type: 'track';
+  type: "track";
   /**
    * The Spotify URI for the track.
    */
