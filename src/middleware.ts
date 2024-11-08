@@ -4,7 +4,7 @@ import authConfig from "@/lib/auth.config";
 
 const { auth } = NextAuth(authConfig);
 export default auth(async (req) => {
-  if (!req.auth && req.nextUrl.pathname !== "/") {
+  if (!req.auth && req.nextUrl.pathname !== "/" && !req.nextUrl.pathname.startsWith("/api/auth")) {
     const newUrl = new URL("/api/login", req.nextUrl.origin);
     newUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
 
