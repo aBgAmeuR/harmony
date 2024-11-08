@@ -8,6 +8,7 @@ module.exports = {
     "plugin:prettier/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:tailwindcss/recommended",
+    "plugin:@tanstack/query/recommended",
     "eslint-config-prettier"
   ],
   plugins: ["simple-import-sort", "prettier", "@typescript-eslint"],

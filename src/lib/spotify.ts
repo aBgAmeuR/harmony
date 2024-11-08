@@ -1,7 +1,6 @@
 "use server";
 
 import { auth } from "./auth";
-import { env } from "./env";
 import { prisma } from "./prisma";
 
 import { Track } from "@/types/spotify";
@@ -11,30 +10,64 @@ async function getSpotifyAccessToken() {
   if (!session || !session.user) {
     throw new Error("Unauthorized");
   }
+
   const account = await prisma.account.findFirst({
     where: { userId: session.user.id }
   });
+  if (!account || !account.access_token) {
+    throw new Error("Unauthorized");
+  }
   if (!account || !account.refresh_token) {
     throw new Error("Unauthorized");
   }
 
-  const now = new Date().getTime();
-  if (account.access_token && account.expires_at && account.expires_at > now) {
+  const now = Math.floor(Date.now() / 1000);
+  if (account.expires_at === null) {
+    throw new Error("Unauthorized");
+  }
+  const expiresAt = Number(account.expires_at);
+  const difference = Math.floor((expiresAt - now) / 60);
+
+  if (difference > 10) {
     return account.access_token;
   }
 
-  const client_id = env.SPOTIFY_CLIENT_ID;
-
   const response = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString("base64")}`
+    },
     body: new URLSearchParams({
       grant_type: "refresh_token",
       refresh_token: account.refresh_token,
-      client_id: client_id
-    })
+      client_id: process.env.SPOTIFY_CLIENT_ID || ""
+    }),
+    cache: "no-cache"
   });
+  console.log("RESPONSE", await response.json());
+
+  if (!response.ok) {
+    throw new Error("Failed to refresh access token");
+  }
 
   const data = await response.json();
+  const { access_token, expires_in, refresh_token } = data;
+  const timestamp = Math.floor((Date.now() + expires_in * 1000) / 1000);
+
+  await prisma.account.update({
+    where: {
+      provider_providerAccountId: {
+        provider: "spotify",
+        providerAccountId: account.providerAccountId
+      }
+    },
+    data: {
+      access_token,
+      expires_at: timestamp,
+      refresh_token
+    }
+  });
 
   return data.access_token;
 }
@@ -118,15 +151,12 @@ export async function getUserInfo(id: string) {
   return data;
 }
 
-type getUserTopItemsProps = {
-  type: "tracks" | "artists";
-  time_range: "short_term" | "medium_term" | "long_term";
-};
-export async function getUserTopItems<T>({
-  type,
-  time_range
-}: getUserTopItemsProps) {
+export async function getUserTopItems<T>(
+  type: "tracks" | "artists",
+  time_range: "short_term" | "medium_term" | "long_term"
+) {
   const accessToken = await getSpotifyAccessToken();
+  console.log("ACCESS TOKEN", type, time_range);
 
   const url = `https://api.spotify.com/v1/me/top/${type}?time_range=${time_range}&limit=50`;
 
