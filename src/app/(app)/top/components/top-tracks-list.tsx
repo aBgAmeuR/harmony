@@ -31,22 +31,24 @@ export const TopTracksList = () => {
           : "grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
       )}
     >
-      {tracks?.map((track, index) => (
-        <div key={track.id}>
-          <TopListItemCard
-            layout={layout}
-            imageUri={track.album.images[0].url}
-            title={track.name}
-            subtitle={track.artists.map((artist) => artist.name).join(", ")}
-            rank={index + 1}
-            link={track.external_urls.spotify}
-            album={track.album.name}
-            showSubtitle
-            duration={track.duration_ms}
-          />
-          {layout === "list" && index < tracks.length - 1 && <Separator />}
-        </div>
-      ))}
+      {tracks
+        ?.filter((track) => track.duration_ms > 0)
+        .map((track, index) => (
+          <div key={track.id}>
+            <TopListItemCard
+              layout={layout}
+              imageUri={track.album.images[0]?.url}
+              title={track.name}
+              subtitle={track.artists.map((artist) => artist.name).join(", ")}
+              rank={index + 1}
+              link={track.external_urls.spotify}
+              album={track.album.name}
+              showSubtitle
+              duration={track.duration_ms}
+            />
+            {layout === "list" && index < tracks.length - 1 && <Separator />}
+          </div>
+        ))}
     </div>
   );
 };
