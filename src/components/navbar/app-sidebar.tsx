@@ -20,7 +20,23 @@ import {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
 
-  if (!session || !session.user?.name || !session.user?.image) return null;
+  if (!session || !session.user?.name || !session.user?.image)
+    return (
+      <Sidebar collapsible="icon" {...props}>
+        <SidebarHeader>
+          <NavHeader Logo={data.header.Logo} name={data.header.name} />
+        </SidebarHeader>
+        <SidebarContent>
+          <NavMain items={data.stats} label="Stats" />
+          {/* <NavMain items={data.package} label="Package" /> */}
+          {/* <NavMain items={data.advanced} label="Advanced" /> */}
+          <NavMain items={data.settings} label="Settings" />
+          <NavSecondary items={data.navSecondary} className="mt-auto" />
+        </SidebarContent>
+        <SidebarFooter />
+        <SidebarRail />
+      </Sidebar>
+    );
 
   return (
     <Sidebar collapsible="icon" {...props}>
