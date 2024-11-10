@@ -1,10 +1,12 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { CircleX, Info } from "lucide-react";
 
 import { TopListItemCard } from "./top-list-item-card";
 import { TopListSkeleton } from "./top-list-skeleton";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { getUserTopItems } from "@/lib/spotify";
 import { useTopTimeRange } from "@/lib/store";
@@ -20,8 +22,28 @@ export const TopTracksList = () => {
     queryFn: async () => await getUserTopItems<Track>("tracks", timeRange)
   });
 
-  if (isError) return <div>Failed to load tracks</div>;
+  if (isError)
+    return (
+      <Alert variant="destructive">
+        <CircleX className="size-4" />
+        <AlertTitle>Failed to load tracks</AlertTitle>
+        <AlertDescription>Try refreshing the page</AlertDescription>
+      </Alert>
+    );
+
   if (!tracks) return <TopListSkeleton layout={layout} />;
+
+  if (tracks.length === 0) {
+    return (
+      <Alert variant="info">
+        <Info className="size-4" />
+        <AlertTitle>No tracks found</AlertTitle>
+        <AlertDescription>
+          Try listening to more music to see some tracks here
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div
