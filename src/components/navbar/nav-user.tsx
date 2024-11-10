@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronsUpDown, LogOut, Moon, SunMedium } from "lucide-react";
+import { User } from "next-auth";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 
@@ -34,10 +35,7 @@ import {
 } from "@/components/ui/sidebar";
 
 type NavUserProps = {
-  user: {
-    name: string;
-    avatar: string;
-  };
+  user: User;
 };
 
 export function NavUser({ user }: NavUserProps) {
@@ -64,8 +62,10 @@ export function NavUser({ user }: NavUserProps) {
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
                 <Avatar className="size-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarImage src={user.id ?? ""} alt={user.name ?? ""} />
+                  <AvatarFallback className="rounded-lg">
+                    {(user.name || user.id)?.slice(0, 2)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{user.name}</span>
@@ -83,8 +83,10 @@ export function NavUser({ user }: NavUserProps) {
               <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                   <Avatar className="size-8 rounded-lg">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                    <AvatarImage src={user.image ?? ""} alt={user.name ?? ""} />
+                    <AvatarFallback className="rounded-lg">
+                      {(user.name || user.id)?.slice(0, 2)}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">{user.name}</span>
