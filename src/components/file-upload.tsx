@@ -5,23 +5,13 @@ import { FileArchive, LoaderCircle, Upload, X } from "lucide-react";
 
 import { Button } from "./ui/button";
 
+import { filesProcessing } from "@/services/file-processing";
+
 export const FileUpload = () => {
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [processingTime, setProcessingTime] = useState(0);
   const [inTransition, startTransition] = useTransition();
-  const workerRef = useRef<Worker>();
-
-  useEffect(() => {
-    workerRef.current = new Worker(
-      new URL("../../public/worker.ts", import.meta.url)
-    );
-    // workerRef.current.onmessage = (event: MessageEvent<number>) =>
-    //   alert(`WebWorker Response => ${event.data}`);
-    return () => {
-      workerRef.current?.terminate();
-    };
-  }, []);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -53,14 +43,14 @@ export const FileUpload = () => {
   const handleUpload = async () => {
     if (file) {
       startTransition(async () => {
-        workerRef.current?.postMessage({ file });
+        await filesProcessing(file);
       });
     }
   };
 
   return (
     <>
-      <div className="mt-6">
+      <div>
         <input
           ref={fileInputRef}
           type="file"

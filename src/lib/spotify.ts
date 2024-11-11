@@ -3,7 +3,7 @@
 import { auth } from "./auth";
 import { prisma } from "./prisma";
 
-import { RecentlyPlayed, Track } from "@/types/spotify";
+import { Artist, RecentlyPlayed, Track } from "@/types/spotify";
 
 async function getSpotifyAccessToken() {
   const session = await auth();
@@ -72,7 +72,7 @@ async function getSpotifyAccessToken() {
 export async function getSpotifyTracksInfo(uris: string[]) {
   const accessToken = await getSpotifyAccessToken();
 
-  const ids = uris.map((uri) => uri.split(":").pop()).join(",");
+  const ids = uris.join(",");
   const url = `https://api.spotify.com/v1/tracks?ids=${ids}`;
 
   const response = await fetch(url, {
@@ -81,40 +81,32 @@ export async function getSpotifyTracksInfo(uris: string[]) {
     }
   });
 
-  const data = (await response.json()) as { tracks: Track[] };
-  return data.tracks;
+  if (response.status === 429) {
+    throw new Error("Spotify Rate limit exceeded");
+  }
+
+  const data = await response.json();
+  return data.tracks as Track[];
 }
 
-export async function getSpotifyArtistsInfo(tracksUris: string[]) {
+export async function getSpotifyArtistsInfo(artistUris: string[]) {
   const accessToken = await getSpotifyAccessToken();
 
-  const tracksIds = tracksUris.map((uri) => uri.split(":").pop()).join(",");
-  const tracksUrl = `https://api.spotify.com/v1/tracks?ids=${tracksIds}`;
-
-  const tracksResponse = await fetch(tracksUrl, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  });
-
-  const tracksData = await tracksResponse.json();
-  const tracks = tracksData.tracks;
-
-  const artistsUris: string[] = tracks.map(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (track: any) => track.artists[0].uri
-  );
-  const artistsIds = artistsUris.map((uri) => uri.split(":").pop()).join(",");
+  const artistsIds = artistUris.join(",");
   const artistsUrl = `https://api.spotify.com/v1/artists?ids=${artistsIds}`;
 
-  const artistsResponse = await fetch(artistsUrl, {
+  const response = await fetch(artistsUrl, {
     headers: {
       Authorization: `Bearer ${accessToken}`
     }
   });
 
-  const artistsData = await artistsResponse.json();
-  return artistsData.artists;
+  if (response.status === 429) {
+    throw new Error("Spotify Rate limit exceeded");
+  }
+
+  const artistsData = await response.json();
+  return artistsData.artists as Artist[];
 }
 
 export async function getSpotifyAlbumsInfo(uris: string[]) {
@@ -130,7 +122,7 @@ export async function getSpotifyAlbumsInfo(uris: string[]) {
   });
 
   const data = await response.json();
-  return data.tracks;
+  return data.tracks as Track[];
 }
 
 export async function getUserTopItems<T>(
