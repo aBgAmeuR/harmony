@@ -43,13 +43,13 @@ model Track {
   title        String
   href         String?
   albumid      String
-  duration     Int?
-  track_number Int?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
+  duration     Int?
+  track_number Int?
   playbacks    Playback[]
   album        Album      @relation(fields: [albumid], references: [id])
-  artists      Artist[]
+  artists      Artist[]   @relation("ArtistToTrack")
 }
 
 model Album {
@@ -57,12 +57,12 @@ model Album {
   title       String
   coverUri    String?
   href        String?
-  releaseDate DateTime? @db.Date
-  totalTracks Int?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  artists     Artist[]
+  releaseDate DateTime? @db.Date
+  totalTracks Int?
   tracks      Track[]
+  artists     Artist[]  @relation("AlbumToArtist")
 }
 
 model Artist {
@@ -70,11 +70,11 @@ model Artist {
   name      String
   coverUri  String?
   href      String?
-  genres    String[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  albums    Album[]
-  tracks    Track[]
+  genres    String[]
+  albums    Album[]  @relation("AlbumToArtist")
+  tracks    Track[]  @relation("ArtistToTrack")
 }
 
 model Playback {
@@ -89,11 +89,11 @@ model Playback {
   offlineTimestamp Int?
   incognitoMode    Boolean?
   trackid          String
-  packageId        Int
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  track            Track    @relation(fields: [trackid], references: [id])
+  packageId        Int
   package          Package  @relation(fields: [packageId], references: [id])
+  track            Track    @relation(fields: [trackid], references: [id])
 }
 
 model Package {
