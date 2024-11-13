@@ -2,8 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getSpotifyArtistsInfo } from "@/lib/spotify";
-import { chunkSet } from "@/lib/utils";
+import { Spotify } from "@/lib/spotify-obj";
 import { Artist, Track } from "@/types/spotify";
 
 /**
@@ -18,21 +17,22 @@ export const saveNewArtistsAction = async (tracks: Track[]) => {
 
   const artistsUris = await getUniqueArtists(tracks);
 
-  const artists = await fetchArtistsInfo(new Set(artistsUris));
+  const spotify = new Spotify();
+  const artists = await spotify.getSpotifyArtistsInfo(new Set(artistsUris));
 
   await saveArtists(artists);
 };
 
-const fetchArtistsInfo = async (artists: Set<string>) => {
-  const artistsChunks = chunkSet(artists, 50);
-  const artistsData = await Promise.all(
-    artistsChunks.map((chunk) =>
-      getSpotifyArtistsInfo(Array.from(chunk.values()))
-    )
-  );
+// const fetchArtistsInfo = async (artists: Set<string>) => {
+//   const artistsChunks = chunkSet(artists, 50);
+//   const artistsData = await Promise.all(
+//     artistsChunks.map((chunk) =>
+//       getSpotifyArtistsInfo(Array.from(chunk.values()))
+//     )
+//   );
 
-  return artistsData.flat();
-};
+//   return artistsData.flat();
+// };
 
 const getUniqueArtists = async (tracks: Track[]) => {
   const artists = await prisma.artist.findMany({

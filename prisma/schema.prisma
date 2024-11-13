@@ -79,14 +79,14 @@ model Artist {
 
 model Playback {
   id               Int      @id @default(autoincrement())
-  timestamp        DateTime @db.Time(0)
-  msPlayed         Int
-  reasonStart      String   @db.VarChar(16)
-  reasonEnd        String   @db.VarChar(16)
+  timestamp        DateTime
+  msPlayed         BigInt
+  reasonStart      String
+  reasonEnd        String
   shuffle          Boolean?
   skipped          Boolean?
   offline          Boolean?
-  offlineTimestamp Int?
+  offlineTimestamp BigInt?
   incognitoMode    Boolean?
   trackid          String
   createdAt        DateTime @default(now())

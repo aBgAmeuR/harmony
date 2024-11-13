@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Playback" ALTER COLUMN "reasonStart" SET DATA TYPE TEXT,
+ALTER COLUMN "reasonEnd" SET DATA TYPE TEXT;

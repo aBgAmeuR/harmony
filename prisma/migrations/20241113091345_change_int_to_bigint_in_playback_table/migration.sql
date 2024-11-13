@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Playback" ALTER COLUMN "msPlayed" SET DATA TYPE BIGINT,
+ALTER COLUMN "offlineTimestamp" SET DATA TYPE BIGINT;

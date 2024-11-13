@@ -5,7 +5,7 @@ import { prisma } from "./prisma";
 
 import { Artist, RecentlyPlayed, Track } from "@/types/spotify";
 
-async function getSpotifyAccessToken() {
+export async function getSpotifyAccessToken() {
   const session = await auth();
   if (!session || !session.user) {
     throw new Error("Unauthorized");
@@ -81,12 +81,16 @@ export async function getSpotifyTracksInfo(uris: string[]) {
     }
   });
 
+  const retryAfterDelay = response.headers.get("Retry-After");
   if (response.status === 429) {
     throw new Error("Spotify Rate limit exceeded");
   }
 
   const data = await response.json();
-  return data.tracks as Track[];
+  return {
+    tracks: data.tracks as Track[],
+    retryAfterDelay: retryAfterDelay ? Number(retryAfterDelay) : 0
+  };
 }
 
 export async function getSpotifyArtistsInfo(artistUris: string[]) {
@@ -101,12 +105,16 @@ export async function getSpotifyArtistsInfo(artistUris: string[]) {
     }
   });
 
+  const retryAfterDelay = response.headers.get("Retry-After");
   if (response.status === 429) {
     throw new Error("Spotify Rate limit exceeded");
   }
 
   const artistsData = await response.json();
-  return artistsData.artists as Artist[];
+  return {
+    artists: artistsData.artists as Artist[],
+    retryAfterDelay: retryAfterDelay ? Number(retryAfterDelay) : 0
+  };
 }
 
 export async function getSpotifyAlbumsInfo(uris: string[]) {

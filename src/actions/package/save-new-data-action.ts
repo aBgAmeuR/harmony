@@ -4,8 +4,7 @@ import { saveNewArtistsAction } from "./save-new-artists-action";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getSpotifyTracksInfo } from "@/lib/spotify";
-import { chunkSet } from "@/lib/utils";
+import { Spotify } from "@/lib/spotify-obj";
 import { Track } from "@/types/spotify";
 
 /**
@@ -18,21 +17,11 @@ export const saveNewDataAction = async (newTracks: Set<string>) => {
 
   if (!session || !session.user) return new Error("User not authenticated");
 
-  const tracks = await fetchTracksInfo(newTracks);
+  const spotify = new Spotify();
+  const tracks = await spotify.getSpotifyTracksInfo(newTracks);
 
   await saveNewArtistsAction(tracks);
   await saveTracks(tracks);
-};
-
-const fetchTracksInfo = async (tracks: Set<string>) => {
-  const tracksChunks = chunkSet(tracks, 50);
-  const tracksData = await Promise.all(
-    tracksChunks.map((chunk) =>
-      getSpotifyTracksInfo(Array.from(chunk.values()))
-    )
-  );
-
-  return tracksData.flat();
 };
 
 const saveTracks = async (tracks: Track[]) => {
@@ -46,35 +35,59 @@ const saveTracks = async (tracks: Track[]) => {
     )
       continue;
 
-    await prisma.track.create({
-      data: {
+    try {
+      await prisma.track.create({
+        data: {
+          id: track.id,
+          title: track.name,
+          href: track?.external_urls?.spotify,
+          duration: track.duration_ms,
+          track_number: track.track_number,
+          album: {
+            connectOrCreate: {
+              where: { id: track.album.id },
+              create: {
+                id: track.album.id,
+                title: track.album.name,
+                coverUri: track.album.images[0]?.url,
+                href: track?.external_urls?.spotify,
+                releaseDate: new Date(track.album.release_date) || null,
+                totalTracks: track.album.total_tracks,
+                artists: {
+                  connect: track.album.artists.map((artist) => ({
+                    id: artist.id
+                  }))
+                }
+              }
+            }
+          },
+          artists: {
+            connect: track.artists.map((artist) => ({ id: artist.id }))
+          }
+        }
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_) {
+      console.log("Error saving track:", {
         id: track.id,
         title: track.name,
         href: track?.external_urls?.spotify,
         duration: track.duration_ms,
         track_number: track.track_number,
         album: {
-          connectOrCreate: {
-            where: { id: track.album.id },
-            create: {
-              id: track.album.id,
-              title: track.album.name,
-              coverUri: track.album.images[0]?.url,
-              href: track?.external_urls?.spotify,
-              releaseDate: new Date(track.album.release_date) || null,
-              totalTracks: track.album.total_tracks,
-              artists: {
-                connect: track.album.artists.map((artist) => ({
-                  id: artist.id
-                }))
-              }
-            }
-          }
+          id: track.album.id,
+          title: track.album.name,
+          coverUri: track.album.images[0]?.url,
+          href: track?.external_urls?.spotify,
+          releaseDate: new Date(track.album.release_date) || null,
+          totalTracks: track.album.total_tracks,
+          artists: track.album.artists.map((artist) => ({
+            id: artist.id
+          }))
         },
-        artists: {
-          connect: track.artists.map((artist) => ({ id: artist.id }))
-        }
-      }
-    });
+        artists: track.artists.map((artist) => ({ id: artist.id }))
+      });
+      continue;
+    }
   }
 };

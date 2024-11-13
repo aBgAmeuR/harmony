@@ -1,5 +1,7 @@
+import { createPackageAction } from "@/actions/package/create-package-action";
 import { getAllTracksAction } from "@/actions/package/get-all-tracks-action";
 import { saveNewDataAction } from "@/actions/package/save-new-data-action";
+import { savePlaybacksAction } from "@/actions/package/save-playbacks-action";
 import { extractZipAndGetFiles, parseZipFiles } from "@/lib/zip";
 import { DataType } from "@/types/data";
 
@@ -42,103 +44,27 @@ const saveData = async (data: DataType[][]) => {
   for (const track of data.flat()) {
     const trackUri = track.spotify_track_uri?.split(":")[2];
 
-    if (!tracks.has(trackUri) && !newTracks.has(trackUri)) {
+    if (!tracks.has(trackUri) && !newTracks.has(trackUri) && trackUri) {
       newTracks.add(trackUri);
     }
   }
 
   await saveNewDataAction(newTracks);
+  const packageId = await createPackageAction(data[0][0]);
+
+  if (packageId instanceof Error) {
+    console.error("Failed to create package:", packageId);
+    return;
+  }
+
+  const dataFlat = data.flat();
+  const chunkSize = 100;
+  const chunkTracks = [];
+  for (let i = 0; i < dataFlat.length; i += chunkSize) {
+    chunkTracks.push(dataFlat.slice(i, i + chunkSize));
+  }
+
+  for (const chunk of chunkTracks) {
+    await savePlaybacksAction(chunk, packageId);
+  }
 };
-
-// const processArtists = async (data: DataType[][]) => {
-//   const newArtists = new Map<string, string>();
-//   const artists = await getAllArtistsAction();
-
-//   if (!artists) {
-//     console.error("Failed to fetch artists");
-//     return;
-//   }
-
-//   for (const artist of data.flat()) {
-//     if (
-//       !artists.has(artist.master_metadata_album_artist_name) &&
-//       artist.spotify_track_uri
-//     ) {
-//       newArtists.set(
-//         artist.master_metadata_album_artist_name,
-//         artist.spotify_track_uri.split(":")[2]
-//       );
-//     }
-//   }
-
-//   if (newArtists.size < 0) return;
-
-//   const chunkedArtists = chunkMap(newArtists, 5000);
-//   for (const chunk of chunkedArtists) {
-//     await saveNewArtistsAction(chunk);
-//   }
-// };
-
-// const processAlbums = async (data: DataType[][]) => {
-//   const newAlbums = new Map<string, string>();
-//   const albums = await getAllAlbumsAction();
-
-//   if (!albums) {
-//     console.error("Failed to fetch albums");
-//     return;
-//   }
-
-//   for (const album of data.flat()) {
-//     if (!album.spotify_track_uri) continue;
-
-//     const key = `${album.master_metadata_album_artist_name}::${album.master_metadata_album_album_name}`;
-//     if (!albums.has(key)) {
-//       newAlbums.set(key, album.spotify_track_uri.split(":")[2]);
-//     }
-//   }
-
-//   if (newAlbums.size < 0) return;
-
-//   const chunkedAlbums = chunkMap(newAlbums, 5000);
-//   for (const chunk of chunkedAlbums) {
-//     const transformedChunk = new Map(
-//       Array.from(chunk.entries()).map(([key, value]) => {
-//         const [artist, title] = key.split("::");
-//         return [{ artist, title }, value];
-//       })
-//     );
-//     await saveNewAlbumsAction(transformedChunk);
-//   }
-// };
-
-// const processTracks = async (data: DataType[][]) => {
-//   const newTracks = new Map<string, string>();
-//   const tracks = await getAllTracksAction();
-
-//   if (!tracks) {
-//     console.error("Failed to fetch tracks");
-//     return;
-//   }
-
-//   for (const track of data.flat()) {
-//     if (!track.spotify_track_uri) continue;
-
-//     const key = `${track.master_metadata_album_artist_name}::${track.master_metadata_album_album_name}::${track.master_metadata_track_name}`;
-//     if (!tracks.has(key)) {
-//       newTracks.set(key, track.spotify_track_uri.split(":")[2]);
-//     }
-//   }
-
-//   if (newTracks.size < 0) return;
-
-//   const chunkedTracks = chunkMap(newTracks, 5000);
-//   for (const chunk of chunkedTracks) {
-//     const transformedChunk = new Map(
-//       Array.from(chunk.entries()).map(([key, value]) => {
-//         const [artist, album, title] = key.split("::");
-//         return [{ artist, album, title }, value];
-//       })
-//     );
-//     await saveNewTracksAction(transformedChunk);
-//   }
-// };
