@@ -3,82 +3,83 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
   accounts      Account[]
   package       Package[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Account {
-  userId            String
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String   @db.ObjectId
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        BigInt?
+  refresh_token     String?  @db.String
+  access_token      String?  @db.String
+  expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?
+  id_token          String?  @db.String
   session_state     String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([provider, providerAccountId])
+  @@unique([provider, providerAccountId])
 }
 
 model Track {
-  id           String     @id @db.VarChar(22)
+  id           String        @id @map("_id") @db.ObjectId
   title        String
   href         String?
-  albumid      String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  albumid      String        @db.ObjectId
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   duration     Int?
   track_number Int?
   playbacks    Playback[]
-  album        Album      @relation(fields: [albumid], references: [id])
-  artists      Artist[]   @relation("ArtistToTrack")
+  album        Album         @relation(fields: [albumid], references: [id])
+  artists ArtistTrack[]
 }
 
 model Album {
-  id          String    @id @db.VarChar(22)
+  id          String        @id @map("_id") @db.ObjectId
   title       String
   coverUri    String?
   href        String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  releaseDate DateTime? @db.Date
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  releaseDate DateTime?     @db.Date
   totalTracks Int?
   tracks      Track[]
-  artists     Artist[]  @relation("AlbumToArtist")
+  artists     AlbumArtist[]
 }
 
 model Artist {
-  id        String   @id @db.VarChar(22)
+  id        String        @id @map("_id") @db.ObjectId
   name      String
   coverUri  String?
   href      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
   genres    String[]
-  albums    Album[]  @relation("AlbumToArtist")
-  tracks    Track[]  @relation("ArtistToTrack")
+  albums    AlbumArtist[]
+  tracks    ArtistTrack[]
 }
 
 model Playback {
-  id               Int      @id @default(autoincrement())
+  id               String   @id @map("_id") @db.ObjectId
   timestamp        DateTime
   msPlayed         BigInt
   reasonStart      String
@@ -88,20 +89,40 @@ model Playback {
   offline          Boolean?
   offlineTimestamp BigInt?
   incognitoMode    Boolean?
-  trackid          String
+  trackid          String   @db.ObjectId
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  packageId        Int
+  packageId        String   @db.ObjectId
   package          Package  @relation(fields: [packageId], references: [id])
   track            Track    @relation(fields: [trackid], references: [id])
 }
 
 model Package {
-  id         Int        @id @default(autoincrement())
+  id         String     @id @map("_id") @db.ObjectId
   spotify_id String
-  userId     String
+  userId     String     @db.ObjectId
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
   user       User       @relation(fields: [userId], references: [id])
   playbacks  Playback[]
+}
+
+model ArtistTrack {
+  id       String @id @map("_id") @db.ObjectId
+  artistid String @db.ObjectId
+  trackid  String @db.ObjectId
+  artist   Artist @relation(fields: [artistid], references: [id], onDelete: Cascade)
+  track    Track  @relation(fields: [trackid], references: [id], onDelete: Cascade)
+
+  @@unique([artistid, trackid])
+}
+
+model AlbumArtist {
+  id       String @id @map("_id") @db.ObjectId
+  albumid  String @db.ObjectId
+  artistid String @db.ObjectId
+  album    Album  @relation(fields: [albumid], references: [id], onDelete: Cascade)
+  artist   Artist @relation(fields: [artistid], references: [id], onDelete: Cascade)
+
+  @@unique([albumid, artistid])
 }
