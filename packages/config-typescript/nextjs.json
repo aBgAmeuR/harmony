@@ -15,7 +15,10 @@
     "module": "esnext",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "paths": {
+      "@ui/*": ["../../packages/ui/src/*"]
+    }
   },
   "include": ["src", "next-env.d.ts"],
   "exclude": ["node_modules"]
