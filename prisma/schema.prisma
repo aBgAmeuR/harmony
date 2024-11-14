@@ -50,7 +50,7 @@ model Track {
   track_number Int?
   playbacks    Playback[]
   album        Album         @relation(fields: [albumid], references: [id])
-  artists ArtistTrack[]
+  artists      ArtistTrack[]
 }
 
 model Album {
@@ -98,7 +98,7 @@ model Playback {
 }
 
 model Package {
-  id         String     @id @map("_id") @db.ObjectId
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
   spotify_id String
   userId     String     @db.ObjectId
   createdAt  DateTime   @default(now())
@@ -108,7 +108,7 @@ model Package {
 }
 
 model ArtistTrack {
-  id       String @id @map("_id") @db.ObjectId
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
   artistid String @db.ObjectId
   trackid  String @db.ObjectId
   artist   Artist @relation(fields: [artistid], references: [id], onDelete: Cascade)
@@ -118,7 +118,7 @@ model ArtistTrack {
 }
 
 model AlbumArtist {
-  id       String @id @map("_id") @db.ObjectId
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
   albumid  String @db.ObjectId
   artistid String @db.ObjectId
   album    Album  @relation(fields: [albumid], references: [id], onDelete: Cascade)
