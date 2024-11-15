@@ -4,7 +4,13 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT", ".env*"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "env": [
+        "DATABASE_URL",
+        "AUTH_SECRET",
+        "AUTH_SPOTIFY_ID",
+        "AUTH_SPOTIFY_SECRET"
+      ]
     },
     "db:migrate:deploy": {},
     "db:push": {},
