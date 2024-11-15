@@ -25,7 +25,8 @@
   },
   "name": "harmony",
   "dependencies": {
-    "@prisma/client": "^5.22.0"
+    "@prisma/client": "^5.22.0",
+    "dotenv": "^16.4.5"
   },
   "packageManager": "npm@10.9.0",
   "workspaces": [

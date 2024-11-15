@@ -12,6 +12,9 @@ const nextConfig = {
     ],
   },
   transpilePackages: ["@repo/ui"],
+  env: {
+    DATABASE_URL: process.env.DATABASE_URL,
+  },
 };
 
 module.exports = nextConfig;
