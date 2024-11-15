@@ -1,0 +1,13 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "AUTH_SECRET",
+        "AUTH_SPOTIFY_ID",
+        "AUTH_SPOTIFY_SECRET"
+      ]
+    }
+  }
+}
