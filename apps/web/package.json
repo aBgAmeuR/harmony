@@ -11,17 +11,20 @@
   "dependencies": {
     "@repo/ui": "*",
     "@tanstack/react-query": "^5.60.5",
+    "light-date": "^1.2.0",
     "next": "^14.2",
     "next-themes": "^0.4.3",
     "react": "^18",
     "react-dom": "^18",
-    "react-wrap-balancer": "^1.1.1"
+    "react-wrap-balancer": "^1.1.1",
+    "zustand": "^5.0.1"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^14.1.1",
     "@repo/auth": "*",
     "@repo/database": "*",
     "@repo/eslint-config": "*",
+    "@repo/spotify": "*",
     "@repo/typescript-config": "*",
     "@types/node": "^20",
     "@types/react": "^18",

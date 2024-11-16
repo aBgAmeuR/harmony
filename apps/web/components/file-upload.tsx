@@ -10,6 +10,7 @@ export const FileUpload = () => {
   const [inTransition, startTransition] = useTransition();
 
   useEffect(() => {
+    // eslint-disable-next-line no-undef
     let interval: NodeJS.Timeout | null = null;
     if (inTransition) {
       interval = setInterval(() => {
