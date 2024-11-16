@@ -40,6 +40,7 @@ module.exports = {
       }
     ],
     "sort-imports": "off",
+    "tailwindcss/classnames-order": "off",
     "tailwindcss/no-custom-classname": "off",
     "@typescript-eslint/no-var-requires": "off",
     "simple-import-sort/imports": [
@@ -50,8 +51,9 @@ module.exports = {
           [
             `^(${require("module").builtinModules.join("|")})(/|$)`,
             "^react",
-            "^@?\\w"
+            "^@?\\w",
           ],
+          ["^~"],
           ["^components(/.*|$)"],
           ["^lib(/.*|$)", "^hooks(/.*|$)"],
           ["^\\."]

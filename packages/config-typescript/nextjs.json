@@ -17,7 +17,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "paths": {
-      "@ui/*": ["../../packages/ui/src/*"]
+      "~/*": ["../../apps/web/*"]
     }
   },
   "include": ["src", "next-env.d.ts"],
