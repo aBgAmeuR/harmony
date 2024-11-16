@@ -1,6 +1,7 @@
-import { SpotifyConfig } from 'src/types/SpotifyConfig';
+import { SpotifyConfig } from '../types/SpotifyConfig';
 import { HttpClient } from './http/HttpClient';
 import { MeManager } from './me/MeManager';
+
 export class SpotifyAPI {
   me: MeManager;
 

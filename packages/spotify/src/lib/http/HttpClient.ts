@@ -6,7 +6,7 @@ import {
   NotFoundError, 
   RatelimitError 
 } from '../errors';
-import { SpotifyConfig } from 'src/types/SpotifyConfig';
+import { SpotifyConfig } from '../../types/SpotifyConfig';
 
 export class HttpClient {
   private baseURL = 'https://api.spotify.com/v1';
