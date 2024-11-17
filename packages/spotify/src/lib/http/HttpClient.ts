@@ -49,7 +49,8 @@ export class HttpClient {
 
     try {
       if (this.config.debug) {
-        console.log(`Making request to: ${url}`);
+        const truncatedUrl = url.length > 100 ? `${url.substring(0, 100)}...` : url;
+        console.log(`Making request to: ${truncatedUrl}`);
       }
 
       const response = await fetch(url, {

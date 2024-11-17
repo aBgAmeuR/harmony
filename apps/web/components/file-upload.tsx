@@ -1,7 +1,10 @@
 "use client";
+
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@repo/ui/button";
 import { FileArchive, LoaderCircle, Upload, X } from "lucide-react";
+
+import { filesProcessing } from "~/services/file-processing";
 
 export const FileUpload = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -40,7 +43,7 @@ export const FileUpload = () => {
   const handleUpload = async () => {
     if (file) {
       startTransition(async () => {
-        // await filesProcessing(file);
+        await filesProcessing(file);
       });
     }
   };

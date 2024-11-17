@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider     = "mongodb"
-  url          = env("DATABASE_URL")
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -43,46 +43,54 @@ model Account {
 }
 
 model Track {
-  id           String        @id @map("_id") @db.ObjectId
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  spotify_id   String     @unique
   title        String
   href         String?
-  albumid      String        @db.ObjectId
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  albumid      String     @db.ObjectId
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   duration     Int?
   track_number Int?
   playbacks    Playback[]
-  album        Album         @relation(fields: [albumid], references: [id])
-  artists      ArtistTrack[]
+  album        Album      @relation(fields: [albumid], references: [id])
+  artist_ids   String[]   @db.ObjectId
+  artists      Artist[]   @relation(fields: [artist_ids], references: [id])
 }
 
 model Album {
-  id          String        @id @map("_id") @db.ObjectId
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  spotify_id  String    @unique
   title       String
   coverUri    String?
   href        String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  releaseDate DateTime?     @db.Date
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  releaseDate DateTime? @db.Date
   totalTracks Int?
   tracks      Track[]
-  artists     AlbumArtist[]
+  artist_ids  String[]  @db.ObjectId
+  artists     Artist[]  @relation(fields: [artist_ids], references: [id])
 }
 
 model Artist {
-  id        String        @id @map("_id") @db.ObjectId
-  name      String
-  coverUri  String?
-  href      String?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  genres    String[]
-  albums    AlbumArtist[]
-  tracks    ArtistTrack[]
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  spotify_id String   @unique
+  name       String
+  coverUri   String?
+  href       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  genres     String[]
+  album_ids  String[] @db.ObjectId
+  albums     Album[]  @relation(fields: [album_ids], references: [id])
+  track_ids  String[] @db.ObjectId
+  tracks     Track[]  @relation(fields: [track_ids], references: [id])
 }
 
 model Playback {
-  id               String   @id @map("_id") @db.ObjectId
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  spotify_id       String   @unique
   timestamp        DateTime
   msPlayed         BigInt
   reasonStart      String
@@ -108,24 +116,4 @@ model Package {
   updatedAt  DateTime   @updatedAt
   user       User       @relation(fields: [userId], references: [id])
   playbacks  Playback[]
-}
-
-model ArtistTrack {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  artistid String @db.ObjectId
-  trackid  String @db.ObjectId
-  artist   Artist @relation(fields: [artistid], references: [id], onDelete: Cascade)
-  track    Track  @relation(fields: [trackid], references: [id], onDelete: Cascade)
-
-  @@unique([artistid, trackid])
-}
-
-model AlbumArtist {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  albumid  String @db.ObjectId
-  artistid String @db.ObjectId
-  album    Album  @relation(fields: [albumid], references: [id], onDelete: Cascade)
-  artist   Artist @relation(fields: [artistid], references: [id], onDelete: Cascade)
-
-  @@unique([albumid, artistid])
 }
