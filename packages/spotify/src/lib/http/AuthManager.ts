@@ -35,7 +35,7 @@ export class AuthManager {
   /**
    * Refresh the token using the refresh_token
    */
-  private async refreshToken(
+  public async refreshToken(
     refreshToken: string
   ): Promise<SpotifyTokenResponse> {
     if (!this.config.clientId || !this.config.clientSecret) {

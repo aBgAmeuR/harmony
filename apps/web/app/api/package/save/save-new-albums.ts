@@ -7,7 +7,6 @@ export const saveNewAlbums = async (tracks: Track[]) => {
   const albums = await getUniqueAlbums(tracks);
 
   if (albums.length <= 0) return;
-  console.log("Saving new albums", albums);
 
   await saveAlbums(albums);
 };

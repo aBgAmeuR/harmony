@@ -7,7 +7,6 @@ export const saveNewTracks = async (tracks: Track[]) => {
   const uniqueTracks = await getUniqueTracks(tracks);
 
   if (uniqueTracks.length <= 0) return;
-  console.log("Saving new tracks:", uniqueTracks);
 
   await saveTracks(uniqueTracks);
 };

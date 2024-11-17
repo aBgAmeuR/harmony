@@ -20,6 +20,7 @@ export async function POST(req: Request) {
 
     if (data.length <= 0) return NextResponse.json({ message: "ok" });
 
+    await spotify.refreshToken();
     const tracks = await spotify.tracks.list(data);
 
     await saveNewArtists(tracks);

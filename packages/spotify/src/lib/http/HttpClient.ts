@@ -151,4 +151,9 @@ export class HttpClient {
   async delete<T>(path: string, query?: Record<string, string>): Promise<T> {
     return this.request<T>(path, { method: 'DELETE' }, query);
   }
+
+  async refreshToken(): Promise<void> {
+    const token = await this.auth.getToken();
+    await this.auth.refreshToken(token);
+  }
 }
