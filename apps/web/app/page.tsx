@@ -27,7 +27,10 @@ export default async function HomePage() {
           <ThemeToggle variant="outline" />
 
           <Button aria-label="Get Started" asChild>
-            <Link href="/overview">Get Started</Link>
+            <Link href="/overview">
+              <Icons.spotify className="mr-2" />
+              Get Started
+            </Link>
           </Button>
           <Button
             className="group"
