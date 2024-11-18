@@ -28,7 +28,7 @@ export default async function HomePage() {
 
           <Button aria-label="Get Started" asChild>
             <Link href="/overview">
-              <Icons.spotify className="mr-2" />
+              <Icons.spotify className="mr-2 size-5" />
               Get Started
             </Link>
           </Button>
