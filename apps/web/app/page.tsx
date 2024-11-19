@@ -26,7 +26,7 @@ export default async function HomePage() {
         <div className="flex gap-2">
           <ThemeToggle variant="outline" />
 
-          <Button aria-label="Get Started" asChild>
+          <Button aria-label="Get Started" asChild disabled>
             <Link href="/overview">
               <Icons.spotify className="mr-2 size-5" />
               Get Started
