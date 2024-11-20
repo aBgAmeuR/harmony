@@ -1,3 +1,4 @@
+import { prisma } from "@repo/database";
 import {
   Card,
   CardContent,
@@ -9,7 +10,7 @@ import {
 import { AppHeader } from "~/components/app-header";
 import { FileUpload } from "~/components/file-upload";
 
-export default function SettingsPackagePage() {
+export default async function SettingsPackagePage() {
   return (
     <>
       <AppHeader items={["Settings", "Package"]} />

@@ -1,4 +1,8 @@
-import { getAllTracksAction } from "~/actions/get-all-tracks-action";
+import {
+  createPackageAction,
+  deleteLastPackageAction,
+} from "~/actions/user-package-action";
+import { TrackInfo } from "~/app/api/package/tracks/route";
 import { extractZipAndGetFiles, parseZipFiles } from "~/lib/zip";
 import { DataType } from "~/types/data";
 
@@ -30,44 +34,90 @@ export async function filesProcessing(file: File) {
 }
 
 const saveData = async (data: DataType[][]) => {
-  const tracks = await getAllTracksAction();
-  const newTracks = new Set<string>();
-
-  if (!tracks) {
-    console.error("Failed to fetch tracks");
-    return;
-  }
+  const newTracksUri = new Set<string>();
 
   for (const track of data.flat()) {
-    const trackUri = track.spotify_track_uri?.split(":")[2];
-    if (!tracks.has(trackUri) && !newTracks.has(trackUri) && trackUri) {
-      console.log("New track:", track);
-      newTracks.add(trackUri);
+    if (filterTrack(track)) continue;
+
+    const trackUri = track.spotify_track_uri.split(":")[2];
+    if (!newTracksUri.has(trackUri)) {
+      newTracksUri.add(trackUri);
     }
   }
 
-  const res = await fetch("/api/package/save", {
+  const tracksIdsResponse = await fetch("/api/package/tracks", {
     method: "POST",
-    body: JSON.stringify(Array.from(newTracks)),
+    body: JSON.stringify(Array.from(newTracksUri)),
   });
 
-  console.log("Data saved:", await res.json());
+  const tracksIds = await tracksIdsResponse.json();
 
-  // const packageId = await createPackageAction(data[0][0]);
+  const newTracks = data
+    .flat()
+    .map((track) => {
+      if (filterTrack(track)) return null;
 
-  // if (packageId instanceof Error) {
-  //   console.error("Failed to create package:", packageId);
-  //   return;
-  // }
+      const trackUri = track.spotify_track_uri.split(":")[2];
+      const trackInfo = tracksIds[trackUri] as TrackInfo | undefined;
+      if (!trackInfo) return null;
 
-  // const dataFlat = data.flat();
-  // const chunkSize = 100;
-  // const chunkTracks = [];
-  // for (let i = 0; i < dataFlat.length; i += chunkSize) {
-  //   chunkTracks.push(dataFlat.slice(i, i + chunkSize));
-  // }
+      return {
+        timestamp: track.ts,
+        platform: track.platform,
+        msPlayed: track.ms_played,
+        spotifyId: trackUri,
+        artistIds: trackInfo.artists,
+        albumId: trackInfo.album,
+        albumArtistIds: trackInfo.artistsAlbums,
+        reasonStart: track.reason_start,
+        reasonEnd: track.reason_end,
+        shuffle: track.shuffle,
+        skipped: track.skipped,
+        offline: track.offline,
+      };
+    })
+    .filter((track) => track !== null);
 
-  // for (const chunk of chunkTracks) {
-  //   await savePlaybacksAction(chunk, packageId);
-  // }
+  const chunkSize = 1000;
+  const chunkTracks = [];
+  for (let i = 0; i < newTracks.length; i += chunkSize) {
+    chunkTracks.push(newTracks.slice(i, i + chunkSize));
+  }
+
+  await createPackageAction(data[0][0].username);
+
+  try {
+    for (const chunk of chunkTracks) {
+      const res = await fetch("/api/package/save", {
+        method: "POST",
+        body: JSON.stringify(chunk),
+      }).then((res) => res.json());
+      console.log("Response:", res);
+    }
+  } catch (error) {
+    await deleteLastPackageAction();
+    console.error("Error saving tracks:", error as Error);
+  }
 };
+
+const filterTrack = (track: DataType) =>
+  !track.spotify_track_uri ||
+  !track.master_metadata_album_album_name ||
+  !track.master_metadata_album_artist_name ||
+  !track.master_metadata_album_artist_name ||
+  track.ms_played < 5000;
+
+/*
+    "ts": "2021-06-30T12:40:53Z",
+    "platform": "Windows 10 (10.0.19042; x64; AppX)",
+    "ms_played": 6910,
+    "master_metadata_track_name": "introduction",
+    "master_metadata_album_artist_name": "XXXTENTACION",
+    "master_metadata_album_album_name": "Bad Vibes Forever",
+    "spotify_track_uri": "spotify:track:7BsLJzWYhZln2QClCcwUVi",
+    "reason_start": "clickrow",
+    "reason_end": "endplay",
+    "shuffle": false,
+    "skipped": null,
+    "offline": false,
+*/
