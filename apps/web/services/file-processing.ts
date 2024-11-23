@@ -106,18 +106,3 @@ const filterTrack = (track: DataType) =>
   !track.master_metadata_album_artist_name ||
   !track.master_metadata_album_artist_name ||
   track.ms_played < 5000;
-
-/*
-    "ts": "2021-06-30T12:40:53Z",
-    "platform": "Windows 10 (10.0.19042; x64; AppX)",
-    "ms_played": 6910,
-    "master_metadata_track_name": "introduction",
-    "master_metadata_album_artist_name": "XXXTENTACION",
-    "master_metadata_album_album_name": "Bad Vibes Forever",
-    "spotify_track_uri": "spotify:track:7BsLJzWYhZln2QClCcwUVi",
-    "reason_start": "clickrow",
-    "reason_end": "endplay",
-    "shuffle": false,
-    "skipped": null,
-    "offline": false,
-*/
