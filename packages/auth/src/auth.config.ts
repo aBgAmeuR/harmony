@@ -16,11 +16,13 @@ export default {
     jwt: async ({ token, user }) => {
       if (user) {
         token.id = user.id;
+        token.hasPackage = user.hasPackage;
       }
       return token;
     },
     session: async ({ session, token }) => {
       session.user.id = token.id as string;
+      session.user.hasPackage = token.hasPackage as boolean;
       return session;
     },
   },
