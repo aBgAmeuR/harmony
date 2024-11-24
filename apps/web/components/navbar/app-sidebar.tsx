@@ -24,7 +24,7 @@ import { data } from "./sidebar-config";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
-
+  const hasPackage = session?.user.hasPackage || false;
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -32,8 +32,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.stats} label="Stats" />
-        {/* <NavMain items={data.package} label="Package" /> */}
-        {/* <NavMain items={data.advanced} label="Advanced" /> */}
+        {hasPackage ? <NavMain items={data.package} label="Package" /> : null}
+        {hasPackage ? <NavMain items={data.advanced} label="Advanced" /> : null}
         <NavMain items={data.settings} label="Settings" />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
