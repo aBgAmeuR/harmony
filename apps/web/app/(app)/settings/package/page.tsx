@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import {
   Card,
   CardContent,
@@ -9,11 +10,17 @@ import {
 import { AppHeader } from "~/components/app-header";
 import { FileUpload } from "~/components/file-upload";
 
+import { PackageHistoryUpload } from "./package-history-upload";
+
 export default function SettingsPackagePage() {
   return (
     <>
       <AppHeader items={["Settings", "Package"]} />
       <div className="flex flex-1 flex-col items-center gap-4 p-4 pt-0">
+        <Suspense fallback={null}>
+          <PackageHistoryUpload />
+        </Suspense>
+
         <Card className="w-full max-w-4xl">
           <CardHeader>
             <CardTitle>Upload Your Spotify Data Package</CardTitle>

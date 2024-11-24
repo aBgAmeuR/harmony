@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -11,29 +8,30 @@ generator client {
 }
 
 model User {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   package       Package[]
+  tracks        Track[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
 
 model Account {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String   @db.ObjectId
+  id                String   @id @default(cuid())
+  userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?  @db.String
-  access_token      String?  @db.String
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?  @db.String
+  id_token          String?
   session_state     String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -43,77 +41,28 @@ model Account {
 }
 
 model Track {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  spotify_id   String     @unique
-  title        String
-  href         String?
-  albumid      String     @db.ObjectId
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  duration     Int?
-  track_number Int?
-  playbacks    Playback[]
-  album        Album      @relation(fields: [albumid], references: [id])
-  artist_ids   String[]   @db.ObjectId
-  artists      Artist[]   @relation(fields: [artist_ids], references: [id])
-}
-
-model Album {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  spotify_id  String    @unique
-  title       String
-  coverUri    String?
-  href        String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  releaseDate DateTime? @db.Date
-  totalTracks Int?
-  tracks      Track[]
-  artist_ids  String[]  @db.ObjectId
-  artists     Artist[]  @relation(fields: [artist_ids], references: [id])
-}
-
-model Artist {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  spotify_id String   @unique
-  name       String
-  coverUri   String?
-  href       String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  genres     String[]
-  album_ids  String[] @db.ObjectId
-  albums     Album[]  @relation(fields: [album_ids], references: [id])
-  track_ids  String[] @db.ObjectId
-  tracks     Track[]  @relation(fields: [track_ids], references: [id])
-}
-
-model Playback {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  spotify_id       String   @unique
-  timestamp        DateTime
-  msPlayed         BigInt
-  reasonStart      String
-  reasonEnd        String
-  shuffle          Boolean?
-  skipped          Boolean?
-  offline          Boolean?
-  offlineTimestamp BigInt?
-  incognitoMode    Boolean?
-  trackid          String   @db.ObjectId
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  packageId        String   @db.ObjectId
-  package          Package  @relation(fields: [packageId], references: [id])
-  track            Track    @relation(fields: [trackid], references: [id])
+  id             String   @id @default(cuid())
+  timestamp      DateTime
+  platform       String
+  msPlayed       BigInt
+  spotifyId      String   @db.VarChar(22)
+  artistIds      String[] @db.VarChar(22)
+  albumId        String   @db.VarChar(22)
+  albumArtistIds String[] @db.VarChar(22)
+  reasonStart    String
+  reasonEnd      String
+  shuffle        Boolean?
+  skipped        Boolean?
+  offline        Boolean?
+  user           User     @relation(fields: [userId], references: [id])
+  userId         String
 }
 
 model Package {
-  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  id         String   @id @default(uuid())
   spotify_id String
-  userId     String     @db.ObjectId
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  user       User       @relation(fields: [userId], references: [id])
-  playbacks  Playback[]
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
