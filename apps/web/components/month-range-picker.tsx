@@ -16,10 +16,10 @@ import {
 import { useIsMobile } from "@repo/ui/hooks/use-mobile";
 import { cn } from "@repo/ui/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ui/popover";
-import { format } from "light-date";
+import { format, localeFormat } from "light-date";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 
-const addMonths = (input: Date, months: number) => {
+export const addMonths = (input: Date, months: number) => {
   const date = new Date(input);
   date.setDate(1);
   date.setMonth(date.getMonth() + months);
@@ -33,6 +33,8 @@ const addMonths = (input: Date, months: number) => {
 };
 const getDaysInMonth = (year: number, month: number) =>
   new Date(year, month, 0).getDate();
+const formatDate = (date: Date) =>
+  `${localeFormat(date, "{MMM}")} ${date.getFullYear()}`;
 
 type Month = {
   number: number;
@@ -155,11 +157,8 @@ function MonthRangePicker({
 
   const buttonLabel = selectedMonthRange
     ? selectedMonthRange.start.getTime() === selectedMonthRange.end.getTime()
-      ? format(selectedMonthRange.start, "MMM yyyy")
-      : `${format(selectedMonthRange.start, "MMM yyyy")} - ${format(
-          selectedMonthRange.end,
-          "MMM yyyy",
-        )}`
+      ? formatDate(selectedMonthRange.start)
+      : `${formatDate(selectedMonthRange.start)} - ${formatDate(selectedMonthRange.end)}`
     : "Pick a month range";
 
   const selector: QuickSelector[] =

@@ -4,11 +4,11 @@ import { Label } from "@repo/ui/label";
 import { Switch } from "@repo/ui/switch";
 import { AlignJustify, Grid2x2 } from "lucide-react";
 
-import { useTopTimeRange } from "~/lib/store";
+import { useListLayout } from "~/lib/store";
 
 export const SelectTopLayout = () => {
-  const listLayout = useTopTimeRange((state) => state.list_layout);
-  const setListLayout = useTopTimeRange((state) => state.setListLayout);
+  const listLayout = useListLayout((state) => state.list_layout);
+  const setListLayout = useListLayout((state) => state.setListLayout);
 
   return (
     <div>

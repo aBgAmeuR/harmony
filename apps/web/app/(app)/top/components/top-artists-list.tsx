@@ -17,13 +17,13 @@ import {
   ItemCardSubtitle,
   ItemCardTitle,
 } from "~/components/item-card";
-import { useTopTimeRange } from "~/lib/store";
+import { useListLayout, useTopTimeRange } from "~/lib/store";
 
 import { TopListSkeleton } from "./top-list-skeleton";
 
 export const TopArtistList = () => {
   const timeRange = useTopTimeRange((state) => state.time_range);
-  const layout = useTopTimeRange((state) => state.list_layout);
+  const layout = useListLayout((state) => state.list_layout);
 
   const { data: artists, isError } = useQuery({
     queryKey: ["top_tracks", "artists", timeRange],
