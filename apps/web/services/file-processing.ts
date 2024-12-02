@@ -78,7 +78,7 @@ const saveData = async (data: DataType[][]) => {
     })
     .filter((track) => track !== null);
 
-  const chunkSize = 1000;
+  const chunkSize = 10000;
   const chunkTracks = [];
   for (let i = 0; i < newTracks.length; i += chunkSize) {
     chunkTracks.push(newTracks.slice(i, i + chunkSize));

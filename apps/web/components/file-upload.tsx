@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@repo/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
 import { FileArchive, LoaderCircle, Upload, X } from "lucide-react";
 
 import { filesProcessing } from "~/services/file-processing";
@@ -11,6 +12,7 @@ export const FileUpload = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [processingTime, setProcessingTime] = useState(0);
   const [inTransition, startTransition] = useTransition();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     // eslint-disable-next-line no-undef
@@ -44,6 +46,7 @@ export const FileUpload = () => {
     if (file) {
       startTransition(async () => {
         await filesProcessing(file);
+        queryClient.clear();
       });
     }
   };

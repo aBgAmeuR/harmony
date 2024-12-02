@@ -80,7 +80,7 @@ export const getRankingArtistsAction = async (minDate: Date, maxDate: Date) => {
       name: artist.name,
       image: artist.images[0]?.url,
       msPlayed: Number(topartist?.totalMsPlayed),
-      totalPlayed: topartist?.trackCount,
+      totalPlayed: topartist?.trackCount || 0,
       href: artist.external_urls.spotify,
     };
   });
