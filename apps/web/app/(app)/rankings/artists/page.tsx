@@ -1,17 +1,26 @@
+import { Suspense } from "react";
+
+import { getMinMaxDateRangeAction } from "~/actions/get-min-max-date-range-action";
 import { AppHeader } from "~/components/app-header";
+
+import { ArtistsRankList } from "../components/artists-rank-list";
 
 export default function RankingsArtistsPage() {
   return (
     <>
       <AppHeader items={["Package", "Rankings", "Artists"]} />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-          <div className="aspect-video rounded-xl bg-muted/50" />
-          <div className="aspect-video rounded-xl bg-muted/50" />
-          <div className="aspect-video rounded-xl bg-muted/50" />
-        </div>
-        <div className="min-h-screen flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+        <Suspense fallback={<div>Loading...</div>}>
+          <RankArtistsList />
+        </Suspense>
       </div>
     </>
   );
 }
+
+const RankArtistsList = async () => {
+  const minMaxDates = await getMinMaxDateRangeAction();
+  if (!minMaxDates) return null;
+
+  return <ArtistsRankList minMaxDates={minMaxDates} />;
+};

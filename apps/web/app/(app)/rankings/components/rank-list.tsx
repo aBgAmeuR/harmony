@@ -5,19 +5,9 @@ import { Separator } from "@repo/ui/separator";
 import { useQuery } from "@tanstack/react-query";
 
 import { getRankingTracksAction } from "~/actions/get-ranking-tracks-action";
-import {
-  ItemCard,
-  ItemCardAlbum,
-  ItemCardContent,
-  ItemCardDuration,
-  ItemCardImage,
-  ItemCardLink,
-  ItemCardRank,
-  ItemCardSubtitle,
-  ItemCardTimestamp,
-  ItemCardTitle,
-} from "~/components/item-card";
 import { addMonths, MonthRangePicker } from "~/components/month-range-picker";
+
+import { TrackCard } from "./track-card";
 
 const useRankingTracks = (
   minDate: Date,
@@ -70,18 +60,7 @@ export const RankList = ({ minMaxDates, initialData }: RankListProps) => {
       <div className="flex flex-col">
         {tracks?.map((track, index) => (
           <div key={track.href}>
-            <ItemCard>
-              <ItemCardRank>{index + 1}</ItemCardRank>
-              <ItemCardImage src={track.cover} alt={track.album!} />
-              <ItemCardContent>
-                <ItemCardTitle>{track.name}</ItemCardTitle>
-                <ItemCardSubtitle>{track.artists}</ItemCardSubtitle>
-                {/* <ItemCardAlbum>{track.album}</ItemCardAlbum> */}
-              </ItemCardContent>
-              <ItemCardDuration duration={track.duration} />
-              <ItemCardTimestamp date={new Date(track.releaseDate)} />
-              <ItemCardLink href={track.href} />
-            </ItemCard>
+            <TrackCard track={track} rank={index + 1} />
             {index < tracks.length - 1 && <Separator />}
           </div>
         ))}
