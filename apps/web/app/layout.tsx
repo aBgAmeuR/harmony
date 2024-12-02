@@ -40,7 +40,7 @@ export default function RootLayout({
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body
-        vaul-drawer-wrapper=""
+        // vaul-drawer-wrapper=""
         className={cn(inter.className, "antialiased")}
       >
         <Providers>{children}</Providers>

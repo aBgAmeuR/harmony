@@ -35,9 +35,6 @@ export async function POST(req: Request) {
 
     console.log("data:", data.length);
 
-    // to refresh the token
-    await spotify.me.recentlyPlayed();
-
     await prisma.track.createMany({
       data: data.map((track) => ({
         ...track,

@@ -21,7 +21,6 @@ export class ArtistManager extends Manager {
         const res = await this.http.get<{
           artists: Artist[];
         }>('/v1/artists', { ids: chunk.join(',') });
-        
         return  res.artists;
       })
     );
