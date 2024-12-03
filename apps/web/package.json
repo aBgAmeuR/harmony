@@ -21,12 +21,13 @@
     "zustand": "^5.0.1"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "^14.1.1",
     "@repo/auth": "*",
     "@repo/database": "*",
     "@repo/eslint-config": "*",
     "@repo/spotify": "*",
     "@repo/typescript-config": "*",
+    "@repo/zustand-cookie-storage": "*",
+    "@next/eslint-plugin-next": "^14.1.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

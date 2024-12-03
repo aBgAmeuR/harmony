@@ -21,12 +21,19 @@ const actions = {
 } as const;
 
 type RankingType = keyof typeof actions;
+type InitalData = Awaited<ReturnType<(typeof actions)[keyof typeof actions]>>;
 
 type RankListProps = {
   type: RankingType;
+  initialData?: InitalData;
 };
 
-const useRankingData = (type: RankingType, minDate: Date, maxDate: Date) => {
+const useRankingData = (
+  type: RankingType,
+  minDate: Date,
+  maxDate: Date,
+  initialData: InitalData = [],
+) => {
   return useQuery({
     queryKey: [
       `ranking${type.charAt(0).toUpperCase() + type.slice(1)}`,
@@ -34,10 +41,11 @@ const useRankingData = (type: RankingType, minDate: Date, maxDate: Date) => {
       maxDate,
     ],
     queryFn: async () => actions[type](minDate, maxDate),
+    initialData: initialData,
   });
 };
 
-export const RankList = ({ type }: RankListProps) => {
+export const RankList = ({ type, initialData }: RankListProps) => {
   const dates = useRankingTimeRange((state) => state.dates);
   const {
     data: items,
@@ -47,6 +55,7 @@ export const RankList = ({ type }: RankListProps) => {
     type,
     new Date(dates.start),
     addMonths(new Date(dates.end), 1),
+    initialData,
   );
 
   if (isLoading) return <SkeletonRankList />;
