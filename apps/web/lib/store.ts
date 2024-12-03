@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import { cookieStorage } from "@repo/zustand-cookie-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -53,6 +54,7 @@ export const useRankingTimeRange = create(
     }),
     {
       name: "ranking-time-range",
+      storage: createJSONStorage(() => cookieStorage),
     },
   ),
 );

@@ -5,6 +5,8 @@ import { Button } from "@repo/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { FileArchive, LoaderCircle, Upload, X } from "lucide-react";
 
+import { getMinMaxDateRangeAction } from "~/actions/get-min-max-date-range-action";
+import { useRankingTimeRange } from "~/lib/store";
 import { filesProcessing } from "~/services/file-processing";
 
 export const FileUpload = () => {
@@ -13,6 +15,7 @@ export const FileUpload = () => {
   const [processingTime, setProcessingTime] = useState(0);
   const [inTransition, startTransition] = useTransition();
   const queryClient = useQueryClient();
+  const setRankingTimeRange = useRankingTimeRange((state) => state.setDates);
 
   useEffect(() => {
     // eslint-disable-next-line no-undef
@@ -47,6 +50,13 @@ export const FileUpload = () => {
       startTransition(async () => {
         await filesProcessing(file);
         queryClient.clear();
+
+        const timeRange = await getMinMaxDateRangeAction();
+        if (!timeRange) return;
+        setRankingTimeRange({
+          start: timeRange.minDate,
+          end: timeRange.maxDate,
+        });
       });
     }
   };

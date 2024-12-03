@@ -1,6 +1,7 @@
-import React from "react";
 import { ChevronRight, ExternalLink } from "lucide-react";
 import Image from "next/image";
+
+import { getMsPlayedInMinutes } from "~/lib/utils";
 
 type RankCardProps = {
   type: "track" | "artist" | "album";
@@ -15,9 +16,6 @@ type RankCardProps = {
   };
   rank: number;
 };
-
-const getMsPlayedInMinutes = (msPlayed: number) =>
-  (msPlayed / (1000 * 60)).toFixed(2);
 
 export const RankingCard = ({ type, item, rank }: RankCardProps) => {
   const imageSrc = type === "artist" ? item.image : item.cover;
