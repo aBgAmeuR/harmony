@@ -6,6 +6,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@repo/ui/chart";
+import { NumberFlow } from "@repo/ui/number";
 import { useQuery } from "@tanstack/react-query";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
@@ -87,7 +88,7 @@ export const HoursHabitChart = ({ initialData }: HoursHabitChartProps) => {
                   />
                   {chartConfig[name as keyof typeof chartConfig]?.label || name}
                   <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
-                    {getMsPlayedInHours(value.toString())}
+                    <NumberFlow value={getMsPlayedInHours(value.toString())} />
                     <span className="font-normal text-muted-foreground">
                       hours
                     </span>

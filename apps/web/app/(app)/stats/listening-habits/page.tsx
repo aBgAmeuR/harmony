@@ -1,15 +1,15 @@
-import { Suspense } from "react";
-
-import { getDaysHabitAction } from "~/actions/get-days-habit-action";
-import { getHoursHabitAction } from "~/actions/get-hours-habit-action";
-import { getTopPlatformsAction } from "~/actions/get-top-platforms-action";
 import { AppHeader } from "~/components/app-header";
 import { SelectMonthRange } from "~/components/select-month-range";
-import { addMonths, getCookieRankingTimeRange } from "~/lib/utils-server";
+import { getCookieRankingTimeRange } from "~/lib/utils-server";
 
-import { DaysHabitChart } from "./days-habit-chart";
-import { HoursHabitChart } from "./hours-habit-chart";
-import { TopPlatformChart } from "./top-platform-chart";
+import {
+  DaysHabitChartWrapper,
+  HoursHabitChartWrapper,
+  ShuffleHabitChartWrapper,
+  SkippedHabitChartWrapper,
+  TopPlatformChartWrapper,
+} from "./components/chart-wrappers";
+import { StatCard } from "./components/stat-card";
 
 export default async function StatsListeningHabitsPage() {
   const dates = await getCookieRankingTimeRange();
@@ -19,56 +19,33 @@ export default async function StatsListeningHabitsPage() {
       <AppHeader items={["Package", "Stats", "Listening Habits"]}>
         <SelectMonthRange />
       </AppHeader>
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <Suspense fallback={null}>
-          <StatsHoursHabitChart dates={dates} />
-        </Suspense>
-        <Suspense fallback={null}>
-          <StatsDaysHabitChart dates={dates} />
-        </Suspense>
-        <Suspense fallback={null}>
-          <StatsTopPlatformChart dates={dates} />
-        </Suspense>
-      </div>
+      <main className="flex-1 p-4 space-y-4 max-w-7xl w-full mx-auto">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <StatCard
+            title="Listening Hours"
+            description="Time spent listening to music"
+          >
+            <HoursHabitChartWrapper dates={dates} />
+          </StatCard>
+          <StatCard
+            title="Listening Days"
+            description="Days you listened to music"
+          >
+            <DaysHabitChartWrapper dates={dates} />
+          </StatCard>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <StatCard title="Top Platforms" description="Most used platforms">
+            <TopPlatformChartWrapper dates={dates} />
+          </StatCard>
+          <StatCard title="Shuffle Habits" description="Shuffle habits">
+            <ShuffleHabitChartWrapper dates={dates} />
+          </StatCard>
+          <StatCard title="Skipped Tracks" description="Tracks you skipped">
+            <SkippedHabitChartWrapper dates={dates} />
+          </StatCard>
+        </div>
+      </main>
     </>
   );
 }
-
-const StatsHoursHabitChart = async ({
-  dates,
-}: {
-  dates: Awaited<ReturnType<typeof getCookieRankingTimeRange>>;
-}) => {
-  const initialData = await getHoursHabitAction(
-    dates.dateStart,
-    addMonths(dates.dateEnd, 1),
-  );
-
-  return <HoursHabitChart initialData={initialData} />;
-};
-
-const StatsDaysHabitChart = async ({
-  dates,
-}: {
-  dates: Awaited<ReturnType<typeof getCookieRankingTimeRange>>;
-}) => {
-  const initialData = await getDaysHabitAction(
-    dates.dateStart,
-    addMonths(dates.dateEnd, 1),
-  );
-
-  return <DaysHabitChart initialData={initialData} />;
-};
-
-const StatsTopPlatformChart = async ({
-  dates,
-}: {
-  dates: Awaited<ReturnType<typeof getCookieRankingTimeRange>>;
-}) => {
-  const initialData = await getTopPlatformsAction(
-    dates.dateStart,
-    addMonths(dates.dateEnd, 1),
-  );
-
-  return <TopPlatformChart initialData={initialData} />;
-};

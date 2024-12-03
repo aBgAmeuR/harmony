@@ -6,8 +6,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@repo/ui/chart";
+import { NumberFlow } from "@repo/ui/number";
 import { useQuery } from "@tanstack/react-query";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from "recharts";
 
 import { getDaysHabitAction } from "~/actions/get-days-habit-action";
 import { addMonths } from "~/components/month-range-picker";
@@ -81,9 +82,9 @@ export const DaysHabitChart = ({ initialData }: DaysHabitChartProps) => {
                   />
                   {chartConfig[name as keyof typeof chartConfig]?.label || name}
                   <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
-                    {getMsPlayedInHours(value.toString())}
+                    <NumberFlow value={getMsPlayedInHours(value.toString())} />
                     <span className="font-normal text-muted-foreground">
-                      days
+                      hours
                     </span>
                   </div>
                 </>
@@ -93,7 +94,15 @@ export const DaysHabitChart = ({ initialData }: DaysHabitChartProps) => {
           cursor={true}
           defaultIndex={1}
         />
-        <Bar dataKey="msPlayed" fill="var(--color-msPlayed)" radius={8} />
+        <Bar dataKey="msPlayed" fill="var(--color-msPlayed)" radius={8}>
+          <LabelList
+            position="top"
+            offset={12}
+            className="fill-foreground"
+            fontSize={12}
+            formatter={(value: number) => `${getMsPlayedInHours(value)}h`}
+          />
+        </Bar>
       </BarChart>
     </ChartContainer>
   );

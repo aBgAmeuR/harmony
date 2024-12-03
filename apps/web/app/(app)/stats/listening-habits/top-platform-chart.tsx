@@ -77,7 +77,7 @@ export const TopPlatformChart = ({ initialData }: TopPlatformChartProps) => {
   return (
     <ChartContainer
       config={chartConfig}
-      className="mx-auto aspect-square size-64"
+      className="mx-auto aspect-square max-h-[250px]"
     >
       <PieChart>
         <ChartTooltip
