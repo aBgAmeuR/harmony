@@ -13,7 +13,7 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-  hasPackage     Boolean   @default(false)
+  hasPackage    Boolean   @default(false)
   accounts      Account[]
   package       Package[]
   tracks        Track[]
@@ -62,6 +62,8 @@ model Track {
 model Package {
   id         String   @id @default(uuid())
   spotify_id String
+  fileName   String   @default("package.zip")
+  fileSize   String   @default("0")
   user       User     @relation(fields: [userId], references: [id])
   userId     String
   createdAt  DateTime @default(now())

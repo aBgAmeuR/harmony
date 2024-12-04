@@ -3,7 +3,13 @@
 import { auth } from "@repo/auth";
 import { prisma } from "@repo/database";
 
-export const createPackageAction = async (spotifyId: string) => {
+type Package = {
+  spotify_id: string;
+  file_name: string;
+  file_size: number;
+};
+
+export const createPackageAction = async (pakge: Package) => {
   const session = await auth();
 
   if (!session || !session.user || !session.user.id)
@@ -14,7 +20,9 @@ export const createPackageAction = async (spotifyId: string) => {
   await prisma.package.create({
     data: {
       userId,
-      spotify_id: spotifyId,
+      spotify_id: pakge.spotify_id,
+      fileName: pakge.file_name,
+      fileSize: String(pakge.file_size),
     },
   });
 

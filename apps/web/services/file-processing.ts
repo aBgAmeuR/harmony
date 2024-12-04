@@ -22,7 +22,7 @@ export async function filesProcessing(file: File) {
     const files = await extractZipAndGetFiles(buffer, filesRegexPattern);
     const data = parseZipFiles<DataType>(files);
 
-    await saveData(data);
+    await saveData(data, file);
 
     console.timeEnd("Processing time");
 
@@ -33,7 +33,7 @@ export async function filesProcessing(file: File) {
   }
 }
 
-const saveData = async (data: DataType[][]) => {
+const saveData = async (data: DataType[][], file: File) => {
   const newTracksUri = new Set<string>();
 
   for (const track of data.flat()) {
@@ -84,7 +84,11 @@ const saveData = async (data: DataType[][]) => {
     chunkTracks.push(newTracks.slice(i, i + chunkSize));
   }
 
-  await createPackageAction(data[0][0].username);
+  await createPackageAction({
+    spotify_id: data[0][0].username,
+    file_name: file.name,
+    file_size: file.size,
+  });
 
   try {
     for (const chunk of chunkTracks) {
