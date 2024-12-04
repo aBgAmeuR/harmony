@@ -91,32 +91,7 @@ export function NavMain({
                         asChild
                         isActive={pathname === subItem.url}
                       >
-                        <Link
-                          href={subItem.url}
-                          onMouseEnter={() => {
-                            router.prefetch(String(subItem.url), {
-                              kind: PrefetchKind.FULL,
-                            });
-                          }}
-                          onMouseDown={(e) => {
-                            const url = new URL(
-                              String(subItem.url),
-                              window.location.href,
-                            );
-                            if (
-                              url.origin === window.location.origin &&
-                              e.button === 0 &&
-                              !e.altKey &&
-                              !e.ctrlKey &&
-                              !e.metaKey &&
-                              !e.shiftKey
-                            ) {
-                              e.preventDefault();
-                              router.push(String(subItem.url));
-                            }
-                          }}
-                          prefetch={false}
-                        >
+                        <Link href={subItem.url} prefetch>
                           {subItem.icon && <subItem.icon />}
                           <span>{subItem.title}</span>
                         </Link>
