@@ -58,3 +58,21 @@ export const useRankingTimeRange = create(
     },
   ),
 );
+
+interface SideBarStore {
+  isSidebarOpen: boolean;
+  setSidebarOpen: (isSidebarOpen: boolean) => void;
+}
+
+export const useSidebar = create(
+  persist<SideBarStore>(
+    (set) => ({
+      isSidebarOpen: false,
+      setSidebarOpen: (isSidebarOpen) => set({ isSidebarOpen }),
+    }),
+    {
+      name: "sidebar",
+      storage: createJSONStorage(() => cookieStorage),
+    },
+  ),
+);
