@@ -1,15 +1,29 @@
 import React from "react";
 import { auth } from "@repo/auth";
 import { prisma } from "@repo/database";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/ui/table";
 
-export const PackageHistoryUpload = async () => {
+const getPackageHistory = async () => {
   const session = await auth();
   if (!session || !session.user || !session.user.id) {
     return null;
   }
 
-  const packages = await prisma.package.findMany({
+  return await prisma.package.findMany({
     where: {
       userId: session.user.id,
     },
@@ -17,40 +31,54 @@ export const PackageHistoryUpload = async () => {
       createdAt: "desc",
     },
   });
+};
+
+type PackageHistoryUploadProps = {
+  className?: string;
+};
+
+export const PackageHistoryUpload = async ({
+  className,
+}: PackageHistoryUploadProps) => {
+  const packages = await getPackageHistory();
 
   if (!packages) {
     return null;
   }
 
   return (
-    <Card className="w-full max-w-4xl">
+    <Card className={className}>
       <CardHeader>
-        <CardTitle className="text-2xl">Your Spotify Data Packages</CardTitle>
-        <p className="text-muted-foreground">
+        <CardTitle className="text-2xl">Upload History</CardTitle>
+        <CardDescription>
           History of your uploaded Spotify data packages
-        </p>
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {packages.map((pkg) => (
-            <div
-              key={pkg.id}
-              className="flex items-center justify-between p-4 rounded-lg border gap-2"
-            >
-              <div>
-                <p className="font-medium break-all line-clamp-1">
-                  Package ID: {pkg.id}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Uploaded on {pkg.createdAt.toLocaleDateString()}
-                </p>
-              </div>
-              <p className="text-sm text-muted-foreground break-all line-clamp-1">
-                {pkg.spotify_id}
-              </p>
-            </div>
-          ))}
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Size</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {packages.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell className="">
+                  <p className="line-clamp-1 break-all">{item.fileName}</p>
+                </TableCell>
+                <TableCell>{item.createdAt.toLocaleDateString()}</TableCell>
+                <TableCell>
+                  <p className="text-nowrap">
+                    {(Number(item.fileSize) / 1024).toFixed(2)} MB
+                  </p>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );
