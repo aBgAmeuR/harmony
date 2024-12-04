@@ -13,6 +13,7 @@ import {
 } from "@repo/ui/sidebar";
 import { Skeleton } from "@repo/ui/skeleton";
 import { ChevronsUpDown } from "lucide-react";
+import { User } from "next-auth";
 import { useSession } from "next-auth/react";
 
 import { NavMain } from "~/components/navbar/nav-main";
@@ -22,9 +23,12 @@ import { NavSecondary } from "./nav-secondary";
 import { NavUser } from "./nav-user";
 import { data } from "./sidebar-config";
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: session } = useSession();
-  const hasPackage = session?.user.hasPackage || false;
+type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
+  user?: User;
+};
+
+export function AppSidebar({ user, ...props }: AppSidebarProps) {
+  const hasPackage = user?.hasPackage || false;
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -38,8 +42,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        {session && session.user && session.user.id ? (
-          <NavUser user={session.user} />
+        {user?.id ? (
+          <NavUser user={user} />
         ) : (
           <SidebarMenu>
             <SidebarMenuItem>

@@ -92,7 +92,6 @@ export const DaysHabitChart = ({ initialData }: DaysHabitChartProps) => {
             />
           }
           cursor={true}
-          defaultIndex={1}
         />
         <Bar dataKey="msPlayed" fill="var(--color-msPlayed)" radius={8}>
           <LabelList
