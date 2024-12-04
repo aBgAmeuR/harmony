@@ -10,7 +10,7 @@ export default function RecentlyPlayedPage() {
     <>
       <AppHeader items={["Stats", "Recently Played"]} />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <Suspense fallback={<TopListSkeleton layout="list" />}>
+        <Suspense fallback={<TopListSkeleton layout="list" showRank={false} />}>
           <RecentlyPlayedList />
         </Suspense>
       </div>
