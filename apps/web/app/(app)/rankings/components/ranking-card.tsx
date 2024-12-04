@@ -6,6 +6,7 @@ import { getMsPlayedInMinutes } from "~/lib/utils";
 type RankCardProps = {
   type: "track" | "artist" | "album";
   item: {
+    id: string;
     href: string;
     cover?: string;
     image?: string;
