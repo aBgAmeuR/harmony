@@ -19,9 +19,8 @@ import {
   ItemCardSubtitle,
   ItemCardTitle,
 } from "~/components/item-card";
+import { ListSkeleton } from "~/components/list-skeleton";
 import { useListLayout, useTopTimeRange } from "~/lib/store";
-
-import { TopListSkeleton } from "./top-list-skeleton";
 
 const useTopTracks = (
   timeRange: "long_term" | "medium_term" | "short_term",
@@ -44,7 +43,7 @@ export const TopTracksList = ({ initalData }: TopTracksListProps) => {
   const { data: tracks, isError } = useTopTracks(timeRange, initalData);
 
   if (isError) return <ErrorAlert />;
-  if (!tracks) return <TopListSkeleton layout={layout} />;
+  if (!tracks) return <ListSkeleton layout={layout} />;
   if (tracks.length === 0) return <NoTracksAlert />;
 
   return (

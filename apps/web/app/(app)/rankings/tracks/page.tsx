@@ -2,11 +2,11 @@ import { Suspense } from "react";
 
 import { getRankingTracksAction } from "~/actions/get-ranking-tracks-action";
 import { AppHeader } from "~/components/app-header";
+import { ListSkeleton } from "~/components/list-skeleton";
 import { SelectMonthRange } from "~/components/select-month-range";
 import { addMonths, getCookieRankingTimeRange } from "~/lib/utils-server";
 
 import { RankList } from "../components/ranking-list";
-import { SkeletonRankList } from "../components/skeleton-rank-list";
 
 export default function RankingsTracksPage() {
   return (
@@ -15,7 +15,7 @@ export default function RankingsTracksPage() {
         <SelectMonthRange />
       </AppHeader>
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <Suspense fallback={<SkeletonRankList />}>
+        <Suspense fallback={<ListSkeleton />}>
           <TracksRankList />
         </Suspense>
       </div>

@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 
 import { AppHeader } from "~/components/app-header";
+import { ListSkeleton } from "~/components/list-skeleton";
 
-import { TopListSkeleton } from "../top/components/top-list-skeleton";
 import { RecentlyPlayedList } from "./components/recently-played-list";
 
 export default function RecentlyPlayedPage() {
@@ -10,7 +10,7 @@ export default function RecentlyPlayedPage() {
     <>
       <AppHeader items={["Stats", "Recently Played"]} />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <Suspense fallback={<TopListSkeleton layout="list" showRank={false} />}>
+        <Suspense fallback={<ListSkeleton showRank={false} />}>
           <RecentlyPlayedList />
         </Suspense>
       </div>
