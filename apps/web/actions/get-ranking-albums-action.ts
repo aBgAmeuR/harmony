@@ -42,6 +42,7 @@ export const getRankingAlbumsAction = async (minDate: Date, maxDate: Date) => {
       (topAlbum) => topAlbum.albumId === album.id,
     );
     return {
+      id: album.id,
       name: album.name || "Unknown",
       href: album.external_urls.spotify,
       releaseDate: album.release_date,

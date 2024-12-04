@@ -21,14 +21,25 @@ import { useListLayout, useTopTimeRange } from "~/lib/store";
 
 import { TopListSkeleton } from "./top-list-skeleton";
 
-export const TopArtistList = () => {
-  const timeRange = useTopTimeRange((state) => state.time_range);
-  const layout = useListLayout((state) => state.list_layout);
-
-  const { data: artists, isError } = useQuery({
+const useTopArtists = (
+  timeRange: "long_term" | "medium_term" | "short_term",
+  initalData?: Artist[],
+) => {
+  return useQuery({
     queryKey: ["top_tracks", "artists", timeRange],
     queryFn: async () => await getTopArtistsAction(timeRange),
+    initialData: initalData,
   });
+};
+
+type TopArtistListProps = {
+  initalData?: Artist[];
+};
+
+export const TopArtistList = ({ initalData }: TopArtistListProps) => {
+  const timeRange = useTopTimeRange((state) => state.time_range);
+  const layout = useListLayout((state) => state.list_layout);
+  const { data: artists, isError } = useTopArtists(timeRange, initalData);
 
   if (isError) return <ErrorAlert />;
   if (!artists) return <TopListSkeleton layout={layout} />;

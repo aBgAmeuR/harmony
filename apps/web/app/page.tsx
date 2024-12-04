@@ -1,7 +1,7 @@
 import Balancer from "react-wrap-balancer";
 import { Button } from "@repo/ui/button";
 import { ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 
 import { Footer } from "~/components/footer";
 import { Icons } from "~/components/icons";

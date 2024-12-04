@@ -18,6 +18,7 @@ export const useTopTimeRange = create(
     }),
     {
       name: "top-time-range",
+      storage: createJSONStorage(() => cookieStorage),
     },
   ),
 );

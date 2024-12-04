@@ -16,8 +16,9 @@ import {
   SidebarMenuSubItem,
 } from "@repo/ui/sidebar";
 import { ChevronRight, type LucideIcon } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { PrefetchKind } from "next/dist/client/components/router-reducer/router-reducer-types";
+import { usePathname, useRouter } from "next/navigation";
+import { Link } from "next-view-transitions";
 
 export function NavMain({
   label,
@@ -37,6 +38,7 @@ export function NavMain({
   }[];
 }) {
   const pathname = usePathname();
+  const router = useRouter();
 
   return (
     <SidebarGroup>
@@ -66,7 +68,14 @@ export function NavMain({
                   asChild
                   isActive={item.url === pathname}
                 >
-                  <Link href={item.url}>
+                  <Link
+                    href={item.url}
+                    onMouseOver={() =>
+                      router.prefetch(item.url, {
+                        kind: PrefetchKind.FULL,
+                      })
+                    }
+                  >
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
                   </Link>

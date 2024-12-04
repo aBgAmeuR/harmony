@@ -40,3 +40,11 @@ export const addMonths = (input: Date, months: number) => {
 
 const getDaysInMonth = (year: number, month: number) =>
   new Date(year, month, 0).getDate();
+
+export const getCookieTopTimeRange = async () => {
+  const cookieStore = cookies();
+  const cookieTimeRange = cookieStore.get("top-time-range|state|time_range");
+
+  const timeRange = cookieTimeRange ? cookieTimeRange.value : "medium_term";
+  return timeRange as "long_term" | "medium_term" | "short_term";
+};

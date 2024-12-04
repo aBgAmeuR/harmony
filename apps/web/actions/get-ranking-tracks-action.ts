@@ -43,6 +43,7 @@ export const getRankingTracksAction = async (minDate: Date, maxDate: Date) => {
       (topTrack) => topTrack.spotifyId === track.id,
     );
     return {
+      id: track.id,
       name: track.name,
       href: track.external_urls.spotify,
       duration: track.duration_ms,
