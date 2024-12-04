@@ -1,9 +1,13 @@
+import { Suspense } from "react";
+
+import { getTopTracksAction } from "~/actions/get-top-user-action";
 import { AppHeader } from "~/components/app-header";
 import { SelectTimeRange } from "~/components/select-time-range";
 import { SelectTopLayout } from "~/components/select-top-layout";
+import { getCookieTopTimeRange } from "~/lib/utils-server";
 
+import { TopListSkeleton } from "../components/top-list-skeleton";
 import { TopTracksList } from "../components/top-tracks-list";
-
 export default async function TopTracksPage() {
   return (
     <>
@@ -12,8 +16,17 @@ export default async function TopTracksPage() {
         <SelectTopLayout />
       </AppHeader>
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <TopTracksList />
+        <Suspense fallback={<TopListSkeleton layout="list" />}>
+          <TopTracksListWrapper />
+        </Suspense>
       </div>
     </>
   );
 }
+
+const TopTracksListWrapper = async () => {
+  const timeRange = await getCookieTopTimeRange();
+  const initalData = await getTopTracksAction(timeRange);
+
+  return <TopTracksList initalData={initalData} />;
+};
