@@ -27,14 +27,14 @@ export const PackageDocumentation = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <ol className="list-inside list-decimal space-y-3 text-gray-700">
+          <ol className="list-inside list-decimal space-y-3">
             <li>
               Navigate to your{" "}
               <a
                 href="https://www.spotify.com/account/privacy/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
+                className="hover:underline text-chart-1"
               >
                 Spotify Account Privacy Settings
               </a>
@@ -49,7 +49,7 @@ export const PackageDocumentation = ({
             </li>
             <li>
               Wait for an email from Spotify containing the download link.
-              <small className="block text-sm text-gray-500">
+              <small className="block text-sm text-muted-foreground">
                 (It may take up to 30 days, but usually arrives within a few
                 days.)
               </small>
