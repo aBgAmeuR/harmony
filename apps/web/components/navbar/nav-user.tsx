@@ -62,7 +62,7 @@ export function NavUser({ user }: NavUserProps) {
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
                 <Avatar className="size-8 rounded-lg">
-                  <AvatarImage src={user.id ?? ""} alt={user.name ?? ""} />
+                  <AvatarImage src={user.image ?? ""} alt={user.name ?? ""} />
                   <AvatarFallback className="rounded-lg">
                     {(user.name || user.id)?.slice(0, 2)}
                   </AvatarFallback>
