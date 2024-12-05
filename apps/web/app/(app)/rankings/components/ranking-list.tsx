@@ -1,18 +1,17 @@
 "use client";
 
-import React from "react";
 import { Separator } from "@repo/ui/separator";
 import { useQuery } from "@tanstack/react-query";
 
 import { getRankingAlbumsAction } from "~/actions/get-ranking-albums-action";
 import { getRankingArtistsAction } from "~/actions/get-ranking-artists-action";
 import { getRankingTracksAction } from "~/actions/get-ranking-tracks-action";
+import { ListSkeleton } from "~/components/list-skeleton";
 import { addMonths } from "~/components/month-range-picker";
 import { useRankingTimeRange } from "~/lib/store";
 
 import { ErrorRankList } from "./error-rank-list";
 import { RankingCard } from "./ranking-card";
-import { SkeletonRankList } from "./skeleton-rank-list";
 
 const actions = {
   tracks: getRankingTracksAction,
@@ -58,7 +57,7 @@ export const RankList = ({ type, initialData }: RankListProps) => {
     initialData,
   );
 
-  if (isLoading) return <SkeletonRankList />;
+  if (isLoading) return <ListSkeleton />;
   if (isError) return <ErrorRankList />;
 
   return (

@@ -70,11 +70,11 @@ export function NavMain({
                 >
                   <Link
                     href={item.url}
-                    onMouseOver={() =>
+                    onMouseEnter={() => {
                       router.prefetch(item.url, {
                         kind: PrefetchKind.FULL,
-                      })
-                    }
+                      });
+                    }}
                   >
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
@@ -89,7 +89,14 @@ export function NavMain({
                         asChild
                         isActive={pathname === subItem.url}
                       >
-                        <Link href={subItem.url}>
+                        <Link
+                          href={subItem.url}
+                          onMouseEnter={() => {
+                            router.prefetch(item.url, {
+                              kind: PrefetchKind.FULL,
+                            });
+                          }}
+                        >
                           {subItem.icon && <subItem.icon />}
                           <span>{subItem.title}</span>
                         </Link>

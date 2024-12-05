@@ -17,9 +17,8 @@ import {
   ItemCardSubtitle,
   ItemCardTitle,
 } from "~/components/item-card";
+import { ListSkeleton } from "~/components/list-skeleton";
 import { useListLayout, useTopTimeRange } from "~/lib/store";
-
-import { TopListSkeleton } from "./top-list-skeleton";
 
 const useTopArtists = (
   timeRange: "long_term" | "medium_term" | "short_term",
@@ -42,7 +41,7 @@ export const TopArtistList = ({ initalData }: TopArtistListProps) => {
   const { data: artists, isError } = useTopArtists(timeRange, initalData);
 
   if (isError) return <ErrorAlert />;
-  if (!artists) return <TopListSkeleton layout={layout} />;
+  if (!artists) return <ListSkeleton layout={layout} />;
   if (artists.length === 0) return <NoArtistsAlert />;
 
   return (
