@@ -8,7 +8,7 @@ export const Footer = () => {
         <Button variant="link" className="p-0" asChild>
           <a href="https://github.com/aBgAmeuR">@aBgAmeuR</a>
         </Button>{" "}
-        - <span className="text-muted-foreground">v2.0</span>
+        - <span className="text-muted-foreground">v2.1</span>
       </p>
     </footer>
   );
