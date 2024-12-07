@@ -13,7 +13,6 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@repo/ui/drawer";
-import { useIsMobile } from "@repo/ui/hooks/use-mobile";
 import { cn } from "@repo/ui/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ui/popover";
 import { format, localeFormat } from "light-date";
@@ -153,7 +152,8 @@ function MonthRangePicker({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & MonthRangeCalProps) {
-  const isMobile = useIsMobile();
+  // const isMobile = useIsMobile();
+  const isMobile = false;
 
   const buttonLabel = selectedMonthRange
     ? selectedMonthRange.start.getTime() === selectedMonthRange.end.getTime()
