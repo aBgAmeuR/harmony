@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import React, { Suspense } from "react";
 
 import { getRankingAlbumsAction } from "~/actions/get-ranking-albums-action";
 import { AppHeader } from "~/components/app-header";
