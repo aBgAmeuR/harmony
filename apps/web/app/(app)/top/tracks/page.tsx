@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import React, { Suspense } from "react";
 
 import { getTopTracksAction } from "~/actions/get-top-user-action";
 import { AppHeader } from "~/components/app-header";

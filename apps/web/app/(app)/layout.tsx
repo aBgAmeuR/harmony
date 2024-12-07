@@ -1,3 +1,4 @@
+import React from "react";
 import { auth } from "@repo/auth";
 import { SidebarInset, SidebarProvider } from "@repo/ui/sidebar";
 import { ErrorBoundary } from "next/dist/client/components/error-boundary";

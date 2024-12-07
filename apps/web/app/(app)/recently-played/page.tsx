@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import React, { Suspense } from "react";
 
 import { AppHeader } from "~/components/app-header";
 import { ListSkeleton } from "~/components/list-skeleton";

@@ -1,3 +1,5 @@
+import React from "react";
+
 import { AppHeader } from "~/components/app-header";
 import { SelectMonthRange } from "~/components/select-month-range";
 import { getCookieRankingTimeRange } from "~/lib/utils-server";
