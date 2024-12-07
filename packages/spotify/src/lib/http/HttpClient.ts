@@ -58,8 +58,6 @@ export class HttpClient {
         headers,
         next: { revalidate: 3600 }
       });
-      console.log(response);
-      
 
       if (response.ok) {
         return response.json();
