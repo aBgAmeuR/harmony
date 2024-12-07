@@ -55,8 +55,11 @@ export class HttpClient {
 
       const response = await fetch(url, {
         ...options,
-        headers
+        headers,
+        next: { revalidate: 3600 }
       });
+      console.log(response);
+      
 
       if (response.ok) {
         return response.json();

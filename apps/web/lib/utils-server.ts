@@ -2,20 +2,17 @@
 
 import { cookies } from "next/headers";
 
-import { getMinMaxDateRangeAction } from "~/actions/get-min-max-date-range-action";
-
 export const getCookieRankingTimeRange = async () => {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const cookieDateStart = cookieStore.get(
     "ranking-time-range|state|dates|start",
   );
   const cookieDateEnd = cookieStore.get("ranking-time-range|state|dates|end");
 
   if (!cookieDateStart || !cookieDateEnd) {
-    const minMaxDates = await getMinMaxDateRangeAction();
     return {
-      dateStart: minMaxDates ? minMaxDates.minDate : new Date(),
-      dateEnd: minMaxDates ? minMaxDates.maxDate : new Date(),
+      dateStart: new Date("2016-01-01"),
+      dateEnd: new Date(),
     };
   }
 
@@ -42,7 +39,7 @@ const getDaysInMonth = (year: number, month: number) =>
   new Date(year, month, 0).getDate();
 
 export const getCookieTopTimeRange = async () => {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const cookieTimeRange = cookieStore.get("top-time-range|state|time_range");
 
   const timeRange = cookieTimeRange ? cookieTimeRange.value : "medium_term";

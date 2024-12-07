@@ -42,7 +42,7 @@ export const useRankingTimeRange = create(
   persist<RankingTimeRangeStore>(
     (set) => ({
       dates: {
-        start: new Date().toISOString(),
+        start: new Date("2016-01-01").toISOString(),
         end: new Date().toISOString(),
       },
       setDates: (dates) =>

@@ -9,8 +9,8 @@ export default async function AppLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStorage = cookies();
-  const sideBarState = cookieStorage.get("sidebar:state")?.value || "false";
+  const cookieStorage = await cookies();
+  const sideBarState = cookieStorage.get("sidebar:state")?.value || "true";
   const session = await auth();
 
   return (
