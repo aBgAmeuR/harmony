@@ -2,11 +2,6 @@
 
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
-import {
-  NameType,
-  Payload,
-  ValueType,
-} from "recharts/types/component/DefaultTooltipContent"
 
 import { cn } from "@repo/ui/lib/utils"
 
@@ -14,6 +9,7 @@ import { cn } from "@repo/ui/lib/utils"
 const THEMES = { light: "", dark: ".dark" } as const
 
 export type ChartConfig = {
+  // eslint-disable-next-line no-unused-vars
   [k in string]: {
     label?: React.ReactNode
     icon?: React.ComponentType
@@ -74,6 +70,7 @@ ChartContainer.displayName = "Chart"
 
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
+    // eslint-disable-next-line no-unused-vars
     ([_, config]) => config.theme || config.color
   )
 
@@ -361,10 +358,9 @@ function getPayloadConfigFromPayload(
 }
 
 export {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
+  ChartContainer, ChartLegend,
   ChartLegendContent,
-  ChartStyle,
+  ChartStyle, ChartTooltip,
+  ChartTooltipContent
 }
+
