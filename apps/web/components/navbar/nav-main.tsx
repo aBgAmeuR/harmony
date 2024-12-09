@@ -5,6 +5,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@repo/ui/collapsible";
+import { Separator } from "@repo/ui/separator";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -14,6 +15,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@repo/ui/sidebar";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import { PrefetchKind } from "next/dist/client/components/router-reducer/router-reducer-types";
@@ -39,6 +41,7 @@ export function NavMain({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { open, isMobile } = useSidebar();
 
   return (
     <SidebarGroup>
@@ -56,7 +59,48 @@ export function NavMain({
             <SidebarMenuItem>
               {item.items ? (
                 <CollapsibleTrigger asChild>
-                  <SidebarMenuButton tooltip={item.title}>
+                  <SidebarMenuButton
+                    isActive={
+                      !open &&
+                      !isMobile &&
+                      (item.isActive ||
+                        item.items.some((i) => i.url === pathname))
+                    }
+                    tooltip={{
+                      children: (
+                        <>
+                          <div className="px-2 py-1">
+                            <p className="text-sm text-sidebar-accent-foreground">
+                              {item.title}
+                            </p>
+                          </div>
+                          <Separator className="mb-1" />
+                          {item.items.map((subItem) => (
+                            <SidebarMenuButton
+                              key={subItem.title}
+                              isActive={subItem.url === pathname}
+                              asChild
+                              size="sm"
+                              className="group-data-[collapsible=icon]:!size-auto"
+                            >
+                              <Link
+                                href={subItem.url}
+                                onMouseEnter={() => {
+                                  router.prefetch(item.url, {
+                                    kind: PrefetchKind.FULL,
+                                  });
+                                }}
+                              >
+                                {subItem.icon && <subItem.icon />}
+                                <span>{subItem.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          ))}
+                        </>
+                      ),
+                      className: "p-1 min-w-32",
+                    }}
+                  >
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
                     <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -68,17 +112,20 @@ export function NavMain({
                   asChild
                   isActive={item.url === pathname}
                 >
-                  <Link
-                    href={item.url}
+                  <a
                     onMouseEnter={() => {
                       router.prefetch(item.url, {
                         kind: PrefetchKind.FULL,
                       });
                     }}
+                    onClick={() => {
+                      router.push(item.url);
+                    }}
+                    className="cursor-pointer"
                   >
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
-                  </Link>
+                  </a>
                 </SidebarMenuButton>
               )}
               <CollapsibleContent>
