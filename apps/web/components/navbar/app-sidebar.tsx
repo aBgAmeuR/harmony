@@ -14,7 +14,6 @@ import {
 import { Skeleton } from "@repo/ui/skeleton";
 import { ChevronsUpDown } from "lucide-react";
 import { User } from "next-auth";
-import { useSession } from "next-auth/react";
 
 import { NavMain } from "~/components/navbar/nav-main";
 

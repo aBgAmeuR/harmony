@@ -17,7 +17,6 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@repo/ui/sidebar";
-import { TooltipContent } from "@repo/ui/tooltip";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import { PrefetchKind } from "next/dist/client/components/router-reducer/router-reducer-types";
 import { usePathname, useRouter } from "next/navigation";
@@ -70,13 +69,18 @@ export function NavMain({
                     tooltip={{
                       children: (
                         <>
-                          <span>{item.title}</span>
-                          <Separator />
+                          <div className="px-2 py-1">
+                            <p className="text-sm text-sidebar-accent-foreground">
+                              {item.title}
+                            </p>
+                          </div>
+                          <Separator className="mb-1" />
                           {item.items.map((subItem) => (
                             <SidebarMenuButton
                               key={subItem.title}
                               isActive={subItem.url === pathname}
                               asChild
+                              size="sm"
                               className="group-data-[collapsible=icon]:!size-auto"
                             >
                               <Link
@@ -94,7 +98,7 @@ export function NavMain({
                           ))}
                         </>
                       ),
-                      className: "w-56",
+                      className: "p-1 min-w-32",
                     }}
                   >
                     {item.icon && <item.icon />}
