@@ -26,4 +26,7 @@ export default {
       return session;
     },
   },
+  pages: {
+    error: "/auth/error",
+  },
 } satisfies NextAuthConfig;

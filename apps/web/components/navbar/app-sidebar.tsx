@@ -36,7 +36,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       <SidebarContent>
         <NavMain items={data.stats} label="Stats" />
         {hasPackage ? <NavMain items={data.package} label="Package" /> : null}
-        {hasPackage ? <NavMain items={data.advanced} label="Advanced" /> : null}
+        {/* {hasPackage ? <NavMain items={data.advanced} label="Advanced" /> : null} */}
         <NavMain items={data.settings} label="Settings" />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
