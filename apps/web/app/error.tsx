@@ -2,7 +2,6 @@
 
 import { Button } from "@repo/ui/button";
 import { AlertCircle } from "lucide-react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 import { Icons } from "~/components/icons";
