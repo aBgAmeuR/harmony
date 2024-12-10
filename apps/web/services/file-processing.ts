@@ -44,13 +44,17 @@ const saveData = async (data: DataType[][], file: File) => {
       newTracksUri.add(trackUri);
     }
   }
-
-  const tracksIdsResponse = await fetch("/api/package/tracks", {
-    method: "POST",
-    body: JSON.stringify(Array.from(newTracksUri)),
-  });
-
-  const tracksIds = await tracksIdsResponse.json();
+  let tracksIds = [];
+  try {
+    const tracksIdsResponse = await fetch("/api/package/tracks", {
+      method: "POST",
+      body: JSON.stringify(Array.from(newTracksUri)),
+    });
+    tracksIds = await tracksIdsResponse.json();
+  } catch (error) {
+    console.error("Rate limit error:", error as Error);
+    return { message: "error", error: "Rate limit error" };
+  }
 
   const newTracks = data
     .flat()
@@ -78,10 +82,15 @@ const saveData = async (data: DataType[][], file: File) => {
     })
     .filter((track) => track !== null);
 
-  const chunkSize = 10000;
   const chunkTracks = [];
-  for (let i = 0; i < newTracks.length; i += chunkSize) {
-    chunkTracks.push(newTracks.slice(i, i + chunkSize));
+  try {
+    const chunkSize = 10000;
+    for (let i = 0; i < newTracks.length; i += chunkSize) {
+      chunkTracks.push(newTracks.slice(i, i + chunkSize));
+    }
+  } catch (error) {
+    console.error("Error saving tracks:", error as Error);
+    return { message: "error", error: "Error saving tracks" };
   }
 
   await createPackageAction({
@@ -101,6 +110,7 @@ const saveData = async (data: DataType[][], file: File) => {
   } catch (error) {
     await deleteLastPackageAction();
     console.error("Error saving tracks:", error as Error);
+    return { message: "error", error: "Error saving tracks" };
   }
 };
 

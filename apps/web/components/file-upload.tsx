@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@repo/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { FileArchive, LoaderCircle, Upload, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { getMinMaxDateRangeAction } from "~/actions/get-min-max-date-range-action";
 import { useRankingTimeRange } from "~/lib/store";
@@ -16,6 +18,7 @@ export const FileUpload = () => {
   const [inTransition, startTransition] = useTransition();
   const queryClient = useQueryClient();
   const setRankingTimeRange = useRankingTimeRange((state) => state.setDates);
+  const router = useRouter();
 
   useEffect(() => {
     // eslint-disable-next-line no-undef
@@ -26,6 +29,7 @@ export const FileUpload = () => {
       }, 1000);
     } else {
       setProcessingTime(0);
+      interval = null;
     }
     return () => {
       if (interval) clearInterval(interval);
@@ -48,7 +52,12 @@ export const FileUpload = () => {
   const handleUpload = async () => {
     if (file) {
       startTransition(async () => {
-        await filesProcessing(file);
+        const res = await filesProcessing(file);
+        if (res.message === "error") {
+          toast.error(res.error);
+          return;
+        }
+
         queryClient.clear();
 
         const timeRange = await getMinMaxDateRangeAction();
@@ -57,6 +66,8 @@ export const FileUpload = () => {
           start: timeRange.minDate,
           end: timeRange.maxDate,
         });
+
+        router.refresh();
       });
     }
   };
