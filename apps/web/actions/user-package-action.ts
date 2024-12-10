@@ -21,16 +21,28 @@ export const createPackageAction = async (pakge: Package) => {
     data: {
       userId,
       spotify_id: pakge.spotify_id || session.user.id || "Unknown",
-      fileName: pakge.file_name,
-      fileSize: String(pakge.file_size),
+      fileName: pakge.file_name || "Unknown",
+      fileSize: String(pakge.file_size) || "Unknown",
     },
   });
 
-  await prisma.track.deleteMany({
-    where: {
-      userId,
-    },
-  });
+  const queries = [
+    prisma.track.deleteMany({
+      where: {
+        userId,
+      },
+    }),
+    prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        hasPackage: true,
+      },
+    }),
+  ];
+
+  await prisma.$transaction(queries);
 };
 
 export const deleteLastPackageAction = async () => {
@@ -52,15 +64,27 @@ export const deleteLastPackageAction = async () => {
 
   if (!lastPackage) return { message: "No package found" };
 
-  await prisma.package.delete({
-    where: {
-      id: lastPackage.id,
-    },
-  });
+  const queries = [
+    prisma.package.delete({
+      where: {
+        id: lastPackage.id,
+      },
+    }),
 
-  await prisma.track.deleteMany({
-    where: {
-      userId,
-    },
-  });
+    prisma.track.deleteMany({
+      where: {
+        userId,
+      },
+    }),
+    prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        hasPackage: false,
+      },
+    }),
+  ];
+
+  await prisma.$transaction(queries);
 };

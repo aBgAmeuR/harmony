@@ -1,6 +1,5 @@
 import { auth } from "@repo/auth";
 import { prisma } from "@repo/database";
-import { spotify } from "@repo/spotify";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";

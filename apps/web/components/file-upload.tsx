@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { signOut } from "@repo/auth/actions";
 import { Button } from "@repo/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { FileArchive, LoaderCircle, Upload, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { getMinMaxDateRangeAction } from "~/actions/get-min-max-date-range-action";
@@ -18,7 +18,6 @@ export const FileUpload = () => {
   const [inTransition, startTransition] = useTransition();
   const queryClient = useQueryClient();
   const setRankingTimeRange = useRankingTimeRange((state) => state.setDates);
-  const router = useRouter();
 
   useEffect(() => {
     // eslint-disable-next-line no-undef
@@ -67,7 +66,8 @@ export const FileUpload = () => {
           end: timeRange.maxDate,
         });
 
-        router.refresh();
+        // TODO: Update user session but next-auth has not yet implemented the solution
+        await signOut({ redirect: true, redirectTo: "/settings/package" });
       });
     }
   };
