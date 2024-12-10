@@ -3,10 +3,13 @@ import "@repo/ui/globals.css";
 import { cn } from "@repo/ui/lib/utils";
 import { Toaster } from "@repo/ui/sonner";
 import type { Metadata } from "next";
+import { ErrorBoundary } from "next/dist/client/components/error-boundary";
 import { Inter } from "next/font/google";
 import { ViewTransitions } from "next-view-transitions";
 
 import { Providers } from "~/components/providers/providers";
+
+import Error from "./error";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -45,7 +48,9 @@ export default function RootLayout({
           // vaul-drawer-wrapper=""
           className={cn(inter.className, "antialiased")}
         >
-          <Providers>{children}</Providers>
+          <Providers>
+            <ErrorBoundary errorComponent={Error}>{children}</ErrorBoundary>
+          </Providers>
           <Toaster richColors closeButton />
         </body>
       </html>

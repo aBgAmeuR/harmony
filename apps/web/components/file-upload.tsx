@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { signOut } from "@repo/auth/actions";
 import { Button } from "@repo/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { FileArchive, LoaderCircle, Upload, X } from "lucide-react";
+import { toast } from "sonner";
 
 import { getMinMaxDateRangeAction } from "~/actions/get-min-max-date-range-action";
 import { useRankingTimeRange } from "~/lib/store";
@@ -26,6 +28,7 @@ export const FileUpload = () => {
       }, 1000);
     } else {
       setProcessingTime(0);
+      interval = null;
     }
     return () => {
       if (interval) clearInterval(interval);
@@ -48,7 +51,12 @@ export const FileUpload = () => {
   const handleUpload = async () => {
     if (file) {
       startTransition(async () => {
-        await filesProcessing(file);
+        const res = await filesProcessing(file);
+        if (res.message === "error") {
+          toast.error(res.error);
+          return;
+        }
+
         queryClient.clear();
 
         const timeRange = await getMinMaxDateRangeAction();
@@ -57,6 +65,9 @@ export const FileUpload = () => {
           start: timeRange.minDate,
           end: timeRange.maxDate,
         });
+
+        // TODO: Update user session but next-auth has not yet implemented the solution
+        await signOut({ redirect: true, redirectTo: "/settings/package" });
       });
     }
   };

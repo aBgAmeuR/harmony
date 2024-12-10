@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.3",
-    "next-auth": "^5.0.0-beta.25"
+    "next-auth": "^5.0.0-beta.24"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
@@ -17,6 +17,9 @@
   "exports": {
     ".": {
       "default": "./src/index.ts"
+    },
+    "./actions": {
+      "default": "./src/actions.ts"
     }
   }
 }
