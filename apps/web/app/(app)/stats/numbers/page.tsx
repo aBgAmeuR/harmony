@@ -1,16 +1,25 @@
+import { getNumbersSessionStatsAction } from "~/actions/get-numbers-session-stats-action";
+import { getNumbersStatsAction } from "~/actions/get-numbers-stats-actions";
 import { AppHeader } from "~/components/app-header";
+import { addMonths, getCookieRankingTimeRange } from "~/lib/utils-server";
 
-export default function StatsNumbersPage() {
+export default async function StatsNumbersPage() {
+  const dates = await getCookieRankingTimeRange();
+  const dataSession = await getNumbersSessionStatsAction(
+    dates.dateStart,
+    addMonths(dates.dateEnd, 1),
+  );
+  const data = await getNumbersStatsAction(
+    dates.dateStart,
+    addMonths(dates.dateEnd, 1),
+  );
+
   return (
     <>
       <AppHeader items={["Package", "Stats", "Activity"]} />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-          <div className="aspect-video rounded-xl bg-muted/50" />
-          <div className="aspect-video rounded-xl bg-muted/50" />
-          <div className="aspect-video rounded-xl bg-muted/50" />
-        </div>
-        <div className="min-h-screen flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+        <pre>{JSON.stringify(dataSession, null, 2)}</pre>
+        <pre>{JSON.stringify(data, null, 2)}</pre>
       </div>
     </>
   );
