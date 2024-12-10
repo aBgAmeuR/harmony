@@ -3,6 +3,7 @@
 import { Button } from "@repo/ui/button";
 import { AlertCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 import { Icons } from "~/components/icons";
 import { ThemeToggle } from "~/components/theme-toggle";
@@ -26,6 +27,14 @@ const authErrorMessages: Record<ErrorType, string> = {
 };
 
 export default function Error({ error, reset }: ErrorProps) {
+  return (
+    <Suspense>
+      <ErrorContent error={error} reset={reset} />
+    </Suspense>
+  );
+}
+
+function ErrorContent({ error, reset }: ErrorProps) {
   const searchParams = useSearchParams();
   const errorParams = searchParams.get("error") as ErrorType | null;
 
