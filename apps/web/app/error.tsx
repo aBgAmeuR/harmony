@@ -1,9 +1,9 @@
 "use client";
 
+import { Suspense } from "react";
 import { Button } from "@repo/ui/button";
 import { AlertCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 
 import { Icons } from "~/components/icons";
 import { ThemeToggle } from "~/components/theme-toggle";
