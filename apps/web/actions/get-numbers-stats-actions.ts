@@ -31,20 +31,6 @@ export const getNumbersStatsAction = async (minDate: Date, maxDate: Date) => {
     orderBy: [{ timestamp: "asc" }],
   });
 
-  if (tracks.length === 0) {
-    return {
-      listeningTime: 0,
-      totalPlays: 0,
-      uniqueTracks: 0,
-      differentArtists: 0,
-      firstTrack: null,
-      mostPlayedDay: { day: "", totalPlayed: 0 },
-      mostStreamedDay: { day: "", totalTime: 0 },
-      onlineTrackPercent: 0,
-      mostFwdbtnTrack: { spotifyId: null, totalPlayed: 0 },
-    };
-  }
-
   const listeningTime = tracks.reduce(
     (sum, track) => sum + Number(track.msPlayed),
     0,
