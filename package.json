@@ -15,10 +15,10 @@
     "ui": "npm run -w @repo/ui ui --"
   },
   "devDependencies": {
-    "dotenv-cli": "^7.4.2",
-    "prettier": "^3.2.5",
+    "dotenv-cli": "^7.4.4",
+    "prettier": "^3.4.2",
     "prisma": "^6.0.1",
-    "tsx": "4.19.1",
+    "tsx": "4.19.2",
     "turbo": "^2.3.3"
   },
   "engines": {
@@ -27,7 +27,7 @@
   "name": "harmony",
   "dependencies": {
     "@prisma/client": "^6.0.1",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.7"
   },
   "packageManager": "npm@10.9.0",
   "workspaces": [

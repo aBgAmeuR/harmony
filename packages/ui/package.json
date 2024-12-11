@@ -12,12 +12,12 @@
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
-    "@types/node": "^20",
+    "@types/node": "^22",
     "@types/react": "19.0.1",
     "autoprefixer": "^10",
     "postcss": "^8",
     "postcss-load-config": "^6",
-    "tailwindcss": "^3.4.10",
+    "tailwindcss": "^3.4.16",
     "typescript": "^5"
   },
   "dependencies": {
@@ -34,13 +34,13 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-switch": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.4",
-    "class-variance-authority": "^0.7.0",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
     "next-themes": "^0.4.4",
     "recharts": "^2.14.1",
-    "sonner": "^1.7.0",
-    "tailwind-merge": "^2.3.0",
+    "sonner": "^1.7.1",
+    "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.1"
   },
