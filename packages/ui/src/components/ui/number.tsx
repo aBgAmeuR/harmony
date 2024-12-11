@@ -21,6 +21,7 @@ type NumbersFlowDateProps = {
 }
 
 export const NumbersFlowDate = ({ value, showTime }: NumbersFlowDateProps) => {
+
   const month = localeFormat(value, "{MMMM}")
   const day = format(value, "{dd}")
   const year = format(value, "{yyyy}")

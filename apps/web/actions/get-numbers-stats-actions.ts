@@ -38,7 +38,33 @@ export const getNumbersStatsAction = async (minDate: Date, maxDate: Date) => {
 
   const tracks = await getTracks(userId, minDate, maxDate);
 
-  if (tracks.length === 0) return null;
+  if (tracks.length === 0)
+    return {
+      listeningTime: 0,
+      totalPlays: 0,
+      uniqueTracks: 0,
+      differentArtists: 0,
+      firstTrack: {
+        timestamp: null,
+        id: null,
+        name: null,
+        cover: null,
+        artists: null,
+      },
+      mostActiveDay: {
+        day: null,
+        totalTime: 0,
+        totalPlayed: 0,
+      },
+      onlineTrackPercent: 0,
+      mostFwdbtnTrack: {
+        totalPlayed: 0,
+        id: null,
+        name: null,
+        cover: null,
+        artists: null,
+      },
+    };
 
   const stats = calculateStats(tracks);
   const trackDetails = await fetchTrackDetails(

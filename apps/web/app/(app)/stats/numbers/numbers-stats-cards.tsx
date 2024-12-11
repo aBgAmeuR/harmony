@@ -104,7 +104,11 @@ export const NumbersStatsCards = ({ initialData }: NumbersStatsCardsProps) => {
         />
         <p className="text-sm text-muted-foreground mt-2">
           <NumberFlow
-            value={data.uniqueTracks / data.totalPlays}
+            value={
+              data.uniqueTracks && data.totalPlays
+                ? data.uniqueTracks / data.totalPlays
+                : 0
+            }
             format={{ style: "percent" }}
             locales="en-US"
             suffix=" of your plays were unique tracks"
@@ -146,7 +150,11 @@ export const NumbersStatsCards = ({ initialData }: NumbersStatsCardsProps) => {
           </ItemCard>
           <p className="mt-2 text-sm text-muted-foreground">
             Played on{" "}
-            <NumbersFlowDate value={data.firstTrack.timestamp} showTime />
+            {data.firstTrack.timestamp ? (
+              <NumbersFlowDate value={data.firstTrack.timestamp} showTime />
+            ) : (
+              "an unknown date"
+            )}
           </p>
         </div>
       </Card>
@@ -156,7 +164,11 @@ export const NumbersStatsCards = ({ initialData }: NumbersStatsCardsProps) => {
         <Calendar className="size-8 mb-2 text-green-600 dark:text-green-400" />
         <h3 className="font-semibold">Most Active Day</h3>
         <p className="text-2xl font-bold mt-1">
-          <NumbersFlowDate value={new Date(data.mostActiveDay.day)} />
+          {data.mostActiveDay.day ? (
+            <NumbersFlowDate value={new Date(data.mostActiveDay.day)} />
+          ) : (
+            "No data available"
+          )}
         </p>
         <p className="text-sm text-muted-foreground mt-1">
           <NumberFlow

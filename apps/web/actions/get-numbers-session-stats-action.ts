@@ -64,8 +64,10 @@ export const getNumbersSessionStatsAction = async (
     (sum, duration) => sum + duration,
     0,
   );
-  const longestSession = Math.max(...sessionDurations);
-  const averageSessionTime = totalDuration / totalSessions;
+  const longestSession = sessionDurations.length
+    ? Math.max(...sessionDurations)
+    : 0;
+  const averageSessionTime = totalSessions ? totalDuration / totalSessions : 0;
 
   return {
     averageSessionTime: Math.round(averageSessionTime),

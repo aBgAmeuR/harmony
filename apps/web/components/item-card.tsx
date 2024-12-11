@@ -41,8 +41,8 @@ ItemCardRank.displayName = "ItemCardRank";
 const ItemCardImage = React.forwardRef<
   HTMLDivElement,
   Omit<React.ComponentPropsWithoutRef<"div">, "children"> & {
-    src?: string;
-    alt?: string;
+    src?: string | null;
+    alt?: string | null;
     layout?: "grid" | "list";
   }
 >(({ className, src, alt, layout = "list", ...props }, ref) => (
