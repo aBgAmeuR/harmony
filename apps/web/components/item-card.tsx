@@ -1,8 +1,9 @@
 import React from "react";
 import { Slot } from "@radix-ui/react-slot";
+import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
 import { cn } from "@repo/ui/lib/utils";
 import { format } from "light-date";
-import { Clock, ExternalLink } from "lucide-react";
+import { Clock, ExternalLink, Music2 } from "lucide-react";
 import Image from "next/image";
 
 const ItemCard = React.forwardRef<
@@ -40,19 +41,26 @@ ItemCardRank.displayName = "ItemCardRank";
 const ItemCardImage = React.forwardRef<
   HTMLDivElement,
   Omit<React.ComponentPropsWithoutRef<"div">, "children"> & {
-    src: string;
-    alt: string;
+    src?: string;
+    alt?: string;
     layout?: "grid" | "list";
   }
 >(({ className, src, alt, layout = "list", ...props }, ref) => (
   <div ref={ref} {...props}>
-    <Image
-      src={src}
-      alt={alt}
-      width={layout === "grid" ? 200 : 64}
-      height={layout === "grid" ? 200 : 64}
-      className={cn("aspect-square rounded-md object-cover", className)}
-    />
+    <Avatar className={cn("rounded-md size-16", className)}>
+      <AvatarImage src={src!} asChild>
+        <Image
+          src={src!}
+          alt={alt!}
+          width={layout === "grid" ? 200 : 64}
+          height={layout === "grid" ? 200 : 64}
+          className={cn("aspect-square rounded-md object-cover")}
+        />
+      </AvatarImage>
+      <AvatarFallback className="rounded-md">
+        <Music2 />
+      </AvatarFallback>
+    </Avatar>
   </div>
 ));
 ItemCardImage.displayName = "ItemCardImage";

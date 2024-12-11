@@ -2,6 +2,7 @@
 
 import { Card } from "@repo/ui/card";
 import { NumberFlow } from "@repo/ui/number";
+import { Skeleton } from "@repo/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 
 import { getNumbersSessionStatsAction } from "~/actions/get-numbers-session-stats-action";
@@ -88,6 +89,28 @@ export const NumbersStatsSessionCard = ({
               suffix=" minutes"
             />
           </p>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
+export const NumbersStatsSessionSkeleton = () => {
+  return (
+    <Card className="p-6 col-span-full">
+      <h3 className="font-semibold mb-4">Listening Sessions</h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <p className="text-sm text-muted-foreground">Total Sessions</p>
+          <Skeleton className="w-20 h-7 mt-1" />
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">Average Session</p>
+          <Skeleton className="w-36 h-7 mt-1" />
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">Longest Session</p>
+          <Skeleton className="w-48 h-7 mt-1" />
         </div>
       </div>
     </Card>
