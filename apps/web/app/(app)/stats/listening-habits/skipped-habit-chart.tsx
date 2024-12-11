@@ -6,17 +6,17 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@repo/ui/chart";
-import { Label, Pie, PieChart, Sector } from "recharts";
-import { PieSectorDataItem } from "recharts/types/polar/Pie";
+import { useQuery } from "@tanstack/react-query";
+import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
 
 import { getSkippedHabit } from "./get-charts-data";
 
 const chartConfig = {
-  Skipped: {
+  skipped: {
     label: "Skipped",
     color: "hsl(var(--chart-1))",
   },
-  "Not Skipped": {
+  notSkipped: {
     label: "Not Skipped",
     color: "hsl(var(--chart-2))",
   },
@@ -44,44 +44,34 @@ export const SkippedHabitChart = ({
   return (
     <ChartContainer
       config={chartConfig}
-      className="mx-auto aspect-square max-h-[250px]"
+      className="mx-auto aspect-square max-h-[250px] w-full"
     >
-      <PieChart>
+      <RadialBarChart
+        data={chartData}
+        endAngle={180}
+        innerRadius={80}
+        outerRadius={130}
+      >
         <ChartTooltip
           cursor={false}
           content={<ChartTooltipContent hideLabel />}
         />
-        <Pie
-          data={chartData}
-          dataKey="totalPlayed"
-          nameKey="skipped"
-          innerRadius={60}
-          strokeWidth={5}
-          activeIndex={0}
-          activeShape={({ outerRadius = 0, ...props }: PieSectorDataItem) => (
-            <Sector {...props} outerRadius={outerRadius + 10} />
-          )}
-        >
+        <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
           <Label
             content={({ viewBox }) => {
               if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                 return (
-                  <text
-                    x={viewBox.cx}
-                    y={viewBox.cy}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                  >
+                  <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
                     <tspan
                       x={viewBox.cx}
-                      y={viewBox.cy}
-                      className="fill-foreground text-3xl font-bold"
+                      y={(viewBox.cy || 0) - 16}
+                      className="fill-foreground text-2xl font-bold"
                     >
-                      {skippedPercentage}%
+                      {`${skippedPercentage}%`}
                     </tspan>
                     <tspan
                       x={viewBox.cx}
-                      y={(viewBox.cy || 0) + 24}
+                      y={(viewBox.cy || 0) + 4}
                       className="fill-muted-foreground"
                     >
                       Tracks Skipped
@@ -91,8 +81,22 @@ export const SkippedHabitChart = ({
               }
             }}
           />
-        </Pie>
-      </PieChart>
+        </PolarRadiusAxis>
+        <RadialBar
+          dataKey="skipped"
+          fill="var(--color-skipped)"
+          stackId="a"
+          cornerRadius={5}
+          className="stroke-transparent stroke-2"
+        />
+        <RadialBar
+          dataKey="notSkipped"
+          stackId="a"
+          cornerRadius={5}
+          fill="var(--color-notSkipped)"
+          className="stroke-transparent stroke-2"
+        />
+      </RadialBarChart>
     </ChartContainer>
   );
 };
