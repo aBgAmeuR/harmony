@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "dotenv -e ../../.env -- next dev --turbopack",
     "build": "dotenv -e ../../.env -- next build",
-    "start": "next start",
+    "start": "next start --turbopack",
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {

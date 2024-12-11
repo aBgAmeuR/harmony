@@ -23,7 +23,6 @@
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
-    "@types/node": "^22.10.2",
     "eslint": "^8",
     "prisma": "^6.0.1",
     "rimraf": "^6.0.1",
