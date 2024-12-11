@@ -136,7 +136,7 @@ export const NumbersStatsCards = ({ initialData }: NumbersStatsCardsProps) => {
 
       {/* First Track */}
       <Card className="p-6">
-        <h3 className="font-semibold mb-2">First Track of the Year</h3>
+        <h3 className="font-semibold mb-2">First Track you played</h3>
         <div>
           <ItemCard className="py-0">
             <ItemCardImage

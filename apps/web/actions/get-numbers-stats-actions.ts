@@ -67,10 +67,16 @@ export const getNumbersStatsAction = async (minDate: Date, maxDate: Date) => {
     };
 
   const stats = calculateStats(tracks);
-  const trackDetails = await fetchTrackDetails(
-    tracks,
-    stats.mostFwdbtnTrack.spotifyId,
-  );
+  let trackDetails: SpotifyTrack[] = [];
+  try {
+    trackDetails = await fetchTrackDetails(
+      tracks,
+      stats.mostFwdbtnTrack.spotifyId,
+    );
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 
   return formatResponse(stats, tracks, trackDetails);
 };
