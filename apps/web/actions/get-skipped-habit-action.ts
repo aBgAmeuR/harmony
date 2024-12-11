@@ -26,17 +26,11 @@ export const getSkippedHabitAction = async (minDate: Date, maxDate: Date) => {
 
   return [
     {
-      skipped: "Skipped",
-      fill: "hsl(var(--chart-1))",
-      totalPlayed:
+      skipped:
         skippeds.find((shuffle) => shuffle.skipped === true)?._count?._all || 0,
-    },
-    {
-      skipped: "Not Skipped",
-      fill: "hsl(var(--chart-6))",
-      totalPlayed:
+      notSkipped:
         skippeds.find((shuffle) => shuffle.skipped === false)?._count?._all ||
-        1,
+        0,
     },
   ];
 };

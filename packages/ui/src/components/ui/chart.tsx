@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 "use client"
 
 import * as React from "react"
@@ -8,7 +9,7 @@ import {
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent"
 
-import { cn } from "@repo/ui/lib/utils"
+import { cn } from "../../lib/utils"
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const

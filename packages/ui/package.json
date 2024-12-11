@@ -37,14 +37,14 @@
     "@radix-ui/react-tooltip": "^1.1.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "light-date": "^1.2.0",
     "lucide-react": "^0.468.0",
     "next-themes": "^0.4.4",
     "recharts": "^2.14.1",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
-    "vaul": "^1.1.1",
-    "light-date": "^1.2.0"
+    "vaul": "^1.1.1"
   },
   "exports": {
     "./globals.css": "./src/globals.css",
