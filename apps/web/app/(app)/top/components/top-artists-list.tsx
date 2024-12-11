@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Artist } from "@repo/spotify/types";
 import { Alert, AlertDescription, AlertTitle } from "@repo/ui/alert";
 import { cn } from "@repo/ui/lib/utils";

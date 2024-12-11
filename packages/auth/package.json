@@ -3,15 +3,15 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
-    "@auth/prisma-adapter": "^2.7.3",
+    "@auth/prisma-adapter": "^2.7.4",
     "next-auth": "^5.0.0-beta.24"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/database": "*",
     "@repo/typescript-config": "*",
-    "@types/node": "^20",
-    "@types/react": "^18",
+    "@types/node": "^22",
+    "@types/react": "19.0.1",
     "typescript": "^5"
   },
   "exports": {
