@@ -1,6 +1,6 @@
 import Balancer from "react-wrap-balancer";
 import { Button } from "@repo/ui/button";
-import { ArrowRight } from "lucide-react";
+import { AlertTriangle, ArrowRight } from "lucide-react";
 import { Link } from "next-view-transitions";
 
 import { Footer } from "~/components/footer";
@@ -8,9 +8,21 @@ import { Icons } from "~/components/icons";
 import { ThemeToggle } from "~/components/theme-toggle";
 
 export default async function HomePage() {
+  const isMaintenance = process.env.APP_MAINTENANCE === "true";
+
   return (
     <div className="flex h-screen w-screen flex-col">
       <main className="flex flex-1 flex-col items-center justify-center gap-6">
+        <div className="flex justify-center">
+          {isMaintenance ? (
+            <div className="inline-flex items-center gap-x-2 border text-sm p-1 pe-3 rounded-full transition">
+              <span className="py-1.5 px-2.5 inline-flex justify-center items-center gap-x-2 rounded-full bg-muted-foreground/15 font-semibold text-sm">
+                <AlertTriangle className="size-4" />
+              </span>
+              <span>This website is under maintenance</span>
+            </div>
+          ) : null}
+        </div>
         <div className="flex flex-col items-center gap-2">
           <div className="flex gap-2">
             <Icons.logo className="size-12 md:size-16" />
@@ -26,12 +38,19 @@ export default async function HomePage() {
         <div className="flex gap-2">
           <ThemeToggle variant="outline" />
 
-          <Button aria-label="Get Started" asChild disabled>
-            <Link href="/overview">
+          {isMaintenance ? (
+            <Button aria-label="Disabled Get Started" disabled>
               <Icons.spotify />
               Get Started
-            </Link>
-          </Button>
+            </Button>
+          ) : (
+            <Button aria-label="Get Started" asChild>
+              <Link href="/overview">
+                <Icons.spotify />
+                Get Started
+              </Link>
+            </Button>
+          )}
           <Button
             className="group"
             variant="ghost"

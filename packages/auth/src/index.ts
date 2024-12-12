@@ -4,6 +4,12 @@ import NextAuth from "next-auth";
 import authConfig from "./auth.config";
 
 const middleware = NextAuth(authConfig).auth(async (req) => {
+  if (process.env.APP_MAINTENANCE === 'true' && req.nextUrl.pathname !== "/") {
+    const newUrl = new URL("/", req.nextUrl.origin);
+    return Response.redirect(newUrl);
+  }
+  
+
   if (
     !req.auth &&
     req.nextUrl.pathname !== "/" &&
