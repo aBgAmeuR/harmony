@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth";
+import { prisma } from "@repo/database";
 import { spotify } from "@repo/spotify";
 import { NextResponse } from "next/server";
 
@@ -20,6 +21,29 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not authenticated" });
 
   try {
+    const lastPackage = await prisma.package.findFirst({
+      where: {
+        userId: session.user.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        createdAt: true,
+      },
+    });
+
+    if (lastPackage) {
+      const diff = new Date().getTime() - lastPackage.createdAt.getTime();
+      // 24 hours of difference between the last package
+      if (diff < 1000 * 60 * 60 * 24) {
+        return NextResponse.json({
+          message: "error",
+          error: "You can only save tracks once a day",
+        });
+      }
+    }
+
     const data = (await req.json()) as string[];
 
     // to refresh the token
