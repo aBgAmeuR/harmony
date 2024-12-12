@@ -8,7 +8,6 @@ import { Icons } from "~/components/icons";
 import { ThemeToggle } from "~/components/theme-toggle";
 
 export default async function HomePage() {
-  // eslint-disable-next-line turbo/no-undeclared-env-vars
   const isMaintenance = process.env.APP_MAINTENANCE === "true";
 
   return (
