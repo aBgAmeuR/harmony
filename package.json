@@ -12,7 +12,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "generate": "turbo run generate",
     "lint": "turbo run lint",
-    "ui": "npm run -w @repo/ui ui --"
+    "ui": "npm run -w @repo/ui ui --",
+    "studio": "turbo run studio"
   },
   "devDependencies": {
     "dotenv-cli": "^7.4.4",

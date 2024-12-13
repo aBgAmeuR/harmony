@@ -56,5 +56,8 @@
       "./src/hooks/*.tsx"
     ],
     "./*": "./src/components/ui/*.tsx"
+  },
+  "overrides": {
+    "react-is": "19.0.1"
   }
 }

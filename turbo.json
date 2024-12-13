@@ -24,6 +24,7 @@
     "generate": {
       "dependsOn": ["^generate"]
     },
-    "lint": {}
+    "lint": {},
+    "studio": {}
   }
 }
