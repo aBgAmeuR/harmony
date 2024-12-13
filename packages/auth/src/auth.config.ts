@@ -22,7 +22,7 @@ export default {
           return {
             name: "Demo",
             email: "demo@demo.com",
-            id: "cm4jsyzf8000012qy6kj566ay",
+            id: process.env.DEMO_ID,
             hasPackage: true,
           };
         }

@@ -36,7 +36,7 @@ export default async function HomePage() {
             Package.
           </Balancer>
         </div>
-        <div className="space-y-2">
+        <div className="flex gap-2 items-center flex-col">
           <div className="flex gap-2">
             <ThemeToggle variant="outline" />
 
@@ -70,21 +70,23 @@ export default async function HomePage() {
               </a>
             </Button>
           </div>
-          <form
-            action={async () => {
-              "use server";
-              await signIn("credentials", {
-                username: "demo",
-                password: "demo",
-                redirect: true,
-                redirectTo: "/overview",
-              });
-            }}
-          >
-            <Button type="submit" variant="link" className="p-0 text-chart-1">
-              Get a demo of Harmony
-            </Button>
-          </form>
+          {!isMaintenance ? (
+            <form
+              action={async () => {
+                "use server";
+                await signIn("credentials", {
+                  username: "demo",
+                  password: "demo",
+                  redirect: true,
+                  redirectTo: "/overview",
+                });
+              }}
+            >
+              <Button type="submit" variant="link" className="p-0 text-chart-1">
+                Get a demo of Harmony
+              </Button>
+            </form>
+          ) : null}
         </div>
       </main>
       <Footer />
