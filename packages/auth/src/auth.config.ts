@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 import Spotify from "next-auth/providers/spotify";
 
 export default {
@@ -6,6 +7,27 @@ export default {
     Spotify({
       authorization:
         "https://accounts.spotify.com/authorize?scope=user-read-recently-played%20user-top-read%20user-read-email",
+    }),
+    Credentials({
+      name: "Demo",
+      credentials: {
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (
+          credentials.username === "demo" &&
+          credentials.password === "demo"
+        ) {
+          return {
+            name: "Demo",
+            email: "demo@demo.com",
+            id: "cm4jsyzf8000012qy6kj566ay",
+            hasPackage: true,
+          };
+        }
+        return null;
+      },
     }),
   ],
   callbacks: {

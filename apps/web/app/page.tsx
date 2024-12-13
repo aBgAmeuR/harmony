@@ -1,4 +1,5 @@
 import Balancer from "react-wrap-balancer";
+import { signIn } from "@repo/auth";
 import { Button } from "@repo/ui/button";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import { Link } from "next-view-transitions";
@@ -35,38 +36,55 @@ export default async function HomePage() {
             Package.
           </Balancer>
         </div>
-        <div className="flex gap-2">
-          <ThemeToggle variant="outline" />
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <ThemeToggle variant="outline" />
 
-          {isMaintenance ? (
-            <Button aria-label="Disabled Get Started" disabled>
-              <Icons.spotify />
-              Get Started
-            </Button>
-          ) : (
-            <Button aria-label="Get Started" asChild>
-              <Link href="/overview">
+            {isMaintenance ? (
+              <Button aria-label="Disabled Get Started" disabled>
                 <Icons.spotify />
                 Get Started
-              </Link>
+              </Button>
+            ) : (
+              <Button aria-label="Get Started" asChild>
+                <Link href="/overview">
+                  <Icons.spotify />
+                  Get Started
+                </Link>
+              </Button>
+            )}
+            <Button
+              className="group"
+              variant="ghost"
+              aria-label="View on Github"
+              asChild
+            >
+              <a href="https://github.com/aBgAmeuR/Harmony">
+                Github
+                <ArrowRight
+                  className="opacity-60 transition-transform group-hover:translate-x-0.5"
+                  size={16}
+                  strokeWidth={2}
+                  aria-hidden="true"
+                />
+              </a>
             </Button>
-          )}
-          <Button
-            className="group"
-            variant="ghost"
-            aria-label="View on Github"
-            asChild
+          </div>
+          <form
+            action={async () => {
+              "use server";
+              await signIn("credentials", {
+                username: "demo",
+                password: "demo",
+                redirect: true,
+                redirectTo: "/overview",
+              });
+            }}
           >
-            <a href="https://github.com/aBgAmeuR/Harmony">
-              Github
-              <ArrowRight
-                className="opacity-60 transition-transform group-hover:translate-x-0.5"
-                size={16}
-                strokeWidth={2}
-                aria-hidden="true"
-              />
-            </a>
-          </Button>
+            <Button type="submit" variant="link" className="p-0 text-chart-1">
+              Get a demo of Harmony
+            </Button>
+          </form>
         </div>
       </main>
       <Footer />
