@@ -45,3 +45,5 @@ export const getCookieTopTimeRange = async () => {
   const timeRange = cookieTimeRange ? cookieTimeRange.value : "medium_term";
   return timeRange as "long_term" | "medium_term" | "short_term";
 };
+
+export const isDemo = (session: any | null) => session?.user?.name === "Demo";

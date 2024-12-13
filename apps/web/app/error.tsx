@@ -1,8 +1,9 @@
 "use client";
 
 import { Suspense } from "react";
+import { signOut } from "@repo/auth/actions";
 import { Button } from "@repo/ui/button";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ArrowRight } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
 import { Icons } from "~/components/icons";
@@ -56,7 +57,28 @@ function ErrorContent({ error, reset }: ErrorProps) {
           <p className="text-sm text-muted-foreground font-mono">
             Error Code: <span>{errorParams || error.digest || "Unknown"}</span>
           </p>
-          <Button onClick={() => reset()}>Try again</Button>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={() => reset()}>Try again</Button>
+            <Button
+              className="group"
+              variant="ghost"
+              aria-label="Go to homepage"
+              onClick={async () =>
+                await signOut({
+                  redirect: true,
+                  redirectTo: "/",
+                })
+              }
+            >
+              Go to Home
+              <ArrowRight
+                className="opacity-60 transition-transform group-hover:translate-x-0.5"
+                size={16}
+                strokeWidth={2}
+                aria-hidden="true"
+              />
+            </Button>
+          </div>
         </div>
       </div>
       <footer className="mt-8 flex items-center justify-center gap-2">

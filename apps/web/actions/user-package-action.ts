@@ -3,6 +3,8 @@
 import { auth } from "@repo/auth";
 import { prisma } from "@repo/database";
 
+import { isDemo } from "~/lib/utils-server";
+
 type Package = {
   spotify_id?: string;
   file_name: string;
@@ -12,7 +14,7 @@ type Package = {
 export const createPackageAction = async (pakge: Package) => {
   const session = await auth();
 
-  if (!session || !session.user || !session.user.id)
+  if (!session || !session.user || !session.user.id || isDemo(session))
     return { message: "Not authenticated" };
 
   const userId = session.user.id;
@@ -48,7 +50,7 @@ export const createPackageAction = async (pakge: Package) => {
 export const deleteLastPackageAction = async () => {
   const session = await auth();
 
-  if (!session || !session.user || !session.user.id)
+  if (!session || !session.user || !session.user.id || isDemo(session))
     return { message: "Not authenticated" };
 
   const userId = session.user.id;

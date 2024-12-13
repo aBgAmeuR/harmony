@@ -32,7 +32,7 @@ export const addMonths = (input: Date, months: number) => {
 };
 const getDaysInMonth = (year: number, month: number) =>
   new Date(year, month, 0).getDate();
-const formatDate = (date: Date) =>
+export const formatDate = (date: Date) =>
   `${localeFormat(date, "{MMM}")} ${date.getFullYear()}`;
 
 type Month = {
@@ -126,6 +126,7 @@ type MonthRangeCalProps = {
   maxDate?: Date;
   quickSelectors?: QuickSelector[];
   showQuickSelectors?: boolean;
+  disabled?: boolean;
 };
 
 type ButtonVariant =
@@ -149,6 +150,7 @@ function MonthRangePicker({
   minDate,
   maxDate,
   showQuickSelectors,
+  disabled,
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & MonthRangeCalProps) {

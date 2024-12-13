@@ -3,6 +3,8 @@ import { prisma } from "@repo/database";
 import { spotify } from "@repo/spotify";
 import { NextResponse } from "next/server";
 
+import { isDemo } from "~/lib/utils-server";
+
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
@@ -17,7 +19,7 @@ type ReturnedTrack = Map<string, TrackInfo>;
 export async function POST(req: Request) {
   const session = await auth();
 
-  if (!session || !session.user)
+  if (!session || !session.user || isDemo(session))
     return NextResponse.json({ error: "Not authenticated" });
 
   try {

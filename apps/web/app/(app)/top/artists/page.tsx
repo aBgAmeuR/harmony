@@ -4,6 +4,7 @@ import { getTopArtistsAction } from "~/actions/get-top-user-action";
 import { AppHeader } from "~/components/app-header";
 import { ListSkeleton } from "~/components/list-skeleton";
 import { SelectTimeRange } from "~/components/select-time-range";
+import { SelectTimeRangeInfo } from "~/components/select-time-range-info";
 import { SelectTopLayout } from "~/components/select-top-layout";
 import { getCookieTopTimeRange } from "~/lib/utils-server";
 
@@ -13,6 +14,7 @@ export default function TopArtistsPage() {
   return (
     <>
       <AppHeader items={["Stats", "Top", "Artists"]}>
+        <SelectTimeRangeInfo />
         <SelectTimeRange />
         <SelectTopLayout />
       </AppHeader>

@@ -27,10 +27,20 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@repo/ui/sidebar";
-import { ChevronsUpDown, LogOut, Moon, SunMedium } from "lucide-react";
+import {
+  ChevronsUpDown,
+  Eye,
+  EyeOff,
+  LogOut,
+  Moon,
+  SunMedium,
+} from "lucide-react";
 import { User } from "next-auth";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
+
+import { useMounted } from "~/hooks/use-mounted";
+import { useUserPreferences } from "~/lib/store";
 
 // import { deleteUserAction } from "@/actions/user/delete-user-action";
 
@@ -41,6 +51,9 @@ type NavUserProps = {
 export function NavUser({ user }: NavUserProps) {
   const { setTheme, theme } = useTheme();
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const { showEmail, setShowEmail } = useUserPreferences();
+  const isDemo = user.name === "Demo";
+  const isMounted = useMounted();
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmation === user.name) {
@@ -69,7 +82,7 @@ export function NavUser({ user }: NavUserProps) {
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{user.name}</span>
-                  {user.email ? (
+                  {isMounted && showEmail && user.email ? (
                     <span className="truncate text-xs text-muted-foreground">
                       {user.email}
                     </span>
@@ -94,7 +107,11 @@ export function NavUser({ user }: NavUserProps) {
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">{user.name}</span>
-                    {/* <span className="truncate text-xs">{user.email}</span> */}
+                    {isMounted && user.email && showEmail ? (
+                      <span className="truncate text-xs text-muted-foreground">
+                        {user.email}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
               </DropdownMenuLabel>
@@ -118,9 +135,28 @@ export function NavUser({ user }: NavUserProps) {
               <DropdownMenuLabel className="text-xs text-muted-foreground">
                 Preferences
               </DropdownMenuLabel>
+              {!isDemo ? (
+                <DropdownMenuItem asChild>
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowEmail(!showEmail);
+                    }}
+                    className="flex w-full cursor-pointer items-center justify-between"
+                    variant="ghost"
+                    size="sm"
+                  >
+                    Show email
+                    {showEmail ? <Eye size={18} /> : <EyeOff size={18} />}
+                  </Button>
+                </DropdownMenuItem>
+              ) : null}
               <DropdownMenuItem asChild>
                 <Button
-                  onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setTheme(theme === "light" ? "dark" : "light");
+                  }}
                   className="flex w-full cursor-pointer items-center justify-between"
                   variant="ghost"
                   size="sm"
@@ -133,7 +169,7 @@ export function NavUser({ user }: NavUserProps) {
                   )}
                 </Button>
               </DropdownMenuItem>
-              {user.name !== "Demo" ? (
+              {!isDemo ? (
                 <>
                   <DropdownMenuSeparator />
                   <DialogTrigger asChild>

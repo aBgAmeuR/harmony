@@ -2,6 +2,8 @@ import { auth } from "@repo/auth";
 import { prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 
+import { isDemo } from "~/lib/utils-server";
+
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
@@ -23,7 +25,7 @@ type Track = {
 export async function POST(req: Request) {
   const session = await auth();
 
-  if (!session || !session.user || !session.user.id)
+  if (!session || !session.user || !session.user.id || isDemo(session))
     return NextResponse.json({ message: "Not authenticated" });
 
   try {
