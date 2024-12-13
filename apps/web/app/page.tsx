@@ -1,10 +1,10 @@
 import Balancer from "react-wrap-balancer";
-import { signIn } from "@repo/auth";
 import { Button } from "@repo/ui/button";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import { Link } from "next-view-transitions";
 
 import { Footer } from "~/components/footer";
+import { GetDemoBtn } from "~/components/get-demo-btn";
 import { Icons } from "~/components/icons";
 import { ThemeToggle } from "~/components/theme-toggle";
 
@@ -70,23 +70,7 @@ export default async function HomePage() {
               </a>
             </Button>
           </div>
-          {!isMaintenance ? (
-            <form
-              action={async () => {
-                "use server";
-                await signIn("credentials", {
-                  username: "demo",
-                  password: "demo",
-                  redirect: true,
-                  redirectTo: "/overview",
-                });
-              }}
-            >
-              <Button type="submit" variant="link" className="p-0 text-chart-1">
-                Get a demo of Harmony
-              </Button>
-            </form>
-          ) : null}
+          {!isMaintenance ? <GetDemoBtn /> : null}
         </div>
       </main>
       <Footer />

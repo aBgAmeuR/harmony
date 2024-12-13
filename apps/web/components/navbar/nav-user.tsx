@@ -69,7 +69,11 @@ export function NavUser({ user }: NavUserProps) {
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{user.name}</span>
-                  {/* <span className="truncate text-xs">{user.email}</span> */}
+                  {user.email ? (
+                    <span className="truncate text-xs text-muted-foreground">
+                      {user.email}
+                    </span>
+                  ) : null}
                 </div>
                 <ChevronsUpDown className="ml-auto size-4" />
               </SidebarMenuButton>
@@ -129,20 +133,25 @@ export function NavUser({ user }: NavUserProps) {
                   )}
                 </Button>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DialogTrigger asChild>
-                <DropdownMenuItem asChild>
-                  <Button
-                    className="w-full cursor-pointer focus:bg-destructive/90 focus-visible:ring-transparent"
-                    variant="destructive"
-                    size="sm"
-                  >
-                    Delete account
-                  </Button>
-                </DropdownMenuItem>
-              </DialogTrigger>
+              {user.name !== "Demo" ? (
+                <>
+                  <DropdownMenuSeparator />
+                  <DialogTrigger asChild>
+                    <DropdownMenuItem asChild>
+                      <Button
+                        className="w-full cursor-pointer focus:bg-destructive/90 focus-visible:ring-transparent"
+                        variant="destructive"
+                        size="sm"
+                      >
+                        Delete account
+                      </Button>
+                    </DropdownMenuItem>
+                  </DialogTrigger>
+                </>
+              ) : null}
             </DropdownMenuContent>
           </DropdownMenu>
+
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Delete Account</DialogTitle>

@@ -18,11 +18,11 @@ export default async function AppLayout({
   const session = await auth();
 
   return (
-    <SidebarProvider defaultOpen={sideBarState === "true"}>
-      <AppSidebar user={session?.user} />
-      <SidebarInset>
-        <ErrorBoundary errorComponent={Error}>{children}</ErrorBoundary>
-      </SidebarInset>
-    </SidebarProvider>
+    <ErrorBoundary errorComponent={Error}>
+      <SidebarProvider defaultOpen={sideBarState === "true"}>
+        <AppSidebar user={session?.user} />
+        <SidebarInset>{children}</SidebarInset>
+      </SidebarProvider>
+    </ErrorBoundary>
   );
 }

@@ -48,9 +48,9 @@ export default function RootLayout({
           // vaul-drawer-wrapper=""
           className={cn(inter.className, "antialiased")}
         >
-          <Providers>
-            <ErrorBoundary errorComponent={Error}>{children}</ErrorBoundary>
-          </Providers>
+          <ErrorBoundary errorComponent={Error}>
+            <Providers>{children}</Providers>
+          </ErrorBoundary>
           <Toaster richColors closeButton />
         </body>
       </html>

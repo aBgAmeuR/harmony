@@ -21,7 +21,6 @@ export default {
         ) {
           return {
             name: "Demo",
-            email: "demo@demo.com",
             id: process.env.DEMO_ID,
             hasPackage: true,
           };

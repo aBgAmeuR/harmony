@@ -1,4 +1,5 @@
 import React, { PropsWithChildren } from "react";
+import { Badge } from "@repo/ui/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,6 +9,7 @@ import {
 } from "@repo/ui/breadcrumb";
 import { Separator } from "@repo/ui/separator";
 import { SidebarTrigger } from "@repo/ui/sidebar";
+import { Info } from "lucide-react";
 
 type AppHeaderProps = PropsWithChildren<{
   items: string[];
@@ -38,6 +40,7 @@ export const AppHeader = ({ items, children }: AppHeaderProps) => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
+        <Badge>Demo</Badge>
       </div>
       <div className="flex items-center gap-2">{children}</div>
     </header>
