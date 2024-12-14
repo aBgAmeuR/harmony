@@ -8,7 +8,6 @@ import { FileArchive, LoaderCircle, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { getMinMaxDateRangeAction } from "~/actions/get-min-max-date-range-action";
-import { useRankingTimeRange } from "~/lib/store";
 import { filesProcessing } from "~/services/file-processing";
 
 export const FileUpload = () => {
@@ -17,7 +16,6 @@ export const FileUpload = () => {
   const [processingTime, setProcessingTime] = useState(0);
   const [inTransition, startTransition] = useTransition();
   const queryClient = useQueryClient();
-  const setRankingTimeRange = useRankingTimeRange((state) => state.setDates);
 
   useEffect(() => {
     // eslint-disable-next-line no-undef
@@ -56,16 +54,7 @@ export const FileUpload = () => {
           toast.error(res.error);
           return;
         }
-
         queryClient.clear();
-
-        const timeRange = await getMinMaxDateRangeAction();
-        if (!timeRange) return;
-        setRankingTimeRange({
-          start: timeRange.minDate,
-          end: timeRange.maxDate,
-        });
-
         // TODO: Update user session but next-auth has not yet implemented the solution
         await signOut({ redirect: true, redirectTo: "/settings/package" });
       });

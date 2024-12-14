@@ -22,7 +22,7 @@ const useMonthRange = () =>
 
 export const useSelectMonthRange = () => {
   const { data: session } = useSession();
-  const isDemo = session?.user?.name === "Demo";
+  const isDemo = session ? session.user?.name === "Demo" : true;
   const queryClient = useQueryClient();
   const { data: minMaxDateRange, error: minMaxDateRangeError } =
     useMinMaxDateRange();

@@ -22,10 +22,12 @@ import {
   DropdownMenuTrigger,
 } from "@repo/ui/dropdown-menu";
 import { Input } from "@repo/ui/input";
+import { cn } from "@repo/ui/lib/utils";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@repo/ui/sidebar";
 import {
   ChevronsUpDown,
@@ -54,6 +56,7 @@ export function NavUser({ user }: NavUserProps) {
   const { showEmail, setShowEmail } = useUserPreferences();
   const isDemo = user.name === "Demo";
   const isMounted = useMounted();
+  const { isMobile } = useSidebar();
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmation === user.name) {
@@ -92,7 +95,10 @@ export function NavUser({ user }: NavUserProps) {
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="mx-2 w-[250px] rounded-lg shadow-none"
+              className={cn(
+                "mx-2 rounded-lg shadow-none",
+                isMobile ? "w-[271px]" : "w-[239px]",
+              )}
               side="bottom"
               align="center"
               sideOffset={4}

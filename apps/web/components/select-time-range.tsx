@@ -57,49 +57,49 @@ export const SelectTimeRange = () => {
   });
 
   const { data: session } = useSession();
-  const isDemo = session?.user?.name === "Demo";
+  const isDemo = session ? session.user?.name === "Demo" : true;
 
   if (isError || isLoading || !timeRange) return null;
 
-  if (isDemo)
+  if (!isDemo)
     return (
-      <TooltipProvider delayDuration={0}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span tabIndex={0}>
-              <Select value={timeRange} disabled>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select time range" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SELECT_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="px-2 py-1 text-xs">
-            This feature is disabled in demo mode
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Select value={timeRange} onValueChange={mutate}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Select time range" />
+        </SelectTrigger>
+        <SelectContent>
+          {SELECT_OPTIONS.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     );
 
   return (
-    <Select value={timeRange} onValueChange={mutate}>
-      <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder="Select time range" />
-      </SelectTrigger>
-      <SelectContent>
-        {SELECT_OPTIONS.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <TooltipProvider delayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span tabIndex={0}>
+            <Select value={timeRange} disabled>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select time range" />
+              </SelectTrigger>
+              <SelectContent>
+                {SELECT_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="px-2 py-1 text-xs">
+          This feature is disabled in demo mode
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };

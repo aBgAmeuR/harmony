@@ -13,6 +13,8 @@ import Error from "./error";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const preferredRegion = "lhr1";
+
 export const metadata: Metadata = {
   title: "Harmony",
   description:
