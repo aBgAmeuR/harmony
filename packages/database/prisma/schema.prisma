@@ -1,5 +1,5 @@
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -8,14 +8,14 @@ generator client {
 }
 
 model User {
-  id                 String         @id @default(cuid())
+  id                 String         @id @default(auto()) @map("_id") @db.ObjectId
   name               String?
   email              String?        @unique
   emailVerified      DateTime?
   image              String?
   hasPackage         Boolean        @default(false)
   timeRangeStats     TimeRangeStats @default(medium_term)
-  timeRangeDateStart DateTime       @default(dbgenerated("now() - interval '10 years'"))
+  timeRangeDateStart DateTime       @default(now())
   timeRangeDateEnd   DateTime       @default(now())
   accounts           Account[]
   package            Package[]
@@ -25,8 +25,8 @@ model User {
 }
 
 model Account {
-  id                String   @id @default(cuid())
-  userId            String
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String   @db.ObjectId
   type              String
   provider          String
   providerAccountId String
@@ -45,30 +45,30 @@ model Account {
 }
 
 model Track {
-  id             String   @id @default(cuid())
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
   timestamp      DateTime
   platform       String
-  msPlayed       BigInt
-  spotifyId      String   @db.VarChar(22)
-  artistIds      String[] @db.VarChar(22)
-  albumId        String   @db.VarChar(22)
-  albumArtistIds String[] @db.VarChar(22)
+  msPlayed       Int
+  spotifyId      String
+  artistIds      String[]
+  albumId        String
+  albumArtistIds String[]
   reasonStart    String
   reasonEnd      String
   shuffle        Boolean?
   skipped        Boolean?
   offline        Boolean?
   user           User     @relation(fields: [userId], references: [id])
-  userId         String
+  userId         String   @db.ObjectId
 }
 
 model Package {
-  id         String   @id @default(uuid())
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
   spotify_id String
   fileName   String   @default("package.zip")
   fileSize   String   @default("0")
   user       User     @relation(fields: [userId], references: [id])
-  userId     String
+  userId     String   @db.ObjectId
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
