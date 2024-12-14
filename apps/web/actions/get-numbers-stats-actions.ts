@@ -26,7 +26,7 @@ const getTracks = async (userId: string, minDate: Date, maxDate: Date) =>
 
 type DayStats = {
   totalPlayed: number;
-  totalTime: number;
+  totalTime: bigint;
 };
 
 type Track = Awaited<ReturnType<typeof getTracks>>[number];
@@ -87,7 +87,10 @@ export const getNumbersStats = async (userId: string | undefined) => {
 };
 
 const calculateStats = (tracks: Track[]) => {
-  const listeningTime = tracks.reduce((sum, track) => sum + track.msPlayed, 0);
+  const listeningTime = tracks.reduce(
+    (sum, track) => sum + track.msPlayed,
+    BigInt(0),
+  );
   const totalPlays = tracks.length;
   const uniqueTracks = new Set(tracks.map((track) => track.spotifyId)).size;
   const differentArtists = new Set(tracks.flatMap((track) => track.artistIds))
@@ -117,7 +120,7 @@ const calculateStats = (tracks: Track[]) => {
 const aggregateDayStats = (tracks: Track[]) => {
   return tracks.reduce<Record<string, DayStats>>((stats, track) => {
     const day = format(track.timestamp, "{MM}/{dd}/{yyyy}");
-    if (!stats[day]) stats[day] = { totalPlayed: 0, totalTime: 0 };
+    if (!stats[day]) stats[day] = { totalPlayed: 0, totalTime: BigInt(0) };
     stats[day].totalPlayed += 1;
     stats[day].totalTime += track.msPlayed;
     return stats;
