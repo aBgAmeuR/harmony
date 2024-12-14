@@ -79,7 +79,7 @@ export const getRankingArtists = async (userId: string | undefined) => {
 
   const aggregatedArtists: Record<
     string,
-    { totalMsPlayed: bigint; trackCount: number }
+    { totalMsPlayed: number; trackCount: number }
   > = {};
 
   // Parcourir les résultats et agréger les données
@@ -89,14 +89,13 @@ export const getRankingArtists = async (userId: string | undefined) => {
       if (!aggregatedArtists[artistId]) {
         // Si l'artiste n'existe pas encore, initialiser son objet
         aggregatedArtists[artistId] = {
-          totalMsPlayed: BigInt(0),
+          totalMsPlayed: 0,
           trackCount: 0,
         };
       }
 
       // Ajouter la durée de lecture et incrémenter le nombre de pistes pour cet artiste
-      aggregatedArtists[artistId].totalMsPlayed +=
-        entry._sum.msPlayed || BigInt(0);
+      aggregatedArtists[artistId].totalMsPlayed += entry._sum.msPlayed || 0;
       aggregatedArtists[artistId].trackCount += entry._count._all;
     });
   });
