@@ -1,10 +1,11 @@
 "use server";
 
-import { auth } from "@repo/auth";
 import { prisma } from "@repo/database";
 import { spotify } from "@repo/spotify";
 import { Track as SpotifyTrack } from "@repo/spotify/types";
 import { format } from "light-date";
+
+import { getMonthRangeAction } from "./month-range-actions";
 
 const getTracks = async (userId: string, minDate: Date, maxDate: Date) =>
   prisma.track.findMany({
@@ -30,13 +31,17 @@ type DayStats = {
 
 type Track = Awaited<ReturnType<typeof getTracks>>[number];
 
-export const getNumbersStatsAction = async (minDate: Date, maxDate: Date) => {
-  const session = await auth();
-  if (!session?.user?.id) return null;
+export const getNumbersStats = async (userId: string | undefined) => {
+  if (!userId) return null;
 
-  const userId = session.user.id;
+  const monthRange = await getMonthRangeAction();
+  if (!monthRange) return null;
 
-  const tracks = await getTracks(userId, minDate, maxDate);
+  const tracks = await getTracks(
+    userId,
+    monthRange.dateStart,
+    monthRange.dateEnd,
+  );
 
   if (tracks.length === 0)
     return {

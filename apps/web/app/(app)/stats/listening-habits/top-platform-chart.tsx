@@ -6,13 +6,11 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@repo/ui/chart";
-import { useQuery } from "@tanstack/react-query";
 import { Label, Pie, PieChart } from "recharts";
 
-import { getTopPlatformsAction } from "~/actions/get-top-platforms-action";
-import { addMonths } from "~/components/month-range-picker";
-import { useRankingTimeRange } from "~/lib/store";
 import { getMsPlayedInHours } from "~/lib/utils";
+
+import { getTopPlatforms } from "./get-charts-data";
 
 const chartConfig = {
   // msPlayed: {
@@ -21,13 +19,13 @@ const chartConfig = {
   // },
 } satisfies ChartConfig;
 
-type InitialData = Awaited<ReturnType<typeof getTopPlatformsAction>>;
+type Data = Awaited<ReturnType<typeof getTopPlatforms>>;
 
 type TopPlatformChartProps = {
-  initialData?: InitialData;
+  data: Data;
 };
 
-const colorData = (data: InitialData) => {
+const colorData = (data: Data) => {
   const colors = [
     "hsl(var(--chart-1))",
     "hsl(var(--chart-2))",
@@ -43,31 +41,10 @@ const colorData = (data: InitialData) => {
   }));
 };
 
-const useChartData = (
-  minDate: Date,
-  maxDate: Date,
-  initialData: InitialData = [],
-) =>
-  useQuery({
-    queryKey: ["topPlatforms", minDate, maxDate],
-    queryFn: async () => await getTopPlatformsAction(minDate, maxDate),
-    initialData,
-  });
-
-export const TopPlatformChart = ({ initialData }: TopPlatformChartProps) => {
-  const dates = useRankingTimeRange((state) => state.dates);
-  const {
-    data: chartData,
-    isLoading,
-    isError,
-  } = useChartData(
-    new Date(dates.start),
-    addMonths(new Date(dates.end), 1),
-    initialData,
-  );
-
-  if (isLoading) return null;
-  if (isError || !chartData) return null;
+export const TopPlatformChart = ({
+  data: chartData,
+}: TopPlatformChartProps) => {
+  if (!chartData) return null;
 
   const totalListings = chartData.reduce(
     (total, { msPlayed }) => total + msPlayed,

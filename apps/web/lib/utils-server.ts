@@ -1,5 +1,6 @@
 "server-only";
 
+import { prisma } from "@repo/database";
 import { cookies } from "next/headers";
 
 export const getCookieRankingTimeRange = async () => {

@@ -1,14 +1,12 @@
-"use client";
-
+import { auth } from "@repo/auth";
 import { Badge } from "@repo/ui/badge";
 import { Card } from "@repo/ui/card";
 import { NumberFlow, NumbersFlowDate } from "@repo/ui/number";
 import { Progress } from "@repo/ui/progress";
 import { Skeleton } from "@repo/ui/skeleton";
-import { useQuery } from "@tanstack/react-query";
 import { Calendar, Clock, FastForward, Users } from "lucide-react";
 
-import { getNumbersStatsAction } from "~/actions/get-numbers-stats-actions";
+import { getNumbersStats } from "~/actions/get-numbers-stats-actions";
 import {
   ItemCard,
   ItemCardContent,
@@ -16,38 +14,13 @@ import {
   ItemCardSubtitle,
   ItemCardTitle,
 } from "~/components/item-card";
-import { addMonths } from "~/components/month-range-picker";
-import { useRankingTimeRange } from "~/lib/store";
-
-type InitialData = Awaited<ReturnType<typeof getNumbersStatsAction>>;
-
-type NumbersStatsCardsProps = {
-  initialData: InitialData;
-};
 
 const msToHours = (ms: number) => ms / 1000 / 60 / 60;
 
-const useNumbersStats = (
-  minDate: Date,
-  maxDate: Date,
-  initialData: InitialData,
-) =>
-  useQuery({
-    queryKey: ["numbersStats", minDate, maxDate],
-    queryFn: async () => await getNumbersStatsAction(minDate, maxDate),
-    initialData,
-  });
-
-export const NumbersStatsCards = ({ initialData }: NumbersStatsCardsProps) => {
-  const dates = useRankingTimeRange((state) => state.dates);
-  const { data, isLoading, isError } = useNumbersStats(
-    new Date(dates.start),
-    addMonths(new Date(dates.end), 1),
-    initialData,
-  );
-
-  if (isLoading) return null;
-  if (isError || !data) return null;
+export const NumbersStatsCards = async () => {
+  const session = await auth();
+  const data = await getNumbersStats(session?.user.id);
+  if (!data) return null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

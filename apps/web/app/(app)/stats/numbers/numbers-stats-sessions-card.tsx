@@ -1,19 +1,9 @@
-"use client";
-
+import { auth } from "@repo/auth";
 import { Card } from "@repo/ui/card";
 import { NumberFlow } from "@repo/ui/number";
 import { Skeleton } from "@repo/ui/skeleton";
-import { useQuery } from "@tanstack/react-query";
 
-import { getNumbersSessionStatsAction } from "~/actions/get-numbers-session-stats-action";
-import { addMonths } from "~/components/month-range-picker";
-import { useRankingTimeRange } from "~/lib/store";
-
-type InitialData = Awaited<ReturnType<typeof getNumbersSessionStatsAction>>;
-
-type NumbersStatsCardsProps = {
-  initialData: InitialData;
-};
+import { getNumbersSessionStats } from "~/actions/get-numbers-session-stats-action";
 
 const getMsToHoursAndMinutes = (ms: number) => {
   const hours = Math.floor(ms / 1000 / 60 / 60);
@@ -22,29 +12,10 @@ const getMsToHoursAndMinutes = (ms: number) => {
   return { hours, minutes };
 };
 
-const useNumbersSessionStats = (
-  minDate: Date,
-  maxDate: Date,
-  initialData: InitialData,
-) =>
-  useQuery({
-    queryKey: ["numbersSessionStats", minDate, maxDate],
-    queryFn: async () => await getNumbersSessionStatsAction(minDate, maxDate),
-    initialData,
-  });
-
-export const NumbersStatsSessionCard = ({
-  initialData,
-}: NumbersStatsCardsProps) => {
-  const dates = useRankingTimeRange((state) => state.dates);
-  const { data, isLoading, isError } = useNumbersSessionStats(
-    new Date(dates.start),
-    addMonths(new Date(dates.end), 1),
-    initialData,
-  );
-
-  if (isLoading) return null;
-  if (isError || !data) return null;
+export const NumbersStatsSessionCard = async () => {
+  const session = await auth();
+  const data = await getNumbersSessionStats(session?.user.id);
+  if (!data) return null;
 
   return (
     <Card className="p-6 col-span-full">

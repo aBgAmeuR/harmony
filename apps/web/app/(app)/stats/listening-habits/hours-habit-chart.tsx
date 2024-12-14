@@ -7,13 +7,11 @@ import {
   ChartTooltipContent,
 } from "@repo/ui/chart";
 import { NumberFlow } from "@repo/ui/number";
-import { useQuery } from "@tanstack/react-query";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
-import { getHoursHabitAction } from "~/actions/get-hours-habit-action";
-import { addMonths } from "~/components/month-range-picker";
-import { useRankingTimeRange } from "~/lib/store";
 import { getMsPlayedInHours } from "~/lib/utils";
+
+import { getHoursHabit } from "./get-charts-data";
 
 const chartConfig = {
   msPlayed: {
@@ -22,37 +20,14 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-type InitialData = Awaited<ReturnType<typeof getHoursHabitAction>>;
+type Data = Awaited<ReturnType<typeof getHoursHabit>>;
 
 type HoursHabitChartProps = {
-  initialData?: InitialData;
+  data: Data;
 };
 
-const useChartData = (
-  minDate: Date,
-  maxDate: Date,
-  initialData: InitialData = [],
-) =>
-  useQuery({
-    queryKey: ["hoursHabit", minDate, maxDate],
-    queryFn: async () => await getHoursHabitAction(minDate, maxDate),
-    initialData,
-  });
-
-export const HoursHabitChart = ({ initialData }: HoursHabitChartProps) => {
-  const dates = useRankingTimeRange((state) => state.dates);
-  const {
-    data: chartData,
-    isLoading,
-    isError,
-  } = useChartData(
-    new Date(dates.start),
-    addMonths(new Date(dates.end), 1),
-    initialData,
-  );
-
-  if (isLoading) return null;
-  if (isError || !chartData) return null;
+export const HoursHabitChart = ({ data: chartData }: HoursHabitChartProps) => {
+  if (!chartData) return null;
 
   return (
     <ChartContainer config={chartConfig}>

@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       if (diff < 1000 * 60 * 60 * 24) {
         return NextResponse.json({
           message: "error",
-          error: "You can only save tracks once a day",
+          error: "You can only upload a package once a day",
         });
       }
     }

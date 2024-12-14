@@ -134,17 +134,20 @@ export function NavMain({
                         asChild
                         isActive={pathname === subItem.url}
                       >
-                        <Link
-                          href={subItem.url}
+                        <a
                           onMouseEnter={() => {
-                            router.prefetch(item.url, {
+                            router.prefetch(subItem.url, {
                               kind: PrefetchKind.FULL,
                             });
                           }}
+                          onClick={() => {
+                            router.push(subItem.url);
+                          }}
+                          className="cursor-pointer"
                         >
                           {subItem.icon && <subItem.icon />}
                           <span>{subItem.title}</span>
-                        </Link>
+                        </a>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   ))}

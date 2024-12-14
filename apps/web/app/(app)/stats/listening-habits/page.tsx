@@ -1,8 +1,5 @@
-import React from "react";
-
 import { AppHeader } from "~/components/app-header";
 import { SelectMonthRange } from "~/components/select-month-range";
-import { getCookieRankingTimeRange } from "~/lib/utils-server";
 
 import {
   DaysHabitChartWrapper,
@@ -14,8 +11,6 @@ import {
 import { StatCard } from "./components/stat-card";
 
 export default async function StatsListeningHabitsPage() {
-  const dates = await getCookieRankingTimeRange();
-
   return (
     <>
       <AppHeader items={["Package", "Stats", "Listening Habits"]}>
@@ -27,24 +22,24 @@ export default async function StatsListeningHabitsPage() {
             title="Listening Hours"
             description="Time spent listening to music"
           >
-            <HoursHabitChartWrapper dates={dates} />
+            <HoursHabitChartWrapper />
           </StatCard>
           <StatCard
             title="Listening Days"
             description="Days you listened to music"
           >
-            <DaysHabitChartWrapper dates={dates} />
+            <DaysHabitChartWrapper />
           </StatCard>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           <StatCard title="Top Platforms" description="Most used platforms">
-            <TopPlatformChartWrapper dates={dates} />
+            <TopPlatformChartWrapper />
           </StatCard>
           <StatCard title="Shuffle Habits" description="Shuffle habits">
-            <ShuffleHabitChartWrapper dates={dates} />
+            <ShuffleHabitChartWrapper />
           </StatCard>
           <StatCard title="Skipped Tracks" description="Tracks you skipped">
-            <SkippedHabitChartWrapper dates={dates} />
+            <SkippedHabitChartWrapper />
           </StatCard>
         </div>
       </main>

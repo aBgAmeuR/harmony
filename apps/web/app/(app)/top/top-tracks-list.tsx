@@ -1,14 +1,10 @@
-"use client";
-
-import React from "react";
+import { auth } from "@repo/auth";
 import { Track } from "@repo/spotify/types";
 import { Alert, AlertDescription, AlertTitle } from "@repo/ui/alert";
 import { cn } from "@repo/ui/lib/utils";
 import { Separator } from "@repo/ui/separator";
-import { useQuery } from "@tanstack/react-query";
 import { CircleX, Info } from "lucide-react";
 
-import { getTopTracksAction } from "~/actions/get-top-user-action";
 import {
   ItemCard,
   ItemCardAlbum,
@@ -20,31 +16,15 @@ import {
   ItemCardSubtitle,
   ItemCardTitle,
 } from "~/components/item-card";
-import { ListSkeleton } from "~/components/list-skeleton";
-import { useListLayout, useTopTimeRange } from "~/lib/store";
 
-const useTopTracks = (
-  timeRange: "long_term" | "medium_term" | "short_term",
-  initalData?: Track[],
-) => {
-  return useQuery({
-    queryKey: ["top_tracks", "tracks", timeRange],
-    queryFn: async () => await getTopTracksAction(timeRange),
-    initialData: initalData,
-  });
-};
+import { getTopTracks } from "./get-top-user-data";
 
-type TopTracksListProps = {
-  initalData?: Track[];
-};
+export const TopTracksList = async () => {
+  const session = await auth();
+  const tracks = await getTopTracks(session?.user?.id);
+  const layout = "list";
 
-export const TopTracksList = ({ initalData }: TopTracksListProps) => {
-  const timeRange = useTopTimeRange((state) => state.time_range);
-  const layout = useListLayout((state) => state.list_layout);
-  const { data: tracks, isError } = useTopTracks(timeRange, initalData);
-
-  if (isError) return <ErrorAlert />;
-  if (!tracks) return <ListSkeleton layout={layout} />;
+  if (!tracks) return <ErrorAlert />;
   if (tracks.length === 0) return <NoTracksAlert />;
 
   return (

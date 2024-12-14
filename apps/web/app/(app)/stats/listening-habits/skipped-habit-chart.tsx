@@ -6,13 +6,10 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@repo/ui/chart";
-import { useQuery } from "@tanstack/react-query";
 import { Label, Pie, PieChart, Sector } from "recharts";
 import { PieSectorDataItem } from "recharts/types/polar/Pie";
 
-import { getSkippedHabitAction } from "~/actions/get-skipped-habit-action";
-import { addMonths } from "~/components/month-range-picker";
-import { useRankingTimeRange } from "~/lib/store";
+import { getSkippedHabit } from "./get-charts-data";
 
 const chartConfig = {
   Skipped: {
@@ -25,37 +22,16 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-type InitialData = Awaited<ReturnType<typeof getSkippedHabitAction>>;
+type Data = Awaited<ReturnType<typeof getSkippedHabit>>;
 
 type SkippedHabitChartProps = {
-  initialData?: InitialData;
+  data: Data;
 };
 
-const useChartData = (
-  minDate: Date,
-  maxDate: Date,
-  initialData: InitialData = [],
-) =>
-  useQuery({
-    queryKey: ["skippedHabits", minDate, maxDate],
-    queryFn: async () => await getSkippedHabitAction(minDate, maxDate),
-    initialData,
-  });
-
-export const SkippedHabitChart = ({ initialData }: SkippedHabitChartProps) => {
-  const dates = useRankingTimeRange((state) => state.dates);
-  const {
-    data: chartData,
-    isLoading,
-    isError,
-  } = useChartData(
-    new Date(dates.start),
-    addMonths(new Date(dates.end), 1),
-    initialData,
-  );
-
-  if (isLoading) return null;
-  if (isError || !chartData) return null;
+export const SkippedHabitChart = ({
+  data: chartData,
+}: SkippedHabitChartProps) => {
+  if (!chartData) return null;
 
   const nbSkippedTracks =
     chartData.find((skip) => skip.skipped === "Skipped")?.totalPlayed || 0;
