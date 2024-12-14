@@ -77,3 +77,20 @@ export const useSidebar = create(
     },
   ),
 );
+
+interface UserPreferencesStore {
+  showEmail: boolean;
+  setShowEmail: (showEmail: boolean) => void;
+}
+
+export const useUserPreferences = create(
+  persist<UserPreferencesStore>(
+    (set) => ({
+      showEmail: true,
+      setShowEmail: (showEmail) => set({ showEmail }),
+    }),
+    {
+      name: "user-preferences",
+    },
+  ),
+);

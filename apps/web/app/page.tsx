@@ -4,6 +4,7 @@ import { AlertTriangle, ArrowRight } from "lucide-react";
 import { Link } from "next-view-transitions";
 
 import { Footer } from "~/components/footer";
+import { GetDemoBtn } from "~/components/get-demo-btn";
 import { Icons } from "~/components/icons";
 import { ThemeToggle } from "~/components/theme-toggle";
 
@@ -35,38 +36,41 @@ export default async function HomePage() {
             Package.
           </Balancer>
         </div>
-        <div className="flex gap-2">
-          <ThemeToggle variant="outline" />
+        <div className="flex gap-2 items-center flex-col">
+          <div className="flex gap-2">
+            <ThemeToggle variant="outline" />
 
-          {isMaintenance ? (
-            <Button aria-label="Disabled Get Started" disabled>
-              <Icons.spotify />
-              Get Started
-            </Button>
-          ) : (
-            <Button aria-label="Get Started" asChild>
-              <Link href="/overview">
+            {isMaintenance ? (
+              <Button aria-label="Disabled Get Started" disabled>
                 <Icons.spotify />
                 Get Started
-              </Link>
+              </Button>
+            ) : (
+              <Button aria-label="Get Started" asChild>
+                <Link href="/overview">
+                  <Icons.spotify />
+                  Get Started
+                </Link>
+              </Button>
+            )}
+            <Button
+              className="group"
+              variant="ghost"
+              aria-label="View on Github"
+              asChild
+            >
+              <a href="https://github.com/aBgAmeuR/Harmony">
+                Github
+                <ArrowRight
+                  className="opacity-60 transition-transform group-hover:translate-x-0.5"
+                  size={16}
+                  strokeWidth={2}
+                  aria-hidden="true"
+                />
+              </a>
             </Button>
-          )}
-          <Button
-            className="group"
-            variant="ghost"
-            aria-label="View on Github"
-            asChild
-          >
-            <a href="https://github.com/aBgAmeuR/Harmony">
-              Github
-              <ArrowRight
-                className="opacity-60 transition-transform group-hover:translate-x-0.5"
-                size={16}
-                strokeWidth={2}
-                aria-hidden="true"
-              />
-            </a>
-          </Button>
+          </div>
+          {!isMaintenance ? <GetDemoBtn /> : null}
         </div>
       </main>
       <Footer />

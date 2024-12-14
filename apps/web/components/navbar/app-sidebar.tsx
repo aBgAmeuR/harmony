@@ -21,6 +21,7 @@ import { NavHeader } from "./nav-header";
 import { NavSecondary } from "./nav-secondary";
 import { NavUser } from "./nav-user";
 import { data } from "./sidebar-config";
+import { SidebarOptInForm } from "./sidebar-opt-in-form";
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   user?: User;
@@ -42,7 +43,10 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       </SidebarContent>
       <SidebarFooter>
         {user?.id ? (
-          <NavUser user={user} />
+          <>
+            {user.name === "Demo" ? <SidebarOptInForm /> : null}
+            <NavUser user={user} />
+          </>
         ) : (
           <SidebarMenu>
             <SidebarMenuItem>

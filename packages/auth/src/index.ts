@@ -4,15 +4,19 @@ import NextAuth from "next-auth";
 import authConfig from "./auth.config";
 
 const middleware = NextAuth(authConfig).auth(async (req) => {
-  if (process.env.APP_MAINTENANCE === 'true' && req.nextUrl.pathname !== "/") {
+  if (
+    process.env.APP_MAINTENANCE === "true" &&
+    req.nextUrl.pathname !== "/" &&
+    req.nextUrl.pathname !== "/site.webmanifest"
+  ) {
     const newUrl = new URL("/", req.nextUrl.origin);
     return Response.redirect(newUrl);
   }
-  
 
   if (
     !req.auth &&
     req.nextUrl.pathname !== "/" &&
+    req.nextUrl.pathname !== "/site.webmanifest" &&
     !req.nextUrl.pathname.startsWith("/api/auth")
   ) {
     const newUrl = new URL("/api/login", req.nextUrl.origin);
@@ -21,6 +25,5 @@ const middleware = NextAuth(authConfig).auth(async (req) => {
     return Response.redirect(newUrl);
   }
 });
-
 
 export { handlers, signIn, signOut, auth, middleware };

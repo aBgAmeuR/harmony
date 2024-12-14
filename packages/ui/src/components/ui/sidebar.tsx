@@ -10,7 +10,7 @@ import { cn } from "../../lib/utils";
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { Separator } from "../ui/separator"
-import { Sheet, SheetContent } from "../ui/sheet"
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "../ui/sheet"
 import { Skeleton } from "../ui/skeleton"
 import {
   Tooltip,
@@ -68,7 +68,7 @@ const SidebarProvider = React.forwardRef<
     },
     ref
   ) => {
-    const isMobile = false;
+    const isMobile = useIsMobile();
     const [openMobile, setOpenMobile] = React.useState(false)
 
     // This is the internal state of the sidebar.
@@ -208,6 +208,8 @@ const Sidebar = React.forwardRef<
             side={side}
           >
             <div className="flex h-full w-full flex-col">{children}</div>
+            <SheetTitle></SheetTitle>
+            <SheetDescription></SheetDescription>
           </SheetContent>
         </Sheet>
       )
@@ -615,7 +617,7 @@ const SidebarMenuAction = React.forwardRef<
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[collapsible=icon]:hidden",
         showOnHover &&
-          "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
+        "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
         className
       )}
       {...props}

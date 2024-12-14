@@ -9,6 +9,8 @@ import {
 import { Separator } from "@repo/ui/separator";
 import { SidebarTrigger } from "@repo/ui/sidebar";
 
+import { DemoBadge } from "./demo-badge";
+
 type AppHeaderProps = PropsWithChildren<{
   items: string[];
 }>;
@@ -38,6 +40,7 @@ export const AppHeader = ({ items, children }: AppHeaderProps) => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
+        <DemoBadge />
       </div>
       <div className="flex items-center gap-2">{children}</div>
     </header>

@@ -1,13 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": [".env"],
-  "globalEnv": ["DATABASE_URL", "APP_MAINTENANCE"],
+  "globalEnv": ["DATABASE_URL", "APP_MAINTENANCE", "DEMO_ID"],
   "tasks": {
     "build": {
       "dependsOn": ["^generate", "^build"],
       "inputs": ["$TURBO_DEFAULT", ".env", ".env.local"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-      "env": ["DATABASE_URL", "AUTH_SECRET", "AUTH_SPOTIFY_ID", "AUTH_SPOTIFY_SECRET", "APP_MAINTENANCE"]
+      "env": ["DATABASE_URL", "AUTH_SECRET", "AUTH_SPOTIFY_ID", "AUTH_SPOTIFY_SECRET", "APP_MAINTENANCE", "DEMO_ID"]
     },
     "db:migrate:deploy": {},
     "db:push": {
@@ -18,12 +18,13 @@
       "dependsOn": ["^generate"],
       "cache": false,
       "persistent": true,
-      "env": ["DATABASE_URL", "AUTH_SECRET", "AUTH_SPOTIFY_ID", "AUTH_SPOTIFY_SECRET", "APP_MAINTENANCE"],
+      "env": ["DATABASE_URL", "AUTH_SECRET", "AUTH_SPOTIFY_ID", "AUTH_SPOTIFY_SECRET", "APP_MAINTENANCE", "DEMO_ID"],
       "inputs": ["$TURBO_DEFAULT", ".env", ".env.local"]
     },
     "generate": {
       "dependsOn": ["^generate"]
     },
-    "lint": {}
+    "lint": {},
+    "studio": {}
   }
 }

@@ -70,9 +70,7 @@ export function NavMain({
                       children: (
                         <>
                           <div className="px-2 py-1">
-                            <p className="text-sm text-sidebar-accent-foreground">
-                              {item.title}
-                            </p>
+                            <p className="text-sm">{item.title}</p>
                           </div>
                           <Separator className="mb-1" />
                           {item.items.map((subItem) => (
