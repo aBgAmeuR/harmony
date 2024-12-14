@@ -49,7 +49,7 @@ export const PackageHistoryUpload = async ({
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="text-2xl">Upload History</CardTitle>
+        <CardTitle>Upload History</CardTitle>
         <CardDescription>
           History of your uploaded Spotify data packages
         </CardDescription>
@@ -77,6 +77,13 @@ export const PackageHistoryUpload = async ({
                 </TableCell>
               </TableRow>
             ))}
+            {packages.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center">
+                  No packages uploaded yet.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </CardContent>

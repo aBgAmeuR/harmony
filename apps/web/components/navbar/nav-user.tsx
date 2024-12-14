@@ -92,7 +92,7 @@ export function NavUser({ user }: NavUserProps) {
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="mx-2 w-[271px] rounded-lg shadow-none"
+              className="mx-2 w-[250px] rounded-lg shadow-none"
               side="bottom"
               align="center"
               sideOffset={4}

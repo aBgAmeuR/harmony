@@ -1,19 +1,15 @@
 "use client";
 
-import React from "react";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@repo/ui/chart";
-import { useQuery } from "@tanstack/react-query";
 import { Label, Pie, PieChart, Sector } from "recharts";
 import { PieSectorDataItem } from "recharts/types/polar/Pie";
 
-import { getShuffleHabitAction } from "~/actions/get-shuffle-habit-action";
-import { addMonths } from "~/components/month-range-picker";
-import { useRankingTimeRange } from "~/lib/store";
+import { getShuffleHabit } from "./get-charts-data";
 
 const chartConfig = {
   Shuffled: {
@@ -26,37 +22,16 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-type InitialData = Awaited<ReturnType<typeof getShuffleHabitAction>>;
+type Data = Awaited<ReturnType<typeof getShuffleHabit>>;
 
 type ShuffleHabitChartProps = {
-  initialData?: InitialData;
+  data: Data;
 };
 
-const useChartData = (
-  minDate: Date,
-  maxDate: Date,
-  initialData: InitialData = [],
-) =>
-  useQuery({
-    queryKey: ["shuffleHabits", minDate, maxDate],
-    queryFn: async () => await getShuffleHabitAction(minDate, maxDate),
-    initialData,
-  });
-
-export const ShuffleHabitChart = ({ initialData }: ShuffleHabitChartProps) => {
-  const dates = useRankingTimeRange((state) => state.dates);
-  const {
-    data: chartData,
-    isLoading,
-    isError,
-  } = useChartData(
-    new Date(dates.start),
-    addMonths(new Date(dates.end), 1),
-    initialData,
-  );
-
-  if (isLoading) return null;
-  if (isError || !chartData) return null;
+export const ShuffleHabitChart = ({
+  data: chartData,
+}: ShuffleHabitChartProps) => {
+  if (!chartData) return null;
 
   const nbShuffledTracks =
     chartData.find((shuffle) => shuffle.shuffle === "Shuffled")?.totalPlayed ||

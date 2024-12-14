@@ -1,12 +1,10 @@
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 
-import { getRankingArtistsAction } from "~/actions/get-ranking-artists-action";
 import { AppHeader } from "~/components/app-header";
 import { ListSkeleton } from "~/components/list-skeleton";
 import { SelectMonthRange } from "~/components/select-month-range";
-import { addMonths, getCookieRankingTimeRange } from "~/lib/utils-server";
 
-import { RankList } from "../components/ranking-list";
+import { RankList } from "../ranking-list";
 
 export default function RankingsArtistsPage() {
   return (
@@ -16,19 +14,9 @@ export default function RankingsArtistsPage() {
       </AppHeader>
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Suspense fallback={<ListSkeleton />}>
-          <ArtistsRankList />
+          <RankList type="artists" />
         </Suspense>
       </div>
     </>
   );
 }
-
-const ArtistsRankList = async () => {
-  const dates = await getCookieRankingTimeRange();
-  const initialData = await getRankingArtistsAction(
-    dates.dateStart,
-    addMonths(dates.dateEnd, 1),
-  );
-
-  return <RankList type="artists" initialData={initialData} />;
-};

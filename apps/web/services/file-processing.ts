@@ -1,3 +1,4 @@
+import { setDefaulMonthStatsAction } from "~/actions/month-range-actions";
 import {
   createPackageAction,
   deleteLastPackageAction,
@@ -22,11 +23,14 @@ export async function filesProcessing(file: File) {
     const files = await extractZipAndGetFiles(buffer, filesRegexPattern);
     const data = parseZipFiles<DataType>(files);
 
-    await saveData(data, file);
+    const res = await saveData(data, file);
+    if (res?.message === "error") return res;
+
+    await setDefaulMonthStatsAction();
 
     console.timeEnd("Processing time");
 
-    return { message: "ok" };
+    return { message: "ok", error: "" };
   } catch (error) {
     console.error("Error processing files:", error as Error);
     return { message: "error", error: (error as Error).toString() };
@@ -44,16 +48,14 @@ const saveData = async (data: DataType[][], file: File) => {
       newTracksUri.add(trackUri);
     }
   }
-  let tracksIds = [];
-  try {
-    const tracksIdsResponse = await fetch("/api/package/tracks", {
-      method: "POST",
-      body: JSON.stringify(Array.from(newTracksUri)),
-    });
-    tracksIds = await tracksIdsResponse.json();
-  } catch (error) {
-    console.error("Rate limit error:", error as Error);
-    return { message: "error", error: "Rate limit error" };
+  const tracksIdsResponse = await fetch("/api/package/tracks", {
+    method: "POST",
+    body: JSON.stringify(Array.from(newTracksUri)),
+  });
+  const tracksIds = await tracksIdsResponse.json();
+
+  if (tracksIds.message) {
+    return { message: "error", error: tracksIds.error };
   }
 
   const newTracks = data
@@ -100,13 +102,14 @@ const saveData = async (data: DataType[][], file: File) => {
   });
 
   try {
-    for (const chunk of chunkTracks) {
-      const res = await fetch("/api/package/save", {
-        method: "POST",
-        body: JSON.stringify(chunk),
-      }).then((res) => res.json());
-      console.log("Response:", res);
-    }
+    await Promise.all(
+      chunkTracks.map((chunk) =>
+        fetch("/api/package/save", {
+          method: "POST",
+          body: JSON.stringify(chunk),
+        }).then((res) => res.json()),
+      ),
+    );
   } catch (error) {
     await deleteLastPackageAction();
     console.error("Error saving tracks:", error as Error);

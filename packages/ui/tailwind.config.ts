@@ -72,6 +72,9 @@ const config = {
           5: "hsl(var(--chart-5))",
           6: "hsl(var(--chart-6))", 
         },
+        spotifygreen: {
+          DEFAULT: "hsl(var(--spotify-green))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -7,40 +7,23 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@repo/ui/tooltip";
-import { useQuery } from "@tanstack/react-query";
 import { CalendarIcon } from "lucide-react";
-import { useSession } from "next-auth/react";
 
-import { getMinMaxDateRangeAction } from "~/actions/get-min-max-date-range-action";
-import { useRankingTimeRange } from "~/lib/store";
+import { useMounted } from "~/hooks/use-mounted";
+import { useSelectMonthRange } from "~/hooks/use-select-month-range";
 
 import { formatDate, MonthRangePicker } from "./month-range-picker";
 
-const useMinMaxDateRange = () =>
-  useQuery({
-    queryKey: ["minMaxDateRange"],
-    queryFn: async () => await getMinMaxDateRangeAction(),
-  });
-
 export const SelectMonthRange = () => {
-  const { data, error } = useMinMaxDateRange();
-  const dates = useRankingTimeRange((state) => state.dates);
-  const setDates = useRankingTimeRange((state) => state.setDates);
-  const { data: session } = useSession();
-  const isDemo = session?.user?.name === "Demo";
+  const isMounted = useMounted();
+  const { isDemo, minMaxDateRange, monthRange, isError, mutate } =
+    useSelectMonthRange();
 
-  if (error || !data) return null;
-
-  if (!data.minDate || !data.maxDate) {
-    setDates({
-      start: new Date(),
-      end: new Date(),
-    });
-  }
+  if (!isMounted || isError || !minMaxDateRange || !monthRange) return null;
 
   const selectedMonthRange = {
-    start: new Date(dates.start),
-    end: new Date(dates.end),
+    start: monthRange.dateStart,
+    end: monthRange.dateEnd,
   };
 
   if (isDemo) {
@@ -76,9 +59,9 @@ export const SelectMonthRange = () => {
   return (
     <MonthRangePicker
       selectedMonthRange={selectedMonthRange}
-      onMonthRangeSelect={setDates}
-      minDate={data.minDate}
-      maxDate={data.maxDate}
+      onMonthRangeSelect={mutate}
+      minDate={minMaxDateRange.minDate}
+      maxDate={minMaxDateRange.maxDate}
     />
   );
 };

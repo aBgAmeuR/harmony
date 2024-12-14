@@ -1,58 +1,51 @@
-import { getDaysHabitAction } from "~/actions/get-days-habit-action";
-import { getHoursHabitAction } from "~/actions/get-hours-habit-action";
-import { getShuffleHabitAction } from "~/actions/get-shuffle-habit-action";
-import { getSkippedHabitAction } from "~/actions/get-skipped-habit-action";
-import { getTopPlatformsAction } from "~/actions/get-top-platforms-action";
-import { addMonths } from "~/lib/utils-server";
+import { auth } from "@repo/auth";
 
 import { DaysHabitChart } from "../days-habit-chart";
+import {
+  getDaysHabit,
+  getHoursHabit,
+  getShuffleHabit,
+  getSkippedHabit,
+  getTopPlatforms,
+} from "../get-charts-data";
 import { HoursHabitChart } from "../hours-habit-chart";
 import { ShuffleHabitChart } from "../shuffle-habit-chart";
 import { SkippedHabitChart } from "../skipped-habit-chart";
 import { TopPlatformChart } from "../top-platform-chart";
 
-type ChartWrapperProps = {
-  dates: {
-    dateStart: Date;
-    dateEnd: Date;
-  };
-};
-
 const createChartWrapper = <T,>(
   // eslint-disable-next-line no-unused-vars
-  fetchAction: (start: Date, end: Date) => Promise<T>,
-  ChartComponent: React.ComponentType<{ initialData: T }>,
+  fetchAction: (userId: string | undefined) => Promise<T>,
+  ChartComponent: React.ComponentType<{ data: T }>,
 ) => {
-  return async ({ dates }: ChartWrapperProps) => {
-    const initialData = await fetchAction(
-      dates.dateStart,
-      addMonths(dates.dateEnd, 1),
-    );
-    return <ChartComponent initialData={initialData} />;
+  return async () => {
+    const session = await auth();
+    const data = await fetchAction(session?.user?.id);
+    return <ChartComponent data={data} />;
   };
 };
 
 export const HoursHabitChartWrapper = createChartWrapper(
-  getHoursHabitAction,
+  getHoursHabit,
   HoursHabitChart,
 );
 
 export const DaysHabitChartWrapper = createChartWrapper(
-  getDaysHabitAction,
+  getDaysHabit,
   DaysHabitChart,
 );
 
 export const TopPlatformChartWrapper = createChartWrapper(
-  getTopPlatformsAction,
+  getTopPlatforms,
   TopPlatformChart,
 );
 
 export const ShuffleHabitChartWrapper = createChartWrapper(
-  getShuffleHabitAction,
+  getShuffleHabit,
   ShuffleHabitChart,
 );
 
 export const SkippedHabitChartWrapper = createChartWrapper(
-  getSkippedHabitAction,
+  getSkippedHabit,
   SkippedHabitChart,
 );

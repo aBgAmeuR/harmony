@@ -17,9 +17,7 @@ export const PackageDocumentation = ({
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="text-lg font-bold text-primary">
-          Get Your Spotify Data Package
-        </CardTitle>
+        <CardTitle>Get Your Spotify Data Package</CardTitle>
         <CardDescription>
           Follow these simple steps to obtain your Spotify data package and
           start exploring your listening history with Harmony.
