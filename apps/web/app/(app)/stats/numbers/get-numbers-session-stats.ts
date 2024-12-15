@@ -1,28 +1,19 @@
 "use server";
 
-import { prisma } from "@repo/database";
+import { getMonthRangeAction } from "~/actions/month-range-actions";
 
-import { getMonthRangeAction } from "./month-range-actions";
+import { getTracks } from "./utils";
 
 export const getNumbersSessionStats = async (userId: string | undefined) => {
   if (!userId) return null;
   const monthRange = await getMonthRangeAction();
   if (!monthRange) return null;
 
-  const tracks = await prisma.track.findMany({
-    where: {
-      userId,
-      timestamp: {
-        gte: monthRange.dateStart,
-        lt: monthRange.dateEnd,
-      },
-    },
-    select: {
-      timestamp: true,
-      msPlayed: true,
-    },
-    orderBy: [{ timestamp: "asc" }],
-  });
+  const tracks = await getTracks(
+    userId,
+    monthRange.dateStart,
+    monthRange.dateEnd,
+  );
 
   const sessionDurations: number[] = [];
   let currentSessionStart: Date | null = null;

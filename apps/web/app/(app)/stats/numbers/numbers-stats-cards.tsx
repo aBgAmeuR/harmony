@@ -6,7 +6,6 @@ import { Progress } from "@repo/ui/progress";
 import { Skeleton } from "@repo/ui/skeleton";
 import { Calendar, Clock, FastForward, Users } from "lucide-react";
 
-import { getNumbersStats } from "~/actions/get-numbers-stats-actions";
 import {
   ItemCard,
   ItemCardContent,
@@ -14,6 +13,8 @@ import {
   ItemCardSubtitle,
   ItemCardTitle,
 } from "~/components/item-card";
+
+import { getNumbersStats } from "./get-numbers-stats";
 
 const msToHours = (ms: number) => ms / 1000 / 60 / 60;
 

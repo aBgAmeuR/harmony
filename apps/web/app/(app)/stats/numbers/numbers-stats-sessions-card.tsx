@@ -3,7 +3,7 @@ import { Card } from "@repo/ui/card";
 import { NumberFlow } from "@repo/ui/number";
 import { Skeleton } from "@repo/ui/skeleton";
 
-import { getNumbersSessionStats } from "~/actions/get-numbers-session-stats-action";
+import { getNumbersSessionStats } from "./get-numbers-session-stats";
 
 const getMsToHoursAndMinutes = (ms: number) => {
   const hours = Math.floor(ms / 1000 / 60 / 60);

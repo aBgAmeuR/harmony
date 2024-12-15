@@ -1,28 +1,12 @@
 "use server";
 
-import { prisma } from "@repo/database";
 import { spotify } from "@repo/spotify";
 import { Track as SpotifyTrack } from "@repo/spotify/types";
 import { format } from "light-date";
 
-import { getMonthRangeAction } from "./month-range-actions";
+import { getMonthRangeAction } from "~/actions/month-range-actions";
 
-const getTracks = async (userId: string, minDate: Date, maxDate: Date) =>
-  prisma.track.findMany({
-    where: {
-      userId,
-      timestamp: { gte: minDate, lt: maxDate },
-    },
-    select: {
-      timestamp: true,
-      msPlayed: true,
-      spotifyId: true,
-      artistIds: true,
-      offline: true,
-      reasonStart: true,
-    },
-    orderBy: { timestamp: "asc" },
-  });
+import { getTracks } from "./utils";
 
 type DayStats = {
   totalPlayed: number;
