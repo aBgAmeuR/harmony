@@ -37,7 +37,7 @@ export const DaysHabitChart = ({ data: chartData }: DaysHabitChartProps) => {
         margin={{
           left: 12,
           right: 12,
-          top: 12,
+          top: 24,
         }}
       >
         <CartesianGrid vertical={false} />

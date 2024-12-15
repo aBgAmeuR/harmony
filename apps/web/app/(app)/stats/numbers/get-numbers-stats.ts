@@ -15,6 +15,24 @@ type DayStats = {
 
 type Track = Awaited<ReturnType<typeof getTracks>>[number];
 
+type Stats = {
+  listeningTime: bigint;
+  totalPlays: number;
+  uniqueTracks: number;
+  differentArtists: number;
+  dayStats: Record<string, DayStats>;
+  mostActiveDay: {
+    day: string;
+    totalTime: number;
+    totalPlayed: number;
+  };
+  onlineTrackPercent: number;
+  mostFwdbtnTrack: {
+    spotifyId: string;
+    totalPlayed: number;
+  };
+};
+
 export const getNumbersStats = async (userId: string | undefined) => {
   if (!userId) return null;
 
@@ -26,51 +44,45 @@ export const getNumbersStats = async (userId: string | undefined) => {
     monthRange.dateStart,
     monthRange.dateEnd,
   );
-
-  if (tracks.length === 0)
-    return {
-      listeningTime: 0,
-      totalPlays: 0,
-      uniqueTracks: 0,
-      differentArtists: 0,
-      firstTrack: {
-        timestamp: null,
-        id: null,
-        name: null,
-        cover: null,
-        artists: null,
-      },
-      mostActiveDay: {
-        day: null,
-        totalTime: 0,
-        totalPlayed: 0,
-      },
-      onlineTrackPercent: 0,
-      mostFwdbtnTrack: {
-        totalPlayed: 0,
-        id: null,
-        name: null,
-        cover: null,
-        artists: null,
-      },
-    };
+  if (tracks.length === 0) return getEmptyStats();
 
   const stats = calculateStats(tracks);
-  let trackDetails: SpotifyTrack[] = [];
-  try {
-    trackDetails = await fetchTrackDetails(
-      tracks,
-      stats.mostFwdbtnTrack.spotifyId,
-    );
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
+  const trackDetails = await fetchTrackDetails(
+    tracks,
+    stats.mostFwdbtnTrack.spotifyId,
+  );
 
   return formatResponse(stats, tracks, trackDetails);
 };
 
-const calculateStats = (tracks: Track[]) => {
+const getEmptyStats = () => ({
+  listeningTime: 0,
+  totalPlays: 0,
+  uniqueTracks: 0,
+  differentArtists: 0,
+  firstTrack: {
+    timestamp: null,
+    id: null,
+    name: null,
+    cover: null,
+    artists: null,
+  },
+  mostActiveDay: {
+    day: null,
+    totalTime: 0,
+    totalPlayed: 0,
+  },
+  onlineTrackPercent: 0,
+  mostFwdbtnTrack: {
+    totalPlayed: 0,
+    id: null,
+    name: null,
+    cover: null,
+    artists: null,
+  },
+});
+
+const calculateStats = (tracks: Track[]): Stats => {
   const listeningTime = tracks.reduce(
     (sum, track) => sum + track.msPlayed,
     BigInt(0),
@@ -83,7 +95,7 @@ const calculateStats = (tracks: Track[]) => {
   const dayStats = aggregateDayStats(tracks);
   const mostActiveDay = findMostActiveDay(dayStats);
 
-  const onlineTracks = tracks.filter((track) => track.offline === false).length;
+  const onlineTracks = tracks.filter((track) => !track.offline).length;
   const onlineTrackPercent = Math.round((onlineTracks / totalPlays) * 100);
 
   const fwdbtnTracks = tracks.filter((track) => track.reasonStart === "fwdbtn");
@@ -101,7 +113,7 @@ const calculateStats = (tracks: Track[]) => {
   };
 };
 
-const aggregateDayStats = (tracks: Track[]) => {
+const aggregateDayStats = (tracks: Track[]): Record<string, DayStats> => {
   return tracks.reduce<Record<string, DayStats>>((stats, track) => {
     const day = format(track.timestamp, "{MM}/{dd}/{yyyy}");
     if (!stats[day]) stats[day] = { totalPlayed: 0, totalTime: BigInt(0) };
@@ -144,13 +156,13 @@ const findMostFwdbtnTrack = (fwdbtnTracks: Track[]) => {
 const fetchTrackDetails = async (
   tracks: Track[],
   mostFwdbtnTrackId: string,
-) => {
+): Promise<SpotifyTrack[]> => {
   const trackIds = [tracks[0].spotifyId, mostFwdbtnTrackId];
   return await spotify.tracks.list(trackIds);
 };
 
 const formatResponse = (
-  stats: ReturnType<typeof calculateStats>,
+  stats: Stats,
   tracks: Track[],
   trackDetails: SpotifyTrack[],
 ) => {

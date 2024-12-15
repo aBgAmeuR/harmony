@@ -26,15 +26,12 @@ export const getShuffleHabit = async (userId: string | undefined) => {
     {
       shuffle: "Shuffled",
       fill: "hsl(var(--chart-1))",
-      totalPlayed:
-        shuffles.find((shuffle) => shuffle.shuffle === true)?._count?._all || 0,
+      totalPlayed: shuffles.find((s) => s.shuffle)?._count._all || 0,
     },
     {
       shuffle: "Not Shuffled",
       fill: "hsl(var(--chart-6))",
-      totalPlayed:
-        shuffles.find((shuffle) => shuffle.shuffle === false)?._count?._all ||
-        1,
+      totalPlayed: shuffles.find((s) => !s.shuffle)?._count._all || 1,
     },
   ];
 };
@@ -61,15 +58,12 @@ export const getSkippedHabit = async (userId: string | undefined) => {
     {
       skipped: "Skipped",
       fill: "hsl(var(--chart-1))",
-      totalPlayed:
-        skippeds.find((shuffle) => shuffle.skipped === true)?._count?._all || 0,
+      totalPlayed: skippeds.find((s) => s.skipped)?._count._all || 0,
     },
     {
       skipped: "Not Skipped",
       fill: "hsl(var(--chart-6))",
-      totalPlayed:
-        skippeds.find((shuffle) => shuffle.skipped === false)?._count?._all ||
-        1,
+      totalPlayed: skippeds.find((s) => !s.skipped)?._count._all || 1,
     },
   ];
 };
@@ -81,42 +75,39 @@ export const getTopPlatforms = async (userId: string | undefined) => {
   const monthRange = await getMonthRangeAction();
   if (!monthRange) return null;
 
-  const tracks = await getTracks(
-    userId,
-    monthRange.dateStart,
-    monthRange.dateEnd,
-  );
-  const platforms = new Map<string, number>();
-
-  tracks.forEach((track) => {
-    if (platforms.has(track.platform)) {
-      const currentMsPlayed = platforms.get(track.platform) ?? 0;
-      platforms.set(track.platform, currentMsPlayed + Number(track.msPlayed));
-    } else {
-      platforms.set(track.platform, Number(track.msPlayed));
-    }
+  const platforms = await prisma.track.groupBy({
+    _sum: { msPlayed: true },
+    where: {
+      userId,
+      timestamp: {
+        gte: monthRange.dateStart,
+        lt: monthRange.dateEnd,
+      },
+    },
+    by: ["platform"],
   });
 
-  const topPlatforms = Array.from(platforms.entries()).sort(
-    ([, a], [, b]) => b - a,
+  const topPlatforms = platforms.sort(
+    (a, b) => Number(b._sum.msPlayed ?? 0) - Number(a._sum.msPlayed ?? 0),
   );
 
   if (topPlatforms.length > TOP_PLATFORMS_LIMIT) {
     const otherMsPlayed = topPlatforms
       .slice(TOP_PLATFORMS_LIMIT)
-      .reduce((acc, [, msPlayed]) => {
-        return acc + msPlayed;
-      }, 0);
+      .reduce(
+        (acc, platform) => acc + BigInt(platform._sum.msPlayed ?? 0),
+        BigInt(0),
+      );
     topPlatforms.splice(
       TOP_PLATFORMS_LIMIT,
       topPlatforms.length - TOP_PLATFORMS_LIMIT,
-      ["Other", otherMsPlayed],
+      { platform: "Other", _sum: { msPlayed: BigInt(otherMsPlayed) } },
     );
   }
 
-  return topPlatforms.map(([platform, msPlayed]) => ({
+  return topPlatforms.map(({ platform, _sum: { msPlayed } }) => ({
     platform,
-    msPlayed,
+    msPlayed: Number(msPlayed),
   }));
 };
 
@@ -131,13 +122,9 @@ export const getHoursHabit = async (userId: string | undefined) => {
     monthRange.dateStart,
     monthRange.dateEnd,
   );
-
-  const listeningHabits = Array.from({ length: 24 }, (_, i) => {
-    return {
-      hour: i,
-      msPlayed: 0,
-    };
-  });
+  const listeningHabits = new Array(24)
+    .fill(0)
+    .map((_, i) => ({ hour: i, msPlayed: 0 }));
 
   tracks.forEach((track) => {
     const hour = new Date(track.timestamp).getHours();
@@ -159,51 +146,21 @@ export const getDaysHabit = async (userId: string | undefined) => {
     monthRange.dateEnd,
   );
 
-  const listeningHabits = {
-    Monday: 0,
-    Tuesday: 0,
-    Wednesday: 0,
-    Thursday: 0,
-    Friday: 0,
-    Saturday: 0,
-    Sunday: 0,
-  };
+  const listeningHabits = Array.from({ length: 7 }, (_, i) => ({
+    day: new Date(0, 0, i + 1).toLocaleString("en-US", { weekday: "long" }),
+    msPlayed: 0,
+  }));
 
   tracks.forEach((track) => {
     const day = new Date(track.timestamp).getDay();
-    switch (day) {
-      case 0:
-        listeningHabits.Sunday += Number(track.msPlayed);
-        break;
-      case 1:
-        listeningHabits.Monday += Number(track.msPlayed);
-        break;
-      case 2:
-        listeningHabits.Tuesday += Number(track.msPlayed);
-        break;
-      case 3:
-        listeningHabits.Wednesday += Number(track.msPlayed);
-        break;
-      case 4:
-        listeningHabits.Thursday += Number(track.msPlayed);
-        break;
-      case 5:
-        listeningHabits.Friday += Number(track.msPlayed);
-        break;
-      case 6:
-        listeningHabits.Saturday += Number(track.msPlayed);
-        break;
-    }
+    listeningHabits[day].msPlayed += Number(track.msPlayed);
   });
 
-  return Object.entries(listeningHabits).map(([day, msPlayed]) => ({
-    day,
-    msPlayed,
-  }));
+  return listeningHabits;
 };
 
 const getTracks = async (userId: string, dateStart: Date, dateEnd: Date) => {
-  return prisma.track.findMany({
+  return await prisma.track.findMany({
     where: {
       userId,
       timestamp: {

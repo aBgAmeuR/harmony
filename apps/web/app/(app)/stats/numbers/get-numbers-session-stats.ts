@@ -6,25 +6,24 @@ import { getTracks } from "./utils";
 
 export const getNumbersSessionStats = async (userId: string | undefined) => {
   if (!userId) return null;
+
   const monthRange = await getMonthRangeAction();
   if (!monthRange) return null;
 
-  const tracks = await getTracks(
-    userId,
-    monthRange.dateStart,
-    monthRange.dateEnd,
-  );
+  const { dateStart, dateEnd } = monthRange;
+  const tracks = await getTracks(userId, dateStart, dateEnd);
 
-  const sessionDurations: number[] = [];
+  if (!tracks.length) return null;
+
   let currentSessionStart: Date | null = null;
   let currentSessionDuration = 0;
+  const sessionDurations: number[] = [];
 
-  for (let i = 0; i < tracks.length; i++) {
-    const track = tracks[i];
+  for (const track of tracks) {
     const trackTime = track.timestamp;
 
     if (!currentSessionStart) {
-      currentSessionStart = track.timestamp;
+      currentSessionStart = trackTime;
       currentSessionDuration = Number(track.msPlayed) || 0;
     } else {
       const lastTimestamp = currentSessionStart;
@@ -33,17 +32,16 @@ export const getNumbersSessionStats = async (userId: string | undefined) => {
 
       if (diff > 30) {
         sessionDurations.push(currentSessionDuration);
-        currentSessionStart = track.timestamp;
+        currentSessionStart = trackTime;
         currentSessionDuration = Number(track.msPlayed) || 0;
       } else {
         currentSessionDuration += Number(track.msPlayed) || 0;
-        currentSessionStart = track.timestamp;
       }
     }
+  }
 
-    if (i === tracks.length - 1) {
-      sessionDurations.push(currentSessionDuration);
-    }
+  if (currentSessionStart) {
+    sessionDurations.push(currentSessionDuration);
   }
 
   const totalSessions = sessionDurations.length;
@@ -51,9 +49,7 @@ export const getNumbersSessionStats = async (userId: string | undefined) => {
     (sum, duration) => sum + duration,
     0,
   );
-  const longestSession = sessionDurations.length
-    ? Math.max(...sessionDurations)
-    : 0;
+  const longestSession = totalSessions ? Math.max(...sessionDurations) : 0;
   const averageSessionTime = totalSessions ? totalDuration / totalSessions : 0;
 
   return {
