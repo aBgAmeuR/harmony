@@ -214,7 +214,7 @@ function MonthRangePicker({
           <Button
             variant={"outline"}
             className={cn(
-              "w-[280px] justify-start text-left font-normal",
+              "w-[220px] justify-start text-left font-normal",
               !selectedMonthRange && "text-muted-foreground",
             )}
           >
@@ -265,7 +265,7 @@ function MonthRangePicker({
         <Button
           variant={"outline"}
           className={cn(
-            "w-[280px] justify-start text-left font-normal",
+            "w-[220px] justify-start text-left font-normal",
             !selectedMonthRange && "text-muted-foreground",
           )}
         >

@@ -31,14 +31,7 @@ export const HoursHabitChart = ({ data: chartData }: HoursHabitChartProps) => {
 
   return (
     <ChartContainer config={chartConfig}>
-      <AreaChart
-        accessibilityLayer
-        data={chartData}
-        margin={{
-          left: 12,
-          right: 12,
-        }}
-      >
+      <AreaChart accessibilityLayer data={chartData}>
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="hour"

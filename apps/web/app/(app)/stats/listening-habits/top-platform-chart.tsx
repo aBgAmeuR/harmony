@@ -6,6 +6,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@repo/ui/chart";
+import { NumberFlow } from "@repo/ui/number";
 import { Label, Pie, PieChart } from "recharts";
 
 import { getMsPlayedInHours } from "~/lib/utils";
@@ -53,34 +54,36 @@ export const TopPlatformChart = ({
   return (
     <ChartContainer
       config={chartConfig}
-      className="mx-auto aspect-square max-h-[250px]"
+      className="mx-auto aspect-square min-w-60 w-full"
     >
-      <PieChart>
+      <PieChart margin={{ top: -10, left: -10, right: -10, bottom: -10 }}>
         <ChartTooltip
           cursor={false}
           content={
             <ChartTooltipContent
               hideLabel
-              formatter={(value, name, props) => (
-                <>
-                  <div
-                    className="size-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
-                    style={
-                      {
-                        "--color-bg": props.payload?.fill,
-                      } as React.CSSProperties
-                    }
-                  />
-                  <p className="line-clamp-1 break-all max-w-32">
-                    {name.toString().trim()}
-                  </p>
-                  <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
-                    {getMsPlayedInHours(value.toString())}
-                    <span className="font-normal text-muted-foreground">
-                      hours
-                    </span>
+              formatter={(value, name, item) => (
+                <div className="flex flex-col gap-1">
+                  <div className="font-medium">{item.payload.platform}</div>
+                  <div className="flex items-center gap-1">
+                    <div
+                      className="size-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
+                      style={
+                        {
+                          "--color-bg": item.payload?.fill,
+                        } as React.CSSProperties
+                      }
+                    />
+                    <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                      <NumberFlow
+                        value={getMsPlayedInHours(value.toString())}
+                      />
+                      <span className="font-normal text-muted-foreground">
+                        hours
+                      </span>
+                    </div>
                   </div>
-                </>
+                </div>
               )}
             />
           }
@@ -89,7 +92,7 @@ export const TopPlatformChart = ({
           data={colorData(chartData)}
           dataKey="msPlayed"
           nameKey="platform"
-          innerRadius={60}
+          innerRadius={70}
           strokeWidth={5}
         >
           <Label
