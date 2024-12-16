@@ -25,6 +25,7 @@
       "dependsOn": ["^generate"]
     },
     "lint": {},
-    "studio": {}
+    "studio": {},
+    "test": {}
   }
 }
