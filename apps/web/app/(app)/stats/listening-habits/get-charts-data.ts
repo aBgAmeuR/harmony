@@ -63,8 +63,8 @@ export const getSkippedHabit = async (userId: string | undefined) => {
 };
 
 export const getTopPlatforms = async (userId: string | undefined) => {
-  const TOP_PLATFORMS_LIMIT = 4;
-  const PLATFORMS = ["windows", "mac", "linux", "android", "ios"];
+  const TOP_PLATFORMS_LIMIT = 4 as const;
+  const PLATFORMS = ["windows", "mac", "linux", "android", "ios"] as const;
 
   if (!userId) return null;
 
@@ -79,19 +79,11 @@ export const getTopPlatforms = async (userId: string | undefined) => {
   const platforms = new Map<string, number>();
 
   tracks.forEach((track) => {
-    if (platforms.has(track.platform)) {
-      const currentMsPlayed = platforms.get(track.platform) ?? 0;
-      platforms.set(track.platform, currentMsPlayed + Number(track.msPlayed));
-    } else {
-      const platform = PLATFORMS.find((platform) =>
-        track.platform.trim().toLowerCase().includes(platform),
-      );
-      if (platform) {
-        platforms.set(platform, Number(track.msPlayed));
-      } else {
-        platforms.set(track.platform, Number(track.msPlayed));
-      }
-    }
+    const trackPlatform = track.platform.trim().toLowerCase();
+    const platform =
+      PLATFORMS.find((platform) => trackPlatform.includes(platform)) || "Other";
+    const currentMsPlayed = platforms.get(platform) ?? 0;
+    platforms.set(platform, currentMsPlayed + Number(track.msPlayed));
   });
 
   const topPlatforms = Array.from(platforms.entries()).sort(
@@ -101,9 +93,7 @@ export const getTopPlatforms = async (userId: string | undefined) => {
   if (topPlatforms.length > TOP_PLATFORMS_LIMIT) {
     const otherMsPlayed = topPlatforms
       .slice(TOP_PLATFORMS_LIMIT)
-      .reduce((acc, [, msPlayed]) => {
-        return acc + msPlayed;
-      }, 0);
+      .reduce((acc, [, msPlayed]) => acc + msPlayed, 0);
     topPlatforms.splice(
       TOP_PLATFORMS_LIMIT,
       topPlatforms.length - TOP_PLATFORMS_LIMIT,
