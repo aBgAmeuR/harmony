@@ -35,7 +35,7 @@ export const DaysHabitChart = ({ data: chartData }: DaysHabitChartProps) => {
         accessibilityLayer
         data={chartData}
         margin={{
-          top: 12,
+          top: 24,
         }}
       >
         <CartesianGrid vertical={false} />
