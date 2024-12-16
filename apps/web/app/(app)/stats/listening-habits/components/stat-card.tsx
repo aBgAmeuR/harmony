@@ -6,12 +6,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/ui/card";
+import { cn } from "@repo/ui/lib/utils";
 import { Skeleton } from "@repo/ui/skeleton";
 
 interface StatCardProps {
   title: string;
   description: string;
   children: React.ReactNode;
+  skeletonClassName?: string;
   className?: string;
 }
 
@@ -20,6 +22,7 @@ export function StatCard({
   description,
   children,
   className,
+  skeletonClassName,
 }: StatCardProps) {
   return (
     <Card className={className}>
@@ -28,7 +31,9 @@ export function StatCard({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Suspense fallback={<Skeleton className="h-[250px] w-full" />}>
+        <Suspense
+          fallback={<Skeleton className={cn("w-full", skeletonClassName)} />}
+        >
           {children}
         </Suspense>
       </CardContent>

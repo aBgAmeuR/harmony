@@ -31,14 +31,7 @@ export const HoursHabitChart = ({ data: chartData }: HoursHabitChartProps) => {
 
   return (
     <ChartContainer config={chartConfig}>
-      <AreaChart
-        accessibilityLayer
-        data={chartData}
-        margin={{
-          left: 12,
-          right: 12,
-        }}
-      >
+      <AreaChart accessibilityLayer data={chartData}>
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="hour"
@@ -51,24 +44,28 @@ export const HoursHabitChart = ({ data: chartData }: HoursHabitChartProps) => {
           content={
             <ChartTooltipContent
               hideLabel
-              formatter={(value, name) => (
-                <>
-                  <div
-                    className="size-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
-                    style={
-                      {
-                        "--color-bg": `var(--color-${name})`,
-                      } as React.CSSProperties
-                    }
-                  />
-                  {chartConfig[name as keyof typeof chartConfig]?.label || name}
-                  <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
-                    <NumberFlow value={getMsPlayedInHours(value.toString())} />
-                    <span className="font-normal text-muted-foreground">
-                      hours
-                    </span>
+              formatter={(value, name, item) => (
+                <div className="flex flex-col gap-1">
+                  <div className="font-medium">{item.payload.hour}h</div>
+                  <div className="flex items-center gap-1">
+                    <div
+                      className="size-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
+                      style={
+                        {
+                          "--color-bg": `var(--color-${name})`,
+                        } as React.CSSProperties
+                      }
+                    />
+                    <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                      <NumberFlow
+                        value={getMsPlayedInHours(value.toString())}
+                      />
+                      <span className="font-normal text-muted-foreground">
+                        hours
+                      </span>
+                    </div>
                   </div>
-                </>
+                </div>
               )}
             />
           }
