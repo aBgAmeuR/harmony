@@ -6,19 +6,18 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@repo/ui/chart";
-import { Label, Pie, PieChart, Sector } from "recharts";
-import { PieSectorDataItem } from "recharts/types/polar/Pie";
+import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
 
 import { getShuffleHabit } from "./get-charts-data";
 
 const chartConfig = {
-  Shuffled: {
+  shuffled: {
     label: "Shuffled",
     color: "hsl(var(--chart-1))",
   },
-  "Not Shuffled": {
+  notShuffled: {
     label: "Not Shuffled",
-    color: "hsl(var(--chart-6))",
+    color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig;
 
@@ -33,56 +32,43 @@ export const ShuffleHabitChart = ({
 }: ShuffleHabitChartProps) => {
   if (!chartData) return null;
 
-  const nbShuffledTracks =
-    chartData.find((shuffle) => shuffle.shuffle === "Shuffled")?.totalPlayed ||
-    0;
-  const totalTracks = chartData.reduce(
-    (acc, curr) => acc + curr.totalPlayed,
-    0,
+  const shuffledPercentage = Math.round(
+    (chartData[0].shuffled /
+      (chartData[0].shuffled + chartData[0].notShuffled)) *
+      100,
   );
-  const shuffledPercentage = Math.round((nbShuffledTracks / totalTracks) * 100);
 
   return (
     <ChartContainer
       config={chartConfig}
-      className="mx-auto aspect-square max-h-[250px]"
+      className="mx-auto aspect-square max-h-[250px] w-full"
     >
-      <PieChart>
+      <RadialBarChart
+        data={chartData}
+        endAngle={180}
+        innerRadius={80}
+        outerRadius={130}
+      >
         <ChartTooltip
           cursor={false}
           content={<ChartTooltipContent hideLabel />}
         />
-        <Pie
-          data={chartData}
-          dataKey="totalPlayed"
-          nameKey="shuffle"
-          innerRadius={60}
-          strokeWidth={5}
-          activeIndex={0}
-          activeShape={({ outerRadius = 0, ...props }: PieSectorDataItem) => (
-            <Sector {...props} outerRadius={outerRadius + 10} />
-          )}
-        >
+        <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
           <Label
             content={({ viewBox }) => {
               if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                 return (
-                  <text
-                    x={viewBox.cx}
-                    y={viewBox.cy}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                  >
+                  <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
                     <tspan
                       x={viewBox.cx}
-                      y={viewBox.cy}
-                      className="fill-foreground text-3xl font-bold"
+                      y={(viewBox.cy || 0) - 16}
+                      className="fill-foreground text-2xl font-bold"
                     >
-                      {shuffledPercentage}%
+                      {`${shuffledPercentage}%`}
                     </tspan>
                     <tspan
                       x={viewBox.cx}
-                      y={(viewBox.cy || 0) + 24}
+                      y={(viewBox.cy || 0) + 4}
                       className="fill-muted-foreground"
                     >
                       Tracks Shuffled
@@ -92,8 +78,22 @@ export const ShuffleHabitChart = ({
               }
             }}
           />
-        </Pie>
-      </PieChart>
+        </PolarRadiusAxis>
+        <RadialBar
+          dataKey="shuffled"
+          stackId="a"
+          cornerRadius={5}
+          fill="var(--color-shuffled)"
+          className="stroke-transparent stroke-2"
+        />
+        <RadialBar
+          dataKey="notShuffled"
+          stackId="a"
+          cornerRadius={5}
+          fill="var(--color-notShuffled)"
+          className="stroke-transparent stroke-2"
+        />
+      </RadialBarChart>
     </ChartContainer>
   );
 };

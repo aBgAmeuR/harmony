@@ -14,7 +14,6 @@ import {
   Milestone,
   Package,
   TrendingUp,
-  TrendingUpDown,
   UserRoundPen,
   UsersRound,
 } from "lucide-react";

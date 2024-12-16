@@ -24,15 +24,9 @@ export const getShuffleHabit = async (userId: string | undefined) => {
 
   return [
     {
-      shuffle: "Shuffled",
-      fill: "hsl(var(--chart-1))",
-      totalPlayed:
+      shuffled:
         shuffles.find((shuffle) => shuffle.shuffle === true)?._count?._all || 0,
-    },
-    {
-      shuffle: "Not Shuffled",
-      fill: "hsl(var(--chart-6))",
-      totalPlayed:
+      notShuffled:
         shuffles.find((shuffle) => shuffle.shuffle === false)?._count?._all ||
         1,
     },
@@ -59,15 +53,9 @@ export const getSkippedHabit = async (userId: string | undefined) => {
 
   return [
     {
-      skipped: "Skipped",
-      fill: "hsl(var(--chart-1))",
-      totalPlayed:
+      skipped:
         skippeds.find((shuffle) => shuffle.skipped === true)?._count?._all || 0,
-    },
-    {
-      skipped: "Not Skipped",
-      fill: "hsl(var(--chart-6))",
-      totalPlayed:
+      notSkipped:
         skippeds.find((shuffle) => shuffle.skipped === false)?._count?._all ||
         1,
     },
@@ -75,7 +63,9 @@ export const getSkippedHabit = async (userId: string | undefined) => {
 };
 
 export const getTopPlatforms = async (userId: string | undefined) => {
-  const TOP_PLATFORMS_LIMIT = 5;
+  const TOP_PLATFORMS_LIMIT = 4;
+  const PLATFORMS = ["windows", "mac", "linux", "android", "ios"];
+
   if (!userId) return null;
 
   const monthRange = await getMonthRangeAction();
@@ -93,7 +83,14 @@ export const getTopPlatforms = async (userId: string | undefined) => {
       const currentMsPlayed = platforms.get(track.platform) ?? 0;
       platforms.set(track.platform, currentMsPlayed + Number(track.msPlayed));
     } else {
-      platforms.set(track.platform, Number(track.msPlayed));
+      const platform = PLATFORMS.find((platform) =>
+        track.platform.trim().toLowerCase().includes(platform),
+      );
+      if (platform) {
+        platforms.set(platform, Number(track.msPlayed));
+      } else {
+        platforms.set(track.platform, Number(track.msPlayed));
+      }
     }
   });
 
