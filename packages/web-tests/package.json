@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev:test": "playwright test",
-    "e2e:test": "start-server-and-test \"(cd ../../apps/web && npm run start)\" http:locahost:3000"
+    "e2e:test": "start-server-and-test \"(cd ../../apps/web && npm run start)\" http://localhost:3000 \"playwright test\""
   },
   "dependencies": {
     "start-server-and-test": "^2",

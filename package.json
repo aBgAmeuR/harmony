@@ -9,13 +9,15 @@
     "db:push": "turbo run db:push",
     "db:seed": "turbo run db:seed",
     "dev": "turbo run dev",
+    "start": "turbo run start",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "generate": "turbo run generate",
     "lint": "turbo run lint",
     "ui": "npm run -w @repo/ui ui --",
     "studio": "turbo run studio",
     "dev:test": "turbo run dev:test",
-    "e2e:test": "turbo run e2e:test"
+    "e2e:test": "turbo run e2e:test",
+    "ci": "turbo run build e2e:test lint"
   },
   "devDependencies": {
     "dotenv-cli": "^7.4.4",

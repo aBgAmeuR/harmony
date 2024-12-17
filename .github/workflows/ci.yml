@@ -1,0 +1,24 @@
+name: CI
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+      - run: npm ci
+      - run: npx playwright install chromium
+      - run: npm run ci
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          AUTH_SPOTIFY_ID: ${{ secrets.AUTH_SPOTIFY_ID }}
+          AUTH_SPOTIFY_SECRET: ${{ secrets.AUTH_SPOTIFY_SECRET }}
+          APP_MAINTENANCE: ${{ secrets.APP_MAINTENANCE }}
+          DEMO_ID: ${{ secrets.DEMO_ID }}
