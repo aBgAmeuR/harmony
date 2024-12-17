@@ -13,7 +13,9 @@
     "generate": "turbo run generate",
     "lint": "turbo run lint",
     "ui": "npm run -w @repo/ui ui --",
-    "studio": "turbo run studio"
+    "studio": "turbo run studio",
+    "dev:test": "turbo run dev:test",
+    "e2e:test": "turbo run e2e:test"
   },
   "devDependencies": {
     "dotenv-cli": "^7.4.4",
