@@ -42,7 +42,10 @@
     "studio": {},
     "test": {},
     "dev:test": {
-      "cache": false
+      "cache": false,
+      "env": [
+        "APP_MAINTENANCE"
+      ]
     },
     "e2e:test": {
       "dependsOn": ["^build"]
