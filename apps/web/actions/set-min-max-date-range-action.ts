@@ -1,6 +1,5 @@
 "use server";
 
-import { auth } from "@repo/auth";
 import { cookies } from "next/headers";
 
 import { getMinMaxDateRangeAction } from "./get-min-max-date-range-action";

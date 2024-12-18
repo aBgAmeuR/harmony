@@ -40,12 +40,20 @@ export default async function HomePage() {
           <div className="flex gap-2">
             <ThemeToggle variant="outline" />
             {isMaintenance ? (
-              <Button aria-label="Disabled Get Started" disabled>
+              <Button
+                aria-label="Disabled Get Started"
+                disabled
+                data-testid="get-started-btn"
+              >
                 <Icons.spotify />
                 Get Started
               </Button>
             ) : (
-              <Button aria-label="Get Started" asChild>
+              <Button
+                aria-label="Get Started"
+                asChild
+                data-testid="get-started-btn"
+              >
                 <Link href="/overview">
                   <Icons.spotify />
                   Get Started

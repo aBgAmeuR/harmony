@@ -14,7 +14,12 @@ export const GetDemoBtn = () => {
   };
 
   return (
-    <Button onClick={onClick} variant="link" className="p-0 text-spotifygreen">
+    <Button
+      onClick={onClick}
+      variant="link"
+      className="p-0 text-spotifygreen"
+      data-testid="get-demo-btn"
+    >
       Get a demo of Harmony
     </Button>
   );

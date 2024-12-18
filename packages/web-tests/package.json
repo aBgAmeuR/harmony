@@ -1,0 +1,20 @@
+{
+  "name": "@repo/web-tests",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev:test": "dotenv -e ../../.env -- playwright test",
+    "e2e:test": "dotenv -e ../../.env -- start-server-and-test \"(cd ../../apps/web && npm run start)\" http://localhost:3000 \"playwright test\""
+  },
+  "dependencies": {
+    "start-server-and-test": "^2",
+    "web": "*"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "eslint": "^8",
+    "typescript": "^5",
+    "@playwright/test": "^1"
+  }
+}
