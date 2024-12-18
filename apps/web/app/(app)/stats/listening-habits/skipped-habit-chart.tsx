@@ -6,17 +6,16 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@repo/ui/chart";
-import { Label, Pie, PieChart, Sector } from "recharts";
-import { PieSectorDataItem } from "recharts/types/polar/Pie";
+import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
 
 import { getSkippedHabit } from "./get-charts-data";
 
 const chartConfig = {
-  Skipped: {
+  skipped: {
     label: "Skipped",
     color: "hsl(var(--chart-1))",
   },
-  "Not Skipped": {
+  notSkipped: {
     label: "Not Skipped",
     color: "hsl(var(--chart-2))",
   },
@@ -33,66 +32,69 @@ export const SkippedHabitChart = ({
 }: SkippedHabitChartProps) => {
   if (!chartData) return null;
 
-  const nbSkippedTracks =
-    chartData.find((skip) => skip.skipped === "Skipped")?.totalPlayed || 0;
-  const totalTracks = chartData.reduce(
-    (acc, curr) => acc + curr.totalPlayed,
-    0,
+  const skippedPercentage = Math.round(
+    (chartData[0].skipped / (chartData[0].skipped + chartData[0].notSkipped)) *
+      100,
   );
-  const skippedPercentage = Math.round((nbSkippedTracks / totalTracks) * 100);
 
   return (
-    <ChartContainer
-      config={chartConfig}
-      className="mx-auto aspect-square max-h-[250px]"
-    >
-      <PieChart>
-        <ChartTooltip
-          cursor={false}
-          content={<ChartTooltipContent hideLabel />}
-        />
-        <Pie
+    <div className="flex overflow-hidden w-full min-w-60 h-40 justify-center items-start">
+      <ChartContainer
+        config={chartConfig}
+        className="mx-auto aspect-square w-full"
+      >
+        <RadialBarChart
           data={chartData}
-          dataKey="totalPlayed"
-          nameKey="skipped"
-          innerRadius={60}
-          strokeWidth={5}
-          activeIndex={0}
-          activeShape={({ outerRadius = 0, ...props }: PieSectorDataItem) => (
-            <Sector {...props} outerRadius={outerRadius + 10} />
-          )}
+          endAngle={180}
+          innerRadius={80}
+          outerRadius={130}
         >
-          <Label
-            content={({ viewBox }) => {
-              if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                return (
-                  <text
-                    x={viewBox.cx}
-                    y={viewBox.cy}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                  >
-                    <tspan
-                      x={viewBox.cx}
-                      y={viewBox.cy}
-                      className="fill-foreground text-3xl font-bold"
-                    >
-                      {skippedPercentage}%
-                    </tspan>
-                    <tspan
-                      x={viewBox.cx}
-                      y={(viewBox.cy || 0) + 24}
-                      className="fill-muted-foreground"
-                    >
-                      Tracks Skipped
-                    </tspan>
-                  </text>
-                );
-              }
-            }}
+          <ChartTooltip
+            cursor={false}
+            content={<ChartTooltipContent hideLabel numberFlow />}
           />
-        </Pie>
-      </PieChart>
-    </ChartContainer>
+          <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+            <Label
+              content={({ viewBox }) => {
+                if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                  return (
+                    <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
+                      <tspan
+                        x={viewBox.cx}
+                        y={(viewBox.cy || 0) - 16}
+                        className="fill-foreground text-2xl font-bold"
+                      >
+                        {`${skippedPercentage}%`}
+                      </tspan>
+                      <tspan
+                        x={viewBox.cx}
+                        y={(viewBox.cy || 0) + 4}
+                        className="fill-muted-foreground"
+                      >
+                        Tracks Skipped
+                      </tspan>
+                    </text>
+                  );
+                }
+              }}
+            />
+          </PolarRadiusAxis>
+          <RadialBar
+            dataKey="skipped"
+            stackId="a"
+            cornerRadius={5}
+            fill="var(--color-skipped)"
+            className="stroke-transparent stroke-2"
+          />
+          <RadialBar
+            dataKey="notSkipped"
+            stackId="a"
+            cornerRadius={5}
+            fill="var(--color-notSkipped)"
+            className="stroke-transparent stroke-2"
+          />
+        </RadialBarChart>
+      </ChartContainer>
+    </div>
   );
 };

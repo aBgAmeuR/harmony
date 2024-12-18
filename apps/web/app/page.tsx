@@ -39,7 +39,6 @@ export default async function HomePage() {
         <div className="flex gap-2 items-center flex-col">
           <div className="flex gap-2">
             <ThemeToggle variant="outline" />
-
             {isMaintenance ? (
               <Button
                 aria-label="Disabled Get Started"

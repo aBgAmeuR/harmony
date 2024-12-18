@@ -40,7 +40,7 @@ export const SelectMonthRange = () => {
             <span tabIndex={0}>
               <Button
                 variant={"outline"}
-                className="w-[280px] justify-start text-left font-normal"
+                className="w-[220px] justify-start text-left font-normal"
                 disabled
               >
                 <CalendarIcon className="mr-2 size-4" />

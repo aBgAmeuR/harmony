@@ -24,15 +24,9 @@ export const getShuffleHabit = async (userId: string | undefined) => {
 
   return [
     {
-      shuffle: "Shuffled",
-      fill: "hsl(var(--chart-1))",
-      totalPlayed:
+      shuffled:
         shuffles.find((shuffle) => shuffle.shuffle === true)?._count?._all || 0,
-    },
-    {
-      shuffle: "Not Shuffled",
-      fill: "hsl(var(--chart-6))",
-      totalPlayed:
+      notShuffled:
         shuffles.find((shuffle) => shuffle.shuffle === false)?._count?._all ||
         1,
     },
@@ -59,15 +53,9 @@ export const getSkippedHabit = async (userId: string | undefined) => {
 
   return [
     {
-      skipped: "Skipped",
-      fill: "hsl(var(--chart-1))",
-      totalPlayed:
+      skipped:
         skippeds.find((shuffle) => shuffle.skipped === true)?._count?._all || 0,
-    },
-    {
-      skipped: "Not Skipped",
-      fill: "hsl(var(--chart-6))",
-      totalPlayed:
+      notSkipped:
         skippeds.find((shuffle) => shuffle.skipped === false)?._count?._all ||
         1,
     },
@@ -75,7 +63,9 @@ export const getSkippedHabit = async (userId: string | undefined) => {
 };
 
 export const getTopPlatforms = async (userId: string | undefined) => {
-  const TOP_PLATFORMS_LIMIT = 5;
+  const TOP_PLATFORMS_LIMIT = 4 as const;
+  const PLATFORMS = ["windows", "mac", "linux", "android", "ios"] as const;
+
   if (!userId) return null;
 
   const monthRange = await getMonthRangeAction();
@@ -89,12 +79,11 @@ export const getTopPlatforms = async (userId: string | undefined) => {
   const platforms = new Map<string, number>();
 
   tracks.forEach((track) => {
-    if (platforms.has(track.platform)) {
-      const currentMsPlayed = platforms.get(track.platform) ?? 0;
-      platforms.set(track.platform, currentMsPlayed + Number(track.msPlayed));
-    } else {
-      platforms.set(track.platform, Number(track.msPlayed));
-    }
+    const trackPlatform = track.platform.trim().toLowerCase();
+    const platform =
+      PLATFORMS.find((platform) => trackPlatform.includes(platform)) || "Other";
+    const currentMsPlayed = platforms.get(platform) ?? 0;
+    platforms.set(platform, currentMsPlayed + Number(track.msPlayed));
   });
 
   const topPlatforms = Array.from(platforms.entries()).sort(
@@ -104,9 +93,7 @@ export const getTopPlatforms = async (userId: string | undefined) => {
   if (topPlatforms.length > TOP_PLATFORMS_LIMIT) {
     const otherMsPlayed = topPlatforms
       .slice(TOP_PLATFORMS_LIMIT)
-      .reduce((acc, [, msPlayed]) => {
-        return acc + msPlayed;
-      }, 0);
+      .reduce((acc, [, msPlayed]) => acc + msPlayed, 0);
     topPlatforms.splice(
       TOP_PLATFORMS_LIMIT,
       topPlatforms.length - TOP_PLATFORMS_LIMIT,
