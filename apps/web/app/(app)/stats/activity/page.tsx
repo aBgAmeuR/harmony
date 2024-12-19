@@ -1,17 +1,40 @@
-import { AppHeader } from "~/components/app-header";
+import { Suspense } from "react";
+import { auth } from "@repo/auth";
 
-export default function StatsActivityPage() {
+import { AppHeader } from "~/components/app-header";
+import { SelectMonthRange } from "~/components/select-month-range";
+
+import { getMonthlyData } from "./get-data";
+import {
+  TimeListenedChart,
+  TimeListenedChartSkeleton,
+} from "./time-listened-chart";
+
+export default async function StatsActivityPage() {
   return (
     <>
-      <AppHeader items={["Package", "Stats", "Activity"]} />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-          <div className="bg-muted/50 aspect-video rounded-xl" />
-          <div className="bg-muted/50 aspect-video rounded-xl" />
-          <div className="bg-muted/50 aspect-video rounded-xl" />
-        </div>
-        <div className="bg-muted/50 min-h-screen flex-1 rounded-xl md:min-h-min" />
+      <AppHeader items={["Package", "Stats", "Activity"]}>
+        <SelectMonthRange />
+      </AppHeader>
+      <div className="flex flex-1 flex-col gap-4 p-4 max-w-6xl w-full mx-auto">
+        {/* // Time listened over the months
+        // Time listened over the months beetwen platforms
+        // Evolution of first time / discover listened tracks / artists / albums */}
+        <Suspense fallback={<TimeListenedChartSkeleton />}>
+          <TimeListenedChartWrapper />
+        </Suspense>
       </div>
     </>
   );
 }
+
+const TimeListenedChartWrapper = async () => {
+  const session = await auth();
+  const startTime = performance.now();
+  const data = await getMonthlyData(session?.user?.id);
+  const endTime = performance.now();
+  console.log(`getMonthlyData execution time: ${endTime - startTime}ms`);
+  if (!data) return null;
+
+  return <TimeListenedChart data={data} />;
+};
