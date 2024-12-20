@@ -11,6 +11,14 @@ export const getMonthRangeAction = async () => {
 
   if (!session || !session.user || !session.user.id) return null;
 
+  if (isDemo(session)) {
+    const date = new Date("2023-12-31T23:00:00.000Z");
+    return {
+      dateStart: date,
+      dateEnd: new Date(),
+    };
+  }
+
   const monthsDates = await prisma.user.findFirst({
     where: { id: session.user.id },
     select: { timeRangeDateEnd: true, timeRangeDateStart: true },
