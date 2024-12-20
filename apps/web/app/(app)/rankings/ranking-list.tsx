@@ -1,5 +1,7 @@
 import { auth } from "@repo/auth";
+import { Alert, AlertDescription, AlertTitle } from "@repo/ui/alert";
 import { Separator } from "@repo/ui/separator";
+import { Info } from "lucide-react";
 
 import { ErrorRankList } from "./error-rank-list";
 import {
@@ -37,6 +39,15 @@ export const RankList = async ({ type }: RankListProps) => {
           {index < items.length - 1 && <Separator />}
         </div>
       ))}
+      {items.length === 0 && (
+        <Alert variant="info">
+          <Info className="size-4" />
+          <AlertTitle>No {type} found</AlertTitle>
+          <AlertDescription>
+            You haven't listened to any music during this period
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };

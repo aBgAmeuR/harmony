@@ -7,5 +7,5 @@ export const DemoBadge = async () => {
 
   if (session?.user?.name !== "Demo") return;
 
-  return <Badge>Demo</Badge>;
+  return <Badge className="hidden min-[432px]:block">Demo</Badge>;
 };

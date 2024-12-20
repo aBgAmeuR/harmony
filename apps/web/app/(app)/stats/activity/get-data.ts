@@ -49,8 +49,6 @@ export const getMonthlyData = async (userId: string | undefined) => {
     ORDER BY month ASC
   `;
 
-  if (tracks.length === 0) return null;
-
   const data: Record<string, number> = {};
   let totalMsPlayed = 0;
 
@@ -68,7 +66,7 @@ export const getMonthlyData = async (userId: string | undefined) => {
       month: key,
       value,
     })),
-    average: Math.round(average),
+    average: Math.round(average) || 0,
   };
 };
 
@@ -172,108 +170,66 @@ export const getFirstTimeListenedData = async (userId: string | undefined) => {
 
   if (firstPlays.length === 0) return null;
 
-  return {
-    tracks: firstTracks(firstPlays, monthRange),
-    albums: firstAlbums(firstPlays, monthRange),
-    artists: firstArtists(firstPlays, monthRange),
-  };
-};
-
-const firstTracks = (
-  firstPlays: Array<{
-    timestamp: Date;
-    spotifyId: string;
-    albumId: string;
-    artistIds: string[];
-  }>,
-  monthRange: { dateStart: Date; dateEnd: Date },
-) => {
-  const result = aggregateData(firstPlays, (track) =>
+  const tracksData = aggregateData(firstPlays, (track) =>
     new Date(track.timestamp).toISOString().slice(0, 7),
   );
-  const totalUniqueFirstPlays = result[result.length - 1].value;
 
-  const filteredResult = result.filter((item) => {
-    const date = new Date(item.key);
-    return date >= monthRange.dateStart && date < monthRange.dateEnd;
-  });
-
-  return {
-    data: filteredResult.map((item) => ({
-      month: item.key,
-      value: item.value,
-    })),
-    totalUniqueFirstPlays,
-  };
-};
-
-const firstAlbums = (
-  firstPlays: Array<{
-    timestamp: Date;
-    spotifyId: string;
-    albumId: string;
-    artistIds: string[];
-  }>,
-  monthRange: { dateStart: Date; dateEnd: Date },
-) => {
-  const uniqueFirstPlays = firstPlays.reduce<
-    Record<string, { timestamp: Date; albumId: string }>
-  >((acc, play) => {
-    if (!acc[play.albumId]) acc[play.albumId] = play;
-    return acc;
-  }, {});
-
-  const result = aggregateData(Object.values(uniqueFirstPlays), (play) =>
-    new Date(play.timestamp).toISOString().slice(0, 7),
+  const albumsData = aggregateData(
+    Object.values(
+      firstPlays.reduce<Record<string, { timestamp: Date; albumId: string }>>(
+        (acc, play) => {
+          if (!acc[play.albumId]) acc[play.albumId] = play;
+          return acc;
+        },
+        {},
+      ),
+    ),
+    (play) => new Date(play.timestamp).toISOString().slice(0, 7),
   );
-  const totalUniqueFirstPlays = result[result.length - 1].value;
 
-  const filteredResult = result.filter((item) => {
-    const date = new Date(item.key);
-    return date >= monthRange.dateStart && date < monthRange.dateEnd;
-  });
-
-  return {
-    data: filteredResult.map((item) => ({
-      month: item.key,
-      value: item.value,
-    })),
-    totalUniqueFirstPlays,
-  };
-};
-
-const firstArtists = (
-  firstPlays: Array<{
-    timestamp: Date;
-    spotifyId: string;
-    albumId: string;
-    artistIds: string[];
-  }>,
-  monthRange: { dateStart: Date; dateEnd: Date },
-) => {
-  const uniqueFirstPlays = firstPlays.reduce<
-    Record<string, { timestamp: Date; artistIds: string[] }>
-  >((acc, play) => {
-    const key = play.artistIds.join(",");
-    if (!acc[key]) acc[key] = play;
-    return acc;
-  }, {});
-
-  const result = aggregateData(Object.values(uniqueFirstPlays), (play) =>
-    new Date(play.timestamp).toISOString().slice(0, 7),
+  const artistsData = aggregateData(
+    Object.values(
+      firstPlays.reduce<
+        Record<string, { timestamp: Date; artistIds: string[] }>
+      >((acc, play) => {
+        const key = play.artistIds.join(",");
+        if (!acc[key]) acc[key] = play;
+        return acc;
+      }, {}),
+    ),
+    (play) => new Date(play.timestamp).toISOString().slice(0, 7),
   );
-  const totalUniqueFirstPlays = result[result.length - 1].value;
 
-  const filteredResult = result.filter((item) => {
-    const date = new Date(item.key);
-    return date >= monthRange.dateStart && date < monthRange.dateEnd;
-  });
+  const filterData = (
+    data: Array<{ key: string; value: number }>,
+    monthRange: { dateStart: Date; dateEnd: Date },
+  ) =>
+    data.filter((item) => {
+      const date = new Date(item.key);
+      return date >= monthRange.dateStart && date < monthRange.dateEnd;
+    });
 
   return {
-    data: filteredResult.map((item) => ({
-      month: item.key,
-      value: item.value,
-    })),
-    totalUniqueFirstPlays,
+    tracks: {
+      data: filterData(tracksData, monthRange).map((item) => ({
+        month: item.key,
+        value: item.value,
+      })),
+      totalUniqueFirstPlays: tracksData[tracksData.length - 1].value,
+    },
+    albums: {
+      data: filterData(albumsData, monthRange).map((item) => ({
+        month: item.key,
+        value: item.value,
+      })),
+      totalUniqueFirstPlays: albumsData[albumsData.length - 1].value,
+    },
+    artists: {
+      data: filterData(artistsData, monthRange).map((item) => ({
+        month: item.key,
+        value: item.value,
+      })),
+      totalUniqueFirstPlays: artistsData[artistsData.length - 1].value,
+    },
   };
 };

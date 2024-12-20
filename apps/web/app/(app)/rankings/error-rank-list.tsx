@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@repo/ui/button";
 import { CircleAlert } from "lucide-react";
 

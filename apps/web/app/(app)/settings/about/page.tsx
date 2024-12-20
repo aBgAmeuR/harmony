@@ -23,7 +23,7 @@ export default async function SettingsAboutPage() {
             <div>
               <h3 className="font-semibold">Version</h3>
               <div className="flex items-center gap-2">
-                <p>2.1</p>
+                <p>2.2</p>
                 <Badge>Latest</Badge>
               </div>
             </div>
