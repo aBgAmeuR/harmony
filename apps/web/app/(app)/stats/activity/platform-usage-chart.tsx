@@ -16,6 +16,7 @@ import {
   ChartTooltipContent,
 } from "@repo/ui/chart";
 import { NumberFlow } from "@repo/ui/number";
+import { Skeleton } from "@repo/ui/skeleton";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import { getMsPlayedInHours } from "~/lib/utils";
@@ -204,3 +205,29 @@ export function PlatformUsageChart({
     </Card>
   );
 }
+
+export const PlatformUsageChartSkeleton = () => {
+  return (
+    <Card>
+      <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
+        <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-5">
+          <CardTitle>Platform Usage Over Time</CardTitle>
+          <CardDescription>Showing platform usage statistics</CardDescription>
+        </div>
+        <div className="flex flex-col justify-center border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-6 sm:py-0">
+          <span className="flex gap-1 text-xs text-muted-foreground">
+            Most used platform is <Skeleton className="w-10 h-4" /> with
+          </span>
+          <span className="text-lg font-bold leading-none sm:text-xl">
+            <Skeleton className="w-28 h-[30px]" />
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="size-full aspect-[10/3] pt-6">
+          <Skeleton className="size-full" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

@@ -4,13 +4,19 @@ import { auth } from "@repo/auth";
 import { AppHeader } from "~/components/app-header";
 import { SelectMonthRange } from "~/components/select-month-range";
 
-import { FirstTimeEvolutionCharts } from "./first-time-evolution-charts";
+import {
+  FirstTimeEvolutionCharts,
+  FirstTimeEvolutionChartsSkeleton,
+} from "./first-time-evolution-charts";
 import {
   getFirstTimeListenedData,
   getMonthlyData,
   getMonthlyPlatformData,
 } from "./get-data";
-import { PlatformUsageChart } from "./platform-usage-chart";
+import {
+  PlatformUsageChart,
+  PlatformUsageChartSkeleton,
+} from "./platform-usage-chart";
 import {
   TimeListenedChart,
   TimeListenedChartSkeleton,
@@ -23,16 +29,13 @@ export default async function StatsActivityPage() {
         <SelectMonthRange />
       </AppHeader>
       <div className="flex flex-1 flex-col gap-4 p-4 max-w-6xl w-full mx-auto">
-        {/* // Time listened over the months
-        // Time listened over the months beetwen platforms
-        // Evolution of first time / discover listened tracks / artists / albums */}
         <Suspense fallback={<TimeListenedChartSkeleton />}>
           <TimeListenedChartWrapper />
         </Suspense>
-        <Suspense fallback={null}>
+        <Suspense fallback={<PlatformUsageChartSkeleton />}>
           <PlatformUsageChartWrapper />
         </Suspense>
-        <Suspense fallback={null}>
+        <Suspense fallback={<FirstTimeEvolutionChartsSkeleton />}>
           <FirstTimeEvolutionChartsWrapper />
         </Suspense>
       </div>
@@ -42,10 +45,7 @@ export default async function StatsActivityPage() {
 
 const TimeListenedChartWrapper = async () => {
   const session = await auth();
-  const startTime = performance.now();
   const data = await getMonthlyData(session?.user?.id);
-  const endTime = performance.now();
-  console.log(`getMonthlyData execution time: ${endTime - startTime}ms`);
   if (!data) return null;
 
   return <TimeListenedChart data={data} />;

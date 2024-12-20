@@ -103,18 +103,18 @@ export const TimeListenedChartSkeleton = () => {
   return (
     <Card>
       <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
-        <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
+        <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-5">
           <CardTitle>Time Listened Over Months</CardTitle>
           <CardDescription>
             Showing total time listened in hours over the months
           </CardDescription>
         </div>
-        <div className="flex flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
+        <div className="flex flex-col justify-center border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-6 sm:py-0">
           <span className="text-xs text-muted-foreground">
             Average time listened
           </span>
-          <span className="text-lg font-bold leading-none sm:text-3xl">
-            <Skeleton className="w-48 h-[37.5px] my-1" />
+          <span className="text-lg font-bold leading-none sm:text-xl">
+            <Skeleton className="w-28 h-[30px]" />
           </span>
         </div>
       </CardHeader>

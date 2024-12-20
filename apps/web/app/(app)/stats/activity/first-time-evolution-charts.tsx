@@ -13,6 +13,7 @@ import {
   ChartTooltipContent,
 } from "@repo/ui/chart";
 import { NumberFlow } from "@repo/ui/number";
+import { Skeleton } from "@repo/ui/skeleton";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
 import { getFirstTimeListenedData } from "./get-data";
@@ -139,3 +140,43 @@ export function FirstTimeEvolutionCharts({
     </div>
   );
 }
+
+export const FirstTimeEvolutionChartsSkeleton = () => {
+  return (
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Tracks Evolution</CardTitle>
+          <CardDescription>
+            Evolution of tracks listened to for the first time.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="aspect-video" />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Albums Evolution</CardTitle>
+          <CardDescription>
+            Evolution of albums listened to for the first time.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="aspect-video" />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Artists Evolution</CardTitle>
+          <CardDescription>
+            Evolution of artists listened to for the first time
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="aspect-video" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
