@@ -76,6 +76,9 @@ export const getTopPlatforms = async (userId: string | undefined) => {
     monthRange.dateStart,
     monthRange.dateEnd,
   );
+
+  if (!tracks.length) return [{ platform: "Other", msPlayed: 1 }];
+
   const platforms = new Map<string, number>();
 
   tracks.forEach((track) => {
