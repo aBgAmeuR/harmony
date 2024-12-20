@@ -3,12 +3,13 @@ import { format, localeFormat } from "light-date";
 
 type NumberFlowProps = Omit<Parameters<typeof NumberFlowPrimitive>[0], 'value'> & {
   value: number | string;
+  duration?: number;
 };
 
-export const NumberFlow = ({ value, ...props }: NumberFlowProps) => {
+export const NumberFlow = ({ value, duration = 300, ...props }: NumberFlowProps) => {
   return (
     <NumberFlowPrimitive
-      transformTiming={{ duration: 500, easing: "ease-in-out" }}
+      transformTiming={{ duration, easing: "ease-in-out" }}
       value={Number(value)}
       {...props}
     />
