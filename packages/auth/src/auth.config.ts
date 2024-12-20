@@ -49,5 +49,9 @@ export default {
   },
   pages: {
     error: "/error",
+    signIn: "/",
+    signOut: "/",
+    newUser: "/",
+    verifyRequest: "/",
   },
 } satisfies NextAuthConfig;
