@@ -14,6 +14,7 @@ import {
   Milestone,
   Package,
   TrendingUp,
+  TrendingUpDown,
   UserRoundPen,
   UsersRound,
 } from "lucide-react";
@@ -92,11 +93,11 @@ export const data = {
           url: "/stats/listening-habits",
           icon: ChartLine,
         },
-        // {
-        //   title: "Activity",
-        //   url: "/stats/activity",
-        //   icon: TrendingUpDown,
-        // },
+        {
+          title: "Activity",
+          url: "/stats/activity",
+          icon: TrendingUpDown,
+        },
       ],
     },
   ],

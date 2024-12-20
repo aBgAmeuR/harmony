@@ -15,7 +15,7 @@ import {
 } from "@repo/ui/drawer";
 import { cn } from "@repo/ui/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ui/popover";
-import { format, localeFormat } from "light-date";
+import { localeFormat } from "light-date";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 
 export const addMonths = (input: Date, months: number) => {
