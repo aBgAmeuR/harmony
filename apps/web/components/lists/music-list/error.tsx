@@ -3,7 +3,7 @@
 import { Button } from "@repo/ui/button";
 import { CircleAlert } from "lucide-react";
 
-export const ErrorRankList = () => {
+export const MusicListError = () => {
   return (
     <div className="rounded-lg border border-border bg-background p-4 shadow-lg shadow-black/5">
       <div className="flex gap-2">

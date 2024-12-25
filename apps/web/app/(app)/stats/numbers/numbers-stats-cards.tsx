@@ -7,13 +7,8 @@ import { Skeleton } from "@repo/ui/skeleton";
 import { Calendar, Clock, FastForward, Users } from "lucide-react";
 
 import { getNumbersStats } from "~/actions/get-numbers-stats-actions";
-import {
-  ItemCard,
-  ItemCardContent,
-  ItemCardImage,
-  ItemCardSubtitle,
-  ItemCardTitle,
-} from "~/components/item-card";
+import { MusicItemCardContent } from "~/components/cards/music-item-card/content";
+import { MusicItemCardImage } from "~/components/cards/music-item-card/image";
 
 const msToHours = (ms: number) => ms / 1000 / 60 / 60;
 
@@ -111,16 +106,19 @@ export const NumbersStatsCards = async () => {
       <Card className="p-6">
         <h3 className="font-semibold mb-2">First Track you played</h3>
         <div>
-          <ItemCard className="py-0">
-            <ItemCardImage
-              src={data.firstTrack.cover}
-              alt={data.firstTrack.name}
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <MusicItemCardImage
+              src={data.firstTrack.cover || undefined}
+              alt={data.firstTrack.name || undefined}
             />
-            <ItemCardContent>
-              <ItemCardTitle>{data.firstTrack.name}</ItemCardTitle>
-              <ItemCardSubtitle>{data.firstTrack.artists}</ItemCardSubtitle>
-            </ItemCardContent>
-          </ItemCard>
+            <MusicItemCardContent
+              item={{
+                href: data.firstTrack.href || "",
+                name: data.firstTrack.name || "",
+                artists: data.firstTrack.artists || undefined,
+              }}
+            />
+          </div>
           <p className="mt-2 text-sm text-muted-foreground">
             Played on{" "}
             {data.firstTrack.timestamp ? (
@@ -189,19 +187,18 @@ export const NumbersStatsCards = async () => {
           <h3 className="font-semibold">Most Forwarded Track</h3>
           <FastForward className="size-5 text-red-500 dark:text-red-400" />
         </div>
-        <div className="flex items-center space-x-3">
-          <ItemCard className="py-0">
-            <ItemCardImage
-              src={data.mostFwdbtnTrack.cover || ""}
-              alt={data.mostFwdbtnTrack.name || ""}
-            />
-            <ItemCardContent>
-              <ItemCardTitle>{data.mostFwdbtnTrack.name}</ItemCardTitle>
-              <ItemCardSubtitle>
-                {data.mostFwdbtnTrack.artists}
-              </ItemCardSubtitle>
-            </ItemCardContent>
-          </ItemCard>
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          <MusicItemCardImage
+            src={data.mostFwdbtnTrack.cover || undefined}
+            alt={data.mostFwdbtnTrack.name || undefined}
+          />
+          <MusicItemCardContent
+            item={{
+              href: data.mostFwdbtnTrack.href || "",
+              name: data.mostFwdbtnTrack.name || "",
+              artists: data.mostFwdbtnTrack.artists || undefined,
+            }}
+          />
         </div>
         <Badge className="mt-3" variant="outline">
           <NumberFlow
@@ -258,14 +255,14 @@ export const NumbersStatsSkeleton = () => {
       <Card className="p-6">
         <h3 className="font-semibold mb-2">First Track of the Year</h3>
         <div>
-          <ItemCard className="py-0">
-            <ItemCardImage src="" alt="" />
-            <ItemCardContent>
+          <div className="flex items-center space-x-3">
+            <MusicItemCardImage />
+            <div className="space-y-1">
               <Skeleton className="w-32 h-5 mt-1" />
               <Skeleton className="w-20 h-4 mt-1" />
-            </ItemCardContent>
-          </ItemCard>
-          <Skeleton className="w-36 h-4 mt-1" />
+            </div>
+          </div>
+          <Skeleton className="w-36 h-4 mt-2" />
         </div>
       </Card>
 
@@ -293,13 +290,11 @@ export const NumbersStatsSkeleton = () => {
           <FastForward className="size-5 text-red-500 dark:text-red-400" />
         </div>
         <div className="flex items-center space-x-3">
-          <ItemCard className="py-0">
-            <ItemCardImage src="" alt="" />
-            <ItemCardContent>
-              <Skeleton className="w-32 h-5 mt-1" />
-              <Skeleton className="w-20 h-4 mt-1" />
-            </ItemCardContent>
-          </ItemCard>
+          <MusicItemCardImage />
+          <div className="space-y-1">
+            <Skeleton className="w-32 h-5 mt-1" />
+            <Skeleton className="w-20 h-4 mt-1" />
+          </div>
         </div>
         <Skeleton className="w-32 h-6 mt-3" />
       </Card>

@@ -55,6 +55,7 @@ export const getNumbersStats = async (userId: string | undefined) => {
         name: null,
         cover: null,
         artists: null,
+        href: null,
       },
       mostActiveDay: {
         day: null,
@@ -68,6 +69,7 @@ export const getNumbersStats = async (userId: string | undefined) => {
         name: null,
         cover: null,
         artists: null,
+        href: null,
       },
     };
 
@@ -187,7 +189,10 @@ const formatResponse = (
       id: firstTrackDetails?.id,
       name: firstTrackDetails?.name,
       cover: firstTrackDetails?.album.images[0].url,
-      artists: firstTrackDetails?.artists.map((artist) => artist.name),
+      artists: firstTrackDetails?.artists
+        .map((artist) => artist.name)
+        .join(", "),
+      href: firstTrackDetails?.external_urls.spotify,
     },
     mostActiveDay: stats.mostActiveDay,
     onlineTrackPercent: stats.onlineTrackPercent,
@@ -196,7 +201,10 @@ const formatResponse = (
       id: mostFwdbtnTrackDetails?.id,
       name: mostFwdbtnTrackDetails?.name,
       cover: mostFwdbtnTrackDetails?.album.images[0].url,
-      artists: mostFwdbtnTrackDetails?.artists.map((artist) => artist.name),
+      artists: mostFwdbtnTrackDetails?.artists
+        .map((artist) => artist.name)
+        .join(", "),
+      href: mostFwdbtnTrackDetails?.external_urls.spotify,
     },
   };
 };

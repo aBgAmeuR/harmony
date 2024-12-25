@@ -1,6 +1,7 @@
 "server-only";
 
 import { prisma } from "@repo/database";
+import { unstable_cache as cache } from "next/cache";
 
 import { getMonthRangeAction } from "~/actions/month-range-actions";
 
@@ -192,19 +193,21 @@ export const getDaysHabit = async (userId: string | undefined) => {
   }));
 };
 
-const getTracks = async (userId: string, dateStart: Date, dateEnd: Date) => {
-  return prisma.track.findMany({
-    where: {
-      userId,
-      timestamp: {
-        gte: dateStart,
-        lt: dateEnd,
+const getTracks = cache(
+  async (userId: string, dateStart: Date, dateEnd: Date) => {
+    return prisma.track.findMany({
+      where: {
+        userId,
+        timestamp: {
+          gte: dateStart,
+          lt: dateEnd,
+        },
       },
-    },
-    select: {
-      timestamp: true,
-      msPlayed: true,
-      platform: true,
-    },
-  });
-};
+      select: {
+        timestamp: true,
+        msPlayed: true,
+        platform: true,
+      },
+    });
+  },
+);
