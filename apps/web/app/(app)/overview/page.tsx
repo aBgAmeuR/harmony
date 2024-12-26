@@ -9,8 +9,10 @@ import {
   TimeListenedChart,
   TimeListenedChartSkeleton,
 } from "../stats/activity/time-listened-chart";
+import { getListeningPatternData } from "./get-listening-pattern-data";
+import { ListeningPatternChart } from "./listening-pattern-chart";
 import { RankingList } from "./ranking-list";
-import { TopStatsCards } from "./top-stats-cards";
+import { TopStatsCards, TopStatsCardsSkeleton } from "./top-stats-cards";
 
 export default function OverviewPage() {
   return (
@@ -19,19 +21,18 @@ export default function OverviewPage() {
         <SelectMonthRange />
       </AppHeader>
       <div className="flex flex-1 flex-col gap-4 p-4 pt-2 max-w-screen-2xl w-full mx-auto">
-        <TopStatsCards
-          activeListeners={0}
-          totalArtists={0}
-          totalPlaytime={0}
-          totalTracks={0}
-        />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Suspense fallback={<TopStatsCardsSkeleton />}>
+          <TopStatsCards />
+        </Suspense>
+        <div className="grid gap-4 lg:grid-cols-3">
           <Suspense
             fallback={<TimeListenedChartSkeleton className="col-span-2" />}
           >
             <TimeListenedChartWrapper />
           </Suspense>
-          <div className="col-span-1"></div>
+          <Suspense fallback={null}>
+            <ListeningPatternChartWrapper />
+          </Suspense>
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
           <RankingList type="dashboardArtists" className="col-span-1" />
@@ -48,4 +49,12 @@ const TimeListenedChartWrapper = async () => {
   if (!data) return null;
 
   return <TimeListenedChart data={data} className="col-span-2" />;
+};
+
+const ListeningPatternChartWrapper = async () => {
+  const session = await auth();
+  const data = await getListeningPatternData(session?.user?.id);
+  if (!data) return null;
+
+  return <ListeningPatternChart data={data} />;
 };
