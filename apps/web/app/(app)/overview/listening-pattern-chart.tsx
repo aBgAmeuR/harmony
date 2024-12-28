@@ -33,21 +33,26 @@ type ListeningPatternChartProps = {
     subject: any;
     time: number;
   }[];
+  className?: string;
 };
 
 export function ListeningPatternChart({
   data: chartData,
+  className,
 }: ListeningPatternChartProps) {
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">
           Listening Patterns
         </CardTitle>
         <Brain className="size-4 text-muted-foreground" />
       </CardHeader>
-      <CardContent className="pb-0">
-        <ChartContainer config={chartConfig} className="mx-auto aspect-square">
+      <CardContent className="pb-0 max-h-56 md:max-h-52 lg:max-h-64 xl:max-h-80 2xl:max-h-[350px] size-full">
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto size-full aspect-square"
+        >
           <RadarChart
             data={chartData}
             margin={{ top: 18, right: 18, bottom: 18, left: 18 }}

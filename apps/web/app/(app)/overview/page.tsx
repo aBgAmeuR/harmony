@@ -24,10 +24,8 @@ export default function OverviewPage() {
         <Suspense fallback={<TopStatsCardsSkeleton />}>
           <TopStatsCards />
         </Suspense>
-        <div className="grid gap-4 lg:grid-cols-3">
-          <Suspense
-            fallback={<TimeListenedChartSkeleton className="col-span-2" />}
-          >
+        <div className="flex flex-col md:flex-row gap-4">
+          <Suspense fallback={<TimeListenedChartSkeleton />}>
             <TimeListenedChartWrapper />
           </Suspense>
           <Suspense fallback={null}>
@@ -48,7 +46,7 @@ const TimeListenedChartWrapper = async () => {
   const data = await getMonthlyData(session?.user?.id);
   if (!data) return null;
 
-  return <TimeListenedChart data={data} className="col-span-2" />;
+  return <TimeListenedChart data={data} className="flex-1" />;
 };
 
 const ListeningPatternChartWrapper = async () => {
