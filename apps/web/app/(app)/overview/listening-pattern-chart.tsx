@@ -8,6 +8,7 @@ import {
   ChartTooltipContent,
 } from "@repo/ui/chart";
 import { NumberFlow } from "@repo/ui/number";
+import { Skeleton } from "@repo/ui/skeleton";
 import { Brain } from "lucide-react";
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts";
 
@@ -95,3 +96,21 @@ export function ListeningPatternChart({
     </Card>
   );
 }
+
+export const ListeningPatternChartSkeleton = () => {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-sm font-medium">
+          Listening Patterns
+        </CardTitle>
+        <Brain className="size-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent className="pb-6 max-h-56 md:max-h-52 lg:max-h-64 xl:max-h-80 2xl:max-h-[350px] size-full aspect-square">
+        <div className="size-full">
+          <Skeleton className="mx-auto h-full aspect-square" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

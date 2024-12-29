@@ -10,7 +10,10 @@ import {
   TimeListenedChartSkeleton,
 } from "../stats/activity/time-listened-chart";
 import { getListeningPatternData } from "./get-listening-pattern-data";
-import { ListeningPatternChart } from "./listening-pattern-chart";
+import {
+  ListeningPatternChart,
+  ListeningPatternChartSkeleton,
+} from "./listening-pattern-chart";
 import { RankingList } from "./ranking-list";
 import { TopStatsCards, TopStatsCardsSkeleton } from "./top-stats-cards";
 
@@ -25,10 +28,10 @@ export default function OverviewPage() {
           <TopStatsCards />
         </Suspense>
         <div className="flex flex-col md:flex-row gap-4">
-          <Suspense fallback={<TimeListenedChartSkeleton />}>
+          <Suspense fallback={<TimeListenedChartSkeleton className="flex-1" />}>
             <TimeListenedChartWrapper />
           </Suspense>
-          <Suspense fallback={null}>
+          <Suspense fallback={<ListeningPatternChartSkeleton />}>
             <ListeningPatternChartWrapper />
           </Suspense>
         </div>
