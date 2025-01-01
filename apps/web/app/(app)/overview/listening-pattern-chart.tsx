@@ -52,7 +52,7 @@ export function ListeningPatternChart({
       <CardContent className="pb-0 max-h-56 md:max-h-52 lg:max-h-64 xl:max-h-80 2xl:max-h-[350px] size-full">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto size-full aspect-square"
+          className="mx-auto size-full aspect-square w-56 md:w-52 lg:w-64 xl:w-80 2xl:w-[350px]"
         >
           <RadarChart
             data={chartData}
@@ -106,9 +106,11 @@ export const ListeningPatternChartSkeleton = () => {
         </CardTitle>
         <Brain className="size-4 text-muted-foreground" />
       </CardHeader>
-      <CardContent className="pb-6 max-h-56 md:max-h-52 lg:max-h-64 xl:max-h-80 2xl:max-h-[350px] size-full aspect-square">
-        <div className="size-full">
-          <Skeleton className="mx-auto h-full aspect-square" />
+      <CardContent className="max-h-56 md:max-h-52 lg:max-h-64 xl:max-h-80 2xl:max-h-[350px] size-full ">
+        <div className="mx-auto w-56 md:w-52 lg:w-64 xl:w-80 2xl:w-[350px] aspect-square ">
+          <div className="size-full pb-6">
+            <Skeleton className="size-full" />
+          </div>
         </div>
       </CardContent>
     </Card>
