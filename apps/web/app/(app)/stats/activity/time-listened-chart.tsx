@@ -122,7 +122,7 @@ export const TimeListenedChartSkeleton = ({
             Average time listened
           </span>
           <span className="text-lg font-bold leading-none sm:text-xl">
-            <Skeleton className="w-28 h-[30px]" />
+            <Skeleton className="py-px">101,46 hours</Skeleton>
           </span>
         </div>
       </CardHeader>

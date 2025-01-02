@@ -132,9 +132,13 @@ export const TopStatsCardsSkeleton = () => {
           <CardTitle className="text-sm font-medium">Total Playtime</CardTitle>
           <Clock className="size-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent>
-          <Skeleton className="w-40 h-6 my-1.5" />
-          <Skeleton className="w-full max-w-56 h-[18px]" />
+        <CardContent className="space-y-1.5">
+          <div className="text-2xl font-bold">
+            <Skeleton>1014,63 hours</Skeleton>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            <Skeleton>That's about 42 days of non-stop music!</Skeleton>
+          </div>
         </CardContent>
       </Card>
       <Card>
@@ -142,9 +146,13 @@ export const TopStatsCardsSkeleton = () => {
           <CardTitle className="text-sm font-medium">Tracks Played</CardTitle>
           <Music className="size-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent>
-          <Skeleton className="w-24 h-6 my-1.5" />
-          <Skeleton className="w-full max-w-52 h-[18px]" />
+        <CardContent className="space-y-1.5">
+          <div className="text-2xl font-bold">
+            <Skeleton>24,302</Skeleton>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            <Skeleton>Averaging 66 tracks per day</Skeleton>
+          </div>
         </CardContent>
       </Card>
       <Card>
@@ -154,9 +162,13 @@ export const TopStatsCardsSkeleton = () => {
           </CardTitle>
           <Users className="size-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent>
-          <Skeleton className="w-20 h-6 my-1.5" />
-          <Skeleton className="w-full max-w-52 h-[18px]" />
+        <CardContent className="space-y-1.5">
+          <div className="text-2xl font-bold">
+            <Skeleton>1,829</Skeleton>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            <Skeleton>It's like having a concert with 1,829 artists!</Skeleton>
+          </div>
         </CardContent>
       </Card>
       <Card>
@@ -166,9 +178,13 @@ export const TopStatsCardsSkeleton = () => {
           </CardTitle>
           <Headphones className="size-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent>
-          <Skeleton className="w-40 h-6 my-1.5" />
-          <Skeleton className="w-full max-w-52 h-[18px]" />
+        <CardContent className="space-y-1.5">
+          <div className="text-2xl font-bold">
+            <Skeleton>August 16, 2024</Skeleton>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            <Skeleton>You played 1 tracks for 0,2 hours</Skeleton>
+          </div>
         </CardContent>
       </Card>
     </div>
