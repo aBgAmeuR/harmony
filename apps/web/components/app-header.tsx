@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import React, { PropsWithChildren, Suspense } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -40,7 +40,9 @@ export const AppHeader = ({ items, children }: AppHeaderProps) => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <DemoBadge />
+        <Suspense fallback={null}>
+          <DemoBadge />
+        </Suspense>
       </div>
       <div className="flex items-center gap-2">{children}</div>
     </header>

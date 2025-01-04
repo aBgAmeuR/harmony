@@ -10,11 +10,11 @@ import { ThemeToggle } from "../theme-toggle";
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-50 -mb-4 px-4 pb-4">
-      <div className="fade-bottom absolute left-0 h-24 w-full bg-background/15 backdrop-blur-lg"></div>
+    <header className="top-0 z-50 -mb-4 px-4 pb-4">
+      <div className="fade-bottom absolute left-0 h-24 w-full"></div>
       <div className="relative mx-auto max-w-screen-xl">
         <nav className="flex items-center justify-between py-4">
-          <nav className="motion-preset-slide-right-md flex items-center gap-4 justify-start">
+          <nav className="flex items-center gap-4 justify-start">
             <a href="/" className="flex items-center gap-2 text-xl font-bold">
               <Icons.logo className="size-8" />
               Harmony
@@ -34,7 +34,7 @@ export default function Navbar() {
             </div>
             {/* <Navigation /> */}
           </nav>
-          <nav className="motion-preset-slide-left-md flex items-center gap-4 justify-end">
+          <nav className="flex items-center gap-4 justify-end">
             <GetDemoBtn label="Get Demo" variant="link" />
             <Link
               href="/overview"

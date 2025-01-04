@@ -124,14 +124,49 @@ const config = {
             filter: "blur(0)",
           },
         },
+        "appear-left": {
+          "0%": {
+            opacity: "0",
+            transform: "translateX(-1rem)",
+            filter: "blur(.5rem)",
+          },
+          "50%": {
+            filter: "blur(0)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateX(0)",
+            filter: "blur(0)",
+          },
+        },
+        "appear-right": {
+          "0%": {
+            opacity: "0",
+            transform: "translateX(1rem)",
+            filter: "blur(.5rem)",
+          },
+          "50%": {
+            filter: "blur(0)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateX(0)",
+            filter: "blur(0)",
+          },
+        },
         "appear-zoom": {
           "0%": {
             opacity: "0",
-            transform: "scale(.5)",
+            transform: "scale(.85)",
+            filter: "blur(.5rem)",
+          },
+          "50%": {
+            filter: "blur(0)",
           },
           "100%": {
             opacity: "1",
             transform: "scale(1)",
+            filter: "blur(0)",
           },
         },
         "pulse-hover": {
@@ -186,6 +221,8 @@ const config = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "appear": "appear 0.6s forwards ease-out",
+        "appear-left": "appear-left 0.6s forwards ease-out",
+        "appear-right": "appear-right 0.6s forwards ease-out",
         "appear-zoom": "appear-zoom 0.6s forwards ease-out",
         "pulse-hover": "pulse-hover 6s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
