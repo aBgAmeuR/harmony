@@ -7,7 +7,7 @@ export const MusicItemCardStats = ({
   stat1,
   stat2,
 }: MusicItemCardStatsProps) => (
-  <div className="space-y-1 flex flex-col items-start">
+  <div className="space-y-1 flex-col items-start hidden @lg:flex">
     <p className="text-sm text-muted-foreground">{stat1}</p>
     <p className="text-sm text-muted-foreground">{stat2}</p>
   </div>

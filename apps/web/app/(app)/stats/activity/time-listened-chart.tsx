@@ -30,12 +30,13 @@ type Data = NonNullable<Awaited<ReturnType<typeof getMonthlyData>>>;
 
 type TimeListenedChartProps = {
   data: Data;
+  className?: string;
 };
 
 const chartConfig = {
   month: {
     label: "month",
-    color: "hsl(var(--chart-2))",
+    color: "hsl(var(--chart-1)) ",
   },
 } satisfies ChartConfig;
 
@@ -46,9 +47,12 @@ const calculatePercentageChange = (current: number, previous: number) => {
   return ((current - previous) / previous) * 100;
 };
 
-export function TimeListenedChart({ data: chartData }: TimeListenedChartProps) {
+export function TimeListenedChart({
+  data: chartData,
+  className,
+}: TimeListenedChartProps) {
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-5">
           <CardTitle>Time Listened Over Months</CardTitle>
@@ -99,9 +103,13 @@ export function TimeListenedChart({ data: chartData }: TimeListenedChartProps) {
   );
 }
 
-export const TimeListenedChartSkeleton = () => {
+export const TimeListenedChartSkeleton = ({
+  className,
+}: {
+  className?: string;
+}) => {
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-5">
           <CardTitle>Time Listened Over Months</CardTitle>
@@ -114,7 +122,7 @@ export const TimeListenedChartSkeleton = () => {
             Average time listened
           </span>
           <span className="text-lg font-bold leading-none sm:text-xl">
-            <Skeleton className="w-28 h-[30px]" />
+            <Skeleton className="py-px">101,46 hours</Skeleton>
           </span>
         </div>
       </CardHeader>

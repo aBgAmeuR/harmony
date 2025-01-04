@@ -57,4 +57,16 @@ export const musicListConfig = {
     showAction: false,
     showRank: false,
   },
+  dashboardTracks: {
+    action: getRankingTracks,
+    label: "tracks",
+    showAction: false,
+    showRank: true,
+  },
+  dashboardArtists: {
+    action: getRankingArtists,
+    label: "artists",
+    showAction: false,
+    showRank: true,
+  },
 } satisfies Config;

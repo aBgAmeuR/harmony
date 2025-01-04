@@ -7,7 +7,7 @@ import { MusicItemCardProps as Props } from "./type";
 
 export const MusicItemCard = ({ item, rank, showAction }: Props) => {
   return (
-    <article className="flex items-center space-x-2 py-4 sm:space-x-4">
+    <article className="flex items-center space-x-2 py-4 sm:space-x-4 @container">
       {rank && <Rank rank={rank} />}
       <Image src={item.image} alt={item.name} />
       <Content item={item} />

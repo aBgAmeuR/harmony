@@ -14,7 +14,12 @@ export function SidebarOptInForm() {
   const { open } = useSidebar();
 
   return (
-    <Card className={cn("p-2 overflow-hidden", !open && "hidden")}>
+    <Card
+      className={cn(
+        "p-2 overflow-hidden dark:bg-background",
+        !open && "hidden",
+      )}
+    >
       <CardHeader className="p-2">
         <CardTitle className="text-sm break-all line-clamp-2">
           You are in a demo

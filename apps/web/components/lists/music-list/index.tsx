@@ -10,9 +10,10 @@ import { MusicListError } from "./error";
 
 type MusicListProps = {
   type: keyof typeof musicListConfig;
+  listLength?: number;
 };
 
-export const MusicList = async ({ type }: MusicListProps) => {
+export const MusicList = async ({ type, listLength = 50 }: MusicListProps) => {
   const listConfig = musicListConfig[type];
   const session = await auth();
   const items = await listConfig.action(session?.user.id);
@@ -21,7 +22,7 @@ export const MusicList = async ({ type }: MusicListProps) => {
 
   return (
     <div className="flex flex-col">
-      {items.map((item, index: number) => (
+      {items.slice(0, listLength).map((item, index) => (
         <div
           key={`${item.id}-${index}-${listConfig.label}`}
           className="flex flex-col"
@@ -31,7 +32,7 @@ export const MusicList = async ({ type }: MusicListProps) => {
             rank={listConfig.showRank ? index + 1 : undefined}
             showAction={listConfig.showAction}
           />
-          {index < items.length - 1 && <Separator />}
+          {index < items.slice(0, listLength).length - 1 && <Separator />}
         </div>
       ))}
       {items.length === 0 && (
