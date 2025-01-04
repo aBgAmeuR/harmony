@@ -54,6 +54,7 @@ export const data = {
     {
       title: "Overview",
       url: "/overview",
+      anotherUrl: "/demo",
       icon: LayoutDashboard,
     },
     {

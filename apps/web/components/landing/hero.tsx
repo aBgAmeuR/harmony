@@ -1,8 +1,6 @@
-import React from "react";
-import { Badge } from "@repo/ui/badge";
-import { Button, buttonVariants } from "@repo/ui/button";
+import { buttonVariants } from "@repo/ui/button";
 import { cn } from "@repo/ui/lib/utils";
-import { ArrowRight, Github } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 import { GetDemoBtn } from "../get-demo-btn";

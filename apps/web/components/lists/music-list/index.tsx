@@ -11,13 +11,21 @@ import { MusicListError } from "./error";
 type MusicListProps = {
   type: keyof typeof musicListConfig;
   listLength?: number;
+  demoData?: Awaited<
+    ReturnType<(typeof musicListConfig.dashboardArtists)["action"]>
+  >;
 };
 
-export const MusicList = async ({ type, listLength = 50 }: MusicListProps) => {
+export const MusicList = async ({
+  type,
+  listLength = 50,
+  demoData: items,
+}: MusicListProps) => {
   const listConfig = musicListConfig[type];
-  const session = await auth();
-  const items = await listConfig.action(session?.user.id);
-
+  if (!items) {
+    const session = await auth();
+    items = await listConfig.action(session?.user.id);
+  }
   if (!items) return <MusicListError />;
 
   return (

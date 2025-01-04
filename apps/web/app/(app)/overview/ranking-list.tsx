@@ -11,6 +11,7 @@ import { ArrowRight } from "lucide-react";
 
 import { ListSkeleton } from "~/components/list-skeleton";
 import { MusicList } from "~/components/lists/music-list";
+import { musicListConfig } from "~/components/lists/music-list/config";
 
 const options = {
   dashboardArtists: {
@@ -28,9 +29,16 @@ const options = {
 type RankingListProps = {
   type: keyof typeof options;
   className?: string;
+  demoData?: Awaited<
+    ReturnType<(typeof musicListConfig.dashboardArtists)["action"]>
+  >;
 };
 
-export const RankingList = ({ type, className }: RankingListProps) => {
+export const RankingList = ({
+  type,
+  className,
+  demoData,
+}: RankingListProps) => {
   const { label, description, href } = options[type];
 
   return (
@@ -52,9 +60,9 @@ export const RankingList = ({ type, className }: RankingListProps) => {
           </a>
         </Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pb-2">
         <Suspense fallback={<ListSkeleton length={5} />}>
-          <MusicList type={type} listLength={5} />
+          <MusicList type={type} listLength={5} demoData={demoData} />
         </Suspense>
       </CardContent>
     </Card>
