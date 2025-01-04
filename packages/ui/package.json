@@ -18,6 +18,7 @@
     "postcss": "^8",
     "postcss-load-config": "^6",
     "tailwindcss": "^3.4.16",
+    "tailwindcss-motion": "^1.0.1",
     "typescript": "^5"
   },
   "dependencies": {

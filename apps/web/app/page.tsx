@@ -3,9 +3,11 @@ import { Button } from "@repo/ui/button";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import { Link } from "next-view-transitions";
 
-import { Footer } from "~/components/footer";
 import { GetDemoBtn } from "~/components/get-demo-btn";
 import { Icons } from "~/components/icons";
+import { Footer } from "~/components/landing/footer";
+import { Hero } from "~/components/landing/hero";
+import Navbar from "~/components/landing/navbar";
 import { ThemeToggle } from "~/components/theme-toggle";
 
 export default async function HomePage() {
@@ -13,7 +15,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex h-screen w-screen flex-col">
-      <main className="flex flex-1 flex-col items-center justify-center gap-6">
+      {/* <main className="flex flex-1 flex-col items-center justify-center gap-6">
         <div className="flex justify-center">
           {isMaintenance ? (
             <div className="inline-flex items-center gap-x-2 border text-sm p-1 pe-3 rounded-full transition">
@@ -77,9 +79,11 @@ export default async function HomePage() {
               </a>
             </Button>
           </div>
-          {!isMaintenance ? <GetDemoBtn /> : null}
+          {!isMaintenance ? <GetDemoBtn label="Get a demo of Harmony" /> : null}
         </div>
-      </main>
+      </main> */}
+      <Navbar />
+      <Hero />
       <Footer />
     </div>
   );

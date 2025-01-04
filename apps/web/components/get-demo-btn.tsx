@@ -2,10 +2,17 @@
 
 import { useTransition } from "react";
 import { signIn } from "@repo/auth/actions";
-import { Button } from "@repo/ui/button";
+import { Button, buttonVariants } from "@repo/ui/button";
+import { cn } from "@repo/ui/lib/utils";
+import { VariantProps } from "class-variance-authority";
 import { LoaderCircle } from "lucide-react";
 
-export const GetDemoBtn = () => {
+type GetDemoBtnProps = {
+  label: string;
+  className?: string;
+} & VariantProps<typeof buttonVariants>;
+
+export const GetDemoBtn = ({ label, ...props }: GetDemoBtnProps) => {
   const [isTransition, transition] = useTransition();
 
   const onClick = () => {
@@ -23,9 +30,10 @@ export const GetDemoBtn = () => {
     <Button
       onClick={onClick}
       variant="link"
-      className="p-0 text-spotifygreen"
+      className={cn("p-0 text-primary", props.className)}
       data-testid="get-demo-btn"
       disabled={isTransition}
+      {...props}
     >
       {isTransition ? (
         <LoaderCircle
@@ -35,7 +43,7 @@ export const GetDemoBtn = () => {
           aria-hidden="true"
         />
       ) : null}
-      Get a demo of Harmony
+      {label}
     </Button>
   );
 };
