@@ -4,7 +4,6 @@ import { Github } from "lucide-react";
 import Link from "next/link";
 
 import { GetDemoBtn } from "../get-demo-btn";
-// import Navigation from "@repo/ui/navigation";
 import { Icons } from "../icons";
 import { ThemeToggle } from "../theme-toggle";
 
@@ -32,7 +31,6 @@ export default function Navbar() {
               </Button>
               <ThemeToggle />
             </div>
-            {/* <Navigation /> */}
           </nav>
           <nav className="flex items-center gap-4 justify-end">
             <GetDemoBtn label="Get Demo" variant="link" />
