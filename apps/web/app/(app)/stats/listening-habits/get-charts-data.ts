@@ -106,7 +106,7 @@ export const getTopPlatforms = async (userId: string | undefined) => {
 
   return topPlatforms.map(([platform, msPlayed]) => ({
     platform,
-    msPlayed,
+    msPlayed: Number(msPlayed),
   }));
 };
 
