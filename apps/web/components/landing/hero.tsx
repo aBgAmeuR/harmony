@@ -1,5 +1,4 @@
 import { buttonVariants } from "@repo/ui/button";
-import { InteractiveGridPattern } from "@repo/ui/interactive-grid-pattern";
 import { cn } from "@repo/ui/lib/utils";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -19,7 +18,7 @@ export const Hero = () => {
 
   return (
     <PageHeader>
-      <InteractiveGridPattern
+      {/* <InteractiveGridPattern
         className={cn(
           "[mask-image:radial-gradient(800px_circle_at_center,rgba(255,255,255,0.8),transparent)]",
           "animate-appear-zoom opacity-0 delay-600",
@@ -29,15 +28,15 @@ export const Hero = () => {
         squares={[80, 80]}
         strokeDasharray={"4 2"}
         squaresClassName="hover:fill-chart-1"
-      />
+      /> */}
       <Announcement className="animate-appear z-10" />
-      {/* <div
+      <div
         aria-hidden="true"
         className="flex absolute -top-96 start-1/2 -translate-x-1/2"
       >
         <div className="bg-gradient-to-r from-background/50 to-background blur-3xl w-[25rem] h-[44rem] rotate-[-60deg] -translate-x-40" />
         <div className="bg-gradient-to-tl blur-3xl w-[90rem] h-[50rem] rounded-full origin-top-left -rotate-12 -translate-x-60 from-primary-foreground via-primary-foreground to-background" />
-      </div> */}
+      </div>
       <PageHeaderHeading className="animate-appear opacity-0 delay-100">
         Discover Your Listening Story
       </PageHeaderHeading>
