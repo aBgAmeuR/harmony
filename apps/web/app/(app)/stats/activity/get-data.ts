@@ -64,9 +64,9 @@ export const getMonthlyData = async (userId: string | undefined) => {
   return {
     data: Object.entries(data).map(([key, value]) => ({
       month: key,
-      value,
+      value: Number(value),
     })),
-    average: Math.round(average) || 0,
+    average: Number(Math.round(average)) || 0,
   };
 };
 
