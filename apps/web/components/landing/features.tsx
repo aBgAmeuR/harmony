@@ -1,4 +1,5 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@repo/ui/card";
+import { cn } from "@repo/ui/lib/utils";
 import { BarChart2, Calendar, Music } from "lucide-react";
 
 import { ThemeImage } from "../theme-image";
@@ -19,6 +20,7 @@ const features = [
         className="w-full"
       />
     ),
+    delay: "delay-300",
   },
   {
     title: "Listening History",
@@ -35,6 +37,7 @@ const features = [
         className="w-full"
       />
     ),
+    delay: "delay-700",
   },
   {
     title: "Advanced Statistics",
@@ -51,19 +54,27 @@ const features = [
         className="w-full"
       />
     ),
+    delay: "delay-600",
   },
-];
+] as const;
 
 export function Features() {
   return (
-    <section className="py-20 md:py-32 px-4">
+    <section className="py-12 sm:py-16 md:py-20 px-4">
       <div className="max-w-screen-xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-12 animate-appear opacity-0 delay-200">
           Discover Harmony's Features
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
           {features.map((feature, index) => (
-            <Card key={index} className="flex flex-col overflow-hidden w-full">
+            <Card
+              key={index}
+              className={cn(
+                "flex flex-col overflow-hidden w-full",
+                feature.delay,
+                "animate-appear opacity-0",
+              )}
+            >
               <CardHeader className="pb-1">
                 <feature.icon className="size-4" strokeWidth={1} />
               </CardHeader>

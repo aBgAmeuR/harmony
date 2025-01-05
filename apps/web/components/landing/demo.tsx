@@ -144,7 +144,7 @@ const user = {
 
 export const Demo = () => {
   return (
-    <div className="w-full px-4 hidden md:block animate-appear-zoom opacity-0 delay-400">
+    <section className="w-full px-4 hidden md:block pb-12 sm:pb-16 md:pb-20 animate-appear-zoom opacity-0 delay-400">
       <div className="relative mx-auto max-w-screen-xl aspect-video border rounded-lg overflow-hidden">
         <Suspense fallback={<Skeleton className="size-full" />}>
           <SidebarProvider
@@ -184,6 +184,6 @@ export const Demo = () => {
           </SidebarProvider>
         </Suspense>
       </div>
-    </div>
+    </section>
   );
 };
