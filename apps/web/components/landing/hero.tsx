@@ -32,10 +32,10 @@ export const Hero = () => {
       <Announcement className="animate-appear z-10" />
       <div
         aria-hidden="true"
-        className="flex absolute -top-96 start-1/2 -translate-x-1/2"
+        className="flex absolute -top-96 start-1/2 -translate-x-1/2 overflow-hidden max-w-full"
       >
-        <div className="bg-gradient-to-r from-background/50 to-background blur-3xl w-[25rem] h-[44rem] rotate-[-60deg] -translate-x-40" />
-        <div className="bg-gradient-to-tl blur-3xl w-[90rem] h-[50rem] rounded-full origin-top-left -rotate-12 -translate-x-60 from-primary-foreground via-primary-foreground to-background" />
+        <div className="bg-gradient-to-r from-background/50 to-background blur-3xl w-[25rem] h-[44rem] rotate-[-60deg] -translate-x-40 max-w-full" />
+        <div className="bg-gradient-to-tl blur-3xl w-[90rem] h-[50rem] rounded-full origin-top-left -rotate-12 -translate-x-60 from-primary-foreground via-primary-foreground to-background max-w-full" />
       </div>
       <PageHeaderHeading className="animate-appear opacity-0 delay-100">
         Discover Your Listening Story

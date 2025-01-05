@@ -1,4 +1,5 @@
 import { Demo } from "~/components/landing/demo";
+import { Features } from "~/components/landing/features";
 import { Footer } from "~/components/landing/footer";
 import { Hero } from "~/components/landing/hero";
 import Navbar from "~/components/landing/navbar";
@@ -6,7 +7,15 @@ import Navbar from "~/components/landing/navbar";
 export default async function HomePage() {
   return (
     <div className="flex h-screen w-screen flex-col">
-      {/* <main className="flex flex-1 flex-col items-center justify-center gap-6">
+      <Navbar />
+      <Hero />
+      <Demo />
+      <Features />
+      <Footer />
+    </div>
+  );
+
+  /* <main className="flex flex-1 flex-col items-center justify-center gap-6">
         <div className="flex justify-center">
           {isMaintenance ? (
             <div className="inline-flex items-center gap-x-2 border text-sm p-1 pe-3 rounded-full transition">
@@ -72,11 +81,5 @@ export default async function HomePage() {
           </div>
           {!isMaintenance ? <GetDemoBtn label="Get a demo of Harmony" /> : null}
         </div>
-      </main> */}
-      <Navbar />
-      <Hero />
-      <Demo />
-      <Footer />
-    </div>
-  );
+      </main> */
 }
