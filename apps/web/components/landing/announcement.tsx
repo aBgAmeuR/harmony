@@ -1,6 +1,6 @@
 import { cn } from "@repo/ui/lib/utils";
 import { Separator } from "@repo/ui/separator";
-import { ArrowRightIcon, LayoutDashboard } from "lucide-react";
+import { ArrowRightIcon, LayoutDashboard, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 
 type AnnouncementProps = {
@@ -8,6 +8,27 @@ type AnnouncementProps = {
 };
 
 export function Announcement({ className }: AnnouncementProps) {
+  const isMaintenance = process.env.APP_MAINTENANCE === "true";
+
+  if (isMaintenance) {
+    return (
+      <div
+        className={cn(
+          "inline-flex gap-2 rounded-lg bg-muted px-3 py-1 text-sm font-medium",
+          className,
+        )}
+      >
+        <TriangleAlert
+          className="mt-0.5 shrink-0 opacity-60 text-red-400 dark:text-red-600"
+          size={16}
+          strokeWidth={2}
+          aria-hidden="true"
+        />
+        <span>Maintenance in progress. Please check back later.</span>
+      </div>
+    );
+  }
+
   return (
     <Link
       href="/overview"

@@ -4,8 +4,8 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 import { GetDemoBtn } from "../get-demo-btn";
-import { Icons } from "../icons";
 import { Announcement } from "./announcement";
+import { GetStartedBtn } from "./get-started-btn";
 import {
   PageActions,
   PageHeader,
@@ -47,15 +47,7 @@ export const Hero = () => {
       </PageHeaderDescription>
       <PageActions className="flex-col animate-appear opacity-0 delay-300">
         <div className="flex items-center justify-center space-x-4">
-          <Link
-            href="/overview"
-            className={cn(buttonVariants())}
-            aria-label="Get Started"
-            data-testid="get-started-btn"
-          >
-            <Icons.spotify />
-            Get Started
-          </Link>
+          <GetStartedBtn>Get Started</GetStartedBtn>
           <Link
             target="\_blank"
             rel="noreferrer"

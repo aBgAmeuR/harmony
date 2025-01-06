@@ -1,13 +1,12 @@
 import Balancer from "react-wrap-balancer";
-import { buttonVariants } from "@repo/ui/button";
 import { Card, CardContent, CardFooter } from "@repo/ui/card";
-import { cn } from "@repo/ui/lib/utils";
-import Link from "next/link";
 
 import { GetDemoBtn } from "../get-demo-btn";
-import { Icons } from "../icons";
+import { GetStartedBtn } from "./get-started-btn";
 
 export const CTASection = () => {
+  const isMaintenance = process.env.APP_MAINTENANCE === "true";
+
   return (
     <section className="py-12 sm:py-16 md:py-20 px-4 animate-appear opacity-0 delay-1000">
       <Card className="max-w-screen-xl mx-auto p-8 lg:p-16">
@@ -24,16 +23,14 @@ export const CTASection = () => {
           </h3>
         </CardContent>
         <CardFooter className="flex justify-center pb-0">
-          <Link
-            href="/overview"
-            className={cn(buttonVariants({ size: "lg" }))}
-            aria-label="Get Started"
-            data-testid="get-started-btn"
-          >
-            <Icons.spotify />
-            Get Started for Free
-          </Link>
-          <GetDemoBtn label="Get a demo ->" className="w-fit" variant="link" />
+          <GetStartedBtn size="lg">Get Started for Free</GetStartedBtn>
+          {!isMaintenance ? (
+            <GetDemoBtn
+              label="Get a demo ->"
+              className="w-fit"
+              variant="link"
+            />
+          ) : null}
         </CardFooter>
       </Card>
     </section>

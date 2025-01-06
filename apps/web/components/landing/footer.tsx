@@ -3,10 +3,12 @@ import { Github } from "lucide-react";
 import Link from "next/link";
 
 import { GetDemoBtn } from "../get-demo-btn";
-import { Icons } from "../icons";
 import { ThemeToggle } from "../theme-toggle";
+import { GetStartedBtn } from "./get-started-btn";
 
 export const Footer = () => {
+  const isMaintenance = process.env.APP_MAINTENANCE === "true";
+
   return (
     <footer className="w-full bg-background px-4 pt-4">
       <div className="mx-auto max-w-screen-xl">
@@ -17,27 +19,20 @@ export const Footer = () => {
               <Button variant="link" className="p-0" asChild>
                 <a href="https://github.com/aBgAmeuR">@aBgAmeuR</a>
               </Button>{" "}
-              - <span className="text-muted-foreground">v2.2</span>
+              - <span className="text-muted-foreground">v2.3</span>
             </p>
             <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                aria-label="Get Started"
-                data-testid="get-started-btn"
-                asChild
-              >
-                <Link href="/overview">
-                  <Icons.spotify />
-                  Get Started
-                </Link>
-              </Button>
-              <GetDemoBtn
-                label="Get Demo"
-                variant="ghost"
-                size="sm"
-                className="px-3"
-              />
+              <GetStartedBtn variant="ghost" size="sm">
+                Get Started
+              </GetStartedBtn>
+              {!isMaintenance ? (
+                <GetDemoBtn
+                  label="Get Demo"
+                  variant="ghost"
+                  size="sm"
+                  className="px-3"
+                />
+              ) : null}
               <p className="mx-2">|</p>
               <Button
                 variant="ghost"
@@ -45,9 +40,12 @@ export const Footer = () => {
                 aria-label="View on Github"
                 asChild
               >
-                <a href="https://github.com/aBgAmeuR/Harmony" target="_blank">
+                <Link
+                  href="https://github.com/aBgAmeuR/Harmony"
+                  target="_blank"
+                >
                   <Github />
-                </a>
+                </Link>
               </Button>
               <ThemeToggle />
             </div>
