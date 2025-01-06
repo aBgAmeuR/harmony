@@ -1,6 +1,14 @@
 import { Suspense } from "react";
+import { Button } from "@repo/ui/button";
 import { SidebarInset, SidebarProvider } from "@repo/ui/sidebar";
 import { Skeleton } from "@repo/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@repo/ui/tooltip";
+import { CalendarIcon } from "lucide-react";
 
 import { ListeningPatternChart } from "~/app/(app)/overview/listening-pattern-chart";
 import { RankingList } from "~/app/(app)/overview/ranking-list";
@@ -8,7 +16,6 @@ import { TopStatsCards } from "~/app/(app)/overview/top-stats-cards";
 import { TimeListenedChart } from "~/app/(app)/stats/activity/time-listened-chart";
 import { AppHeader } from "~/components/app-header";
 import { AppSidebar } from "~/components/navbar/app-sidebar";
-import { SelectMonthRange } from "~/components/select-month-range";
 
 const data = {
   topStats: {
@@ -154,8 +161,29 @@ export const Demo = () => {
             <AppSidebar className="absolute h-full" disable user={user} />
             <SidebarInset className="min-h-full overflow-y-scroll">
               <main>
-                <AppHeader items={["Package", "Overview"]}>
-                  <SelectMonthRange />
+                <AppHeader items={["Package", "Overview"]} demo={false}>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger className="cursor-not-allowed" asChild>
+                        <span tabIndex={0}>
+                          <Button
+                            variant={"outline"}
+                            className="w-[220px] justify-start text-left font-normal"
+                            disabled
+                          >
+                            <CalendarIcon className="mr-2 size-4" />
+                            Jan 2024 - Oct 2024
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="bottom"
+                        className="px-2 py-1 text-xs"
+                      >
+                        This feature is disabled in demo mode
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </AppHeader>
                 <div className="flex flex-1 flex-col gap-4 p-4 pt-2 max-w-screen-2xl w-full mx-auto">
                   <TopStatsCards demoData={data.topStats} />
