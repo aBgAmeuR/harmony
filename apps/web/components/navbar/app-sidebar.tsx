@@ -25,9 +25,14 @@ import { SidebarOptInForm } from "./sidebar-opt-in-form";
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   user?: User;
+  disable?: boolean;
 };
 
-export function AppSidebar({ user, ...props }: AppSidebarProps) {
+export function AppSidebar({
+  user,
+  disable = false,
+  ...props
+}: AppSidebarProps) {
   const hasPackage = user?.hasPackage || false;
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -35,10 +40,12 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
         <NavHeader {...data.header} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.stats} label="Stats" />
-        {hasPackage ? <NavMain items={data.package} label="Package" /> : null}
-        {/* {hasPackage ? <NavMain items={data.advanced} label="Advanced" /> : null} */}
-        <NavMain items={data.settings} label="Settings" />
+        <NavMain items={data.stats} label="Stats" disable={disable} />
+        {hasPackage || disable ? (
+          <NavMain items={data.package} label="Package" disable={disable} />
+        ) : null}
+        {/* {hasPackage ? <NavMain items={data.advanced} label="Advanced" disable={disable} /> : null} */}
+        <NavMain items={data.settings} label="Settings" disable={disable} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
@@ -54,7 +61,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
-                <Skeleton className="size-8 rounded-lg" />
+                <Skeleton className="size-8 min-w-8 min-h-8 rounded-lg" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <Skeleton className="h-[17.5] w-1/2" />
                 </div>

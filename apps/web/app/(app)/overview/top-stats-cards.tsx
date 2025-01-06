@@ -8,10 +8,16 @@ import { getOverviewCardsData } from "~/services/stats-cards/get-overview-cards-
 
 const msToHours = (ms: number) => ms / 1000 / 60 / 60;
 
-export const TopStatsCards = async () => {
-  const session = await auth();
-  const data = await getOverviewCardsData(session?.user.id);
-  if (!data) return null;
+type TopStatsCardsProps = {
+  demoData?: Awaited<ReturnType<typeof getOverviewCardsData>>;
+};
+
+export const TopStatsCards = async ({ demoData: data }: TopStatsCardsProps) => {
+  if (!data) {
+    const session = await auth();
+    data = await getOverviewCardsData(session?.user.id);
+    if (!data) return null;
+  }
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

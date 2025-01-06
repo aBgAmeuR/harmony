@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import React, { PropsWithChildren, Suspense } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,9 +13,10 @@ import { DemoBadge } from "./demo-badge";
 
 type AppHeaderProps = PropsWithChildren<{
   items: string[];
+  demo?: boolean;
 }>;
 
-export const AppHeader = ({ items, children }: AppHeaderProps) => {
+export const AppHeader = ({ items, demo = true, children }: AppHeaderProps) => {
   return (
     <header className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
       <div className="flex items-center gap-2 ">
@@ -40,7 +41,11 @@ export const AppHeader = ({ items, children }: AppHeaderProps) => {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <DemoBadge />
+        {demo && (
+          <Suspense fallback={null}>
+            <DemoBadge />
+          </Suspense>
+        )}
       </div>
       <div className="flex items-center gap-2">{children}</div>
     </header>

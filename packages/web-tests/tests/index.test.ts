@@ -5,7 +5,7 @@ test("homepage has a h1", async ({ page }) => {
 
   const h1 = await page.waitForSelector("h1");
 
-  expect(await h1.textContent()).toBe("Harmony");
+  expect(await h1.textContent()).toBe("Discover Your Listening Story");
 });
 
 test('when maintenance: btn is disabled or enabled', async ({ page }) => {

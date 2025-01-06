@@ -18,13 +18,22 @@ export const SelectMonthRange = () => {
   const isMounted = useMounted();
   const { isDemo, minMaxDateRange, monthRange, isError, mutate } =
     useSelectMonthRange();
+  let selectedMonthRange = null;
 
-  if (!isMounted || isError || !minMaxDateRange || !monthRange) return null;
-
-  const selectedMonthRange = {
-    start: monthRange.dateStart,
-    end: monthRange.dateEnd,
-  };
+  if (isDemo && !monthRange && !minMaxDateRange && !isError) {
+    const date = new Date("2023-12-31T23:00:00.000Z");
+    selectedMonthRange = {
+      start: date,
+      end: new Date(),
+    };
+  } else if (!isMounted || isError || !minMaxDateRange || !monthRange) {
+    return null;
+  } else {
+    selectedMonthRange = {
+      start: monthRange.dateStart,
+      end: monthRange.dateEnd,
+    };
+  }
 
   if (isDemo) {
     const buttonLabel = selectedMonthRange
@@ -60,8 +69,8 @@ export const SelectMonthRange = () => {
     <MonthRangePicker
       selectedMonthRange={selectedMonthRange}
       onMonthRangeSelect={mutate}
-      minDate={minMaxDateRange.minDate}
-      maxDate={minMaxDateRange.maxDate}
+      minDate={minMaxDateRange?.minDate}
+      maxDate={minMaxDateRange?.maxDate}
     />
   );
 };

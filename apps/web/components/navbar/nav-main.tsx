@@ -22,23 +22,26 @@ import { PrefetchKind } from "next/dist/client/components/router-reducer/router-
 import { usePathname, useRouter } from "next/navigation";
 import { Link } from "next-view-transitions";
 
-export function NavMain({
-  label,
-  items,
-}: {
-  label: string;
-  items: {
+type Item = {
+  title: string;
+  url: string;
+  anotherUrl?: string;
+  icon?: LucideIcon;
+  isActive?: boolean;
+  items?: {
     title: string;
     url: string;
     icon?: LucideIcon;
-    isActive?: boolean;
-    items?: {
-      title: string;
-      url: string;
-      icon?: LucideIcon;
-    }[];
   }[];
-}) {
+};
+
+type NavMainProps = {
+  label: string;
+  items: Item[];
+  disable?: boolean;
+};
+
+export function NavMain({ label, items, disable }: NavMainProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { open, isMobile } = useSidebar();
@@ -81,17 +84,24 @@ export function NavMain({
                               size="sm"
                               className="group-data-[collapsible=icon]:!size-auto"
                             >
-                              <Link
-                                href={subItem.url}
-                                onMouseEnter={() => {
-                                  router.prefetch(item.url, {
-                                    kind: PrefetchKind.FULL,
-                                  });
-                                }}
-                              >
-                                {subItem.icon && <subItem.icon />}
-                                <span>{subItem.title}</span>
-                              </Link>
+                              {!disable ? (
+                                <Link
+                                  href={subItem.url}
+                                  onMouseEnter={() => {
+                                    router.prefetch(item.url, {
+                                      kind: PrefetchKind.FULL,
+                                    });
+                                  }}
+                                >
+                                  {subItem.icon && <subItem.icon />}
+                                  <span>{subItem.title}</span>
+                                </Link>
+                              ) : (
+                                <div>
+                                  {subItem.icon && <subItem.icon />}
+                                  <span>{subItem.title}</span>
+                                </div>
+                              )}
                             </SidebarMenuButton>
                           ))}
                         </>
@@ -108,22 +118,31 @@ export function NavMain({
                 <SidebarMenuButton
                   tooltip={item.title}
                   asChild
-                  isActive={item.url === pathname}
+                  isActive={
+                    item.url === pathname || item.anotherUrl === pathname
+                  }
                 >
-                  <a
-                    onMouseEnter={() => {
-                      router.prefetch(item.url, {
-                        kind: PrefetchKind.FULL,
-                      });
-                    }}
-                    onClick={() => {
-                      router.push(item.url);
-                    }}
-                    className="cursor-pointer"
-                  >
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
-                  </a>
+                  {!disable ? (
+                    <a
+                      onMouseEnter={() => {
+                        router.prefetch(item.url, {
+                          kind: PrefetchKind.FULL,
+                        });
+                      }}
+                      onClick={() => {
+                        router.push(item.url);
+                      }}
+                      className="cursor-pointer"
+                    >
+                      {item.icon && <item.icon />}
+                      <span>{item.title}</span>
+                    </a>
+                  ) : (
+                    <div>
+                      {item.icon && <item.icon />}
+                      <span>{item.title}</span>
+                    </div>
+                  )}
                 </SidebarMenuButton>
               )}
               <CollapsibleContent>
@@ -134,20 +153,27 @@ export function NavMain({
                         asChild
                         isActive={pathname === subItem.url}
                       >
-                        <a
-                          onMouseEnter={() => {
-                            router.prefetch(subItem.url, {
-                              kind: PrefetchKind.FULL,
-                            });
-                          }}
-                          onClick={() => {
-                            router.push(subItem.url);
-                          }}
-                          className="cursor-pointer"
-                        >
-                          {subItem.icon && <subItem.icon />}
-                          <span>{subItem.title}</span>
-                        </a>
+                        {!disable ? (
+                          <a
+                            onMouseEnter={() => {
+                              router.prefetch(subItem.url, {
+                                kind: PrefetchKind.FULL,
+                              });
+                            }}
+                            onClick={() => {
+                              router.push(subItem.url);
+                            }}
+                            className="cursor-pointer"
+                          >
+                            {subItem.icon && <subItem.icon />}
+                            <span>{subItem.title}</span>
+                          </a>
+                        ) : (
+                          <div>
+                            {subItem.icon && <subItem.icon />}
+                            <span>{subItem.title}</span>
+                          </div>
+                        )}
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   ))}

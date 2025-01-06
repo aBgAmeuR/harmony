@@ -18,10 +18,12 @@
     "postcss": "^8",
     "postcss-load-config": "^6",
     "tailwindcss": "^3.4.16",
+    "tailwindcss-motion": "^1.0.1",
     "typescript": "^5"
   },
   "dependencies": {
     "@number-flow/react": "^0.4.2",
+    "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-collapsible": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.2",
