@@ -11,7 +11,6 @@ import {
 import { ChartConfig, ChartContainer, ChartTooltip } from "@repo/ui/chart";
 import { NumberFlow } from "@repo/ui/number";
 import { Skeleton } from "@repo/ui/skeleton";
-import { format } from "date-fns";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import {
   Bar,
@@ -155,9 +154,7 @@ const CustomTooltip = ({ payload, chartData }: CustomTooltipProps) => {
 
   return (
     <div className="flex flex-col gap-1 p-2 bg-background shadow-lg rounded-md">
-      <div className="font-medium">
-        {format(new Date(currentData.month), "MMMM yyyy")}
-      </div>
+      <div className="font-medium">{currentData.month}</div>
       <div className="flex items-center gap-1">
         <div
           className="size-2.5 shrink-0 rounded-[2px] bg-[--color-bg]"
