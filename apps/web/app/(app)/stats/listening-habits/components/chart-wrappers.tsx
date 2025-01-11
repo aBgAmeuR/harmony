@@ -1,5 +1,7 @@
 import { auth } from "@repo/auth";
 
+import { isDemo } from "~/lib/utils-server";
+
 import { DaysHabitChart } from "../days-habit-chart";
 import {
   getDaysHabit,
@@ -15,12 +17,13 @@ import { TopPlatformChart } from "../top-platform-chart";
 
 const createChartWrapper = <T,>(
   // eslint-disable-next-line no-unused-vars
-  fetchAction: (userId: string | undefined) => Promise<T>,
+  fetchAction: (userId: string | undefined, isDemo: boolean) => Promise<T>,
   ChartComponent: React.ComponentType<{ data: T }>,
 ) => {
   return async () => {
     const session = await auth();
-    const data = await fetchAction(session?.user?.id);
+    const data = await fetchAction(session?.user?.id, isDemo(session));
+
     return <ChartComponent data={data} />;
   };
 };

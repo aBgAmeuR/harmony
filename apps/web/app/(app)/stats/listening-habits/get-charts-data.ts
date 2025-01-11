@@ -2,12 +2,15 @@
 
 import { prisma } from "@repo/database";
 
-import { getMonthRangeAction } from "~/actions/month-range-actions";
+import { getMonthRange } from "~/lib/utils-server";
 
-export const getShuffleHabit = async (userId: string | undefined) => {
+export const getShuffleHabit = async (
+  userId: string | undefined,
+  isDemo: boolean,
+) => {
   if (!userId) return null;
 
-  const monthRange = await getMonthRangeAction();
+  const monthRange = await getMonthRange(userId, isDemo);
   if (!monthRange) return null;
 
   const shuffles = await prisma.track.groupBy({
@@ -33,10 +36,13 @@ export const getShuffleHabit = async (userId: string | undefined) => {
   ];
 };
 
-export const getSkippedHabit = async (userId: string | undefined) => {
+export const getSkippedHabit = async (
+  userId: string | undefined,
+  isDemo: boolean,
+) => {
   if (!userId) return null;
 
-  const monthRange = await getMonthRangeAction();
+  const monthRange = await getMonthRange(userId, isDemo);
   if (!monthRange) return null;
 
   const skippeds = await prisma.track.groupBy({
@@ -62,65 +68,77 @@ export const getSkippedHabit = async (userId: string | undefined) => {
   ];
 };
 
-export const getTopPlatforms = async (userId: string | undefined) => {
+export const getTopPlatforms = async (
+  userId: string | undefined,
+  isDemo: boolean,
+) => {
   const TOP_PLATFORMS_LIMIT = 4 as const;
-  const PLATFORMS = ["windows", "mac", "linux", "android", "ios"] as const;
 
   if (!userId) return null;
 
-  const monthRange = await getMonthRangeAction();
+  const monthRange = await getMonthRange(userId, isDemo);
   if (!monthRange) return null;
 
-  const tracks = await getTracks(
-    userId,
-    monthRange.dateStart,
-    monthRange.dateEnd,
-  );
+  const data: { platform: string; msPlayed: bigint }[] = await prisma.$queryRaw`
+    WITH platform_data AS (
+      SELECT
+        CASE
+          WHEN LOWER(TRIM(platform)) LIKE '%windows%' THEN 'windows'
+          WHEN LOWER(TRIM(platform)) LIKE '%mac%' THEN 'mac'
+          WHEN LOWER(TRIM(platform)) LIKE '%linux%' THEN 'linux'
+          WHEN LOWER(TRIM(platform)) LIKE '%android%' THEN 'android'
+          WHEN LOWER(TRIM(platform)) LIKE '%ios%' THEN 'ios'
+          ELSE 'Other'
+        END AS platform,
+        SUM("msPlayed") AS "msPlayed"
+      FROM "Track"
+      WHERE "userId" = ${userId}
+        AND timestamp BETWEEN ${monthRange.dateStart} AND ${monthRange.dateEnd}
+      GROUP BY platform
+    )
+    SELECT platform, SUM("msPlayed") AS "msPlayed"
+    FROM platform_data
+    GROUP BY platform
+    ORDER BY "msPlayed" DESC
+    LIMIT ${TOP_PLATFORMS_LIMIT + 1}
+  `;
 
-  if (!tracks.length) return [{ platform: "Other", msPlayed: 1 }];
+  if (!data.length) return [{ platform: "Other", msPlayed: 1 }];
 
-  const platforms = new Map<string, number>();
+  const topPlatforms = data.slice(0, TOP_PLATFORMS_LIMIT);
+  const otherMsPlayed = data
+    .slice(TOP_PLATFORMS_LIMIT)
+    .reduce((acc, { msPlayed }) => acc + Number(msPlayed), 0);
 
-  tracks.forEach((track) => {
-    const trackPlatform = track.platform.trim().toLowerCase();
-    const platform =
-      PLATFORMS.find((platform) => trackPlatform.includes(platform)) || "Other";
-    const currentMsPlayed = platforms.get(platform) ?? 0;
-    platforms.set(platform, currentMsPlayed + Number(track.msPlayed));
-  });
-
-  const topPlatforms = Array.from(platforms.entries()).sort(
-    ([, a], [, b]) => b - a,
-  );
-
-  if (topPlatforms.length > TOP_PLATFORMS_LIMIT) {
-    const otherMsPlayed = topPlatforms
-      .slice(TOP_PLATFORMS_LIMIT)
-      .reduce((acc, [, msPlayed]) => acc + msPlayed, 0);
-    topPlatforms.splice(
-      TOP_PLATFORMS_LIMIT,
-      topPlatforms.length - TOP_PLATFORMS_LIMIT,
-      ["Other", otherMsPlayed],
-    );
+  if (otherMsPlayed > 0) {
+    topPlatforms.push({ platform: "Other", msPlayed: BigInt(otherMsPlayed) });
   }
 
-  return topPlatforms.map(([platform, msPlayed]) => ({
+  return topPlatforms.map(({ platform, msPlayed }) => ({
     platform,
     msPlayed: Number(msPlayed),
   }));
 };
 
-export const getHoursHabit = async (userId: string | undefined) => {
+export const getHoursHabit = async (
+  userId: string | undefined,
+  isDemo: boolean,
+) => {
   if (!userId) return null;
 
-  const monthRange = await getMonthRangeAction();
+  const monthRange = await getMonthRange(userId, isDemo);
   if (!monthRange) return null;
 
-  const tracks = await getTracks(
-    userId,
-    monthRange.dateStart,
-    monthRange.dateEnd,
-  );
+  const data: { hour: bigint; time: bigint }[] = await prisma.$queryRaw`
+    SELECT
+      EXTRACT(HOUR FROM timestamp) AS hour,
+      SUM("msPlayed") AS time
+    FROM "Track"
+    WHERE "userId" = ${userId}
+      AND timestamp BETWEEN ${monthRange.dateStart} AND ${monthRange.dateEnd}
+    GROUP BY hour
+    ORDER BY hour ASC
+  `;
 
   const listeningHabits = Array.from({ length: 24 }, (_, i) => {
     return {
@@ -129,82 +147,49 @@ export const getHoursHabit = async (userId: string | undefined) => {
     };
   });
 
-  tracks.forEach((track) => {
-    const hour = new Date(track.timestamp).getHours();
-    listeningHabits[hour].msPlayed += Number(track.msPlayed);
+  return listeningHabits.map((habit) => {
+    const dataItem = data.find((d) => Number(d.hour) === habit.hour);
+    return {
+      hour: habit.hour,
+      msPlayed: dataItem ? Number(dataItem.time) : 0,
+    };
   });
-
-  return listeningHabits;
 };
 
-export const getDaysHabit = async (userId: string | undefined) => {
+export const getDaysHabit = async (
+  userId: string | undefined,
+  isDemo: boolean,
+) => {
   if (!userId) return null;
 
-  const monthRange = await getMonthRangeAction();
+  const monthRange = await getMonthRange(userId, isDemo);
   if (!monthRange) return null;
 
-  const tracks = await getTracks(
-    userId,
-    monthRange.dateStart,
-    monthRange.dateEnd,
-  );
+  const data: { day: bigint; time: bigint }[] = await prisma.$queryRaw`
+    SELECT
+      EXTRACT(DOW FROM timestamp) AS day,
+      SUM("msPlayed") AS time
+    FROM "Track"
+    WHERE "userId" = ${userId}
+      AND timestamp BETWEEN ${monthRange.dateStart} AND ${monthRange.dateEnd}
+    GROUP BY day
+  `;
 
-  const listeningHabits = {
-    Monday: 0,
-    Tuesday: 0,
-    Wednesday: 0,
-    Thursday: 0,
-    Friday: 0,
-    Saturday: 0,
-    Sunday: 0,
-  };
+  const daysOfWeek = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
 
-  tracks.forEach((track) => {
-    const day = new Date(track.timestamp).getDay();
-    switch (day) {
-      case 0:
-        listeningHabits.Sunday += Number(track.msPlayed);
-        break;
-      case 1:
-        listeningHabits.Monday += Number(track.msPlayed);
-        break;
-      case 2:
-        listeningHabits.Tuesday += Number(track.msPlayed);
-        break;
-      case 3:
-        listeningHabits.Wednesday += Number(track.msPlayed);
-        break;
-      case 4:
-        listeningHabits.Thursday += Number(track.msPlayed);
-        break;
-      case 5:
-        listeningHabits.Friday += Number(track.msPlayed);
-        break;
-      case 6:
-        listeningHabits.Saturday += Number(track.msPlayed);
-        break;
-    }
-  });
-
-  return Object.entries(listeningHabits).map(([day, msPlayed]) => ({
-    day,
-    msPlayed,
-  }));
-};
-
-const getTracks = async (userId: string, dateStart: Date, dateEnd: Date) => {
-  return prisma.track.findMany({
-    where: {
-      userId,
-      timestamp: {
-        gte: dateStart,
-        lt: dateEnd,
-      },
-    },
-    select: {
-      timestamp: true,
-      msPlayed: true,
-      platform: true,
-    },
+  return daysOfWeek.map((day, index) => {
+    const dataItem = data.find((d) => Number(d.day) === index);
+    return {
+      day,
+      msPlayed: dataItem ? Number(dataItem.time) : 0,
+    };
   });
 };
