@@ -22,13 +22,8 @@ const createChartWrapper = <T,>(
 ) => {
   return async () => {
     const session = await auth();
-    const d = performance.now();
     const data = await fetchAction(session?.user?.id, isDemo(session));
-    console.log(
-      "fetchAction",
-      fetchAction.name,
-      Math.floor(performance.now() - d) + "ms",
-    );
+
     return <ChartComponent data={data} />;
   };
 };
