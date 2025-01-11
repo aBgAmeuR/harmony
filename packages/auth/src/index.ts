@@ -1,5 +1,5 @@
 import { handlers, signIn, signOut, auth } from "./auth";
-import NextAuth from "next-auth";
+import NextAuth, { type Session, type User } from "next-auth";
 
 import authConfig from "./auth.config";
 
@@ -26,4 +26,4 @@ const middleware = NextAuth(authConfig).auth(async (req) => {
   }
 });
 
-export { handlers, signIn, signOut, auth, middleware };
+export { handlers, signIn, signOut, auth, middleware, Session, User };
