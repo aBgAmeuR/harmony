@@ -5,7 +5,9 @@ import { spotify } from "@repo/spotify";
 import { Track as SpotifyTrack } from "@repo/spotify/types";
 import { format } from "light-date";
 
-import { getMonthRangeAction } from "./month-range-actions";
+import { getMonthRange } from "~/lib/utils-server";
+
+type MonthRange = NonNullable<Awaited<ReturnType<typeof getMonthRange>>>;
 
 const getTracks = async (userId: string, minDate: Date, maxDate: Date) =>
   prisma.track.findMany({
@@ -31,11 +33,16 @@ type DayStats = {
 
 type Track = Awaited<ReturnType<typeof getTracks>>[number];
 
-export const getNumbersStats = async (userId: string | undefined) => {
+export const getNumbersStats = async (
+  userId: string | undefined,
+  isDemo: boolean,
+) => {
   if (!userId) return null;
 
-  const monthRange = await getMonthRangeAction();
+  const monthRange = await getMonthRange(userId, isDemo);
   if (!monthRange) return null;
+
+  console.log(await queryNumbersStats(userId, monthRange));
 
   const tracks = await getTracks(
     userId,
@@ -207,4 +214,25 @@ const formatResponse = (
       href: mostFwdbtnTrackDetails?.external_urls.spotify,
     },
   };
+};
+
+const queryNumbersStats = (userId: string, monthRange: MonthRange) => {
+  return prisma.$queryRaw`
+    SELECT
+      COALESCE(SUM("msPlayed"), 0) as total_listening_time,
+      COUNT(*) as total_tracks,
+      COUNT(DISTINCT "spotifyId") as unique_tracks,
+      COUNT(DISTINCT artist_id) as different_artists,
+      COUNT(*) FILTER (WHERE offline = false) as online_tracks
+    FROM "Track",
+    LATERAL UNNEST("artistIds") as artist_id
+    WHERE "userId" = ${userId}
+    AND timestamp BETWEEN ${monthRange.dateStart} AND ${monthRange.dateEnd}
+  ` as Promise<{
+    total_listening_time: bigint;
+    total_tracks: number;
+    unique_tracks: number;
+    different_artists: number;
+    online_tracks: number;
+  }>;
 };

@@ -14,8 +14,10 @@ const getMsToHoursAndMinutes = (ms: number) => {
 
 export const NumbersStatsSessionCard = async () => {
   const session = await auth();
+  const d = performance.now();
   const data = await getNumbersSessionStats(session?.user.id);
   if (!data) return null;
+  console.log("NumbersStatsSessionCard", performance.now() - d);
 
   return (
     <Card className="p-6 col-span-full">

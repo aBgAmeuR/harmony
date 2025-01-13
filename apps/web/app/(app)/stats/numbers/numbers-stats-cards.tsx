@@ -9,13 +9,16 @@ import { Calendar, Clock, FastForward, Users } from "lucide-react";
 import { getNumbersStats } from "~/actions/get-numbers-stats-actions";
 import { MusicItemCardContent } from "~/components/cards/music-item-card/content";
 import { MusicItemCardImage } from "~/components/cards/music-item-card/image";
+import { isDemo } from "~/lib/utils-server";
 
 const msToHours = (ms: number) => ms / 1000 / 60 / 60;
 
 export const NumbersStatsCards = async () => {
   const session = await auth();
-  const data = await getNumbersStats(session?.user.id);
+  const d = performance.now();
+  const data = await getNumbersStats(session?.user.id, isDemo(session));
   if (!data) return null;
+  console.log("NumbersStatsCards", performance.now() - d);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
