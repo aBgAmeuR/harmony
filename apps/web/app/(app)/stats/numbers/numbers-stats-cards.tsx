@@ -6,19 +6,21 @@ import { Progress } from "@repo/ui/progress";
 import { Skeleton } from "@repo/ui/skeleton";
 import { Calendar, Clock, FastForward, Users } from "lucide-react";
 
-import { getNumbersStats } from "~/actions/get-numbers-stats-actions";
 import { MusicItemCardContent } from "~/components/cards/music-item-card/content";
 import { MusicItemCardImage } from "~/components/cards/music-item-card/image";
+import {
+  ProgressCard,
+  ProgressCardHeader,
+} from "~/components/cards/number-stat-card/progress-card";
 import { isDemo } from "~/lib/utils-server";
+import { getNumbersStats } from "~/services/numbers-stats";
 
 const msToHours = (ms: number) => ms / 1000 / 60 / 60;
 
 export const NumbersStatsCards = async () => {
   const session = await auth();
-  const d = performance.now();
   const data = await getNumbersStats(session?.user.id, isDemo(session));
   if (!data) return null;
-  console.log("NumbersStatsCards", performance.now() - d);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -46,46 +48,20 @@ export const NumbersStatsCards = async () => {
       </Card>
 
       {/* Total Plays and Unique Tracks */}
-      <Card className="p-6">
-        <div className="flex justify-between mb-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Total Plays</p>
-            <h3 className="text-2xl font-semibold">
-              <NumberFlow
-                value={data.totalPlays}
-                format={{ notation: "standard" }}
-                locales="en-US"
-              />
-            </h3>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Unique Tracks</p>
-            <h3 className="text-2xl font-semibold">
-              <NumberFlow
-                value={data.uniqueTracks}
-                format={{ notation: "standard" }}
-                locales="en-US"
-              />
-            </h3>
-          </div>
-        </div>
-        <Progress
-          value={(data.uniqueTracks / data.totalPlays) * 100}
-          className="h-2 [&>div]:duration-500 [&>div]:ease-in-out"
-        />
-        <p className="text-sm text-muted-foreground mt-2">
+      <ProgressCard
+        progress={(data.uniqueTracks / data.totalPlays) * 100}
+        description={
           <NumberFlow
-            value={
-              data.uniqueTracks && data.totalPlays
-                ? data.uniqueTracks / data.totalPlays
-                : 0
-            }
+            value={data.uniqueTracks / data.totalPlays}
             format={{ style: "percent" }}
             locales="en-US"
             suffix=" of your plays were unique tracks"
           />
-        </p>
-      </Card>
+        }
+      >
+        <ProgressCardHeader label="Total Plays" value={data.totalPlays} />
+        <ProgressCardHeader label="Unique Tracks" value={data.uniqueTracks} />
+      </ProgressCard>
 
       {/* Different Artists */}
       <Card className="p-6 flex items-center space-x-4">
@@ -111,23 +87,23 @@ export const NumbersStatsCards = async () => {
         <div>
           <div className="flex items-center space-x-2 sm:space-x-4">
             <MusicItemCardImage
-              src={data.firstTrack.cover || undefined}
-              alt={data.firstTrack.name || undefined}
+              src={data.firstTrack.cover}
+              alt={data.firstTrack.name}
             />
             <MusicItemCardContent
               item={{
-                href: data.firstTrack.href || "",
-                name: data.firstTrack.name || "",
-                artists: data.firstTrack.artists || undefined,
+                href: data.firstTrack.href,
+                name: data.firstTrack.name,
+                artists: data.firstTrack.artists,
               }}
             />
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
             Played on{" "}
             {data.firstTrack.timestamp ? (
-              <NumbersFlowDate value={data.firstTrack.timestamp} showTime />
+              <NumbersFlowDate value={data.firstTrack.timestamp} />
             ) : (
-              "an unknown date"
+              "No data"
             )}
           </p>
         </div>
@@ -141,7 +117,7 @@ export const NumbersStatsCards = async () => {
           {data.mostActiveDay.day ? (
             <NumbersFlowDate value={new Date(data.mostActiveDay.day)} />
           ) : (
-            "No data available"
+            "No data"
           )}
         </p>
         <p className="text-sm text-muted-foreground mt-1">
@@ -160,29 +136,20 @@ export const NumbersStatsCards = async () => {
       </Card>
 
       {/* Online Track Percent */}
-      <Card className="p-6 flex flex-col justify-between h-full">
-        <div className="flex justify-between mb-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Online Listening</p>
-            <h3 className="text-4xl font-semibold">
-              <NumberFlow
-                value={data.onlineTrackPercent / 100}
-                format={{ style: "percent" }}
-                locales="en-US"
-              />
-            </h3>
-          </div>
-        </div>
-        <Progress
-          value={data.onlineTrackPercent}
-          className="h-2 [&>div]:duration-500 [&>div]:ease-in-out"
-        />
-        <p className="text-sm text-muted-foreground mt-2">
-          {data.onlineTrackPercent > 50
+      <ProgressCard
+        progress={data.onlineTrackPercent}
+        description={
+          data.onlineTrackPercent > 50
             ? "You mostly listen to music while connected to the internet"
-            : "You mostly listen to music while offline"}
-        </p>
-      </Card>
+            : "You mostly listen to music while offline"
+        }
+      >
+        <ProgressCardHeader
+          label="Online Listening"
+          value={data.onlineTrackPercent / 100}
+          percentage
+        />
+      </ProgressCard>
 
       {/* Most Skipped Track */}
       <Card className="p-6 bg-red-100 dark:bg-red-900">
@@ -192,14 +159,14 @@ export const NumbersStatsCards = async () => {
         </div>
         <div className="flex items-center space-x-2 sm:space-x-4">
           <MusicItemCardImage
-            src={data.mostFwdbtnTrack.cover || undefined}
-            alt={data.mostFwdbtnTrack.name || undefined}
+            src={data.mostFwdbtnTrack.cover}
+            alt={data.mostFwdbtnTrack.name}
           />
           <MusicItemCardContent
             item={{
-              href: data.mostFwdbtnTrack.href || "",
-              name: data.mostFwdbtnTrack.name || "",
-              artists: data.mostFwdbtnTrack.artists || undefined,
+              href: data.mostFwdbtnTrack.href,
+              name: data.mostFwdbtnTrack.name,
+              artists: data.mostFwdbtnTrack.artists,
             }}
           />
         </div>
