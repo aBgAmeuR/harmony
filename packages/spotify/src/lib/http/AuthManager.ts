@@ -37,7 +37,7 @@ export class AuthManager {
    */
   public async refreshToken(
     refreshToken: string
-  ): Promise<SpotifyTokenResponse> {
+  ): Promise<SpotifyTokenResponse | null> {
     if (!this.config.clientId || !this.config.clientSecret) {
       throw new AuthError(
         "Missing client credentials (client ID or client secret)"
@@ -59,6 +59,11 @@ export class AuthManager {
     });
 
     if (!response.ok) {
+      const stack = await response.text();
+      if (!stack.includes("invalid_grant") && !stack.includes("Refresh token revoked")) {
+        return null;
+      };
+      
       throw new AuthError("Failed to refresh access token", {
         stack: await response.text(),
         data: { status: response.status, statusText: response.statusText },
@@ -105,6 +110,9 @@ export class AuthManager {
 
     // Refresh the token
     const data = await this.refreshToken(account.refresh_token);
+    if (!data) {
+      return this.getToken();
+    }
     const timestamp = Math.floor((Date.now() + data.expires_in * 1000) / 1000);
 
     // Update the database with new token information
