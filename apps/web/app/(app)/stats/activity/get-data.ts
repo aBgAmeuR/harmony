@@ -102,12 +102,15 @@ export const getMonthlyPlatformData = async (userId: string | undefined) => {
     const key = formatMonth(date);
     const platformKey = (
       Object.keys(PLATFORMS) as Array<keyof typeof PLATFORMS>
-    ).find((key) => PLATFORMS[key].includes(platform.platform));
+    ).find((key) =>
+      PLATFORMS[key].some((p) => platform.platform.toLowerCase().includes(p)),
+    );
 
     if (!platformKey) return;
 
     if (!data[key]) data[key] = {};
-    data[key][platformKey] = Number(platform.totalmsplayed);
+    data[key][platformKey] =
+      (data[key][platformKey] || 0) + Number(platform.totalmsplayed);
 
     const currentMsPlayed = platformsMap.get(platformKey) ?? 0;
     platformsMap.set(
@@ -117,8 +120,8 @@ export const getMonthlyPlatformData = async (userId: string | undefined) => {
   });
 
   const platformsLength = Array.from(platformsMap.values()).length;
-  const totalMsPlayed = platforms.reduce(
-    (acc, msPlayed) => acc + Number(msPlayed),
+  const totalMsPlayed = Array.from(platformsMap.values()).reduce(
+    (acc, msPlayed) => acc + msPlayed,
     0,
   );
 
