@@ -15,7 +15,12 @@ export const MusicItemCardImage = ({
   href,
   layout,
 }: MusicItemCardImageProps) => (
-  <Avatar className={cn("aspect-square rounded-md")}>
+  <Avatar
+    className={cn(
+      "aspect-square rounded-md",
+      layout === "grid" ? "size-auto" : "size-16",
+    )}
+  >
     <AvatarImage src={src!} asChild>
       {href ? (
         <a

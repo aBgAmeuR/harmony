@@ -7,15 +7,8 @@ type MusicItemCardStatsProps = {
 export const MusicItemCardStats = ({
   stat1,
   stat2,
-  layout,
 }: MusicItemCardStatsProps) => (
-  <div
-    className={
-      layout === "grid"
-        ? "space-y-1 flex-col items-start hidden @lg:flex"
-        : "space-y-1 flex-col items-start flex"
-    }
-  >
+  <div className="space-y-1 flex-col items-start hidden @lg:flex">
     <p className="text-sm text-muted-foreground">{stat1}</p>
     <p className="text-sm text-muted-foreground">{stat2}</p>
   </div>

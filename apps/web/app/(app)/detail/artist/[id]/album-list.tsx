@@ -1,4 +1,3 @@
-import { FC } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@repo/ui/alert";
 import { Separator } from "@repo/ui/separator";
 import { Info } from "lucide-react";
@@ -19,7 +18,7 @@ type AlbumListProps = {
   albums: Album[];
 };
 
-export const AlbumList: FC<AlbumListProps> = ({ albums }) => (
+export const AlbumList = ({ albums }: AlbumListProps) => (
   <div>
     <h2 className="text-2xl font-bold mb-4">Top Albums</h2>
     <div className="flex flex-col">
@@ -29,7 +28,6 @@ export const AlbumList: FC<AlbumListProps> = ({ albums }) => (
             item={item}
             rank={index + 1}
             actionHref={`/detail/artist/${item.id}?back=/rankings/artists`}
-            layout="grid"
           />
           {index < albums.length - 1 && <Separator />}
         </div>
