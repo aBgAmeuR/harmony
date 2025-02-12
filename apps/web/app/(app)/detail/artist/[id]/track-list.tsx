@@ -34,7 +34,7 @@ export const TrackList: FC<TrackListProps> = ({ tracks }) => (
     }}
   >
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-2xl font-bold">Top Tracks</h2>
+      <h2 className="text-2xl font-bold">Your Top Tracks</h2>
       <div className="flex items-center gap-2">
         <CarouselPrevious className="relative left-0 top-0 translate-y-0" />
         <CarouselNext className="relative right-0 top-0 translate-y-0" />

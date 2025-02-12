@@ -44,7 +44,7 @@ export async function getArtistDetails(userId: string | undefined, id: string) {
       OR: [{ artistIds: { has: id } }, { albumArtistIds: { has: id } }],
     },
     orderBy: { _sum: { msPlayed: "desc" } },
-    take: 50,
+    take: 22,
   });
 
   const topAlbumsQuery = prisma.track.groupBy({
@@ -56,7 +56,7 @@ export async function getArtistDetails(userId: string | undefined, id: string) {
       OR: [{ albumArtistIds: { has: id } }],
     },
     orderBy: { _sum: { msPlayed: "desc" } },
-    take: 50,
+    take: 22,
   });
 
   const [topTracks, topAlbums] = await prisma.$transaction([
