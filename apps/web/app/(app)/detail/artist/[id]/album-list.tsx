@@ -20,7 +20,10 @@ type AlbumListProps = {
 
 export const AlbumList = ({ albums }: AlbumListProps) => (
   <div>
-    <h2 className="text-2xl font-bold mb-4">Top Albums</h2>
+    <h2 className="text-xl font-bold">Top Albums</h2>
+    <p className="text-sm text-muted-foreground mb-4">
+      Here are your top albums
+    </p>
     <div className="flex flex-col">
       {albums.map((item, index) => (
         <div key={`${item.id}-${index}}`} className="flex flex-col">

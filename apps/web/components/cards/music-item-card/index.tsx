@@ -19,7 +19,7 @@ export const MusicItemCard = ({
       className={cn(
         "flex @container",
         layout === "grid"
-          ? "flex-col items-start space-y-2"
+          ? "flex-col items-start space-y-2 h-full"
           : "items-center space-x-2 py-4 sm:space-x-4",
       )}
     >
@@ -44,7 +44,7 @@ export const MusicItemCard = ({
             layout={layout}
           />
           <Content item={item} />
-          <Stats stat1={item.stat1} stat2={item.stat2} />
+          <Stats stat1={item.stat1} stat2={item.stat2} layout={layout} />
           {showAction && <Action href={actionHref} />}
         </>
       )}

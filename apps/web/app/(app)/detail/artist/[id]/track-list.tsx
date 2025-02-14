@@ -1,5 +1,4 @@
 import { FC } from "react";
-import { Alert, AlertDescription, AlertTitle } from "@repo/ui/alert";
 import {
   Carousel,
   CarouselContent,
@@ -7,7 +6,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@repo/ui/carousel";
-import { Info } from "lucide-react";
 
 import { MusicItemCard } from "~/components/cards/music-item-card";
 
@@ -34,7 +32,12 @@ export const TrackList: FC<TrackListProps> = ({ tracks }) => (
     }}
   >
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-2xl font-bold">Your Top Tracks</h2>
+      <div className="flex flex-col">
+        <h2 className="text-xl font-bold">Your Top Tracks</h2>
+        <p className="text-sm text-muted-foreground">
+          Here are your top tracks
+        </p>
+      </div>
       <div className="flex items-center gap-2">
         <CarouselPrevious className="relative left-0 top-0 translate-y-0" />
         <CarouselNext className="relative right-0 top-0 translate-y-0" />

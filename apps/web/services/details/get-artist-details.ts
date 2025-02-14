@@ -8,16 +8,17 @@ import { getMsPlayedInMinutes } from "~/lib/utils";
 
 type ItemType = "track" | "album";
 type TopItem = {
-  _sum: { msPlayed: BigInt | null };
-  _count: { _all: number | null };
+  _sum: BigInt | null;
+  _count: number | null;
 };
+type TopItemWithAlbumId = TopItem & { albumId: string };
 
 const formatItem = (
   item: Track | Album,
   topItem: TopItem | undefined,
   type: ItemType,
 ) => {
-  const msPlayed = Number(topItem?._sum.msPlayed) || 0;
+  const msPlayed = Number(topItem?._sum) || 0;
   return {
     id: item.id,
     href: item.external_urls.spotify,
@@ -28,7 +29,7 @@ const formatItem = (
     name: item.name || `Unknown ${type}`,
     artists: item.artists.map((artist) => artist.name).join(", "),
     stat1: `${getMsPlayedInMinutes(msPlayed)} minutes`,
-    stat2: `${topItem?._count?._all || 0} streams`,
+    stat2: `${topItem?._count || 0} streams`,
   };
 };
 
@@ -37,7 +38,7 @@ export async function getArtistDetails(userId: string | undefined, id: string) {
 
   const topTracksQuery = prisma.track.groupBy({
     by: ["spotifyId"],
-    _count: { _all: true },
+    _count: true,
     _sum: { msPlayed: true },
     where: {
       userId,
@@ -47,22 +48,22 @@ export async function getArtistDetails(userId: string | undefined, id: string) {
     take: 22,
   });
 
-  const topAlbumsQuery = prisma.track.groupBy({
-    by: ["albumId"],
-    _count: { _all: true },
-    _sum: { msPlayed: true },
-    where: {
-      userId,
-      OR: [{ albumArtistIds: { has: id } }],
-    },
-    orderBy: { _sum: { msPlayed: "desc" } },
-    take: 22,
-  });
+  const topAlbumsQuery = prisma.$queryRaw<TopItemWithAlbumId[]>`
+    SELECT "albumId", COUNT(*) as _count, SUM("msPlayed") as _sum
+    FROM "Track"
+    WHERE "userId" = ${userId} AND ("albumArtistIds"::text[] @> ARRAY[${id}]::text[])
+    GROUP BY "albumId"
+    HAVING COUNT(DISTINCT "spotifyId") >= 2
+    ORDER BY _sum DESC
+    LIMIT 10
+  `;
 
   const [topTracks, topAlbums] = await prisma.$transaction([
     topTracksQuery,
     topAlbumsQuery,
   ]);
+
+  console.log(topAlbums);
 
   const [tracksInfos, albumsInfos] = await Promise.all([
     spotify.tracks.list(topTracks.map((track) => track.spotifyId)),
@@ -70,9 +71,16 @@ export async function getArtistDetails(userId: string | undefined, id: string) {
   ]);
 
   const tracks = tracksInfos.map((track) => {
+    const findTrack = topTracks.find(
+      (topTrack) => topTrack.spotifyId === track.id,
+    );
+
     return formatItem(
       track,
-      topTracks.find((topTrack) => topTrack.spotifyId === track.id),
+      {
+        _sum: findTrack?._sum.msPlayed || BigInt(0),
+        _count: findTrack?._count || 0,
+      },
       "track",
     );
   });
