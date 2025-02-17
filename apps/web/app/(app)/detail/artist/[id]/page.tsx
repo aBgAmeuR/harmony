@@ -1,13 +1,15 @@
+import { Suspense } from "react";
 import { auth } from "@repo/auth";
 import { spotify } from "@repo/spotify";
 import { NumberFlow } from "@repo/ui/number";
 import { notFound } from "next/navigation";
 
 import { AppHeader } from "~/components/app-header";
-import { getArtistDetails } from "~/services/details/get-artist-details";
 
-import { AlbumList } from "./album-list";
-import { TrackList } from "./track-list";
+import {
+  TracksAlbumLists,
+  TracksAlbumsListsSkeleton,
+} from "./tracks-album-lists";
 
 type Props = {
   params: Promise<{
@@ -29,8 +31,6 @@ export default async function DetailArtistPage({
   if (!artist) return notFound();
 
   const session = await auth();
-  const artistData = await getArtistDetails(session?.user.id, id);
-  if (!artistData) return notFound();
 
   return (
     <>
@@ -59,9 +59,11 @@ export default async function DetailArtistPage({
           />
         </div>
       </div>
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0 max-w-7xl w-full mx-auto">
-        <TrackList tracks={artistData.tracks} />
-        <AlbumList albums={artistData.albums} />
+      <div className="flex flex-1 flex-col gap-8 p-4 pt-0 max-w-7xl w-full mx-auto">
+        <Suspense fallback={<TracksAlbumsListsSkeleton />}>
+          <TracksAlbumLists sessionId={session?.user.id} artistId={id} />
+          {/* <TracksAlbumsListsSkeleton /> */}
+        </Suspense>
       </div>
     </>
   );

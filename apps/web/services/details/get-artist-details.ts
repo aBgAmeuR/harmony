@@ -8,8 +8,8 @@ import { getMsPlayedInMinutes } from "~/lib/utils";
 
 type ItemType = "track" | "album";
 type TopItem = {
-  _sum: BigInt | null;
-  _count: number | null;
+  _sum: bigint;
+  _count: number;
 };
 type TopItemWithAlbumId = TopItem & { albumId: string };
 
@@ -85,13 +85,40 @@ export async function getArtistDetails(userId: string | undefined, id: string) {
     );
   });
 
-  const albums = albumsInfos.map((album) => {
-    return formatItem(
-      album,
-      topAlbums.find((topAlbum) => topAlbum.albumId === album.id),
-      "album",
-    );
-  });
+  const albums = (() => {
+    // Group albums with the same name
+    const albumGroups: Record<
+      string,
+      {
+        base: (typeof albumsInfos)[number];
+        totalMs: bigint;
+        totalCount: number;
+      }
+    > = {};
+    for (const album of albumsInfos) {
+      const key = album.name ?? "";
+      const stats = topAlbums.find(
+        (topAlbum) => topAlbum.albumId === album.id,
+      ) || { _sum: null, _count: 0 };
+      const statSum =
+        stats._sum !== null && stats._sum !== undefined
+          ? BigInt(stats._sum)
+          : BigInt(0);
+      if (!albumGroups[key]) {
+        albumGroups[key] = {
+          base: album,
+          totalMs: statSum,
+          totalCount: stats._count || 0,
+        };
+      } else {
+        albumGroups[key].totalMs += statSum;
+        albumGroups[key].totalCount += stats._count || 0;
+      }
+    }
+    return Object.values(albumGroups).map(({ base, totalMs, totalCount }) => {
+      return formatItem(base, { _sum: totalMs, _count: totalCount }, "album");
+    });
+  })();
 
   return {
     tracks,
