@@ -10,4 +10,6 @@ export type MusicItemCardProps = {
   };
   rank?: number;
   showAction?: boolean;
+  actionHref?: string;
+  layout?: "grid" | "list";
 };
