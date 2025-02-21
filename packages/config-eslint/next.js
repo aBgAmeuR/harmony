@@ -43,6 +43,7 @@ module.exports = {
     "tailwindcss/classnames-order": "off",
     "tailwindcss/no-custom-classname": "off",
     "@typescript-eslint/no-var-requires": "off",
+    "@next/next/no-img-element": "off",
     "simple-import-sort/imports": [
       2,
       {

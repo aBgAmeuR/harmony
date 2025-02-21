@@ -84,6 +84,10 @@ const config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      flexBasis: {
+        '1/7': '14.2857143%',
+        '1/8': '12.5%',
+      },
       keyframes: {
         "accordion-down": {
           from: {
