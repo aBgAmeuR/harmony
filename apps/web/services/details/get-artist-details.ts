@@ -63,8 +63,6 @@ export async function getArtistDetails(userId: string | undefined, id: string) {
     topAlbumsQuery,
   ]);
 
-  console.log(topAlbums);
-
   const [tracksInfos, albumsInfos] = await Promise.all([
     spotify.tracks.list(topTracks.map((track) => track.spotifyId)),
     spotify.albums.list(topAlbums.map((album) => album.albumId)),

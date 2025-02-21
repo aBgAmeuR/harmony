@@ -14,6 +14,29 @@ export const CardSkeleton = ({
   index,
   layout = "list",
 }: CardSkeletonProps) => {
+  if (layout === "grid")
+    return (
+      <article className="flex flex-col items-start space-y-2 h-full">
+        <Skeleton className="aspect-square size-full rounded-md object-cover cursor-pointer" />
+        <div className="w-full inline-flex flex-col gap-1">
+          <Skeleton
+            className="h-4"
+            style={{ maxWidth: `${getRandomWidth(50, 130)}px` }}
+          />
+          <Skeleton
+            className="h-4"
+            style={{ maxWidth: `${getRandomWidth(50, 130)}px` }}
+          />
+        </div>
+        <div className="flex flex-row items-end justify-between w-full">
+          <Skeleton className="h-3 w-7" />
+          <Skeleton className="h-3 w-5" />
+          {/* <p className="text-sm text-muted-foreground">239.57min</p> */}
+          {/* <p className="text-sm text-muted-foreground">65x</p> */}
+        </div>
+      </article>
+    );
+
   return (
     <article className="flex items-center space-x-2 py-4 sm:space-x-4">
       {showRank && (

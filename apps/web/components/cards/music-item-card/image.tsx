@@ -1,3 +1,4 @@
+import { AspectRatio } from "@repo/ui/aspect-ratio";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/avatar";
 import { cn } from "@repo/ui/lib/utils";
 import { Music2 } from "lucide-react";
@@ -18,7 +19,7 @@ export const MusicItemCardImage = ({
   <Avatar
     className={cn(
       "aspect-square rounded-md",
-      layout === "grid" ? "size-auto" : "size-16",
+      layout === "grid" ? "size-full" : "size-16",
     )}
   >
     <AvatarImage src={src!} asChild>
@@ -29,13 +30,15 @@ export const MusicItemCardImage = ({
           rel="noreferrer"
           className="aspect-square rounded-md object-cover cursor-pointer"
         >
-          <img
-            src={src!}
-            alt={alt!}
-            width={layout === "grid" ? 200 : 64}
-            height={layout === "grid" ? 200 : 64}
-            className={"aspect-square rounded-md object-cover size-full"}
-          />
+          <AspectRatio ratio={1}>
+            <img
+              src={src!}
+              alt={alt!}
+              width={layout === "grid" ? 200 : 64}
+              height={layout === "grid" ? 200 : 64}
+              className={"aspect-square rounded-md object-cover size-full"}
+            />
+          </AspectRatio>
         </a>
       ) : (
         <img
@@ -47,8 +50,15 @@ export const MusicItemCardImage = ({
         />
       )}
     </AvatarImage>
-    <AvatarFallback className="rounded-md">
-      <Music2 />
-    </AvatarFallback>
+    <AspectRatio ratio={1} asChild>
+      <AvatarFallback
+        className={cn(
+          "rounded-md",
+          layout === "grid" && "aspect-square size-full",
+        )}
+      >
+        <Music2 />
+      </AvatarFallback>
+    </AspectRatio>
   </Avatar>
 );
