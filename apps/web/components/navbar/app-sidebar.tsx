@@ -17,6 +17,7 @@ import { User } from "next-auth";
 
 import { NavMain } from "~/components/navbar/nav-main";
 
+import { CommandMenu } from "../command-menu";
 import { NavHeader } from "./nav-header";
 import { NavSecondary } from "./nav-secondary";
 import { NavUser } from "./nav-user";
@@ -40,6 +41,9 @@ export function AppSidebar({
         <NavHeader {...data.header} />
       </SidebarHeader>
       <SidebarContent>
+        <div className="px-2">
+          <CommandMenu />
+        </div>
         <NavMain items={data.stats} label="Stats" disable={disable} />
         {hasPackage || disable ? (
           <NavMain items={data.package} label="Package" disable={disable} />
