@@ -41,9 +41,14 @@ export function AppSidebar({
         <NavHeader {...data.header} />
       </SidebarHeader>
       <SidebarContent>
-        <div className="px-2">
-          <CommandMenu hasPackage={hasPackage} isDemo={user?.name === "Demo"} />
-        </div>
+        {disable ? null : (
+          <div className="px-2">
+            <CommandMenu
+              hasPackage={hasPackage}
+              isDemo={user?.name === "Demo"}
+            />
+          </div>
+        )}
         <NavMain items={data.stats} label="Stats" disable={disable} />
         {hasPackage || disable ? (
           <NavMain items={data.package} label="Package" disable={disable} />
