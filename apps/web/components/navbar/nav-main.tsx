@@ -123,7 +123,7 @@ export function NavMain({ label, items, disable }: NavMainProps) {
                   }
                 >
                   {!disable ? (
-                    <a
+                    <button
                       onMouseEnter={() => {
                         router.prefetch(item.url, {
                           kind: PrefetchKind.FULL,
@@ -132,11 +132,11 @@ export function NavMain({ label, items, disable }: NavMainProps) {
                       onClick={() => {
                         router.push(item.url);
                       }}
-                      className="cursor-pointer"
+                      className="cursor-pointer w-full"
                     >
                       {item.icon && <item.icon />}
                       <span>{item.title}</span>
-                    </a>
+                    </button>
                   ) : (
                     <div>
                       {item.icon && <item.icon />}
@@ -154,7 +154,7 @@ export function NavMain({ label, items, disable }: NavMainProps) {
                         isActive={pathname === subItem.url}
                       >
                         {!disable ? (
-                          <a
+                          <button
                             onMouseEnter={() => {
                               router.prefetch(subItem.url, {
                                 kind: PrefetchKind.FULL,
@@ -163,11 +163,11 @@ export function NavMain({ label, items, disable }: NavMainProps) {
                             onClick={() => {
                               router.push(subItem.url);
                             }}
-                            className="cursor-pointer"
+                            className="cursor-pointer w-full"
                           >
                             {subItem.icon && <subItem.icon />}
                             <span>{subItem.title}</span>
-                          </a>
+                          </button>
                         ) : (
                           <div>
                             {subItem.icon && <subItem.icon />}
