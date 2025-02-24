@@ -42,7 +42,7 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <div className="px-2">
-          <CommandMenu />
+          <CommandMenu hasPackage={hasPackage} isDemo={user?.name === "Demo"} />
         </div>
         <NavMain items={data.stats} label="Stats" disable={disable} />
         {hasPackage || disable ? (

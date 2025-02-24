@@ -11,6 +11,7 @@ import {
   Info,
   LayoutDashboard,
   ListOrdered,
+  LucideIcon,
   Milestone,
   Package,
   TrendingUp,
@@ -21,7 +22,27 @@ import {
 
 import { Icons } from "../icons";
 
-export const data = {
+export type SidebarItem = {
+  title: string;
+  url: string;
+  icon: LucideIcon;
+  items?: SidebarItem[];
+  anotherUrl?: string;
+};
+
+type SidebarConfig = {
+  header: {
+    name: string;
+    Logo: React.ComponentType;
+  };
+  stats: SidebarItem[];
+  package: SidebarItem[];
+  advanced: SidebarItem[];
+  settings: SidebarItem[];
+  navSecondary: SidebarItem[];
+};
+
+export const data: SidebarConfig = {
   header: {
     name: "Harmony",
     Logo: Icons.logo,

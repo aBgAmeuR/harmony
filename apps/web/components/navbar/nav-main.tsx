@@ -132,7 +132,7 @@ export function NavMain({ label, items, disable }: NavMainProps) {
                       onClick={() => {
                         router.push(item.url);
                       }}
-                      className="cursor-pointer"
+                      className="cursor-pointer w-full"
                     >
                       {item.icon && <item.icon />}
                       <span>{item.title}</span>
@@ -163,7 +163,7 @@ export function NavMain({ label, items, disable }: NavMainProps) {
                             onClick={() => {
                               router.push(subItem.url);
                             }}
-                            className="cursor-pointer"
+                            className="cursor-pointer w-full"
                           >
                             {subItem.icon && <subItem.icon />}
                             <span>{subItem.title}</span>
