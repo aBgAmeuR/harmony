@@ -1,13 +1,5 @@
-import React from "react";
 import { auth } from "@repo/auth";
 import { prisma } from "@repo/database";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/ui/card";
 import {
   Table,
   TableBody,
@@ -33,13 +25,7 @@ const getPackageHistory = async () => {
   });
 };
 
-type PackageHistoryUploadProps = {
-  className?: string;
-};
-
-export const PackageHistoryUpload = async ({
-  className,
-}: PackageHistoryUploadProps) => {
+export const PackageHistoryUpload = async () => {
   const packages = await getPackageHistory();
 
   if (!packages) {
@@ -47,46 +33,36 @@ export const PackageHistoryUpload = async ({
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle>Upload History</CardTitle>
-        <CardDescription>
-          History of your uploaded Spotify data packages
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Size</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {packages.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="">
-                  <p className="line-clamp-1 break-all">{item.fileName}</p>
-                </TableCell>
-                <TableCell>{item.createdAt.toLocaleDateString()}</TableCell>
-                <TableCell>
-                  <p className="text-nowrap">
-                    {(Number(item.fileSize) / 1024).toFixed(2)} MB
-                  </p>
-                </TableCell>
-              </TableRow>
-            ))}
-            {packages.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center">
-                  No packages uploaded yet.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>Date</TableHead>
+          <TableHead>Size</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {packages.map((item) => (
+          <TableRow key={item.id}>
+            <TableCell className="">
+              <p className="line-clamp-1 break-all">{item.fileName}</p>
+            </TableCell>
+            <TableCell>{item.createdAt.toLocaleDateString()}</TableCell>
+            <TableCell>
+              <p className="text-nowrap">
+                {(Number(item.fileSize) / 1024).toFixed(2)} MB
+              </p>
+            </TableCell>
+          </TableRow>
+        ))}
+        {packages.length === 0 && (
+          <TableRow>
+            <TableCell colSpan={3} className="text-center">
+              No packages uploaded yet.
+            </TableCell>
+          </TableRow>
+        )}
+      </TableBody>
+    </Table>
   );
 };

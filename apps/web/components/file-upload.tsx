@@ -48,11 +48,11 @@ export const FileUpload = () => {
   const handleUpload = async () => {
     if (file) {
       startTransition(async () => {
-        const res = await filesProcessing(file);
-        if (res.message === "error") {
-          toast.error(res.error);
-          return;
-        }
+        // const res = await filesProcessing(file);
+        // if (res.message === "error") {
+        //   toast.error(res.error);
+        //   return;
+        // }
         queryClient.clear();
         // TODO: Update user session but next-auth has not yet implemented the solution
         await signOut({ redirect: true, redirectTo: "/settings/package" });

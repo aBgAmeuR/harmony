@@ -7,12 +7,7 @@ import { TrackInfo } from "~/app/api/package/tracks/route";
 import { extractZipAndGetFiles, parseZipFiles } from "~/lib/zip";
 import { DataType } from "~/types/data";
 
-/**
- * Processes files and organizes data fetching and storage.
- * @param file The file to be processed.
- * @returns A status message object indicating the result of the operation.
- */
-export async function filesProcessing(file: File) {
+export async function getFiles(file: File) {
   try {
     const buffer = await file.arrayBuffer();
     const filesRegexPattern =
@@ -20,7 +15,27 @@ export async function filesProcessing(file: File) {
 
     console.time("Processing time");
     console.log("Processing files...");
-    const files = await extractZipAndGetFiles(buffer, filesRegexPattern);
+    return await extractZipAndGetFiles(buffer, filesRegexPattern);
+  } catch (error) {
+    console.error("Error processing files:", error as Error);
+    return { message: "error", error: (error as Error).toString() };
+  }
+}
+
+/**
+ * Processes files and organizes data fetching and storage.
+ * @param file The file to be processed.
+ * @returns A status message object indicating the result of the operation.
+ */
+export async function filesProcessing(
+  file: File,
+  files: {
+    filename: string;
+    content: Uint8Array;
+  }[],
+  setProgress: (progress: number) => void,
+) {
+  try {
     const data = parseZipFiles<DataType>(files);
 
     const res = await saveData(data, file);
