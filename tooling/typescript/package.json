@@ -1,9 +1,5 @@
 {
-	"name": "@repo/tsconfig",
-	"version": "0.0.0",
-	"private": true,
-	"publishConfig": {
-		"access": "public"
-	}
+  "name": "@harmony/tsconfig",
+  "private": true,
+  "files": ["*.json"]
 }
-

@@ -1,8 +1,0 @@
-{
-	"crons": [
-		{
-			"path": "/api/cron/update-rankings",
-			"schedule": "0 2 * * 0"
-		}
-	]
-}

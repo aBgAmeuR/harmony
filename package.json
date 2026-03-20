@@ -1,32 +1,31 @@
 {
-	"name": "harmony",
-	"private": true,
-	"scripts": {
-		"build": "turbo run build",
-		"dev": "turbo run dev",
-		"start": "turbo run start",
-		"generate": "turbo run generate",
-		"ui": "pnpm --filter @repo/ui ui",
-		"studio": "turbo run studio",
-		"format-and-lint": "biome check .",
-		"format-and-lint:fix": "biome check . --write",
-		"e2e:test": "turbo run e2e:test",
-		"typecheck": "turbo run typecheck",
-		"db:push": "turbo run db:push"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "2.0.6",
-		"playwright": "^1.52.0",
-		"prettier": "^3.4.2",
-		"tsx": "4.19.2",
-		"turbo": "^2.5.3"
-	},
-	"dependencies": {
-		"dotenv": "^16.4.7",
-		"dotenv-cli": "^8.0.0"
-	},
-	"packageManager": "pnpm@10.10.0",
-	"engines": {
-		"node": ">=22"
-	}
+  "name": "harmony",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A batteries-included AdonisJS starter kit for building modern APIs with type-safe frontend integration",
+  "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "tooling/*"
+  ],
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "format": "turbo format",
+    "typecheck": "turbo typecheck"
+  },
+  "devDependencies": {
+    "@adonisjs/prettier-config": "^1.4.5",
+    "prettier": "^3.8.1",
+    "turbo": "^2.8.18"
+  },
+  "packageManager": "npm@11.9.0",
+  "prettier": "@adonisjs/prettier-config"
 }

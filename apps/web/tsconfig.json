@@ -1,9 +1,10 @@
 {
-	"extends": "@repo/tsconfig/nextjs.json",
-	"compilerOptions": {
-		"paths": {
-			"@repo/*": ["../../packages/*/src"],
-			"~/*": ["./*"]
-		}
-	}
+  "include": ["**/*.ts", "**/*.tsx", "eslint.config.js", "prettier.config.js", "vite.config.js"],
+  "extends": "@harmony/tsconfig/react-app.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "@harmony/ui/*": ["../../packages/ui/src/*"]
+    }
+  }
 }
