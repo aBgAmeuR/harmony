@@ -1,14 +1,6 @@
 import { useEffect, useState } from 'react'
 import { HugeiconsIcon } from '@hugeicons/react'
-import {
-  Cancel01Icon,
-  CheckmarkBadge01Icon,
-  CheckmarkCircle01Icon,
-  CheckmarkCircle02Icon,
-  FolderUploadIcon,
-  Loading03Icon,
-  Tick02Icon,
-} from '@hugeicons/core-free-icons'
+import { Cancel01Icon, Loading03Icon, Tick02Icon } from '@hugeicons/core-free-icons'
 import { Button } from '@harmony/ui/components/button'
 import {
   Card,
@@ -56,7 +48,7 @@ type UploadUiStep = {
   data?: UploadUiStepData
 }
 
-const STEP_ORDER: UploadUiStepKey[] = [
+const STEP_ORDER: Array<UploadUiStepKey> = [
   'extract_archive',
   'parse_interactions',
   'normalize_interactions',
@@ -369,7 +361,7 @@ export function DeployStep({
         </Button>
 
         <Button size="sm" disabled={!canViewStats} onClick={onContinue} className="shrink-0">
-          View package stats
+          Continue  
         </Button>
       </CardFooter>
     </Card>

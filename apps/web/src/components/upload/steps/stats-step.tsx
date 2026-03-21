@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { ArrowRight01Icon } from '@hugeicons/core-free-icons'
 import { Button } from '@harmony/ui/components/button'
@@ -20,28 +21,22 @@ import { Bar, BarChart } from 'recharts'
 interface StatsStepProps {
   packageName: string
   selectedFiles: Array<string>
+  uploadId: string | null
+  uploadCompleted: boolean
   onBack: () => void
   canBack?: boolean
 }
 
-const LISTENING_BY_MONTH: Array<{ month: string; minutes: number }> = [
-  { month: 'Jan', minutes: 1620 },
-  { month: 'Feb', minutes: 1740 },
-  { month: 'Mar', minutes: 1935 },
-  { month: 'Apr', minutes: 1480 },
-  { month: 'May', minutes: 2050 },
-  { month: 'Jun', minutes: 1870 },
-  { month: 'Jul', minutes: 2210 },
-  { month: 'Aug', minutes: 2360 },
-  { month: 'Sep', minutes: 1985 },
-  { month: 'Oct', minutes: 2120 },
-  { month: 'Nov', minutes: 1890 },
-  { month: 'Dec', minutes: 2440 },
-]
+type UploadStatsPayload = {
+  LISTENING_BY_MONTH: Array<{ month: string; minutes: number }>
+  totalTracks: number
+  totalArtists: number
+  totalListeningMinutes: number
+}
 
 const STATS_CHART_CONFIG: ChartConfig = {
   minutes: {
-    label: 'Listening time',
+    label: 'Minutes',
     color: 'var(--primary)',
   },
 }
@@ -52,10 +47,24 @@ function formatListeningTime(totalMinutes: number): string {
   return `${hours}h ${minutes}m`
 }
 
-export function StatsStep({ onBack, canBack = true }: StatsStepProps) {
-  const totalTracks = 1482
-  const totalArtists = 364
-  const totalListeningMinutes = LISTENING_BY_MONTH.reduce((sum, item) => sum + item.minutes, 0)
+export function StatsStep({ uploadId, uploadCompleted, onBack, canBack = true }: StatsStepProps) {
+  const statsQuery = useQuery({
+    queryKey: ['upload-stats', uploadId],
+    enabled: Boolean(uploadId) && uploadCompleted,
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3333'}/api/v1/uploads/${uploadId}/stats`
+      )
+      if (!res.ok) {
+        throw new Error('Failed to fetch upload stats')
+      }
+      return (await res.json()) as UploadStatsPayload
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  })
+
+  const stats = statsQuery.data ?? null
+  const listeningByMonth = stats?.LISTENING_BY_MONTH ?? []
 
   return (
     <Card>
@@ -67,36 +76,63 @@ export function StatsStep({ onBack, canBack = true }: StatsStepProps) {
       </CardHeader>
 
       <CardContent className="space-y-3">
+        {statsQuery.isLoading && (
+          <p className="text-sm text-muted-foreground">Loading upload stats...</p>
+        )}
+        {statsQuery.isError && (
+          <p className="text-sm text-destructive">Unable to load upload stats for this package.</p>
+        )}
+        {!uploadCompleted && (
+          <p className="text-sm text-muted-foreground">
+            Stats will be available once upload is completed.
+          </p>
+        )}
+        {!statsQuery.isLoading && !statsQuery.isError && uploadCompleted && !stats && (
+          <p className="text-sm text-muted-foreground">
+            No stats are available yet for this upload.
+          </p>
+        )}
+
         <div className="rounded-lg border overflow-hidden">
           <div className="grid grid-cols-1 sm:grid-cols-3 max-sm:divide-y sm:divide-x">
             <div className="flex flex-col px-3 py-2">
               <span className="text-xs text-muted-foreground">Total tracks</span>
               <span className="text-xl font-semibold text-foreground">
-                {totalTracks.toLocaleString()}
+                {(stats?.totalTracks ?? 0).toLocaleString()}
               </span>
             </div>
             <div className="flex flex-col px-3 py-2">
               <span className="text-xs text-muted-foreground">Artists</span>
               <span className="text-xl font-semibold text-foreground">
-                {totalArtists.toLocaleString()}
+                {(stats?.totalArtists ?? 0).toLocaleString()}
               </span>
             </div>
             <div className="flex flex-col px-3 py-2">
               <span className="text-xs text-muted-foreground">Listening time</span>
               <span className="text-xl font-semibold text-foreground">
-                {formatListeningTime(totalListeningMinutes)}
+                {formatListeningTime(stats?.totalListeningMinutes ?? 0)}
               </span>
             </div>
           </div>
 
           <div className="border-t p-3">
             <ChartContainer config={STATS_CHART_CONFIG} className="h-[100px] w-full">
-              <BarChart accessibilityLayer data={LISTENING_BY_MONTH} barCategoryGap={1} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+              <BarChart
+                accessibilityLayer
+                data={listeningByMonth}
+                barCategoryGap={1}
+                margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+              >
                 <Bar dataKey="minutes" fill="var(--color-minutes)" radius={0} />
                 <ChartTooltip
-                  content={<ChartTooltipContent hideIndicator />}
+                  content={
+                    <ChartTooltipContent
+                      className="w-[150px]"
+                      nameKey="minutes"
+                      labelFormatter={(value) => value.toString()}
+                    />
+                  }
                   cursor={false}
-                  defaultIndex={1}
                 />
               </BarChart>
             </ChartContainer>

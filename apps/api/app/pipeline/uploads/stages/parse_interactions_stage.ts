@@ -2,8 +2,13 @@ import { strFromU8 } from 'fflate'
 import { type UploadStage } from '../upload_stage.ts'
 import { type UploadContext } from '../upload_context.ts'
 import { listeningInteractionValidator } from '#validators/packages'
+import { inject } from '@adonisjs/core'
+import { UploadProgressBroadcaster } from '../upload_progress_broadcaster.ts'
 
+@inject()
 export class ParseInteractionsStage implements UploadStage {
+  constructor(private broadcaster: UploadProgressBroadcaster) {}
+
   async handle(context: UploadContext, next: () => Promise<void>) {
     let invalidInteractions = 0
     let validatedInteractions = 0
@@ -38,5 +43,10 @@ export class ParseInteractionsStage implements UploadStage {
 
     context.rawInteractions = stream()
     await next()
+
+    this.broadcaster.updateParseCounts(context.upload.publicId, {
+      invalidCount: invalidInteractions,
+      validatedCount: validatedInteractions,
+    })
   }
 }

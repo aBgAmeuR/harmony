@@ -6,19 +6,28 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@harmony/ui/components/breadcrumb'
-import { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription } from '@harmony/ui/components/card'
+import {
+  Card,
+  CardAction,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@harmony/ui/components/card'
 import { Badge } from '@harmony/ui/components/badge'
 import { Separator } from '@harmony/ui/components/separator'
 import { SidebarTrigger } from '@harmony/ui/components/sidebar'
 import { createFileRoute } from '@tanstack/react-router'
-import { Button } from '@harmony/ui/components/button';
-import { BarChartCard } from '@/components/bar-chart-card';
+import { Button } from '@harmony/ui/components/button'
+import { BarChartCard } from '@/components/bar-chart-card'
 
-export const Route = createFileRoute('/app/')({
+export const Route = createFileRoute('/app/$packageId/')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const { pkg } = Route.useRouteContext()
+
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -63,7 +72,7 @@ function RouteComponent() {
           <BarChartCard />
           <div className="aspect-video rounded-xl bg-muted/50" />
         </div>
-        <div className="min-h-screen flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+        <pre className="text-xs">{JSON.stringify(pkg, null, 2)}</pre>
       </div>
     </>
   )

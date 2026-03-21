@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { cn } from '@harmony/ui/lib/utils'
-import type { MultipartFile } from '@adonisjs/core/bodyparser'
-import { CARD_TOP_PX, type WizardStep } from './types'
 import { api } from '../../lib/api'
+import { transmit } from '../../lib/transmit'
+import { CARD_TOP_PX, type WizardStep } from './types'
 import { StepNavigation } from './step-navigation'
 import { DecorativeFrame } from './decorative-frame'
 import { PackageStep } from './steps/package-step'
 import { FilesStep } from './steps/files-step'
 import { DeployStep } from './steps/deploy-step'
 import { StatsStep } from './steps/stats-step'
-import { transmit } from '../../lib/transmit'
+import type { MultipartFile } from '@adonisjs/core/bodyparser'
 
 type UploadUiStepStatus = 'pending' | 'running' | 'done' | 'error'
 
@@ -33,9 +33,7 @@ type NormalizeInteractionsStepData = {
   keptCount: number
 }
 
-type UploadUiStepData =
-  | EnrichTracksStepData
-  | NormalizeInteractionsStepData
+type UploadUiStepData = EnrichTracksStepData | NormalizeInteractionsStepData
 
 type UploadUiStep = {
   key: UploadUiStepKey
@@ -51,7 +49,7 @@ type UploadStepsSseEvent = {
   type: 'steps'
   data: {
     seq: number
-    steps: UploadUiStep[]
+    steps: Array<UploadUiStep>
   }
 }
 
@@ -106,7 +104,7 @@ export function UploadWizard() {
         }
         setMutationError('Unable to deploy package.')
       },
-    }),
+    })
   )
 
   const startDeploy = () => {
@@ -153,23 +151,22 @@ export function UploadWizard() {
 
   const cardRefs = useMemo(
     () =>
-      ([0, 1, 2, 3] as const).map(
-        (idx) =>
-          (el: HTMLDivElement | null): (() => void) | void => {
-            if (!el) return
-            const observer = new ResizeObserver(([entry]) => {
-              if (!entry) return
-              const h = Math.round(entry.contentRect.height)
-              setCardHeights((prev) => (prev[idx] === h ? prev : { ...prev, [idx]: h }))
-            })
-            observer.observe(el)
-            return () => observer.disconnect()
-          },
-      ),
-    [],
+      ([0, 1, 2, 3] as const).map((idx) => (el: HTMLDivElement | null): (() => void) | void => {
+        if (!el) return
+        const observer = new ResizeObserver(([entry]) => {
+          if (!entry) return
+          const h = Math.round(entry.contentRect.height)
+          setCardHeights((prev) => (prev[idx] === h ? prev : { ...prev, [idx]: h }))
+        })
+        observer.observe(el)
+        return () => observer.disconnect()
+      }),
+    []
   )
 
   const containerHeight = cardHeights[currentStep] ?? 360
+  const isUploadCompleted =
+    uploadSteps?.find((s) => s.key === 'persist_interactions')?.status === 'done'
 
   const minNavigableStep: WizardStep = isLockedAfterDeploy ? 2 : 0
 
@@ -229,16 +226,16 @@ export function UploadWizard() {
       selectedFiles={selectedFiles}
       steps={uploadSteps}
       mutationError={mutationError}
-      canViewStats={uploadSteps?.find((s) => s.key === 'persist_interactions')?.status === 'done'}
-      onRetry={() => {
-        startDeploy()
-      }}
+      canViewStats={isUploadCompleted}
+      onRetry={() => startDeploy()}
       onContinue={goForward}
     />,
     <StatsStep
       key="stats"
       packageName={packageFile?.name || 'package.zip'}
       selectedFiles={selectedFiles}
+      uploadId={uploadId}
+      uploadCompleted={Boolean(isUploadCompleted)}
       onBack={goBack}
       canBack
     />,
@@ -249,7 +246,7 @@ export function UploadWizard() {
       <DecorativeFrame cardHeight={containerHeight} />
 
       <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 w-full max-w-152">
-        <p className="absolute right-[calc(100%+3rem)] top-[180px] hidden lg:block text-sm font-medium text-foreground/70 whitespace-nowrap text-right">
+        <p className="absolute right-[calc(100%+3rem)] top-[180px] pt-2 hidden lg:block text-sm font-medium text-foreground/70 whitespace-nowrap text-right">
           Deploy Package
         </p>
       </div>
@@ -263,11 +260,7 @@ export function UploadWizard() {
           />
         </div>
 
-        <div
-          className="relative w-full"
-          style={{ height: containerHeight }}
-        >
-
+        <div className="relative w-full" style={{ height: containerHeight }}>
           {cardSlots.map((slot, i) => {
             const isParked = i === currentStep - 1
             const isHidden = i < currentStep - 1 || i > currentStep
@@ -288,7 +281,7 @@ export function UploadWizard() {
                   'transition-[transform,opacity] duration-450 ease-in-out',
                   canClickParked &&
                     'cursor-pointer [&_button]:pointer-events-none [&_a]:pointer-events-none',
-                  isHidden && 'pointer-events-none',
+                  isHidden && 'pointer-events-none'
                 )}
               >
                 {slot}

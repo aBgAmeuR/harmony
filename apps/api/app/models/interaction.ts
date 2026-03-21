@@ -15,7 +15,7 @@ export type InteractionRow = {
 }
 
 export default class Interaction extends InteractionSchema {
-  static async saveBatch(packageId: string, rows: InteractionRow[]) {
+  static async saveBatch(packageId: number, rows: InteractionRow[]) {
     if (rows.length === 0) return
 
     const knex = db.connection().getWriteClient()

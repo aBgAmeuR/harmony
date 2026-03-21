@@ -12,14 +12,24 @@ export type ScannedRoutes = {
     'auth.access_token.destroy': { paramsTuple?: []; params?: {} }
     'profile.profile.show': { paramsTuple?: []; params?: {} }
     'uploads.uploads.upload': { paramsTuple?: []; params?: {} }
+    'uploads.uploads.stats': { paramsTuple: [ParamValue]; params: {'uploadId': ParamValue} }
+    'package.package.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'package.package.stats': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'package.package.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
     'event_stream': { paramsTuple?: []; params?: {} }
     'profile.profile.show': { paramsTuple?: []; params?: {} }
+    'uploads.uploads.stats': { paramsTuple: [ParamValue]; params: {'uploadId': ParamValue} }
+    'package.package.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'package.package.stats': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   HEAD: {
     'event_stream': { paramsTuple?: []; params?: {} }
     'profile.profile.show': { paramsTuple?: []; params?: {} }
+    'uploads.uploads.stats': { paramsTuple: [ParamValue]; params: {'uploadId': ParamValue} }
+    'package.package.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'package.package.stats': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   POST: {
     'subscribe': { paramsTuple?: []; params?: {} }
@@ -28,6 +38,9 @@ export type ScannedRoutes = {
     'auth.access_token.store': { paramsTuple?: []; params?: {} }
     'auth.access_token.destroy': { paramsTuple?: []; params?: {} }
     'uploads.uploads.upload': { paramsTuple?: []; params?: {} }
+  }
+  DELETE: {
+    'package.package.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

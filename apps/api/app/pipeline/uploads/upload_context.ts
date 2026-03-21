@@ -14,7 +14,8 @@ export type UploadContext = {
   stats: {
     totalInteractions: number
     skippedInteractions: { count: number; msPlayed: number }
-    skippedTracks: TrackKey[]
+    skippedTracksCount: number
+    processedTracksCount: number
   }
 }
 

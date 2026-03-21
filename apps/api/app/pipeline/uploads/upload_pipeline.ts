@@ -55,7 +55,7 @@ export class UploadPipeline {
       const stepKey = this.stepKeys[i]
       if (!stage || !stepKey) return
 
-      const uploadId = context.upload.id
+      const uploadId = context.upload.publicId
       let didCallNext = false
 
       this.broadcaster.stageStart(uploadId, stepKey)

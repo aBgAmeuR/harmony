@@ -40,8 +40,18 @@ router
     router
       .group(() => {
         router.post('/package', [controllers.Uploads, 'upload'])
+        router.get('/:uploadId/stats', [controllers.Uploads, 'stats'])
       })
       .prefix('uploads')
       .as('uploads')
+
+    router
+      .group(() => {
+        router.get('/:id', [controllers.Package, 'show'])
+        router.get('/:id/stats', [controllers.Package, 'stats'])
+        router.delete('/:id', [controllers.Package, 'destroy'])
+      })
+      .prefix('package')
+      .as('package')
   })
   .prefix('/api/v1')

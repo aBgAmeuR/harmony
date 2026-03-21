@@ -10,18 +10,14 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
-import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as AppPackageIdRouteImport } from './routes/app/$packageId'
+import { Route as AppPackageIdIndexRouteImport } from './routes/app/$packageId/index'
+import { Route as AppPackageIdPackageRouteImport } from './routes/app/$packageId/package'
 
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
   path: '/upload',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppRoute = AppRouteImport.update({
-  id: '/app',
-  path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -29,42 +25,66 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppIndexRoute = AppIndexRouteImport.update({
+const AppPackageIdRoute = AppPackageIdRouteImport.update({
+  id: '/app/$packageId',
+  path: '/app/$packageId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppPackageIdIndexRoute = AppPackageIdIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AppPackageIdRoute,
+} as any)
+const AppPackageIdPackageRoute = AppPackageIdPackageRouteImport.update({
+  id: '/package',
+  path: '/package',
+  getParentRoute: () => AppPackageIdRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
   '/upload': typeof UploadRoute
-  '/app/': typeof AppIndexRoute
+  '/app/$packageId': typeof AppPackageIdRouteWithChildren
+  '/app/$packageId/package': typeof AppPackageIdPackageRoute
+  '/app/$packageId/': typeof AppPackageIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/upload': typeof UploadRoute
-  '/app': typeof AppIndexRoute
+  '/app/$packageId/package': typeof AppPackageIdPackageRoute
+  '/app/$packageId': typeof AppPackageIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
   '/upload': typeof UploadRoute
-  '/app/': typeof AppIndexRoute
+  '/app/$packageId': typeof AppPackageIdRouteWithChildren
+  '/app/$packageId/package': typeof AppPackageIdPackageRoute
+  '/app/$packageId/': typeof AppPackageIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/upload' | '/app/'
+  fullPaths:
+    | '/'
+    | '/upload'
+    | '/app/$packageId'
+    | '/app/$packageId/package'
+    | '/app/$packageId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/upload' | '/app'
-  id: '__root__' | '/' | '/app' | '/upload' | '/app/'
+  to: '/' | '/upload' | '/app/$packageId/package' | '/app/$packageId'
+  id:
+    | '__root__'
+    | '/'
+    | '/upload'
+    | '/app/$packageId'
+    | '/app/$packageId/package'
+    | '/app/$packageId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRouteWithChildren
   UploadRoute: typeof UploadRoute
+  AppPackageIdRoute: typeof AppPackageIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -76,13 +96,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UploadRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -90,30 +103,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app/': {
-      id: '/app/'
+    '/app/$packageId': {
+      id: '/app/$packageId'
+      path: '/app/$packageId'
+      fullPath: '/app/$packageId'
+      preLoaderRoute: typeof AppPackageIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/$packageId/': {
+      id: '/app/$packageId/'
       path: '/'
-      fullPath: '/app/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
+      fullPath: '/app/$packageId/'
+      preLoaderRoute: typeof AppPackageIdIndexRouteImport
+      parentRoute: typeof AppPackageIdRoute
+    }
+    '/app/$packageId/package': {
+      id: '/app/$packageId/package'
+      path: '/package'
+      fullPath: '/app/$packageId/package'
+      preLoaderRoute: typeof AppPackageIdPackageRouteImport
+      parentRoute: typeof AppPackageIdRoute
     }
   }
 }
 
-interface AppRouteChildren {
-  AppIndexRoute: typeof AppIndexRoute
+interface AppPackageIdRouteChildren {
+  AppPackageIdPackageRoute: typeof AppPackageIdPackageRoute
+  AppPackageIdIndexRoute: typeof AppPackageIdIndexRoute
 }
 
-const AppRouteChildren: AppRouteChildren = {
-  AppIndexRoute: AppIndexRoute,
+const AppPackageIdRouteChildren: AppPackageIdRouteChildren = {
+  AppPackageIdPackageRoute: AppPackageIdPackageRoute,
+  AppPackageIdIndexRoute: AppPackageIdIndexRoute,
 }
 
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+const AppPackageIdRouteWithChildren = AppPackageIdRoute._addFileChildren(
+  AppPackageIdRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRouteWithChildren,
   UploadRoute: UploadRoute,
+  AppPackageIdRoute: AppPackageIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

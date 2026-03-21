@@ -1,12 +1,17 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
 
 import appCss from '@harmony/ui/globals.css?url'
-import fontsCss from '../styles/fonts.css?url'
 import { TooltipProvider } from '@harmony/ui/components/tooltip'
-import { queryClient } from '@/lib/api'
 import { QueryClientProvider } from '@tanstack/react-query'
+import fontsCss from '../styles/fonts.css?url'
+import type { QueryClient} from '@tanstack/react-query';
+import type { api} from '@/lib/api';
+import { queryClient } from '@/lib/api'
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{
+  queryClient: QueryClient
+  api: typeof api
+}>()({
   head: () => ({
     meta: [
       {

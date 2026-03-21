@@ -21,7 +21,15 @@ export type NormalizeInteractionsStepData = {
   keptCount: number
 }
 
-export type UploadUiStepData = EnrichTracksStepData | NormalizeInteractionsStepData
+export type ParseInteractionsStepData = {
+  invalidCount: number
+  validatedCount: number
+}
+
+export type UploadUiStepData =
+  | EnrichTracksStepData
+  | NormalizeInteractionsStepData
+  | ParseInteractionsStepData
 
 export type UploadUiStep = {
   key: UploadUiStepKey
@@ -130,6 +138,16 @@ export class UploadProgressBroadcaster {
 
   updateNormalizeCounts(uploadId: string, data: NormalizeInteractionsStepData) {
     this.updateStepData(uploadId, 'normalize_interactions', data)
+  }
+
+  updateParseCounts(uploadId: string, data: ParseInteractionsStepData) {
+    this.updateStepData(uploadId, 'parse_interactions', data)
+  }
+
+  getStepsSnapshot(uploadId: string): UploadUiStep[] {
+    const stepsState = UploadProgressBroadcaster.stepsByUploadId.get(uploadId)
+    if (!stepsState) return []
+    return STEP_ORDER.map((key) => ({ ...stepsState[key] }))
   }
 
   clear(uploadId: string) {

@@ -95,4 +95,48 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/uploads_controller').default['upload']>>>
     }
   }
+  'uploads.uploads.stats': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/uploads/:uploadId/stats'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { uploadId: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/uploads_controller').default['stats']>>>
+    }
+  }
+  'package.package.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/package/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/package_controller').default['show']>>>
+    }
+  }
+  'package.package.stats': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/package/:id/stats'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/package_controller').default['stats']>>>
+    }
+  }
+  'package.package.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/package/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/package_controller').default['destroy']>>>
+    }
+  }
 }

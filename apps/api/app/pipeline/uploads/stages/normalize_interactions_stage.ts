@@ -60,7 +60,7 @@ export class NormalizeInteractionsStage implements UploadStage {
       for (const item of buffer) yield item
     })()
 
-    this.broadcaster.updateNormalizeCounts(context.upload.id, {
+    this.broadcaster.updateNormalizeCounts(context.upload.publicId, {
       rejectedCount,
       keptCount,
     })

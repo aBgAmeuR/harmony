@@ -77,7 +77,7 @@ export class InteractionSchema extends BaseModel {
   static $columns = ['packageId', 'trackId', 'timestamp', 'msPlayed', 'platform', 'reasonStart', 'reasonEnd', 'shuffle', 'skipped', 'offline'] as const
   $columns = InteractionSchema.$columns
   @column()
-  declare packageId: string
+  declare packageId: number
   @column()
   declare trackId: number
   @column.dateTime()
@@ -99,16 +99,20 @@ export class InteractionSchema extends BaseModel {
 }
 
 export class PackageSchema extends BaseModel {
-  static $columns = ['id', 'fileName', 'fileSize', 'status', 'createdAt'] as const
+  static $columns = ['id', 'publicId', 'fileName', 'fileSize', 'status', 'data', 'createdAt'] as const
   $columns = PackageSchema.$columns
   @column({ isPrimary: true })
-  declare id: string
+  declare id: number
+  @column()
+  declare publicId: string
   @column()
   declare fileName: string
   @column()
   declare fileSize: number
   @column()
   declare status: string
+  @column()
+  declare data: any
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 }

@@ -22,6 +22,14 @@ export interface ApiDefinition {
   uploads: {
     uploads: {
       upload: typeof routes['uploads.uploads.upload']
+      stats: typeof routes['uploads.uploads.stats']
+    }
+  }
+  package: {
+    package: {
+      show: typeof routes['package.package.show']
+      stats: typeof routes['package.package.stats']
+      destroy: typeof routes['package.package.destroy']
     }
   }
 }

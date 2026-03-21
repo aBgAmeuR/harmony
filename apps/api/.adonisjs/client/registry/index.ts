@@ -54,6 +54,30 @@ const routes = {
     tokens: [{"old":"/api/v1/uploads/package","type":0,"val":"api","end":""},{"old":"/api/v1/uploads/package","type":0,"val":"v1","end":""},{"old":"/api/v1/uploads/package","type":0,"val":"uploads","end":""},{"old":"/api/v1/uploads/package","type":0,"val":"package","end":""}],
     types: placeholder as Registry['uploads.uploads.upload']['types'],
   },
+  'uploads.uploads.stats': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/uploads/:uploadId/stats',
+    tokens: [{"old":"/api/v1/uploads/:uploadId/stats","type":0,"val":"api","end":""},{"old":"/api/v1/uploads/:uploadId/stats","type":0,"val":"v1","end":""},{"old":"/api/v1/uploads/:uploadId/stats","type":0,"val":"uploads","end":""},{"old":"/api/v1/uploads/:uploadId/stats","type":1,"val":"uploadId","end":""},{"old":"/api/v1/uploads/:uploadId/stats","type":0,"val":"stats","end":""}],
+    types: placeholder as Registry['uploads.uploads.stats']['types'],
+  },
+  'package.package.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/package/:id',
+    tokens: [{"old":"/api/v1/package/:id","type":0,"val":"api","end":""},{"old":"/api/v1/package/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/package/:id","type":0,"val":"package","end":""},{"old":"/api/v1/package/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['package.package.show']['types'],
+  },
+  'package.package.stats': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/package/:id/stats',
+    tokens: [{"old":"/api/v1/package/:id/stats","type":0,"val":"api","end":""},{"old":"/api/v1/package/:id/stats","type":0,"val":"v1","end":""},{"old":"/api/v1/package/:id/stats","type":0,"val":"package","end":""},{"old":"/api/v1/package/:id/stats","type":1,"val":"id","end":""},{"old":"/api/v1/package/:id/stats","type":0,"val":"stats","end":""}],
+    types: placeholder as Registry['package.package.stats']['types'],
+  },
+  'package.package.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/package/:id',
+    tokens: [{"old":"/api/v1/package/:id","type":0,"val":"api","end":""},{"old":"/api/v1/package/:id","type":0,"val":"v1","end":""},{"old":"/api/v1/package/:id","type":0,"val":"package","end":""},{"old":"/api/v1/package/:id","type":1,"val":"id","end":""}],
+    types: placeholder as Registry['package.package.destroy']['types'],
+  },
 } as const satisfies Record<string, AdonisEndpoint>
 
 export { routes }

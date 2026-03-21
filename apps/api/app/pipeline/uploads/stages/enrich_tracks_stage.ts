@@ -31,7 +31,7 @@ export class EnrichTracksStage implements UploadStage {
   ) {}
 
   async handle(context: UploadContext, next: () => Promise<void>) {
-    const uploadId = context.upload.id
+    const uploadId = context.upload.publicId
     const tracksToProcess = context.trackCatalogue.size
     let tracksProcessed = 0
     let tracksSkipped = 0
@@ -73,7 +73,7 @@ export class EnrichTracksStage implements UploadStage {
       const recording = pickRecording(metadata.recordings)
       if (!recording) {
         tracksSkipped += 1
-        context.stats.skippedTracks.push(key)
+        context.stats.skippedTracksCount += 1
         logger.debug(key, 'No recording found for')
         continue
       }
@@ -82,7 +82,7 @@ export class EnrichTracksStage implements UploadStage {
       const parsed = parseMbRecording(recording, release)
       if (!parsed) {
         tracksSkipped += 1
-        context.stats.skippedTracks.push(key)
+        context.stats.skippedTracksCount += 1
         logger.debug(key, 'No parsed recording found for')
         continue
       }
@@ -93,7 +93,7 @@ export class EnrichTracksStage implements UploadStage {
         tracksProcessed += 1
       } else {
         tracksSkipped += 1
-        context.stats.skippedTracks.push(key)
+        context.stats.skippedTracksCount += 1
         logger.debug(key, 'No track id found for')
       }
 
@@ -105,6 +105,8 @@ export class EnrichTracksStage implements UploadStage {
       tracksProcessed,
       tracksSkipped,
     })
+
+    context.stats.processedTracksCount = tracksProcessed
 
     await next()
   }
