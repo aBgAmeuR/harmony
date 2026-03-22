@@ -10,6 +10,11 @@ export class ResolveTracksStage implements UploadStage {
       const existing = await Track.findByKey(key)
       if (existing) {
         context.trackKeyToId.set(keyStr, existing.id)
+      } else {
+        const track = await Track.findByKey({ artist: key.artist, track: key.track, album: null })
+        if (track) {
+          context.trackKeyToId.set(keyStr, track.id)
+        }
       }
     }
 

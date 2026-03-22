@@ -11,7 +11,7 @@ import {
   type ParsedRecording,
 } from '#services/enrichment/parsed_recording'
 import { retryWithBackoff } from '../../../utils/retry_with_backoff.ts'
-import { type UploadContext } from '../upload_context.ts'
+import { type TrackKey, type UploadContext } from '../upload_context.ts'
 import { type UploadStage } from '../upload_stage.ts'
 import {
   UploadProgressBroadcaster,
@@ -56,49 +56,41 @@ export class EnrichTracksStage implements UploadStage {
       this.broadcaster.updateEnrichProgress(uploadId, data)
     }
 
+    const keysToEnrich: { keyStr: string; key: TrackKey }[] = []
+
     for (const [keyStr, key] of context.trackCatalogue.entries()) {
       if (context.trackKeyToId.has(keyStr)) {
         tracksProcessed += 1
         continue
       }
-
-      const { metadata } = await retryWithBackoff(() =>
-        this.trackMetadataSearchPipeline.search({
-          artist: key.artist,
-          recording: key.track,
-          release: key.album,
-        })
-      )
-
-      const recording = pickRecording(metadata.recordings)
-      if (!recording) {
-        tracksSkipped += 1
-        context.stats.skippedTracksCount += 1
-        logger.debug(key, 'No recording found for')
-        continue
-      }
-
-      const release = pickBestRelease(recording.releases)
-      const parsed = parseMbRecording(recording, release)
-      if (!parsed) {
-        tracksSkipped += 1
-        context.stats.skippedTracksCount += 1
-        logger.debug(key, 'No parsed recording found for')
-        continue
-      }
-
-      const trackId = await this.persistParsedRecording(parsed)
-      if (trackId !== null) {
-        context.trackKeyToId.set(keyStr, trackId)
-        tracksProcessed += 1
-      } else {
-        tracksSkipped += 1
-        context.stats.skippedTracksCount += 1
-        logger.debug(key, 'No track id found for')
-      }
-
-      broadcastIfNeeded()
+      keysToEnrich.push({ keyStr, key })
     }
+
+    await Promise.all(
+      keysToEnrich.map(({ keyStr, key }) =>
+        (async () => {
+          try {
+            await this.processOneKey(
+              keyStr,
+              key,
+              context,
+              () => {
+                tracksProcessed += 1
+              },
+              () => {
+                tracksSkipped += 1
+                context.stats.skippedTracksCount += 1
+              }
+            )
+          } catch (err) {
+            tracksSkipped += 1
+            context.stats.skippedTracksCount += 1
+            logger.warn({ err, key }, 'Enrich track failed after retries; skipping key')
+          }
+          broadcastIfNeeded()
+        })()
+      )
+    )
 
     this.broadcaster.updateEnrichProgress(uploadId, {
       tracksToProcess,
@@ -109,6 +101,52 @@ export class EnrichTracksStage implements UploadStage {
     context.stats.processedTracksCount = tracksProcessed
 
     await next()
+  }
+
+  private async processOneKey(
+    keyStr: string,
+    key: TrackKey,
+    context: UploadContext,
+    onPersisted: () => void,
+    onSkipped: () => void
+  ): Promise<void> {
+    const { metadata } = await retryWithBackoff(() =>
+      this.trackMetadataSearchPipeline.search({
+        artist: key.artist,
+        recording: key.track,
+        release: key.album,
+      })
+    )
+
+    const recording = pickRecording(metadata.recordings)
+    if (!recording) {
+      onSkipped()
+      logger.debug(key, 'No recording found for')
+      return
+    }
+
+    const release = pickBestRelease(recording.releases)
+    if (!release) {
+      onSkipped()
+      logger.debug(key, 'No release found for')
+      return
+    }
+
+    const parsed = parseMbRecording(recording, release)
+    if (!parsed) {
+      onSkipped()
+      logger.debug(key, 'No parsed recording found for')
+      return
+    }
+
+    const trackId = await this.persistParsedRecording(parsed)
+    if (trackId !== null) {
+      context.trackKeyToId.set(keyStr, trackId)
+      onPersisted()
+    } else {
+      onSkipped()
+      logger.debug(key, 'No track id found for')
+    }
   }
 
   private async persistParsedRecording(parsed: ParsedRecording) {

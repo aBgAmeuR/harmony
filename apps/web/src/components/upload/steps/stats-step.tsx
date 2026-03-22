@@ -17,6 +17,7 @@ import {
   ChartTooltipContent,
 } from '@harmony/ui/components/chart'
 import { Bar, BarChart } from 'recharts'
+import { Link } from '@tanstack/react-router';
 
 interface StatsStepProps {
   packageName: string
@@ -153,10 +154,10 @@ export function StatsStep({ uploadId, uploadCompleted, onBack, canBack = true }:
           Back
         </Button>
         <Button asChild size="sm">
-          <a href="#">
+          <Link to="/app/$packageId/package" params={{ packageId: uploadId ?? '' }}>
             View package stats
             <HugeiconsIcon icon={ArrowRight01Icon} data-icon="inline-end" />
-          </a>
+          </Link>
         </Button>
       </CardFooter>
     </Card>

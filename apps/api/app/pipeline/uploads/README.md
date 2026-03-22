@@ -125,9 +125,9 @@ sequenceDiagram
 ### 5. EnrichTracksStage
 
 - **Input**: `context.trackCatalogue`, `context.trackKeyToId`.
-- **Behaviour**: For each catalogue key **not** in `trackKeyToId`: (1) Calls `TrackMetadataSearchPipeline.search({ artist, recording, release })` wrapped in `retryWithBackoff`. (2) From `recordings.recordings`, picks the first with no disambiguation or `disambiguation === "explicit"`. (3) Picks best release (Official only, prefer Digital Media, no secondary-types). (4) Parses to `ParsedRecording`. (5) In a DB transaction: firstOrCreate artists by MBID, firstOrCreate album by externalId, firstOrCreate track by externalId; inserts into `album_artists` and `track_artists` with `onConflict(...).ignore()`. (6) Sets `context.trackKeyToId.set(keyStr, track.id)`. Keys already in `trackKeyToId` are skipped (no API call).
+- **Behaviour**: For each catalogue key **not** in `trackKeyToId`, work runs in parallel (`Promise.all`). Per key: (1) `TrackMetadataSearchPipeline.search({ artist, recording, release })` wrapped in `retryWithBackoff` (MusicBrainz `ws/2` calls go **only** through configured HTTP proxies in `MusicBrainzApi`, not direct to MB). (2) From `recordings.recordings`, picks the first with no disambiguation or `disambiguation === "explicit"`. (3) Picks best release (Official only, prefer Digital Media, no secondary-types). (4) Parses to `ParsedRecording`. (5) **Album cover** is **not** resolved on this path: `albums.image` is left `null` for new rows (Cover Art Archive / `getReleaseCoverArtFrontUrl` can be filled later by a separate job). (6) In a DB transaction: firstOrCreate artists by MBID, firstOrCreate album by externalId with `image: null`, firstOrCreate track by externalId; inserts into `album_artists` and `track_artists` with `onConflict(...).ignore()`. (7) Sets `context.trackKeyToId.set(keyStr, track.id)`. Keys already in `trackKeyToId` are skipped (no API call).
 - **Output**: `context.trackKeyToId` now includes every catalogue key that has a track (existing or newly created).
-- **Design**: External API + transactional writes; idempotent via firstOrCreate and onConflict ignore.
+- **Design**: External API + transactional writes; idempotent via firstOrCreate and onConflict ignore. Rate limiting for MB is enforced per proxy in the SDK; concurrency is not capped at the stage level (parallelism is bounded by proxy count and network latency in practice).
 
 ### 6. PersistInteractionsStage
 
@@ -160,7 +160,7 @@ uploads/
 - **ParseInteractionsStage**: Vine validator. No DI.
 - **NormalizeInteractionsStage**: Track text normalizer, platform normalizer. Uses `@inject()` for container construction.
 - **ResolveTracksStage**: `Track` model (`findByKey`). Uses `@inject()`.
-- **EnrichTracksStage**: `TrackMetadataSearchPipeline`, `retryWithBackoff`, parsed recording helpers, `Artist`/`Album`/`Track` models, `db.transaction`. Uses `@inject()`.
+- **EnrichTracksStage**: `TrackMetadataSearchPipeline` (uses `mbApi` from variants), `retryWithBackoff`, parsed recording helpers, `Artist`/`Album`/`Track` models, `db.transaction`. Uses `@inject()`.
 - **PersistInteractionsStage**: `Interaction` model (`saveBatch`). Uses `@inject()`.
 
 The pipeline itself is built by the container and receives all six stages via constructor injection.

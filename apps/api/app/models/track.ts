@@ -5,8 +5,22 @@ export default class Track extends TrackSchema {
   static async findByKey(key: {
     artist: string
     track: string
-    album: string
+    album: string | null
   }): Promise<Track | null> {
+    if (key.album === null) {
+      const row = await db
+        .from('tracks')
+        .select('tracks.id')
+        .innerJoin('track_artists', 'tracks.id', 'track_artists.track_id')
+        .innerJoin('artists', 'artists.id', 'track_artists.artist_id')
+        .where('tracks.name', key.track)
+        .where('artists.name', key.artist)
+        .first()
+
+      if (!row) return null
+      return await Track.find(row.id)
+    }
+
     const row = await db
       .from('tracks')
       .select('tracks.id')

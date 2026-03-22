@@ -1,5 +1,7 @@
 /**
  * MusicBrainz API client with rate limiting, recording search, artist lookup, and multi-proxy support.
+ * All MusicBrainz `ws/2` traffic goes through configured proxies only (no direct MB).
+ * Cover Art Archive requests are not rate-limited in this client (direct HTTP to coverartarchive.org).
  * @see https://musicbrainz.org/doc/MusicBrainz_API
  * @see https://musicbrainz.org/doc/MusicBrainz_API/Search/RecordingSearch
  * @see https://musicbrainz.org/doc/MusicBrainz_API/Lookup
@@ -16,22 +18,18 @@ export interface MusicBrainzApiOptions {
   appVersion: string
   /** Contact (email or URL) for the application. */
   appContactInfo: string
-  /** Disable rate limiting. Default: false. Not recommended: MusicBrainz enforces ~1 req/s per IP. */
-  disableRateLimiting?: boolean
   /**
-   * [maxRequests, windowSeconds]. Default: [1, 1] (1 request per second).
-   * Applied per proxy URL + direct connection.
-   * @see https://musicbrainz.org/doc/MusicBrainz_API/Rate_Limiting — "Source IP address" limit is 1 req/s.
+   * [maxRequests, windowSeconds] per proxy URL. Default: [1, 1].
+   * @see https://musicbrainz.org/doc/MusicBrainz_API/Rate_Limiting
    */
   rateLimit?: [number, number]
   /**
-   * Array of proxy URLs (e.g., Cloudflare Workers) to distribute requests.
-   * Each proxy has its own rate limiter, so with rateLimit [1,1] and 2 proxies, you get 3 req/s total (1 direct + 2 proxies).
+   * Proxy URLs (e.g. Cloudflare Workers). Required for MusicBrainz API calls.
    * Proxy is called with query params: target=<encoded-url>, user_agent=<identity> and optional header X-Harmony-Secret.
    */
   proxyUrls?: string[]
   /**
-   * Secret sent as X-Harmony-Secret when calling proxy URLs. Required if the worker checks env.AUTH_SECRET.
+   * Secret sent as X-Harmony-Secret when calling proxy URLs.
    */
   proxyAuthSecret?: string
 }
@@ -100,19 +98,13 @@ class ProxyManager {
   private readonly proxies: string[]
   private readonly rateLimiters: Map<string, () => Promise<void>>
   private currentIndex = 0
-  // private readonly disableRateLimiting: boolean;
 
-  constructor(proxyUrls: string[], rateLimit: [number, number], disableRateLimiting: boolean) {
+  constructor(proxyUrls: string[], rateLimit: [number, number]) {
     this.proxies = proxyUrls
-    // this.disableRateLimiting = disableRateLimiting;
     this.rateLimiters = new Map()
 
-    // Create a rate limiter for each proxy
     for (const proxyUrl of proxyUrls) {
-      this.rateLimiters.set(
-        proxyUrl,
-        disableRateLimiting ? async () => {} : createRateLimiter(rateLimit[0], rateLimit[1])
-      )
+      this.rateLimiters.set(proxyUrl, createRateLimiter(rateLimit[0], rateLimit[1]))
     }
   }
 
@@ -134,9 +126,6 @@ class ProxyManager {
     if (limiter) await limiter()
   }
 
-  /**
-   * Get all proxies (for fallback retry logic).
-   */
   getAllProxies(): string[] {
     return [...this.proxies]
   }
@@ -145,16 +134,13 @@ class ProxyManager {
 export class MusicBrainzApi {
   private readonly userAgent: string
   private readonly proxyAuthSecret: string | undefined
-  private readonly waitForRateLimit: () => Promise<void>
   private readonly proxyManager: ProxyManager | null
-  // private readonly useDirectConnection: boolean;
 
   constructor(options: MusicBrainzApiOptions) {
     const {
       appName,
       appVersion,
       appContactInfo,
-      disableRateLimiting = false,
       rateLimit = [1, 1],
       proxyUrls = [],
       proxyAuthSecret,
@@ -162,16 +148,8 @@ export class MusicBrainzApi {
     this.proxyAuthSecret = proxyAuthSecret
 
     this.userAgent = `${appName}/${appVersion} ( ${appContactInfo} )`
-    this.waitForRateLimit = disableRateLimiting
-      ? async () => {}
-      : createRateLimiter(rateLimit[0], rateLimit[1])
 
-    // Initialize proxy manager if proxies are provided
-    this.proxyManager =
-      proxyUrls.length > 0 ? new ProxyManager(proxyUrls, rateLimit, disableRateLimiting) : null
-
-    // Use direct connection if no proxies or as fallback
-    // this.useDirectConnection = true;
+    this.proxyManager = proxyUrls.length > 0 ? new ProxyManager(proxyUrls, rateLimit) : null
   }
 
   /**
@@ -195,48 +173,108 @@ export class MusicBrainzApi {
     return fetch(finalUrl, {
       method: 'GET',
       headers,
-      signal: AbortSignal.timeout(30000), // 30 second timeout
+      signal: AbortSignal.timeout(30000),
     })
   }
 
   /**
-   * Fetch directly (without proxy).
-   */
-  private async fetchDirect(url: string): Promise<Response> {
-    await this.waitForRateLimit()
-
-    return fetch(url, {
-      headers: {
-        'User-Agent': this.userAgent,
-        'Accept': 'application/json',
-      },
-      signal: AbortSignal.timeout(30000), // 30 second timeout
-    })
-  }
-
-  /**
-   * Execute request with proxy fallback: uses next available proxy (round-robin), falls back to direct if proxy fails.
+   * MusicBrainz `ws/2` requests only: one attempt via round-robin proxy. No direct MB, no retry on other proxies.
    */
   private async executeRequest(url: string): Promise<Response> {
-    // If we have proxies, use the next one (round-robin)
-    if (this.proxyManager) {
-      const proxy = this.proxyManager.getNextProxy()
-      if (proxy) {
-        try {
-          const response = await this.fetchViaProxy(proxy, url)
-          if (response.ok) {
-            return response
-          }
-          // If proxy returns non-OK, fallback to direct
-        } catch (error) {
-          // Proxy failed, fallback to direct
-          console.warn(`Proxy ${proxy} failed, falling back to direct:`, error)
-        }
+    if (!this.proxyManager) {
+      throw new Error('MusicBrainz API: configure proxyUrls to call MusicBrainz')
+    }
+    const proxy = this.proxyManager.getNextProxy()
+    if (!proxy) {
+      throw new Error('MusicBrainz API: configure proxyUrls to call MusicBrainz')
+    }
+    return this.fetchViaProxy(proxy, url)
+  }
+
+  /**
+   * True for the CAA *entry* URL only (`/release/{mbid}/front`), not for `.../mbid.jpg` files.
+   */
+  private isCaaReleaseFrontEntryUrl(url: string): boolean {
+    try {
+      const parsed = new URL(url)
+      const host = parsed.hostname.replace(/^www\./, '')
+      if (host !== 'coverartarchive.org') return false
+      return /^\/release\/[^/]+\/front\/?$/.test(parsed.pathname)
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Follow `Location` manually — works even when `redirect: follow` + `response.url` stay wrong in some runtimes.
+   */
+  private async followCaaManualRedirects(startUrl: string): Promise<string | null> {
+    let nextUrl = startUrl
+    for (let hop = 0; hop < 20; hop++) {
+      const res = await fetch(nextUrl, {
+        method: 'GET',
+        redirect: 'manual',
+        headers: {
+          'User-Agent': this.userAgent,
+          Accept: '*/*',
+        },
+        signal: AbortSignal.timeout(60000),
+      })
+
+      if (res.status >= 300 && res.status < 400) {
+        const loc = res.headers.get('location')
+        await res.arrayBuffer().catch(() => {})
+        if (!loc) return null
+        nextUrl = new URL(loc, nextUrl).href
+        continue
       }
+
+      if (res.ok) {
+        await res.arrayBuffer()
+        return nextUrl
+      }
+
+      await res.arrayBuffer().catch(() => {})
+      return null
     }
 
-    // Fallback to direct connection
-    return this.fetchDirect(url)
+    return null
+  }
+
+  /**
+   * Final image URL (e.g. `*.ca.archive.org/.../....jpg`). Direct fetch to CAA, not via MusicBrainz proxy.
+   * @see https://musicbrainz.org/doc/Cover_Art_Archive/API
+   */
+  async getReleaseCoverArtFrontUrl(releaseMbid: string): Promise<string | null> {
+    const mbid = releaseMbid.trim().toLowerCase()
+    const caaFront = `https://coverartarchive.org/release/${encodeURIComponent(mbid)}/front`
+    try {
+      const manual = await this.followCaaManualRedirects(caaFront)
+      if (manual !== null && !this.isCaaReleaseFrontEntryUrl(manual)) {
+        return manual
+      }
+
+      const res = await fetch(caaFront, {
+        method: 'GET',
+        redirect: 'follow',
+        headers: {
+          'User-Agent': this.userAgent,
+          Accept: '*/*',
+        },
+        signal: AbortSignal.timeout(60000),
+      })
+      if (!res.ok) {
+        return null
+      }
+      await res.arrayBuffer()
+      const fromFollow = res.url
+      if (this.isCaaReleaseFrontEntryUrl(fromFollow)) {
+        return null
+      }
+      return fromFollow
+    } catch {
+      return null
+    }
   }
 
   /**
@@ -254,8 +292,6 @@ export class MusicBrainzApi {
     url.searchParams.set('query', query)
     url.searchParams.set('limit', String(Math.min(100, Math.max(1, limit))))
     url.searchParams.set('offset', String(Math.max(0, offset)))
-    // Include releases with media and tracks to get track numbers
-    // Note: inc parameter may not always return full media details in search results
     url.searchParams.set('inc', 'releases+recordings+media')
 
     const res = await this.executeRequest(url.toString())
@@ -271,8 +307,6 @@ export class MusicBrainzApi {
   /**
    * Look up an artist by MusicBrainz ID (MBID).
    * GET /ws/2/artist/{mbid}?inc=...&fmt=json
-   * @param mbid - Artist UUID (e.g. "2baf3276-ed6a-4349-8d2e-f4601e7b2167")
-   * @param inc - Optional include parameters (e.g. ["url-rels"] for URL relations)
    */
   async getArtist(mbid: string, inc?: ArtistInclude[]): Promise<IArtist> {
     const url = new URL(`${MB_BASE}/artist/${encodeURIComponent(mbid)}`)
@@ -294,8 +328,6 @@ export class MusicBrainzApi {
   /**
    * Look up a release by MusicBrainz ID (MBID) with full details including tracks.
    * GET /ws/2/release/{mbid}?inc=...&fmt=json
-   * @param mbid - Release UUID
-   * @param inc - Optional include parameters (default: ["recordings", "media"])
    */
   async getRelease(mbid: string, inc: string[] = ['recordings', 'media']): Promise<IRelease> {
     const url = new URL(`${MB_BASE}/release/${encodeURIComponent(mbid)}`)
@@ -315,8 +347,7 @@ export class MusicBrainzApi {
   }
 
   /**
-   * Get the number of available proxies (for calculating optimal concurrency).
-   * Returns 0 if no proxies are configured.
+   * Number of configured proxies (0 if none).
    */
   getProxyCount(): number {
     return this.proxyManager?.getAllProxies().length ?? 0
