@@ -1,7 +1,25 @@
+import Album from '#models/album'
+import Artist from '#models/artist'
+import Interaction from '#models/interaction'
 import db from '@adonisjs/lucid/services/db'
 import { TrackSchema } from '#database/schema'
+import { belongsTo, hasMany, manyToMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
 
 export default class Track extends TrackSchema {
+  @belongsTo(() => Album, { foreignKey: 'albumId' })
+  declare album: BelongsTo<typeof Album>
+
+  @hasMany(() => Interaction)
+  declare interactions: HasMany<typeof Interaction>
+
+  @manyToMany(() => Artist, {
+    pivotTable: 'track_artists',
+    pivotForeignKey: 'track_id',
+    pivotRelatedForeignKey: 'artist_id',
+  })
+  declare artists: ManyToMany<typeof Artist>
+
   static async findByKey(key: {
     artist: string
     track: string

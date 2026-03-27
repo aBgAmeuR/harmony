@@ -15,6 +15,7 @@ export type ScannedRoutes = {
     'uploads.uploads.stats': { paramsTuple: [ParamValue]; params: {'uploadId': ParamValue} }
     'package.package.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'package.package.stats': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'package.tracks.top': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'package.package.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
@@ -23,6 +24,7 @@ export type ScannedRoutes = {
     'uploads.uploads.stats': { paramsTuple: [ParamValue]; params: {'uploadId': ParamValue} }
     'package.package.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'package.package.stats': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'package.tracks.top': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   HEAD: {
     'event_stream': { paramsTuple?: []; params?: {} }
@@ -30,6 +32,7 @@ export type ScannedRoutes = {
     'uploads.uploads.stats': { paramsTuple: [ParamValue]; params: {'uploadId': ParamValue} }
     'package.package.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'package.package.stats': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'package.tracks.top': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   POST: {
     'subscribe': { paramsTuple?: []; params?: {} }

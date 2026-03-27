@@ -31,5 +31,8 @@ export interface ApiDefinition {
       stats: typeof routes['package.package.stats']
       destroy: typeof routes['package.package.destroy']
     }
+    tracks: {
+      top: typeof routes['package.tracks.top']
+    }
   }
 }

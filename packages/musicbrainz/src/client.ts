@@ -58,9 +58,7 @@ export type ArtistInclude =
  * Builds a Lucene-style query string for recording search.
  * Escapes double quotes in values.
  */
-function buildRecordingQuery(
-  params: SearchRecordingParams,
-): string {
+function buildRecordingQuery(params: SearchRecordingParams): string {
   const escape = (s: string) => s.replace(/"/g, '\\"')
   const parts = [`artist:"${escape(params.artist)}"`, `recording:"${escape(params.recording)}"`]
   if (params.release) {
@@ -216,7 +214,7 @@ export class MusicBrainzApi {
         redirect: 'manual',
         headers: {
           'User-Agent': this.userAgent,
-          Accept: '*/*',
+          'Accept': '*/*',
         },
         signal: AbortSignal.timeout(60000),
       })
@@ -246,32 +244,16 @@ export class MusicBrainzApi {
    * @see https://musicbrainz.org/doc/Cover_Art_Archive/API
    */
   async getReleaseCoverArtFrontUrl(releaseMbid: string): Promise<string | null> {
-    const mbid = releaseMbid.trim().toLowerCase()
-    const caaFront = `https://coverartarchive.org/release/${encodeURIComponent(mbid)}/front`
+    const caaFront = `https://coverartarchive.org/release/${encodeURIComponent(releaseMbid)}/front`
     try {
-      const manual = await this.followCaaManualRedirects(caaFront)
-      if (manual !== null && !this.isCaaReleaseFrontEntryUrl(manual)) {
-        return manual
-      }
-
       const res = await fetch(caaFront, {
-        method: 'GET',
-        redirect: 'follow',
         headers: {
           'User-Agent': this.userAgent,
-          Accept: '*/*',
+          'Accept': '*/*',
         },
-        signal: AbortSignal.timeout(60000),
       })
-      if (!res.ok) {
-        return null
-      }
-      await res.arrayBuffer()
-      const fromFollow = res.url
-      if (this.isCaaReleaseFrontEntryUrl(fromFollow)) {
-        return null
-      }
-      return fromFollow
+
+      return res.url
     } catch {
       return null
     }
@@ -283,7 +265,7 @@ export class MusicBrainzApi {
    */
   async searchRecording(
     params: SearchRecordingParams,
-    opts: SearchRecordingOptions = {},
+    opts: SearchRecordingOptions = {}
   ): Promise<IRecordingList> {
     const { limit = 1, offset = 0 } = opts
     const query = buildRecordingQuery(params)

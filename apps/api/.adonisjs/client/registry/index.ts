@@ -72,6 +72,12 @@ const routes = {
     tokens: [{"old":"/api/v1/package/:id/stats","type":0,"val":"api","end":""},{"old":"/api/v1/package/:id/stats","type":0,"val":"v1","end":""},{"old":"/api/v1/package/:id/stats","type":0,"val":"package","end":""},{"old":"/api/v1/package/:id/stats","type":1,"val":"id","end":""},{"old":"/api/v1/package/:id/stats","type":0,"val":"stats","end":""}],
     types: placeholder as Registry['package.package.stats']['types'],
   },
+  'package.tracks.top': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/package/:id/tracks',
+    tokens: [{"old":"/api/v1/package/:id/tracks","type":0,"val":"api","end":""},{"old":"/api/v1/package/:id/tracks","type":0,"val":"v1","end":""},{"old":"/api/v1/package/:id/tracks","type":0,"val":"package","end":""},{"old":"/api/v1/package/:id/tracks","type":1,"val":"id","end":""},{"old":"/api/v1/package/:id/tracks","type":0,"val":"tracks","end":""}],
+    types: placeholder as Registry['package.tracks.top']['types'],
+  },
   'package.package.destroy': {
     methods: ["DELETE"],
     pattern: '/api/v1/package/:id',

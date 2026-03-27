@@ -18,6 +18,7 @@ import {
   type EnrichTracksStepData,
 } from '../upload_progress_broadcaster.ts'
 import logger from '@adonisjs/core/services/logger'
+import { mbApi } from '../../../lib/musicbrainz.ts'
 
 function pickRecording(recordings: IRecording[]) {
   return recordings.find((r) => !r.disambiguation || r.disambiguation === 'explicit') ?? null
@@ -207,6 +208,14 @@ export class EnrichTracksStage implements UploadStage {
         .insert(trackArtistRows)
         .onConflict(['track_id', 'artist_id'])
         .ignore()
+
+      if (album.image === null) {
+        const coverArtUrl = await mbApi.getReleaseCoverArtFrontUrl(album.externalId)
+        if (coverArtUrl) {
+          album.image = coverArtUrl
+          await album.save()
+        }
+      }
 
       return track.id
     })

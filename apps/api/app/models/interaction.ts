@@ -1,6 +1,10 @@
+import Package from '#models/package'
+import Track from '#models/track'
 import { DateTime } from 'luxon'
 import db from '@adonisjs/lucid/services/db'
 import { InteractionSchema } from '#database/schema'
+import { belongsTo } from '@adonisjs/lucid/orm'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 
 export type InteractionRow = {
   trackId: number
@@ -15,6 +19,12 @@ export type InteractionRow = {
 }
 
 export default class Interaction extends InteractionSchema {
+  @belongsTo(() => Package, { foreignKey: 'packageId' })
+  declare parentPackage: BelongsTo<typeof Package>
+
+  @belongsTo(() => Track, { foreignKey: 'trackId' })
+  declare track: BelongsTo<typeof Track>
+
   static async saveBatch(packageId: number, rows: InteractionRow[]) {
     if (rows.length === 0) return
 

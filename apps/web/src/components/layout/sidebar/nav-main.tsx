@@ -55,7 +55,8 @@ export function NavMain({
                   <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
                     <Link from="/app/$packageId" to={to} preload="intent" activeOptions={{ exact }}>
                       {item.icon}
-                      <span>{item.title}</span>
+                      <span className="text-foreground">{item.title}</span>
+                      {item.badge}
                     </Link>
                   </SidebarMenuButton>
                 ) : (

@@ -49,9 +49,11 @@ router
       .group(() => {
         router.get('/:id', [controllers.Package, 'show'])
         router.get('/:id/stats', [controllers.Package, 'stats'])
+        router.get('/:id/tracks', [controllers.Tracks, 'top'])
         router.delete('/:id', [controllers.Package, 'destroy'])
       })
       .prefix('package')
       .as('package')
+      .use(middleware.bindPackage())
   })
   .prefix('/api/v1')

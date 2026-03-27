@@ -9,17 +9,13 @@ import {
 } from '@harmony/ui/components/sidebar'
 
 import { NavMain } from './nav-main'
-import { NavUser } from './nav-user'
+import { NavUploadCta } from './nav-upload-cta'
 import { TeamSwitcher } from './team-switcher'
 import { CommandMenu } from './command-menu'
 import { navConfig } from './nav.config'
+import { NavSecondary } from './nav-secondary';
 
 const data = {
-  user: {
-    name: 'shadcn',
-    email: 'm@example.com',
-    avatar: '/avatars/shadcn.jpg',
-  },
   teams: [
     {
       name: 'Harmony',
@@ -39,10 +35,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <CommandMenu />
         <NavMain items={navConfig.main}  />
-        <NavMain items={navConfig.analytics} title="Analytics" />
+        <NavMain items={navConfig.library} title="Library" />
+        <NavMain items={navConfig.insights} title="Insights" />
+        <NavMain items={navConfig.social} title="Social" />
+        <NavSecondary items={navConfig.secondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUploadCta />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
