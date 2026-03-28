@@ -210,7 +210,7 @@ export class EnrichTracksStage implements UploadStage {
         .ignore()
 
       if (album.image === null) {
-        const coverArtUrl = await mbApi.getReleaseCoverArtFrontUrl(album.externalId)
+        const coverArtUrl = await mbApi.coverArt.resolveCoverArtUrl(parsed.albumExternalId)
         if (coverArtUrl) {
           album.image = coverArtUrl
           await album.save()

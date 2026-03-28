@@ -1,10 +1,11 @@
-export {
-  MusicBrainzApi,
-  type MusicBrainzApiOptions,
-  type SearchRecordingParams,
-  type SearchRecordingOptions,
-  type ArtistInclude,
-} from './client.js'
+export { MusicBrainzClient } from './musicbrainz-client.js'
+export type {
+  MusicBrainzClientOptions,
+  SearchRecordingParams,
+  SearchRecordingOptions,
+  ArtistInclude,
+} from './options.js'
+export { MusicBrainzApiError } from './errors.js'
 export type {
   IRecordingList,
   IRecordingMatch,
@@ -13,4 +14,7 @@ export type {
   IRelease,
   IMedium,
   IArtistCredit,
-} from './types.js'
+  CaaImage,
+  CaaIndexJson,
+  CaaThumbnails,
+} from './types/index.js'

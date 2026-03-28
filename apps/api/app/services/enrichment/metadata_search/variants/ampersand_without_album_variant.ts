@@ -10,7 +10,7 @@ export class AmpersandWithoutAlbumVariant implements MetadataSearchVariant {
 
   search(params: SearchRecordingParams) {
     const modifiedParams = normalizeParamsAmpersand(params)
-    return mbApi.searchRecording(
+    return mbApi.recordings.search(
       { artist: modifiedParams.artist, recording: modifiedParams.recording },
       { limit: 5 }
     )

@@ -1,7 +1,7 @@
 import env from '#start/env'
-import { MusicBrainzApi } from '@harmony/musicbrainz'
+import { MusicBrainzClient } from '@harmony/musicbrainz'
 
-export const mbApi = new MusicBrainzApi({
+export const mbApi = new MusicBrainzClient({
   appName: 'Harmony',
   appVersion: '2.6',
   appContactInfo: 'https://antoinejosset.fr',

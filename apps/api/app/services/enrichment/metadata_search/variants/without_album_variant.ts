@@ -8,7 +8,7 @@ export class WithoutAlbumVariant implements MetadataSearchVariant {
   }
 
   search(params: SearchRecordingParams) {
-    return mbApi.searchRecording(
+    return mbApi.recordings.search(
       { artist: params.artist, recording: params.recording },
       { limit: 5 }
     )

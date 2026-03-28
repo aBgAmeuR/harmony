@@ -8,6 +8,6 @@ export class WithAlbumVariant implements MetadataSearchVariant {
   }
 
   search(params: SearchRecordingParams) {
-    return mbApi.searchRecording(params, { limit: 5 })
+    return mbApi.recordings.search(params, { limit: 5 })
   }
 }
