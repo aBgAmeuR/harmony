@@ -139,6 +139,17 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/tracks_controller').default['top']>>>
     }
   }
+  'package.tracks.get': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/package/:id/tracks/:trackId'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { id: ParamValue; trackId: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/instant_range_query').trackParamsValidator)>|InferInput<(typeof import('#validators/instant_range_query').instantRangeQueryValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/tracks_controller').default['get']>>>
+    }
+  }
   'package.package.destroy': {
     methods: ["DELETE"]
     pattern: '/api/v1/package/:id'

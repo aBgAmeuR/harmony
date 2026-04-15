@@ -7,6 +7,10 @@ export const instantRangeQueryValidator = vine.create({
   to: vine.date().optional(),
 })
 
+export const trackParamsValidator = vine.create({
+  trackId: vine.number().positive(),
+})
+
 export type InstantRangeQuery = Infer<typeof instantRangeQueryValidator>
 
 export function assertInstantRangeOrder(

@@ -1,51 +1,25 @@
-import Track from '#models/track'
-import { applyInteractionTimestampRange } from '#services/interaction_timestamp_range'
-import {
-  assertInstantRangeOrder,
-  instantRangeQueryValidator,
-} from '#validators/instant_range_query'
+import TrackService from '#services/track_service'
+import { trackParamsValidator } from '#validators/instant_range_query'
+import { inject } from '@adonisjs/core'
 import { type HttpContext } from '@adonisjs/core/http'
 
+@inject()
 export default class TracksController {
-  async top({ pkg, request }: HttpContext) {
-    const range = await request.validateUsing(instantRangeQueryValidator, {
-      data: request.qs(),
-    })
-    assertInstantRangeOrder(range.from, range.to)
+  constructor(private readonly trackService: TrackService) {}
 
-    const tracks = await Track.query()
-      .whereHas('interactions', (q) => {
-        q.where('packageId', pkg.id)
-        applyInteractionTimestampRange(q, range)
-      })
-      .withAggregate('interactions', (q) => {
-        q.where('packageId', pkg.id)
-        applyInteractionTimestampRange(q, range)
-        q.sum('ms_played').as('listening_ms')
-      })
-      .withCount('interactions', (q) => {
-        q.where('packageId', pkg.id)
-        applyInteractionTimestampRange(q, range)
-        q.as('streams')
-      })
-      .preload('album')
-      .preload('artists')
-      .orderBy('listening_ms', 'desc')
-      .limit(50)
+  async top({ pkg, instantRange }: HttpContext) {
+    const tracks = await this.trackService.getTopTracks(pkg.id, instantRange)
+    return { packageId: pkg.publicId, tracks }
+  }
 
-    return {
-      packageId: pkg.publicId,
-      tracks: tracks.map((row) => ({
-        id: row.id,
-        name: row.name,
-        description: row.artists
-          .map((a) => a.name)
-          .sort()
-          .join(', '),
-        image: row.album?.image ?? null,
-        streams: Number(row.$extras.streams ?? 0),
-        playtime: Number(row.$extras.listening_ms ?? 0) / 60000,
-      })),
+  async get({ params, pkg, instantRange, request, response }: HttpContext) {
+    const { trackId } = await request.validateUsing(trackParamsValidator, { data: params })
+
+    const details = await this.trackService.getTrackDetails(pkg.id, trackId, instantRange)
+    if (!details) {
+      return response.notFound({ message: 'Track not found' })
     }
+
+    return { details }
   }
 }

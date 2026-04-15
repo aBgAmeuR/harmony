@@ -13,7 +13,7 @@ export class RecordingManager extends Manager {
    * GET /ws/2/recording?fmt=json&query=...&limit=...&offset=...&inc=...
    */
   async search(params: SearchRecordingParams, opts: SearchRecordingOptions = {}): Promise<IRecordingList> {
-    const { limit = 1, offset = 0 } = opts
+    const { limit = 2, offset = 0 } = opts
     const query = buildRecordingQuery(params)
     const url = new URL(`${MB_WS_V2_BASE}/recording`)
     url.searchParams.set('fmt', 'json')

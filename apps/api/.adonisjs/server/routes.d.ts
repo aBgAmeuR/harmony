@@ -16,6 +16,7 @@ export type ScannedRoutes = {
     'package.package.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'package.package.stats': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'package.tracks.top': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'package.tracks.get': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'trackId': ParamValue} }
     'package.package.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
@@ -25,6 +26,7 @@ export type ScannedRoutes = {
     'package.package.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'package.package.stats': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'package.tracks.top': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'package.tracks.get': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'trackId': ParamValue} }
   }
   HEAD: {
     'event_stream': { paramsTuple?: []; params?: {} }
@@ -33,6 +35,7 @@ export type ScannedRoutes = {
     'package.package.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'package.package.stats': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'package.tracks.top': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'package.tracks.get': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'trackId': ParamValue} }
   }
   POST: {
     'subscribe': { paramsTuple?: []; params?: {} }

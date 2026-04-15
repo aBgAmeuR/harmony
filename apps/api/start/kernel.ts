@@ -48,4 +48,5 @@ router.use([
 export const middleware = router.named({
   auth: () => import('#middleware/auth_middleware'),
   bindPackage: () => import('#middleware/bind_package_middleware'),
+  bindInstantRange: () => import('#middleware/bind_instant_range_middleware'),
 })

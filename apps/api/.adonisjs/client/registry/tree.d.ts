@@ -33,6 +33,7 @@ export interface ApiDefinition {
     }
     tracks: {
       top: typeof routes['package.tracks.top']
+      get: typeof routes['package.tracks.get']
     }
   }
 }

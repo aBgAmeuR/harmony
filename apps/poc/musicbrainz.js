@@ -1,0 +1,30 @@
+import { MusicBrainzApiV2 } from '@harmony/musicbrainz'
+
+export const mbApi = new MusicBrainzApiV2({
+  appName: 'Harmony',
+  appVersion: '2.6',
+  appContactInfo: 'https://antoinejosset.fr',
+  proxyUrls: [
+    'https://harmony-proxy-01.a-josset.workers.dev/',
+    'https://harmony-proxy-02.a-josset.workers.dev/',
+    'https://harmony-proxy-03.a-josset.workers.dev/',
+    'https://harmony-proxy-04.a-josset.workers.dev/',
+    'https://harmony-proxy-05.a-josset.workers.dev/',
+    'https://harmony-proxy-06.a-josset.workers.dev/',
+    'https://harmony-proxy-07.a-josset.workers.dev/',
+    'https://harmony-proxy-08.a-josset.workers.dev/',
+    'https://harmony-proxy-09.a-josset.workers.dev/',
+    'https://harmony-proxy-10.a-josset.workers.dev/',
+    'https://harmony-proxy-11.a-josset.workers.dev/',
+    'https://harmony-proxy-12.a-josset.workers.dev/',
+    'https://harmony-proxy-13.a-josset.workers.dev/',
+    'https://harmony-proxy-14.a-josset.workers.dev/',
+    'https://harmony-proxy-15.a-josset.workers.dev/',
+    'https://harmony-proxy-16.a-josset.workers.dev/',
+    'https://harmony-proxy-17.a-josset.workers.dev/',
+    'https://harmony-proxy-18.a-josset.workers.dev/',
+    'https://harmony-proxy-19.a-josset.workers.dev/',
+    'https://harmony-proxy-20.a-josset.workers.dev/',
+  ],
+  proxyAuthSecret: '07b473f1af3f4a86dd76542e18dc40639e6fe7acba7894475e6dd644112419bf',
+})

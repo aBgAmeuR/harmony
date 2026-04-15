@@ -1,6 +1,4 @@
-import type { IEntity } from './core.js'
-import type { IAlias } from './core.js'
-import type { IMatch } from './core.js'
+import type { IEntity, IAlias, IMatch, ISearchResult } from './core.js'
 import type { IArtistCredit } from './artist-credit.js'
 import type { IMayHaveRelations } from './relations.js'
 import type { IRelease } from './release.js'
@@ -18,12 +16,6 @@ export interface IRecording extends IEntity, IMayHaveRelations {
 }
 
 export type IRecordingMatch = IRecording & IMatch
-
-export interface ISearchResult {
-  created: string
-  count: number
-  offset: number
-}
 
 export interface IRecordingList extends ISearchResult {
   'recordings': IRecordingMatch[]

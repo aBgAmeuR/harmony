@@ -1,0 +1,17 @@
+{
+    "name": "poc",
+    "version": "0.0.0",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "start": "node index.js"
+    },
+    "dependencies": {
+        "@harmony/musicbrainz": "*",
+        "p-limit": "^3.1.0"
+    },
+    "devDependencies": {
+        "@harmony/tsconfig": "*",
+        "@types/node": "^25.1.0"
+    }
+}

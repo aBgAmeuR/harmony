@@ -1,6 +1,7 @@
 import type Interaction from '#models/interaction'
+import type db from '@adonisjs/lucid/services/db'
 import type { DateTime } from 'luxon'
-import type { RelationSubQueryBuilderContract } from '@adonisjs/lucid/types/relations'
+import type { ModelQueryBuilderContract } from '@adonisjs/lucid/types/model'
 
 export type InstantRange = {
   from?: DateTime
@@ -8,11 +9,27 @@ export type InstantRange = {
 }
 
 /**
- * Applies `interactions.timestamp` bounds for Lucid `Interaction` query builders.
- * For raw `db.from('interactions')` chains, add a sibling helper when a caller needs it.
+ * Applies `interactions.timestamp` bounds for Lucid `Interaction` query builders
+ * (relation subqueries, `Interaction.query()`, etc.).
  */
 export function applyInteractionTimestampRange(
-  query: RelationSubQueryBuilderContract<typeof Interaction>,
+  query: ModelQueryBuilderContract<typeof Interaction, any>,
+  range: InstantRange
+): void {
+  if (range.from) {
+    query.where('timestamp', '>=', range.from.toJSDate())
+  }
+  if (range.to) {
+    query.where('timestamp', '<=', range.to.toJSDate())
+  }
+}
+
+/**
+ * Applies `interactions.timestamp` bounds for raw Knex query builders
+ * returned by `db.from()`.
+ */
+export function applyInstantRangeToRawQuery(
+  query: ReturnType<typeof db.from>,
   range: InstantRange
 ): void {
   if (range.from) {

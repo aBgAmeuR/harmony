@@ -50,7 +50,7 @@ export function TeamSwitcher({
                   {activeTeam.name}
                 </span>
               </div>
-              <HugeiconsIcon icon={UnfoldMoreIcon} strokeWidth={2} className="ml-auto" />
+              <HugeiconsIcon icon={UnfoldMoreIcon} strokeWidth={1.5} className="ml-auto" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent

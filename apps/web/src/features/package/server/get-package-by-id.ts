@@ -1,4 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
+import { client } from '@/lib/api'
 
 export type PackageView = {
   id: string
@@ -11,18 +12,22 @@ export type PackageView = {
 export const getPackageById = createServerFn({ method: 'GET' })
   .inputValidator((input: { packageId: string }) => input)
   .handler(async ({ data }) => {
-    const res = await fetch(
-      `${process.env.VITE_API_URL || 'http://localhost:3333'}/api/v1/package/${data.packageId}`
-    )
+    try {
+      const pkg = await client.api.package.package.show({
+        params: { id: data.packageId },
+      })
 
-    if (res.status === 404) {
+      return {
+        found: true as const,
+        pkg: {
+          id: pkg.id,
+          fileName: pkg.fileName,
+          fileSize: pkg.fileSize,
+          status: pkg.status,
+          createdAt: pkg.createdAt.toString(),
+        },
+      }
+    } catch {
       return { found: false as const }
     }
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch package: ${res.status}`)
-    }
-
-    const pkg = (await res.json()) as PackageView
-    return { found: true as const, pkg }
   })

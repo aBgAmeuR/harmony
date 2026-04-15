@@ -1,14 +1,16 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@harmony/ui/components/avatar'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { MusicNote03Icon } from '@hugeicons/core-free-icons'
+import { cn } from '@harmony/ui/lib/utils'
 
 type CatalogImageProps = {
   image: string | undefined | null
   alt: string
+  className?: string
 }
-export const CatalogImage = ({ image, alt }: CatalogImageProps) => {
+export const CatalogImage = ({ image, alt, className }: CatalogImageProps) => {
   return (
-    <Avatar className="size-8 rounded-md">
+    <Avatar className={cn('size-8 rounded-md after:border-0', className)}>
       <AvatarImage src={image ?? undefined} alt={alt} className="rounded-sm" />
       <AvatarFallback className="rounded-md text-[10px]">
         <HugeiconsIcon icon={MusicNote03Icon} strokeWidth={1} className="size-3" />

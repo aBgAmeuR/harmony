@@ -1,7 +1,9 @@
 import type {
   ICoverArtArchive,
   IEntity,
+  IMatch,
   IReleaseEvent,
+  ISearchResult,
   ReleasePackaging,
   ReleaseStatus,
 } from './core.js'
@@ -28,4 +30,11 @@ export interface IRelease extends IEntity, IMayHaveRelations {
   'release-group'?: IReleaseGroup
   'track-count'?: number
   'count'?: number
+}
+
+export type IReleaseMatch = IRelease & IMatch
+
+export interface IReleaseList extends ISearchResult {
+  'releases': IReleaseMatch[]
+  'releases-count'?: number
 }

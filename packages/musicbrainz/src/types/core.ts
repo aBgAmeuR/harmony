@@ -23,6 +23,12 @@ export interface IMatch {
   score: number
 }
 
+export interface ISearchResult {
+  created: string
+  count: number
+  offset: number
+}
+
 export interface ITag {
   name: string
 }

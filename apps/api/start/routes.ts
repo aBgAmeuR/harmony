@@ -49,7 +49,8 @@ router
       .group(() => {
         router.get('/:id', [controllers.Package, 'show'])
         router.get('/:id/stats', [controllers.Package, 'stats'])
-        router.get('/:id/tracks', [controllers.Tracks, 'top'])
+        router.get('/:id/tracks', [controllers.Tracks, 'top']).use(middleware.bindInstantRange())
+        router.get('/:id/tracks/:trackId', [controllers.Tracks, 'get']).use(middleware.bindInstantRange())
         router.delete('/:id', [controllers.Package, 'destroy'])
       })
       .prefix('package')
