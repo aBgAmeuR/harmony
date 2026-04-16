@@ -28,7 +28,9 @@
     "react-dom": "^19.2.4",
     "tailwindcss": "^4.1.18",
     "torph": "^0.0.9",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "^5.1.4",
+    "zod": "^3.25.76",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@harmony/tsconfig": "*",
