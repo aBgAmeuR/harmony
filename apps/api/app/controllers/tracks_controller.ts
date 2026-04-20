@@ -1,5 +1,5 @@
 import TrackService from '#services/track_service'
-import { trackParamsValidator } from '#validators/instant_range_query'
+import { instantRangeQueryValidator, trackParamsValidator } from '#validators/instant_range_query'
 import { inject } from '@adonisjs/core'
 import { type HttpContext } from '@adonisjs/core/http'
 
@@ -7,7 +7,8 @@ import { type HttpContext } from '@adonisjs/core/http'
 export default class TracksController {
   constructor(private readonly trackService: TrackService) {}
 
-  async top({ pkg, instantRange }: HttpContext) {
+  async top({ request, pkg, instantRange }: HttpContext) {
+    await request.validateUsing(instantRangeQueryValidator)
     const tracks = await this.trackService.getTopTracks(pkg.id, instantRange)
     return { packageId: pkg.publicId, tracks }
   }
