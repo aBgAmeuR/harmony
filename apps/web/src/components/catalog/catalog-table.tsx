@@ -49,14 +49,14 @@ export const CatalogTable = ({
   }
 
   return (
-    <Table>
+    <Table className="pb-2">
       <TableHeader className="bg-muted/50">
         <TableRow className="hover:bg-transparent">
           <TableHead className="w-[35.5px] h-8 pl-4 text-xs text-center font-medium text-muted-foreground">
             #
           </TableHead>
           <TableHead className="h-8 text-xs font-medium text-muted-foreground">Title</TableHead>
-          <TableHead className="h-8 w-28 text-right text-xs font-medium tabular-nums text-muted-foreground">
+          <TableHead className="h-8 w-16 text-right text-xs font-medium tabular-nums text-muted-foreground">
             Streams
           </TableHead>
           <TableHead className="h-8 w-28 pr-4 text-right text-xs font-medium tabular-nums text-muted-foreground">
@@ -81,7 +81,7 @@ export const CatalogTable = ({
           catalog?.map((item, index) => (
             <TableRow
               key={item.id}
-              onClick={() => navigate({ to: '.', search: { track: item.id }, resetScroll: false })}
+              onClick={() => navigate({ to: '.', search: { details: item.id }, resetScroll: false })}
             >
               <TableCell className="pl-4 text-center tabular-nums">
                 <span
@@ -90,7 +90,7 @@ export const CatalogTable = ({
                   {index + 1}
                 </span>
               </TableCell>
-              <TableCell>
+              <TableCell className="max-w-0">
                 <div className="flex min-w-0 items-center gap-3">
                   <CatalogImage image={item.image} alt={item.name} />
                   <div className="min-w-0">

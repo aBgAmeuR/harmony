@@ -60,13 +60,8 @@ export const navConfig = {
     },
     {
       title: 'Albums',
-      url: '#',
+      url: '/albums',
       icon: <HugeiconsIcon icon={Vynil01Icon} className="text-muted-foreground" />,
-      badge: (
-        <Badge variant="outline" className="ms-auto">
-          Soon
-        </Badge>
-      ),
     },
   ],
   insights: [

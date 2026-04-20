@@ -146,8 +146,19 @@ export interface Registry {
       body: {}
       paramsTuple: [ParamValue, ParamValue]
       params: { id: ParamValue; trackId: ParamValue }
-      query: ExtractQueryForGet<InferInput<(typeof import('#validators/instant_range_query').trackParamsValidator)>|InferInput<(typeof import('#validators/instant_range_query').instantRangeQueryValidator)>>
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/instant_range_query').trackParamsValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/tracks_controller').default['get']>>>
+    }
+  }
+  'package.albums.top': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/package/:id/albums'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/instant_range_query').instantRangeQueryValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/albums_controller').default['top']>>>
     }
   }
   'package.package.destroy': {

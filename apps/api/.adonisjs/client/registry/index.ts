@@ -84,6 +84,12 @@ const routes = {
     tokens: [{"old":"/api/v1/package/:id/tracks/:trackId","type":0,"val":"api","end":""},{"old":"/api/v1/package/:id/tracks/:trackId","type":0,"val":"v1","end":""},{"old":"/api/v1/package/:id/tracks/:trackId","type":0,"val":"package","end":""},{"old":"/api/v1/package/:id/tracks/:trackId","type":1,"val":"id","end":""},{"old":"/api/v1/package/:id/tracks/:trackId","type":0,"val":"tracks","end":""},{"old":"/api/v1/package/:id/tracks/:trackId","type":1,"val":"trackId","end":""}],
     types: placeholder as Registry['package.tracks.get']['types'],
   },
+  'package.albums.top': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/package/:id/albums',
+    tokens: [{"old":"/api/v1/package/:id/albums","type":0,"val":"api","end":""},{"old":"/api/v1/package/:id/albums","type":0,"val":"v1","end":""},{"old":"/api/v1/package/:id/albums","type":0,"val":"package","end":""},{"old":"/api/v1/package/:id/albums","type":1,"val":"id","end":""},{"old":"/api/v1/package/:id/albums","type":0,"val":"albums","end":""}],
+    types: placeholder as Registry['package.albums.top']['types'],
+  },
   'package.package.destroy': {
     methods: ["DELETE"],
     pattern: '/api/v1/package/:id',

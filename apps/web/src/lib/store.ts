@@ -1,7 +1,42 @@
 import { useMemo } from 'react'
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { type StateStorage, createJSONStorage, persist } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
+
+const COOKIE_MAX_AGE_ONE_YEAR = 60 * 60 * 24 * 30 // 30 days
+
+export const zustandCookieStorage: StateStorage = {
+  getItem(name: string) {
+    const match = document.cookie.split('; ').find((c) => c.startsWith(`${name}=`))
+    return match ? decodeURIComponent(match.split('=').slice(1).join('=')) : null
+  },
+  setItem(name: string, value: string) {
+    document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${COOKIE_MAX_AGE_ONE_YEAR}`
+  },
+  removeItem(name: string) {
+    document.cookie = `${name}=; path=/; max-age=0`
+  },
+}
+
+export type ViewMode = 'grid' | 'list'
+
+type UserPreferencesState = {
+  viewMode: ViewMode
+  setViewMode: (mode: ViewMode) => void
+}
+
+export const useUserPreferencesStore = create<UserPreferencesState>()(
+  persist(
+    (set) => ({
+      viewMode: 'grid',
+      setViewMode: (viewMode) => set({ viewMode }),
+    }),
+    {
+      name: 'harmony:user-preferences',
+      storage: createJSONStorage(() => zustandCookieStorage),
+    }
+  )
+)
 
 export type DateRangeMode = 'month' | 'year' | 'custom'
 

@@ -35,5 +35,8 @@ export interface ApiDefinition {
       top: typeof routes['package.tracks.top']
       get: typeof routes['package.tracks.get']
     }
+    albums: {
+      top: typeof routes['package.albums.top']
+    }
   }
 }

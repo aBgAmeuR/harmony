@@ -15,6 +15,7 @@ import { Route as AppPackageIdRouteImport } from './routes/app/$packageId'
 import { Route as AppPackageIdIndexRouteImport } from './routes/app/$packageId/index'
 import { Route as AppPackageIdTracksRouteImport } from './routes/app/$packageId/tracks'
 import { Route as AppPackageIdPackageRouteImport } from './routes/app/$packageId/package'
+import { Route as AppPackageIdAlbumsRouteImport } from './routes/app/$packageId/albums'
 
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
@@ -46,11 +47,17 @@ const AppPackageIdPackageRoute = AppPackageIdPackageRouteImport.update({
   path: '/package',
   getParentRoute: () => AppPackageIdRoute,
 } as any)
+const AppPackageIdAlbumsRoute = AppPackageIdAlbumsRouteImport.update({
+  id: '/albums',
+  path: '/albums',
+  getParentRoute: () => AppPackageIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/upload': typeof UploadRoute
   '/app/$packageId': typeof AppPackageIdRouteWithChildren
+  '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
   '/app/$packageId/': typeof AppPackageIdIndexRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/upload': typeof UploadRoute
+  '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
   '/app/$packageId': typeof AppPackageIdIndexRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/upload': typeof UploadRoute
   '/app/$packageId': typeof AppPackageIdRouteWithChildren
+  '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
   '/app/$packageId/': typeof AppPackageIdIndexRoute
@@ -77,6 +86,7 @@ export interface FileRouteTypes {
     | '/'
     | '/upload'
     | '/app/$packageId'
+    | '/app/$packageId/albums'
     | '/app/$packageId/package'
     | '/app/$packageId/tracks'
     | '/app/$packageId/'
@@ -84,6 +94,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/upload'
+    | '/app/$packageId/albums'
     | '/app/$packageId/package'
     | '/app/$packageId/tracks'
     | '/app/$packageId'
@@ -92,6 +103,7 @@ export interface FileRouteTypes {
     | '/'
     | '/upload'
     | '/app/$packageId'
+    | '/app/$packageId/albums'
     | '/app/$packageId/package'
     | '/app/$packageId/tracks'
     | '/app/$packageId/'
@@ -147,16 +159,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPackageIdPackageRouteImport
       parentRoute: typeof AppPackageIdRoute
     }
+    '/app/$packageId/albums': {
+      id: '/app/$packageId/albums'
+      path: '/albums'
+      fullPath: '/app/$packageId/albums'
+      preLoaderRoute: typeof AppPackageIdAlbumsRouteImport
+      parentRoute: typeof AppPackageIdRoute
+    }
   }
 }
 
 interface AppPackageIdRouteChildren {
+  AppPackageIdAlbumsRoute: typeof AppPackageIdAlbumsRoute
   AppPackageIdPackageRoute: typeof AppPackageIdPackageRoute
   AppPackageIdTracksRoute: typeof AppPackageIdTracksRoute
   AppPackageIdIndexRoute: typeof AppPackageIdIndexRoute
 }
 
 const AppPackageIdRouteChildren: AppPackageIdRouteChildren = {
+  AppPackageIdAlbumsRoute: AppPackageIdAlbumsRoute,
   AppPackageIdPackageRoute: AppPackageIdPackageRoute,
   AppPackageIdTracksRoute: AppPackageIdTracksRoute,
   AppPackageIdIndexRoute: AppPackageIdIndexRoute,
