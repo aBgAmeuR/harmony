@@ -4,7 +4,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["build/**", ".adonisjs/**"],
+      "outputs": ["build/**", ".adonisjs/**", "dist/**", ".output/**"],
       "env": [
         "NODE_ENV",
         "APP_KEY",
