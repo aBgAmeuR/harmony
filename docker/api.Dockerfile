@@ -38,14 +38,13 @@ COPY --from=pruner /app/out/full/ ./
 RUN npx turbo run build --filter=api
 
 ############################
-# Prod deps — install runtime-only deps against the built package.json
+# Prod deps — install runtime-only deps from the pruned workspace
 ############################
 FROM base AS prod-deps
 RUN apk add --no-cache python3 make g++ libc6-compat
 
-COPY --from=builder /app/apps/api/build/package.json ./package.json
-RUN npm pkg delete devDependencies \
- && npm install --omit=dev --no-package-lock \
+COPY --from=pruner /app/out/json/ ./
+RUN npm ci --omit=dev \
  && npm cache clean --force
 
 ############################
@@ -63,6 +62,8 @@ RUN apk add --no-cache tini \
  && addgroup -S app && adduser -S app -G app
 
 COPY --from=prod-deps --chown=app:app /app/node_modules ./node_modules
+COPY --from=builder  --chown=app:app /app/packages/musicbrainz/package.json ./packages/musicbrainz/package.json
+COPY --from=builder  --chown=app:app /app/packages/musicbrainz/dist ./packages/musicbrainz/dist
 COPY --from=builder  --chown=app:app /app/apps/api/build ./
 
 USER app
