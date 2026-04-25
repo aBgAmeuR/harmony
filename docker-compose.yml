@@ -1,16 +1,34 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: harmony_postgres
+  api:
+    image: ghcr.io/aBgAmeuR/Harmony/api:latest
+    container_name: harmony-api
+    restart: always
     environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-    ports:
-      - 5432:5432
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: ${API_PORT:-3333}
+      LOG_LEVEL: ${API_LOG_LEVEL:-info}
+      APP_KEY: ${API_APP_KEY:?API_APP_KEY is required}
+      APP_URL: ${API_APP_URL:?API_APP_URL is required}
+      SESSION_DRIVER: ${API_SESSION_DRIVER:-cookie}
+      CORS_ORIGIN: ${API_CORS_ORIGIN:-}
+      PG_HOST: ${API_PG_HOST:?API_PG_HOST is required}
+      PG_PORT: ${API_PG_PORT:-5432}
+      PG_USER: ${API_PG_USER:?API_PG_USER is required}
+      PG_PASSWORD: ${API_PG_PASSWORD:?API_PG_PASSWORD is required}
+      PG_DB_NAME: ${API_PG_DB_NAME:?API_PG_DB_NAME is required}
+      MB_PROXY_SECRET: ${API_MB_PROXY_SECRET:?API_MB_PROXY_SECRET is required}
+      APP_NAME: ${API_APP_NAME:-harmony_api}
+      APP_VERSION: ${API_APP_VERSION:-3.0.0}
+      APP_ENV: ${API_APP_ENV:-production}
 
-volumes:
-  postgres_data:
+  web:
+    image: ghcr.io/aBgAmeuR/Harmony/web:latest
+    container_name: harmony-web
+    restart: always
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: ${WEB_PORT:-3000}
