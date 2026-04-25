@@ -1,2 +1,3 @@
 import { configApp } from '@adonisjs/eslint-config'
-export default configApp()
+
+export default [{ ignores: ['database/schema.ts'] }, ...configApp()]
