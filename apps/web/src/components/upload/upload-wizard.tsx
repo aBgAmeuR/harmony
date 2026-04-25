@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { cn } from '@harmony/ui/lib/utils'
+import { Link } from '@tanstack/react-router'
 import { api } from '../../lib/api'
 import { transmit } from '../../lib/transmit'
+import { Icons } from '../icons'
 import { CARD_TOP_PX, type WizardStep } from './types'
 import { StepNavigation } from './step-navigation'
 import { DecorativeFrame } from './decorative-frame'
@@ -290,6 +292,18 @@ export function UploadWizard() {
           })}
         </div>
       </div>
+
+      <Link
+        to="/"
+        className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-2"
+      >
+        <Icons.logo className="size-7!" />
+        <div className="grid flex-1 text-left text-sm leading-tight">
+          <span className="truncate scroll-m-20 text-lg font-bold tracking-tight text-balance text-foreground">
+            Harmony
+          </span>
+        </div>
+      </Link>
     </div>
   )
 }

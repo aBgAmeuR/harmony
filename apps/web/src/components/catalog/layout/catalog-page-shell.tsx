@@ -12,9 +12,11 @@ type CatalogPageShellRootProps = PropsWithChildren<{
 }>
 
 export function CatalogPageShellRoot({ hasDetails, children }: CatalogPageShellRootProps) {
+  const panelIds = hasDetails ? ['list-panel', 'details-panel'] : ['list-panel']
+
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
     id: 'global-layout',
-    panelIds: hasDetails ? ['list-panel', 'details-panel'] : ['list-panel'],
+    panelIds,
     storage: cookieStorage,
   })
 
