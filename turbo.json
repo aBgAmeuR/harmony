@@ -10,7 +10,8 @@
         "APP_KEY",
         "HOST",
         "PORT",
-        "LOG_LEVEL"
+        "LOG_LEVEL",
+        "VITE_API_URL"
       ]
     },
     "dev": {

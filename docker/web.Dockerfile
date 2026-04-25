@@ -35,7 +35,9 @@ COPY --from=pruner /app/out/json/ ./
 RUN npm ci
 
 COPY --from=pruner /app/out/full/ ./
-ENV NODE_ENV=production
+ARG VITE_API_URL=http://localhost:3333
+ENV NODE_ENV=production \
+    VITE_API_URL=${VITE_API_URL}
 RUN npx turbo run build --filter=web
 
 ############################
