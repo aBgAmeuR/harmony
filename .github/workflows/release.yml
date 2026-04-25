@@ -69,5 +69,5 @@ jobs:
           push: true
           build-args: ${{ matrix.app.build_args }}
           tags: |
-            ghcr.io/${{ github.repository }}/${{ matrix.app.name }}:latest
-            ghcr.io/${{ github.repository }}/${{ matrix.app.name }}:${{ github.sha }}
+            ghcr.io/abgameur/harmony/${{ matrix.app.name }}:latest
+            ghcr.io/abgameur/harmony/${{ matrix.app.name }}:${{ github.sha }}
