@@ -19,7 +19,10 @@
     "test": "turbo test",
     "lint": "turbo lint",
     "format": "turbo format",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "docker:build:api": "docker build -f docker/api.Dockerfile -t harmony-api:local .",
+    "docker:build:web": "docker build -f docker/web.Dockerfile -t harmony-web:local .",
+    "docker:build": "npm run docker:build:api && npm run docker:build:web"
   },
   "devDependencies": {
     "@adonisjs/prettier-config": "^1.4.5",
