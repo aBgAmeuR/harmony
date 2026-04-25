@@ -4,8 +4,6 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "lint": "eslint",
-    "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -35,12 +33,10 @@
   "devDependencies": {
     "@harmony/tsconfig": "*",
     "@tailwindcss/vite": "^4.1.18",
-    "@tanstack/eslint-config": "^0.3.0",
     "@turbo/gen": "^2.8.1",
     "@types/node": "^25.1.0",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
-    "eslint": "^9.39.2",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3"
   },
