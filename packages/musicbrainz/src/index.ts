@@ -38,3 +38,5 @@ export type {
   CaaIndexJson,
   CaaThumbnails,
 } from './types/index.js'
+
+export { MusicBrainzApi as MusicBrainzApiV3 } from './v3/lib/musicbrainz-api.js'

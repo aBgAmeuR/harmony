@@ -1,9 +1,11 @@
-import { MusicBrainzApiV2 } from '@harmony/musicbrainz'
+import { MusicBrainzApiV3 } from '@harmony/musicbrainz'
 
-export const mbApi = new MusicBrainzApiV2({
-  appName: 'Harmony',
-  appVersion: '2.6',
-  appContactInfo: 'https://antoinejosset.fr',
+export const mbApi = new MusicBrainzApiV3({
+  app: {
+    name: 'Harmony',
+    version: '2.6',
+    contactInfo: 'https://antoinejosset.fr',
+  },
   proxyUrls: [
     'https://harmony-proxy-01.a-josset.workers.dev/',
     'https://harmony-proxy-02.a-josset.workers.dev/',

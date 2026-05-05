@@ -30,6 +30,7 @@ console.table([
   { name: 'albums', value: albums.size },
   { name: 'tracks', value: tracks.size },
 ])
+const timer = performance.now()
 
 const albumsTracks = new Map()
 for (const item of interactions) {
@@ -69,7 +70,9 @@ const foundWithQuotes = results.filter((r) => r === 'found (with quotes)').lengt
 const foundWithoutQuotes = results.filter((r) => r === 'found (without quotes)').length
 const found = foundWithQuotes + foundWithoutQuotes
 const missing = results.filter((r) => r === 'missing').length
+const duration = performance.now() - timer
 
+console.log(`Duration: ${duration}ms`)
 console.table([
   { name: 'found with quotes', value: foundWithQuotes },
   { name: 'found without quotes', value: foundWithoutQuotes },
