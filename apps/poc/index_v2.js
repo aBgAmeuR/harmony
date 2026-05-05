@@ -68,13 +68,18 @@ let results2 = 0
 for (const [id, track] of tracksMap) {
   try {
     const resource = await fetch(`https://api.deezer.com/search?q=artist:"${track.artist}" track:"${normalizeTrackName(track.track)}"&strict=on`)
-    await new Promise((resolve) => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 50))
 
     if (resource.status !== 200) {
       throw new Error(`Failed to fetch resource: ${resource.status}`)
     }
-
+    
     const data = await resource.json()
+
+    if (data?.error?.message === 'Quota limit exceeded') {
+      throw new Error(`Rate limit exceeded: ${resource.status}`)
+    }
+
     if (data.data.length <= 0) {
       console.log(`No data found: ${track.track}, ${track.album}, ${track.artist}`)
       continue
