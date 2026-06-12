@@ -1,8 +1,27 @@
 import pLimit from 'p-limit'
-import { mbApi } from './musicbrainz.js'
 import { data } from './data.js'
 
-const limit = pLimit(20)
+const DEEZER_SEARCH = 'https://api.deezer.com/search'
+const REQUEST_GAP_MS = 50
+const PROXY_SECRET = '07b473f1af3f4a86dd76542e18dc40639e6fe7acba7894475e6dd644112419bf'
+
+const PROXY_URLS = [
+  'https://harmony-proxy-15.a-josset.workers.dev',
+  'https://harmony-proxy-16.a-josset.workers.dev',
+  'https://harmony-proxy-17.a-josset.workers.dev',
+  'https://harmony-proxy-18.a-josset.workers.dev',
+  'https://harmony-proxy-19.a-josset.workers.dev',
+  'https://harmony-proxy-20.a-josset.workers.dev',
+  'https://harmony-proxy-21.a-josset.workers.dev',
+  'https://harmony-proxy-22.a-josset.workers.dev',
+  'https://harmony-proxy-23.a-josset.workers.dev',
+  'https://harmony-proxy-24.a-josset.workers.dev',
+  'https://harmony-proxy-25.a-josset.workers.dev',
+]
+
+const CONCURRENCY = PROXY_URLS.length
+const limit = pLimit(CONCURRENCY)
+let proxyRound = 0
 
 const FILE_EXT_REGEX = /\.(mp3|flac|wav|m4a|ogg|opus)$/i
 
@@ -13,10 +32,9 @@ const TRACK_JUNK_PATTERNS = [
   /(?:[\(\[\{])\s*(?:spanish|french|english|german|japanese|mono|stereo)\s*(?:version)?\s*(?:[\)\]\}])/gi,
 ]
 
-
 const artists = new Set()
-const albums = new Set() // album:artist
-const tracks = new Set() // track:album:artist
+const albums = new Set()
+const tracks = new Set()
 
 const interactions = data
   .filter((item) => item.ms_played > 30000)
@@ -40,18 +58,6 @@ console.table([
   { name: 'albums', value: albums.size },
   { name: 'tracks', value: tracks.size },
 ])
-const timer = performance.now()
-
-// const albumsTracks = new Map()
-// for (const item of interactions) {
-//   if (!albumsTracks.has(item.album)) {
-//     albumsTracks.set(item.album, [])
-//   }
-//   albumsTracks.get(item.album).push({
-//     id: item.id,
-//     track: item.track,
-//   })
-// }
 
 const tracksMap = new Map()
 for (const item of interactions) {
@@ -64,116 +70,118 @@ for (const item of interactions) {
   }
 }
 
-let results2 = 0
-for (const [id, track] of tracksMap) {
-  try {
-    const resource = await fetch(`https://api.deezer.com/search?q=artist:"${track.artist}" track:"${normalizeTrackName(track.track)}"&strict=on`)
-    await new Promise((resolve) => setTimeout(resolve, 50))
+const searchStarted = performance.now()
+const outcomes = await Promise.all(
+  [...tracksMap].map(([, meta]) =>
+    limit(async () => {
+      try {
+        const hit = await searchDeezerTrack(meta)
+        if (!hit) {
+          console.log(`Not found: ${meta.track}, ${meta.album}, ${meta.artist}`)
+          return false
+        }
+        console.log(`Found: ${meta.track}, ${meta.album}, ${meta.artist}`)
+        return true
+      } catch (err) {
+        console.log(`Error: ${err}`)
+        return false
+      }
+    })
+  )
+)
+const searchMs = performance.now() - searchStarted
+const foundCount = outcomes.filter(Boolean).length
 
-    if (resource.status !== 200) {
-      throw new Error(`Failed to fetch resource: ${resource.status}`)
-    }
-    
-    const data = await resource.json()
+const uniqueTracks = tracksMap.size
+const seconds = searchMs / 1000
+const tracksPerSec = seconds > 0 ? uniqueTracks / seconds : 0
+console.table([
+  { metric: 'wall time (ms)', value: Math.round(searchMs) },
+  { metric: 'wall time (s)', value: Number(seconds.toFixed(2)) },
+  { metric: 'unique tracks', value: uniqueTracks },
+  { metric: 'tracks / s', value: Number(tracksPerSec.toFixed(1)) },
+])
 
-    if (data?.error?.message === 'Quota limit exceeded') {
-      throw new Error(`Rate limit exceeded: ${resource.status}`)
-    }
+console.log('Results found: ', foundCount)
+console.log(`Percentage: ${((foundCount / tracksMap.size) * 100).toFixed(2)}%`)
 
-    if (data.data.length <= 0) {
-      console.log(`No data found: ${track.track}, ${track.album}, ${track.artist}`)
-      continue
-    }
-
-    results2++
-  } catch (error) {
-    console.log(`Error: ${error}`)
-  }
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-console.log('Results found: ', results2)
-console.log(`Percentage: ${((results2 / tracksMap.size) * 100).toFixed(2)}%`)
-
-// const rg = await mbApi.releases.search({ artist: 'Playboi Carti', release: 'MUSIC - SORRY 4 DA WAIT' })
-// console.log(JSON.stringify(rg['release-groups'], null, 2))
-
-// const results = await Promise.all(
-//   [...albums].map((value) =>
-//     limit(async () => {
-//       const [album, artist] = value.split(':')
-//       const rg = await retryWithBackoff(() =>
-//         mbApi.releaseGroups.search({ artist: artist, release: album })
-//       )
-
-//       if (rg['release-groups'].length <= 0) {
-//         const rg2 = await retryWithBackoff(() =>
-//           mbApi.releaseGroups.search({ artist: artist, release: album }, false)
-//         )
-//         if (rg2['release-groups'].length <= 0) {
-//           console.log(`No release found for ${album} by ${artist}`)
-//           return 'missing'
-//         }
-//         return 'found (without quotes)'
-//       }
-
-//       return 'found (with quotes)'
-//     })
-//   )
-// )
-
-// const foundWithQuotes = results.filter((r) => r === 'found (with quotes)').length
-// const foundWithoutQuotes = results.filter((r) => r === 'found (without quotes)').length
-// const found = foundWithQuotes + foundWithoutQuotes
-// const missing = results.filter((r) => r === 'missing').length
-// const duration = performance.now() - timer
-
-// console.log(`Duration: ${duration}ms`)
-// console.table([
-//   { name: 'found with quotes', value: foundWithQuotes },
-//   { name: 'found without quotes', value: foundWithoutQuotes },
-//   { name: 'found', value: found },
-//   { name: 'missing', value: missing },
-//   { name: 'percentage', value: ((found / (found + missing)) * 100).toFixed(2) },
-// ])
 /**
- * Retry a handler function on error, up to maxRetries,
- * waiting for [1s, 2s, 5s] between retries.
- * @param {() => Promise<any>} handler
- * @param {number} maxRetries
- * @returns {Promise<any>}
+ * @param {string} url
  */
-async function retryWithBackoff(handler, maxRetries = 3) {
-  const delays = [1000, 2000, 5000]
-  let attempt = 0
-  while (true) {
-    try {
-      return await handler()
-    } catch (err) {
-      if (attempt >= maxRetries) throw err
-      const delay = delays[attempt] || delays[delays.length - 1]
-      console.log(`Retrying in ${delay}ms...`, err)
-      await new Promise((res) => setTimeout(res, delay))
-      attempt++
-    }
-  }
+function nextProxyUrl(targetUrl) {
+  const base = PROXY_URLS[proxyRound % PROXY_URLS.length]
+  proxyRound += 1
+  const u = new URL(base)
+  u.searchParams.set('target', targetUrl)
+  return u.toString()
 }
 
+async function fetchDeezerSearch(url) {
+  const proxyUrl = nextProxyUrl(url)
+  const res = await fetch(proxyUrl, {
+    headers: {
+      'X-Harmony-Secret': PROXY_SECRET,
+    },
+  })
+  await sleep(REQUEST_GAP_MS)
+  if (res.status !== 200) {
+    const text = `(${proxyUrl})`
+    throw new Error(`Deezer HTTP ${res.status}: ${text}`)
+  }
+  /** @type {{ data?: unknown[]; error?: { message?: string } }} */
+  const payload = await res.json()
+  if (payload?.error?.message === 'Quota limit exceeded') {
+    throw new Error('Deezer rate limit exceeded')
+  }
+  return payload
+}
 
+/**
+ * @param {{ artist: string; track: string }} meta
+ */
+async function searchDeezerTrack(meta) {
+  const trackName = normalizeTrackName(meta.track)
+
+  const strict = new URLSearchParams({
+    q: `artist:"${meta.artist}" track:"${trackName}"`,
+    strict: 'on',
+  })
+  let payload = await fetchDeezerSearch(`${DEEZER_SEARCH}?${strict}`)
+
+  // if (!deezerHasResults(payload)) {
+  //   const loose = new URLSearchParams({
+  //     q: `"${meta.artist}" "${trackName}"`,
+  //   })
+  //   payload = await fetchDeezerSearch(`${DEEZER_SEARCH}?${loose}`)
+  // }
+
+  return deezerHasResults(payload) ? payload : null
+}
+
+/**
+ * @param {{ data?: unknown[] }} payload
+ */
+function deezerHasResults(payload) {
+  return Array.isArray(payload?.data) && payload.data.length > 0
+}
 
 function normalizeTrackName(title) {
   if (!title) return ''
 
   let cleaned = title.replace(FILE_EXT_REGEX, '')
 
-  TRACK_JUNK_PATTERNS.forEach((regex) => {
+  for (const regex of TRACK_JUNK_PATTERNS) {
+    regex.lastIndex = 0
     cleaned = cleaned.replace(regex, '')
-  })
+  }
 
-  cleaned = cleaned
+  return cleaned
     .replace(/\(\s*\)|\[\s*\]|\{\s*\}/g, '')
     .replace(/\s{2,}/g, ' ')
     .trim()
     .replace(/^[-_]\s*|\s*[-_]$/g, '')
-
-  return cleaned
 }

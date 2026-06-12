@@ -14,6 +14,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppPackageIdRouteImport } from './routes/app/$packageId'
 import { Route as AppPackageIdIndexRouteImport } from './routes/app/$packageId/index'
 import { Route as AppPackageIdTracksRouteImport } from './routes/app/$packageId/tracks'
+import { Route as AppPackageIdSettingsRouteImport } from './routes/app/$packageId/settings'
+import { Route as AppPackageIdPackagev2RouteImport } from './routes/app/$packageId/packagev2'
 import { Route as AppPackageIdPackageRouteImport } from './routes/app/$packageId/package'
 import { Route as AppPackageIdAlbumsRouteImport } from './routes/app/$packageId/albums'
 
@@ -42,6 +44,16 @@ const AppPackageIdTracksRoute = AppPackageIdTracksRouteImport.update({
   path: '/tracks',
   getParentRoute: () => AppPackageIdRoute,
 } as any)
+const AppPackageIdSettingsRoute = AppPackageIdSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppPackageIdRoute,
+} as any)
+const AppPackageIdPackagev2Route = AppPackageIdPackagev2RouteImport.update({
+  id: '/packagev2',
+  path: '/packagev2',
+  getParentRoute: () => AppPackageIdRoute,
+} as any)
 const AppPackageIdPackageRoute = AppPackageIdPackageRouteImport.update({
   id: '/package',
   path: '/package',
@@ -59,6 +71,8 @@ export interface FileRoutesByFullPath {
   '/app/$packageId': typeof AppPackageIdRouteWithChildren
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/package': typeof AppPackageIdPackageRoute
+  '/app/$packageId/packagev2': typeof AppPackageIdPackagev2Route
+  '/app/$packageId/settings': typeof AppPackageIdSettingsRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
   '/app/$packageId/': typeof AppPackageIdIndexRoute
 }
@@ -67,6 +81,8 @@ export interface FileRoutesByTo {
   '/upload': typeof UploadRoute
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/package': typeof AppPackageIdPackageRoute
+  '/app/$packageId/packagev2': typeof AppPackageIdPackagev2Route
+  '/app/$packageId/settings': typeof AppPackageIdSettingsRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
   '/app/$packageId': typeof AppPackageIdIndexRoute
 }
@@ -77,6 +93,8 @@ export interface FileRoutesById {
   '/app/$packageId': typeof AppPackageIdRouteWithChildren
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/package': typeof AppPackageIdPackageRoute
+  '/app/$packageId/packagev2': typeof AppPackageIdPackagev2Route
+  '/app/$packageId/settings': typeof AppPackageIdSettingsRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
   '/app/$packageId/': typeof AppPackageIdIndexRoute
 }
@@ -88,6 +106,8 @@ export interface FileRouteTypes {
     | '/app/$packageId'
     | '/app/$packageId/albums'
     | '/app/$packageId/package'
+    | '/app/$packageId/packagev2'
+    | '/app/$packageId/settings'
     | '/app/$packageId/tracks'
     | '/app/$packageId/'
   fileRoutesByTo: FileRoutesByTo
@@ -96,6 +116,8 @@ export interface FileRouteTypes {
     | '/upload'
     | '/app/$packageId/albums'
     | '/app/$packageId/package'
+    | '/app/$packageId/packagev2'
+    | '/app/$packageId/settings'
     | '/app/$packageId/tracks'
     | '/app/$packageId'
   id:
@@ -105,6 +127,8 @@ export interface FileRouteTypes {
     | '/app/$packageId'
     | '/app/$packageId/albums'
     | '/app/$packageId/package'
+    | '/app/$packageId/packagev2'
+    | '/app/$packageId/settings'
     | '/app/$packageId/tracks'
     | '/app/$packageId/'
   fileRoutesById: FileRoutesById
@@ -152,6 +176,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPackageIdTracksRouteImport
       parentRoute: typeof AppPackageIdRoute
     }
+    '/app/$packageId/settings': {
+      id: '/app/$packageId/settings'
+      path: '/settings'
+      fullPath: '/app/$packageId/settings'
+      preLoaderRoute: typeof AppPackageIdSettingsRouteImport
+      parentRoute: typeof AppPackageIdRoute
+    }
+    '/app/$packageId/packagev2': {
+      id: '/app/$packageId/packagev2'
+      path: '/packagev2'
+      fullPath: '/app/$packageId/packagev2'
+      preLoaderRoute: typeof AppPackageIdPackagev2RouteImport
+      parentRoute: typeof AppPackageIdRoute
+    }
     '/app/$packageId/package': {
       id: '/app/$packageId/package'
       path: '/package'
@@ -172,6 +210,8 @@ declare module '@tanstack/react-router' {
 interface AppPackageIdRouteChildren {
   AppPackageIdAlbumsRoute: typeof AppPackageIdAlbumsRoute
   AppPackageIdPackageRoute: typeof AppPackageIdPackageRoute
+  AppPackageIdPackagev2Route: typeof AppPackageIdPackagev2Route
+  AppPackageIdSettingsRoute: typeof AppPackageIdSettingsRoute
   AppPackageIdTracksRoute: typeof AppPackageIdTracksRoute
   AppPackageIdIndexRoute: typeof AppPackageIdIndexRoute
 }
@@ -179,6 +219,8 @@ interface AppPackageIdRouteChildren {
 const AppPackageIdRouteChildren: AppPackageIdRouteChildren = {
   AppPackageIdAlbumsRoute: AppPackageIdAlbumsRoute,
   AppPackageIdPackageRoute: AppPackageIdPackageRoute,
+  AppPackageIdPackagev2Route: AppPackageIdPackagev2Route,
+  AppPackageIdSettingsRoute: AppPackageIdSettingsRoute,
   AppPackageIdTracksRoute: AppPackageIdTracksRoute,
   AppPackageIdIndexRoute: AppPackageIdIndexRoute,
 }

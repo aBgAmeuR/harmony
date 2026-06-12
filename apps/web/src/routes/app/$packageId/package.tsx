@@ -25,6 +25,7 @@ import {
 } from '@harmony/ui/components/card'
 import { useState } from 'react'
 import { api } from '@/lib/api'
+import { Pipeline } from '@/components/pipeline'
 
 export const Route = createFileRoute('/app/$packageId/package')({
   loader: ({ context }) => {
@@ -172,9 +173,7 @@ function RouteComponent() {
       </section>
 
       <section className="space-y-2">
-        <h2 className="mb-3 text-xs font-semibold text-muted-foreground">
-          Pipeline
-        </h2>
+        <h2 className="mb-3 text-xs font-semibold text-muted-foreground">Pipeline</h2>
         <Card className="gap-0 divide-y divide-border p-0">
           {isLoading ? (
             <div className="px-3 py-3 text-sm text-muted-foreground">Loading upload details...</div>
@@ -233,6 +232,11 @@ function RouteComponent() {
               })
             : null}
         </Card>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="mb-3 text-xs font-semibold text-muted-foreground">Pipeline</h2>
+        <Pipeline />
       </section>
 
       {details?.summary ? (

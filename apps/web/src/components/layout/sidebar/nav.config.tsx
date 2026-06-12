@@ -5,6 +5,8 @@ import {
   Book02Icon,
   Chart03Icon,
   CheckmarkBadge01Icon,
+  Github01FreeIcons,
+  GithubIcon,
   MusicNote03Icon,
   PackageIcon,
   Search01Icon,
@@ -27,6 +29,7 @@ export type SidebarMainItem = {
     url: string
   }>
   badge?: React.ReactNode
+  isExternal?: boolean
 }
 
 export const navConfig = {
@@ -106,14 +109,22 @@ export const navConfig = {
   ],
   secondary: [
     {
+      title: 'Github',
+      url: 'https://github.com/aBgAmeuR/Harmony',
+      icon: <HugeiconsIcon icon={GithubIcon} className="text-muted-foreground" />,
+      isExternal: true,
+    },
+    {
       title: 'Documentation',
       url: '#',
       icon: <HugeiconsIcon icon={Book02Icon} className="text-muted-foreground" />,
+      isExternal: true,
     },
     {
       title: 'Settings',
-      url: '#',
+      url: '/settings',
       icon: <HugeiconsIcon icon={Settings01Icon} className="text-muted-foreground" />,
+      isExternal: false,
     },
   ],
 } satisfies Record<string, Array<SidebarMainItem>>
