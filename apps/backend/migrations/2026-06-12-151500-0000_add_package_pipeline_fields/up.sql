@@ -1,0 +1,5 @@
+ALTER TABLE packages
+  ADD COLUMN started_at TIMESTAMP NULL,
+  ADD COLUMN error_stage TEXT NULL,
+  ADD COLUMN error_message TEXT NULL,
+  ADD COLUMN data JSONB NULL;

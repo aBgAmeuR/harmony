@@ -7,6 +7,7 @@ use std::env;
 use self::models::{NewPackage, Package};
 
 pub mod models;
+pub mod pipeline;
 pub mod schema;
 
 pub type DbPool = Pool<ConnectionManager<PgConnection>>;
@@ -49,4 +50,46 @@ pub fn create_package(
         .values(&new_package)
         .returning(Package::as_returning())
         .get_result(conn)
+}
+
+pub fn mark_running(conn: &mut PgConnection, package_id: i32) -> QueryResult<usize> {
+    use diesel::dsl::now;
+    use schema::packages::dsl::*;
+
+    diesel::update(
+        packages
+            .filter(id.eq(package_id))
+            .filter(status.eq("pending")),
+    )
+        .set((status.eq("running"), started_at.eq(now)))
+        .execute(conn)
+}
+
+pub fn set_completed(
+    conn: &mut PgConnection,
+    package_id: i32,
+    payload: serde_json::Value,
+) -> QueryResult<usize> {
+    use schema::packages::dsl::*;
+
+    diesel::update(packages.find(package_id))
+        .set((status.eq("completed"), data.eq(Some(payload))))
+        .execute(conn)
+}
+
+pub fn set_failed(
+    conn: &mut PgConnection,
+    package_id: i32,
+    stage: &str,
+    message: &str,
+) -> QueryResult<usize> {
+    use schema::packages::dsl::*;
+
+    diesel::update(packages.find(package_id))
+        .set((
+            status.eq("failed"),
+            error_stage.eq(Some(stage)),
+            error_message.eq(Some(message)),
+        ))
+        .execute(conn)
 }

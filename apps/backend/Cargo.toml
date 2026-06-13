@@ -10,16 +10,20 @@ axum-tracing-opentelemetry = "0.33.1"
 init-tracing-opentelemetry = { version="0.37.0", features = [
   "otlp",
   "tracing_subscriber_ext",
-  "metrics"
+  "metrics",
+  "logs"
 ] }
-diesel = { version = "2.2.0", features = ["postgres", "chrono", "r2d2"] }
+diesel = { version = "2.2.0", features = ["postgres", "chrono", "r2d2", "serde_json"] }
 pq-sys = { version = "*", features = ["bundled"] }
 chrono = { version = "0.4", features = ["serde"] }
+opentelemetry = "0.31"
 tracing-opentelemetry = "0.32.1"
 dotenvy = "0.15"
 tracing = "0.1"
-serde = "1.0"
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 rand = "0.9"
 zip = "8.6"
 regex = "1.12"
+dashmap = "6"
+thiserror = "2"

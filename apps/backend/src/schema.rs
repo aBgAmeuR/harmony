@@ -9,5 +9,9 @@ diesel::table! {
         status -> Text,
         updated_at -> Timestamp,
         created_at -> Timestamp,
+        started_at -> Nullable<Timestamp>,
+        error_stage -> Nullable<Text>,
+        error_message -> Nullable<Text>,
+        data -> Nullable<Jsonb>,
     }
 }

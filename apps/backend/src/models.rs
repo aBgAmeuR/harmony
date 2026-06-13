@@ -10,6 +10,10 @@ pub struct Package {
     pub file_name: String,
     pub file_size: i32,
     pub status: String,
+    pub started_at: Option<chrono::NaiveDateTime>,
+    pub error_stage: Option<String>,
+    pub error_message: Option<String>,
+    pub data: Option<serde_json::Value>,
     pub updated_at: chrono::NaiveDateTime,
     pub created_at: chrono::NaiveDateTime,
 }

@@ -1,0 +1,94 @@
+mod error;
+mod stages;
+mod types;
+
+pub use error::PipelineError;
+pub use types::{ArchiveFile, NormalizedInteraction, RawInteraction, TrackKey};
+
+use std::collections::HashMap;
+
+pub struct PipelineStats {
+    pub files_taken_count: usize,
+    pub parse_validated_count: usize,
+    pub parse_invalid_count: usize,
+    pub normalize_kept_count: usize,
+    pub normalize_rejected_count: usize,
+}
+
+impl PipelineStats {
+    pub fn to_json(&self, total_duration_ms: u64) -> serde_json::Value {
+        serde_json::json!({
+            "total_duration_ms": total_duration_ms,
+            "files_taken_count": self.files_taken_count,
+            "parse_validated_count": self.parse_validated_count,
+            "parse_invalid_count": self.parse_invalid_count,
+            "normalize_kept_count": self.normalize_kept_count,
+            "normalize_rejected_count": self.normalize_rejected_count,
+        })
+    }
+}
+
+pub struct PipelineContext {
+    pub package_id: i32,
+    pub zip_bytes: Vec<u8>,
+    pub files: Vec<ArchiveFile>,
+    pub raw: Vec<RawInteraction>,
+    pub normalized: Vec<NormalizedInteraction>,
+    pub catalogue: HashMap<String, TrackKey>,
+    pub stats: PipelineStats,
+}
+
+impl PipelineContext {
+    pub fn new(package_id: i32, zip_bytes: Vec<u8>) -> Self {
+        Self {
+            package_id,
+            zip_bytes,
+            files: Vec::new(),
+            raw: Vec::new(),
+            normalized: Vec::new(),
+            catalogue: HashMap::new(),
+            stats: PipelineStats {
+                files_taken_count: 0,
+                parse_validated_count: 0,
+                parse_invalid_count: 0,
+                normalize_kept_count: 0,
+                normalize_rejected_count: 0,
+            },
+        }
+    }
+}
+
+#[tracing::instrument(
+    skip(ctx),
+    name = "pipeline.run",
+    fields(
+        package_id = ctx.package_id,
+        zip_size_bytes = ctx.zip_bytes.len(),
+        files_taken_count,
+        parse_validated_count,
+        parse_invalid_count,
+        normalize_kept_count,
+        normalize_rejected_count,
+        catalogue_size,
+    ),
+)]
+pub fn run(ctx: &mut PipelineContext) -> Result<(), PipelineError> {
+    stages::extract::run(ctx)?;
+    stages::parse::run(ctx)?;
+    stages::normalize::run(ctx)?;
+
+    record_stats(ctx);
+
+    Ok(())
+}
+
+fn record_stats(ctx: &PipelineContext) {
+    let span = tracing::Span::current();
+    let stats = &ctx.stats;
+    span.record("files_taken_count", stats.files_taken_count as i64);
+    span.record("parse_validated_count", stats.parse_validated_count as i64);
+    span.record("parse_invalid_count", stats.parse_invalid_count as i64);
+    span.record("normalize_kept_count", stats.normalize_kept_count as i64);
+    span.record("normalize_rejected_count", stats.normalize_rejected_count as i64);
+    span.record("catalogue_size", ctx.catalogue.len() as i64);
+}
