@@ -52,6 +52,21 @@ pub enum EnrichError {
 }
 
 #[derive(Debug, thiserror::Error)]
+pub enum AggregateError {
+    #[error("aggregate stage failed")]
+    Failed,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum PersistError {
+    #[error("database pool error: {0}")]
+    Pool(String),
+
+    #[error("database error")]
+    Db(#[from] diesel::result::Error),
+}
+
+#[derive(Debug, thiserror::Error)]
 pub enum PipelineError {
     #[error("extract stage failed")]
     Extract(#[from] ExtractError),
@@ -67,6 +82,12 @@ pub enum PipelineError {
 
     #[error("enrich stage failed")]
     Enrich(#[from] EnrichError),
+
+    #[error("aggregate stage failed")]
+    Aggregate(#[from] AggregateError),
+
+    #[error("persist stage failed")]
+    Persist(#[from] PersistError),
 }
 
 impl PipelineError {
@@ -77,6 +98,8 @@ impl PipelineError {
             Self::Normalize(_) => "normalize",
             Self::Resolve(_) => "resolve",
             Self::Enrich(_) => "enrich",
+            Self::Aggregate(_) => "aggregate",
+            Self::Persist(_) => "persist",
         }
     }
 }

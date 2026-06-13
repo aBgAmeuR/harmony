@@ -11,6 +11,7 @@ use crate::AppState;
 
 pub struct Job {
     pub package_id: i32,
+    pub public_id: String,
     pub parent_cx: Context,
 }
 
@@ -44,6 +45,7 @@ pub async fn run(state: AppState, mut jobs: mpsc::Receiver<Job>) {
 async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
     let Job {
         package_id,
+        public_id,
         parent_cx,
     } = job;
 
@@ -80,7 +82,7 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
                 .map_err(|e| WorkerError::Pool(e.to_string()))?;
             mark_running(&mut conn, package_id)?;
 
-            let mut ctx = PipelineContext::new(package_id, zip_bytes);
+            let mut ctx = PipelineContext::new(package_id, public_id, pool.clone(), zip_bytes);
             let result = pipeline::run(&mut ctx);
 
             match &result {

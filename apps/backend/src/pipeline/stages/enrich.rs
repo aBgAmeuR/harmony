@@ -62,6 +62,9 @@ struct ApiAlbum {
     duration: i64,
     record_type: String,
     genres: ApiGenres,
+    artist: ApiArtist,
+    #[serde(default)]
+    contributors: Vec<ApiArtist>,
 }
 
 fn normalize_release_date(value: Option<String>) -> Option<String> {
@@ -122,6 +125,12 @@ fn map_track(api: ApiTrack) -> (DeezerTrack, Vec<DeezerArtist>) {
 }
 
 fn map_album(api: ApiAlbum) -> DeezerAlbum {
+    let artists: Vec<i64> = if api.contributors.is_empty() {
+        vec![api.artist.id]
+    } else {
+        api.contributors.iter().map(|artist| artist.id).collect()
+    };
+
     DeezerAlbum {
         id: api.id,
         title: api.title,
@@ -131,6 +140,7 @@ fn map_album(api: ApiAlbum) -> DeezerAlbum {
         nb_tracks: api.nb_tracks,
         duration: api.duration,
         album_type: map_album_type(&api.record_type),
+        artists,
     }
 }
 

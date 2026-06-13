@@ -83,6 +83,7 @@ pub async fn upload_package(
             .jobs
             .send(Job {
                 package_id: package.id,
+                public_id: package.public_id.clone(),
                 parent_cx: tracing::Span::current().context(),
             })
             .await

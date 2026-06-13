@@ -5,11 +5,13 @@ mod types;
 
 pub use error::PipelineError;
 pub use types::{
-    ArchiveFile, DeezerAlbum, DeezerAlbumType, DeezerArtist, DeezerTrack, NormalizedInteraction,
-    RawInteraction, TrackKey,
+    ArchiveFile, DeezerAlbum, DeezerAlbumType, DeezerArtist, DeezerTrack, Interaction,
+    NormalizedInteraction, RawInteraction, TrackKey,
 };
 
 use std::collections::HashMap;
+
+use crate::DbPool;
 
 pub struct PipelineStats {
     pub files_taken_count: usize,
@@ -22,6 +24,7 @@ pub struct PipelineStats {
     pub deezer_error_count: usize,
     pub deezer_tracks_fetched_count: usize,
     pub deezer_albums_fetched_count: usize,
+    pub interactions_skipped_count: usize,
 }
 
 impl PipelineStats {
@@ -38,12 +41,15 @@ impl PipelineStats {
             "deezer_error_count": self.deezer_error_count,
             "deezer_tracks_fetched_count": self.deezer_tracks_fetched_count,
             "deezer_albums_fetched_count": self.deezer_albums_fetched_count,
+            "interactions_skipped_count": self.interactions_skipped_count,
         })
     }
 }
 
 pub struct PipelineContext {
     pub package_id: i32,
+    pub public_id: String,
+    pub db_pool: DbPool,
     pub zip_bytes: Vec<u8>,
     pub files: Vec<ArchiveFile>,
     pub raw: Vec<RawInteraction>,
@@ -53,13 +59,16 @@ pub struct PipelineContext {
     pub deezer_tracks: HashMap<i64, DeezerTrack>,
     pub deezer_artists: HashMap<i64, DeezerArtist>,
     pub deezer_albums: HashMap<i64, DeezerAlbum>,
+    pub interactions: Vec<Interaction>,
     pub stats: PipelineStats,
 }
 
 impl PipelineContext {
-    pub fn new(package_id: i32, zip_bytes: Vec<u8>) -> Self {
+    pub fn new(package_id: i32, public_id: String, db_pool: DbPool, zip_bytes: Vec<u8>) -> Self {
         Self {
             package_id,
+            public_id,
+            db_pool,
             zip_bytes,
             files: Vec::new(),
             raw: Vec::new(),
@@ -69,6 +78,7 @@ impl PipelineContext {
             deezer_tracks: HashMap::new(),
             deezer_artists: HashMap::new(),
             deezer_albums: HashMap::new(),
+            interactions: Vec::new(),
             stats: PipelineStats {
                 files_taken_count: 0,
                 parse_validated_count: 0,
@@ -80,6 +90,7 @@ impl PipelineContext {
                 deezer_error_count: 0,
                 deezer_tracks_fetched_count: 0,
                 deezer_albums_fetched_count: 0,
+                interactions_skipped_count: 0,
             },
         }
     }
@@ -102,6 +113,7 @@ impl PipelineContext {
         deezer_error_count,
         deezer_tracks_fetched_count,
         deezer_albums_fetched_count,
+        interactions_skipped_count,
     ),
 )]
 pub fn run(ctx: &mut PipelineContext) -> Result<(), PipelineError> {
@@ -110,6 +122,8 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), PipelineError> {
     stages::normalize::run(ctx)?;
     stages::resolve::run(ctx)?;
     stages::enrich::run(ctx)?;
+    stages::aggregate::run(ctx)?;
+    stages::persist::run(ctx)?;
 
     record_stats(ctx);
 
@@ -138,5 +152,9 @@ fn record_stats(ctx: &PipelineContext) {
     span.record(
         "deezer_albums_fetched_count",
         stats.deezer_albums_fetched_count as i64,
+    );
+    span.record(
+        "interactions_skipped_count",
+        stats.interactions_skipped_count as i64,
     );
 }

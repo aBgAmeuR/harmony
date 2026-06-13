@@ -4,7 +4,7 @@ use dotenvy::dotenv;
 use rand::Rng;
 use std::env;
 
-use self::models::{NewPackage, Package};
+use self::models::{NewPackage, NewPackageData, Package};
 
 pub mod models;
 pub mod pipeline;
@@ -91,5 +91,26 @@ pub fn set_failed(
             error_stage.eq(Some(stage)),
             error_message.eq(Some(message)),
         ))
+        .execute(conn)
+}
+
+pub fn upsert_package_data(
+    conn: &mut PgConnection,
+    public_id: &str,
+    payload: serde_json::Value,
+) -> QueryResult<usize> {
+    use diesel::pg::upsert::excluded;
+    use schema::package_data;
+
+    let row = NewPackageData {
+        public_id,
+        value: payload,
+    };
+
+    diesel::insert_into(package_data::table)
+        .values(&row)
+        .on_conflict(package_data::public_id)
+        .do_update()
+        .set(package_data::value.eq(excluded(package_data::value)))
         .execute(conn)
 }

@@ -34,6 +34,18 @@ pub struct NormalizedInteraction {
     pub offline: bool,
 }
 
+#[derive(serde::Serialize)]
+pub struct Interaction {
+    pub ts: String,
+    pub platform: String,
+    pub ms_played: i64,
+    pub shuffle: bool,
+    pub skipped: bool,
+    pub offline: bool,
+    pub track_id: i64,
+}
+
+#[derive(serde::Serialize)]
 pub struct DeezerTrack {
     pub id: i64,
     pub title: String,
@@ -45,17 +57,20 @@ pub struct DeezerTrack {
     pub album: i64,
 }
 
+#[derive(serde::Serialize)]
 pub struct DeezerArtist {
     pub id: i64,
     pub name: String,
     pub picture: String,
 }
 
+#[derive(serde::Serialize)]
 pub enum DeezerAlbumType {
     Album,
     Single,
 }
 
+#[derive(serde::Serialize)]
 pub struct DeezerAlbum {
     pub id: i64,
     pub title: String,
@@ -65,4 +80,5 @@ pub struct DeezerAlbum {
     pub nb_tracks: i64,
     pub duration: i64,
     pub album_type: DeezerAlbumType,
+    pub artists: Vec<i64>,
 }
