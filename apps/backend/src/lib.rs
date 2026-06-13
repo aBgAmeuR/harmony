@@ -4,7 +4,7 @@ use dotenvy::dotenv;
 use rand::Rng;
 use std::env;
 
-use self::models::{NewPackage, NewPackageData, Package};
+use self::models::{NewPackage, NewPackageData, Package, PackageData};
 
 pub mod models;
 pub mod pipeline;
@@ -92,6 +92,15 @@ pub fn set_failed(
             error_message.eq(Some(message)),
         ))
         .execute(conn)
+}
+
+pub fn get_package_data(conn: &mut PgConnection, public_id: &str) -> QueryResult<PackageData> {
+    use schema::package_data::dsl::{package_data, public_id as public_id_col};
+
+    package_data
+        .filter(public_id_col.eq(public_id))
+        .select(PackageData::as_select())
+        .get_result(conn)
 }
 
 pub fn upsert_package_data(
