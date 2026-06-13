@@ -33,3 +33,36 @@ pub struct NormalizedInteraction {
     pub skipped: bool,
     pub offline: bool,
 }
+
+pub struct DeezerTrack {
+    pub id: i64,
+    pub title: String,
+    pub duration: i64,
+    pub track_position: i64,
+    pub disk_number: i64,
+    pub release_date: Option<String>,
+    pub artists: Vec<i64>,
+    pub album: i64,
+}
+
+pub struct DeezerArtist {
+    pub id: i64,
+    pub name: String,
+    pub picture: String,
+}
+
+pub enum DeezerAlbumType {
+    Album,
+    Single,
+}
+
+pub struct DeezerAlbum {
+    pub id: i64,
+    pub title: String,
+    pub cover: String,
+    pub release_date: Option<String>,
+    pub genres: Vec<String>,
+    pub nb_tracks: i64,
+    pub duration: i64,
+    pub album_type: DeezerAlbumType,
+}

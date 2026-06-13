@@ -1,9 +1,13 @@
+mod deezer;
 mod error;
 mod stages;
 mod types;
 
 pub use error::PipelineError;
-pub use types::{ArchiveFile, NormalizedInteraction, RawInteraction, TrackKey};
+pub use types::{
+    ArchiveFile, DeezerAlbum, DeezerAlbumType, DeezerArtist, DeezerTrack, NormalizedInteraction,
+    RawInteraction, TrackKey,
+};
 
 use std::collections::HashMap;
 
@@ -16,6 +20,8 @@ pub struct PipelineStats {
     pub deezer_resolved_count: usize,
     pub deezer_missed_count: usize,
     pub deezer_error_count: usize,
+    pub deezer_tracks_fetched_count: usize,
+    pub deezer_albums_fetched_count: usize,
 }
 
 impl PipelineStats {
@@ -30,6 +36,8 @@ impl PipelineStats {
             "deezer_resolved_count": self.deezer_resolved_count,
             "deezer_missed_count": self.deezer_missed_count,
             "deezer_error_count": self.deezer_error_count,
+            "deezer_tracks_fetched_count": self.deezer_tracks_fetched_count,
+            "deezer_albums_fetched_count": self.deezer_albums_fetched_count,
         })
     }
 }
@@ -42,6 +50,9 @@ pub struct PipelineContext {
     pub normalized: Vec<NormalizedInteraction>,
     pub catalogue: HashMap<String, TrackKey>,
     pub deezer_matches: HashMap<String, i64>,
+    pub deezer_tracks: HashMap<i64, DeezerTrack>,
+    pub deezer_artists: HashMap<i64, DeezerArtist>,
+    pub deezer_albums: HashMap<i64, DeezerAlbum>,
     pub stats: PipelineStats,
 }
 
@@ -55,6 +66,9 @@ impl PipelineContext {
             normalized: Vec::new(),
             catalogue: HashMap::new(),
             deezer_matches: HashMap::new(),
+            deezer_tracks: HashMap::new(),
+            deezer_artists: HashMap::new(),
+            deezer_albums: HashMap::new(),
             stats: PipelineStats {
                 files_taken_count: 0,
                 parse_validated_count: 0,
@@ -64,6 +78,8 @@ impl PipelineContext {
                 deezer_resolved_count: 0,
                 deezer_missed_count: 0,
                 deezer_error_count: 0,
+                deezer_tracks_fetched_count: 0,
+                deezer_albums_fetched_count: 0,
             },
         }
     }
@@ -84,6 +100,8 @@ impl PipelineContext {
         deezer_resolved_count,
         deezer_missed_count,
         deezer_error_count,
+        deezer_tracks_fetched_count,
+        deezer_albums_fetched_count,
     ),
 )]
 pub fn run(ctx: &mut PipelineContext) -> Result<(), PipelineError> {
@@ -91,6 +109,7 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), PipelineError> {
     stages::parse::run(ctx)?;
     stages::normalize::run(ctx)?;
     stages::resolve::run(ctx)?;
+    stages::enrich::run(ctx)?;
 
     record_stats(ctx);
 
@@ -104,9 +123,20 @@ fn record_stats(ctx: &PipelineContext) {
     span.record("parse_validated_count", stats.parse_validated_count as i64);
     span.record("parse_invalid_count", stats.parse_invalid_count as i64);
     span.record("normalize_kept_count", stats.normalize_kept_count as i64);
-    span.record("normalize_rejected_count", stats.normalize_rejected_count as i64);
+    span.record(
+        "normalize_rejected_count",
+        stats.normalize_rejected_count as i64,
+    );
     span.record("catalogue_size", ctx.catalogue.len() as i64);
     span.record("deezer_resolved_count", stats.deezer_resolved_count as i64);
     span.record("deezer_missed_count", stats.deezer_missed_count as i64);
     span.record("deezer_error_count", stats.deezer_error_count as i64);
+    span.record(
+        "deezer_tracks_fetched_count",
+        stats.deezer_tracks_fetched_count as i64,
+    );
+    span.record(
+        "deezer_albums_fetched_count",
+        stats.deezer_albums_fetched_count as i64,
+    );
 }
