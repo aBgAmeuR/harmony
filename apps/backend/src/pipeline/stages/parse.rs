@@ -42,7 +42,7 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), ParseError> {
                 }
                 Err(err) => {
                     invalid += 1;
-                    tracing::debug!(file = %file.name, error = %err, "skipped invalid interaction");
+                    tracing::info!(file = %file.name, error = %err, "skipped invalid interaction");
                 }
             }
         }

@@ -9,6 +9,11 @@ pub fn init_otel() -> Box<init_tracing_opentelemetry::Guard> {
     let _ = dotenvy::dotenv();
 
     let guard = init_tracing_opentelemetry::TracingConfig::production()
+        .with_compact_format()
+        .with_file_names(false)
+        .with_line_numbers(false)
+        .without_span_events()
+        .with_log_directives("harmony_rs=info,opentelemetry=warn")
         .init_subscriber()
         .expect("failed to initialize OpenTelemetry subscriber");
 

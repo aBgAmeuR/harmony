@@ -5,7 +5,7 @@ use axum::{
 };
 use harmony_rs::create_package;
 use serde::Serialize;
-use tracing::{debug, info};
+use tracing::info;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use crate::worker::Job;
@@ -31,7 +31,7 @@ pub async fn upload_package(
         .await
         .map_err(|err| (StatusCode::BAD_REQUEST, err.to_string()))?
     {
-        debug!(field_name = ?field.name(), "multipart field received");
+        info!(field_name = ?field.name(), "multipart field received");
 
         if field.name() != Some("file") {
             continue;
@@ -43,7 +43,7 @@ pub async fn upload_package(
             .await
             .map_err(|err| (StatusCode::BAD_REQUEST, err.to_string()))?;
 
-        debug!(file_name = %file_name, size_bytes = data.len(), "reading upload bytes");
+        info!(file_name = %file_name, size_bytes = data.len(), "reading upload bytes");
 
         info!(
             file_name = %file_name,

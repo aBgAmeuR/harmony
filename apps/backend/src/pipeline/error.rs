@@ -34,6 +34,15 @@ pub enum NormalizeError {
 }
 
 #[derive(Debug, thiserror::Error)]
+pub enum ResolveError {
+    #[error("missing required Deezer configuration: {0}")]
+    MissingConfig(String),
+
+    #[error("failed to build HTTP client")]
+    HttpClient(#[from] reqwest::Error),
+}
+
+#[derive(Debug, thiserror::Error)]
 pub enum PipelineError {
     #[error("extract stage failed")]
     Extract(#[from] ExtractError),
@@ -43,6 +52,9 @@ pub enum PipelineError {
 
     #[error("normalize stage failed")]
     Normalize(#[from] NormalizeError),
+
+    #[error("resolve stage failed")]
+    Resolve(#[from] ResolveError),
 }
 
 impl PipelineError {
@@ -51,6 +63,7 @@ impl PipelineError {
             Self::Extract(_) => "extract",
             Self::Parse(_) => "parse",
             Self::Normalize(_) => "normalize",
+            Self::Resolve(_) => "resolve",
         }
     }
 }

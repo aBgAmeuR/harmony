@@ -54,7 +54,7 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), ExtractError> {
 
         let content = String::from_utf8_lossy(&content_bytes).into_owned();
 
-        tracing::debug!(file = %name, "matched streaming history file");
+        tracing::info!(file = %name, "matched streaming history file");
         files.push(ArchiveFile { name, content });
     }
 
