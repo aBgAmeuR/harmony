@@ -1,12 +1,14 @@
 import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
 
 import appCss from '@harmony/ui/globals.css?url'
+import '@bprogress/core/css?url'
 import { TooltipProvider } from '@harmony/ui/components/tooltip'
 import { QueryClientProvider } from '@tanstack/react-query'
 import fontsCss from '../styles/fonts.css?url'
-import type { QueryClient} from '@tanstack/react-query';
-import type { api} from '@/lib/api';
+import type { QueryClient } from '@tanstack/react-query'
+import type { api } from '@/lib/api'
 import { queryClient } from '@/lib/api'
+import { RouterProgress } from '@/components/router-progress'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -70,6 +72,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="antialiased">
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
+            <RouterProgress />
             {children}
             <Scripts />
           </TooltipProvider>

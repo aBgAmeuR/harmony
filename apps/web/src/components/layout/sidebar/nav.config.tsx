@@ -5,6 +5,7 @@ import {
   Book02Icon,
   Chart03Icon,
   CheckmarkBadge01Icon,
+  GithubIcon,
   MusicNote03Icon,
   PackageIcon,
   Search01Icon,
@@ -27,6 +28,7 @@ export type SidebarMainItem = {
     url: string
   }>
   badge?: React.ReactNode
+  isExternal?: boolean
 }
 
 export const navConfig = {
@@ -40,18 +42,18 @@ export const navConfig = {
       title: 'My Package',
       url: '/package',
       icon: <HugeiconsIcon icon={PackageIcon} className="text-muted-foreground" />,
-    },
-  ],
-  library: [
-    {
-      title: 'Artists',
-      url: '#',
-      icon: <HugeiconsIcon icon={UserIcon} className="text-muted-foreground" />,
       badge: (
         <Badge variant="outline" className="ms-auto">
           Soon
         </Badge>
       ),
+    },
+  ],
+  library: [
+    {
+      title: 'Artists',
+      url: '/artists',
+      icon: <HugeiconsIcon icon={UserIcon} className="text-muted-foreground" />,
     },
     {
       title: 'Tracks',
@@ -67,7 +69,7 @@ export const navConfig = {
   insights: [
     {
       title: 'Listening Habits',
-      url: '#',
+      url: '/listening-habits',
       icon: <HugeiconsIcon icon={Chart03Icon} className="text-muted-foreground" />,
     },
     {
@@ -106,14 +108,22 @@ export const navConfig = {
   ],
   secondary: [
     {
+      title: 'Github',
+      url: 'https://github.com/aBgAmeuR/Harmony',
+      icon: <HugeiconsIcon icon={GithubIcon} className="text-muted-foreground" />,
+      isExternal: true,
+    },
+    {
       title: 'Documentation',
       url: '#',
       icon: <HugeiconsIcon icon={Book02Icon} className="text-muted-foreground" />,
+      isExternal: true,
     },
     {
       title: 'Settings',
-      url: '#',
+      url: '/settings',
       icon: <HugeiconsIcon icon={Settings01Icon} className="text-muted-foreground" />,
+      isExternal: false,
     },
   ],
 } satisfies Record<string, Array<SidebarMainItem>>

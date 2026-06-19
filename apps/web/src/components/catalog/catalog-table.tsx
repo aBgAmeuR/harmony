@@ -93,7 +93,7 @@ export const CatalogTable = ({
               <TableCell className="max-w-0">
                 <div className="flex min-w-0 items-center gap-3">
                   <CatalogImage image={item.image} alt={item.name} />
-                  <div className="min-w-0">
+                  <div className="min-w-0 min-h-9 flex flex-col justify-center">
                     <p className="truncate text-sm font-medium">{item.name}</p>
                     <p className="truncate text-xs text-muted-foreground">{item.description}</p>
                   </div>

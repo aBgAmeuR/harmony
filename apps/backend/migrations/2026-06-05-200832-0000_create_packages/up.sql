@@ -1,0 +1,9 @@
+CREATE TABLE packages (
+    id SERIAL PRIMARY KEY,
+    public_id TEXT NOT NULL UNIQUE,
+    file_name TEXT NOT NULL,
+    file_size INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+)

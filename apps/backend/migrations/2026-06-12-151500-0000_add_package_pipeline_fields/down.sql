@@ -1,0 +1,5 @@
+ALTER TABLE packages
+  DROP COLUMN IF EXISTS started_at,
+  DROP COLUMN IF EXISTS error_stage,
+  DROP COLUMN IF EXISTS error_message,
+  DROP COLUMN IF EXISTS data;

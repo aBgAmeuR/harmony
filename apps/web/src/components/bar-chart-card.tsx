@@ -66,7 +66,7 @@ export function BarChartCard() {
         </CardAction>
       </CardHeader>
       <CardContent className="pt-0">
-        <ChartContainer config={barChartConfig} className="max-h-[180px] w-full">
+        <ChartContainer config={barChartConfig} className="size-full">
           <BarChart
             accessibilityLayer
             data={barChartData}
