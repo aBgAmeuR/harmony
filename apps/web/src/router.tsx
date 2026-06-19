@@ -1,5 +1,4 @@
 import { createRouter as createTanStackRouter } from '@tanstack/react-router'
-import { BProgress } from '@bprogress/core';
 import { routeTree } from './routeTree.gen'
 import { api, queryClient } from './lib/api'
 
@@ -10,15 +9,6 @@ export function getRouter() {
     scrollRestoration: true,
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
-  })
-
-  router.subscribe('onBeforeNavigate', ({ pathChanged }) => {
-    pathChanged && BProgress.start()
-  })
-
-  // Progress bar Done
-  router.subscribe('onResolved', () => {
-    BProgress.done()
   })
 
   return router

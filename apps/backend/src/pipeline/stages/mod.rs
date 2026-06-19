@@ -5,3 +5,4 @@ pub mod normalize;
 pub mod parse;
 pub mod persist;
 pub mod resolve;
+pub mod verify;

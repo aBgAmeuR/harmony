@@ -69,7 +69,7 @@ export const navConfig = {
   insights: [
     {
       title: 'Listening Habits',
-      url: '#',
+      url: '/listening-habits',
       icon: <HugeiconsIcon icon={Chart03Icon} className="text-muted-foreground" />,
     },
     {

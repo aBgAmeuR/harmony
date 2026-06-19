@@ -52,7 +52,7 @@ export function NavMain({
             >
               <SidebarMenuItem>
                 {!item.items ? (
-                  <SidebarMenuButton asChild tooltip={item.title} isActive={isActive} size="sm">
+                  <SidebarMenuButton asChild tooltip={item.title} isActive={isActive} size="sm" className="text-sm">
                     <Link from="/app/$packageId" to={to} preload="intent" activeOptions={{ exact }}>
                       {item.icon}
                       <span className="text-foreground line-clamp-1">{item.title}</span>

@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { AsyncDuckDBConnection } from '@duckdb/duckdb-wasm'
 import { getDuckDB, registerPackageDatabase } from '@/lib/duckdb'
 
-const PACKAGE_ID = 'gjLSjS'
+const PACKAGE_ID = '667IkR'
 const PACKAGE_DUCKDB_URL = `http://localhost:3000/api/v1/packages/${PACKAGE_ID}/db`
 
 type DbStatus = 'idle' | 'loading' | 'ready' | 'error'

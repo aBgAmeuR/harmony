@@ -25,6 +25,8 @@ pub struct PipelineStats {
     pub deezer_tracks_fetched_count: usize,
     pub deezer_albums_fetched_count: usize,
     pub interactions_skipped_count: usize,
+    pub verify_tracks_skipped_count: usize,
+    pub verify_interactions_skipped_count: usize,
 }
 
 impl PipelineStats {
@@ -42,6 +44,8 @@ impl PipelineStats {
             "deezer_tracks_fetched_count": self.deezer_tracks_fetched_count,
             "deezer_albums_fetched_count": self.deezer_albums_fetched_count,
             "interactions_skipped_count": self.interactions_skipped_count,
+            "verify_tracks_skipped_count": self.verify_tracks_skipped_count,
+            "verify_interactions_skipped_count": self.verify_interactions_skipped_count,
         })
     }
 }
@@ -91,6 +95,8 @@ impl PipelineContext {
                 deezer_tracks_fetched_count: 0,
                 deezer_albums_fetched_count: 0,
                 interactions_skipped_count: 0,
+                verify_tracks_skipped_count: 0,
+                verify_interactions_skipped_count: 0,
             },
         }
     }
@@ -114,6 +120,8 @@ impl PipelineContext {
         deezer_tracks_fetched_count,
         deezer_albums_fetched_count,
         interactions_skipped_count,
+        verify_tracks_skipped_count,
+        verify_interactions_skipped_count,
     ),
 )]
 pub fn run(ctx: &mut PipelineContext) -> Result<(), PipelineError> {
@@ -123,6 +131,7 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), PipelineError> {
     stages::resolve::run(ctx)?;
     stages::enrich::run(ctx)?;
     stages::aggregate::run(ctx)?;
+    stages::verify::run(ctx)?;
     stages::persist::run(ctx)?;
 
     record_stats(ctx);
@@ -156,5 +165,13 @@ fn record_stats(ctx: &PipelineContext) {
     span.record(
         "interactions_skipped_count",
         stats.interactions_skipped_count as i64,
+    );
+    span.record(
+        "verify_tracks_skipped_count",
+        stats.verify_tracks_skipped_count as i64,
+    );
+    span.record(
+        "verify_interactions_skipped_count",
+        stats.verify_interactions_skipped_count as i64,
     );
 }

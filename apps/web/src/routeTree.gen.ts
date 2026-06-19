@@ -20,6 +20,8 @@ import { Route as Appv1PackageIdPackagev2RouteImport } from './routes/appv1/$pac
 import { Route as Appv1PackageIdPackageRouteImport } from './routes/appv1/$packageId/package'
 import { Route as Appv1PackageIdAlbumsRouteImport } from './routes/appv1/$packageId/albums'
 import { Route as AppPackageIdTracksRouteImport } from './routes/app/$packageId/tracks'
+import { Route as AppPackageIdPackageRouteImport } from './routes/app/$packageId/package'
+import { Route as AppPackageIdListeningHabitsRouteImport } from './routes/app/$packageId/listening-habits'
 import { Route as AppPackageIdArtistsRouteImport } from './routes/app/$packageId/artists'
 import { Route as AppPackageIdAlbumsRouteImport } from './routes/app/$packageId/albums'
 
@@ -78,6 +80,17 @@ const AppPackageIdTracksRoute = AppPackageIdTracksRouteImport.update({
   path: '/tracks',
   getParentRoute: () => AppPackageIdRoute,
 } as any)
+const AppPackageIdPackageRoute = AppPackageIdPackageRouteImport.update({
+  id: '/package',
+  path: '/package',
+  getParentRoute: () => AppPackageIdRoute,
+} as any)
+const AppPackageIdListeningHabitsRoute =
+  AppPackageIdListeningHabitsRouteImport.update({
+    id: '/listening-habits',
+    path: '/listening-habits',
+    getParentRoute: () => AppPackageIdRoute,
+  } as any)
 const AppPackageIdArtistsRoute = AppPackageIdArtistsRouteImport.update({
   id: '/artists',
   path: '/artists',
@@ -96,6 +109,8 @@ export interface FileRoutesByFullPath {
   '/appv1/$packageId': typeof Appv1PackageIdRouteWithChildren
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
+  '/app/$packageId/listening-habits': typeof AppPackageIdListeningHabitsRoute
+  '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
   '/appv1/$packageId/albums': typeof Appv1PackageIdAlbumsRoute
   '/appv1/$packageId/package': typeof Appv1PackageIdPackageRoute
@@ -110,6 +125,8 @@ export interface FileRoutesByTo {
   '/app/$packageId': typeof AppPackageIdRouteWithChildren
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
+  '/app/$packageId/listening-habits': typeof AppPackageIdListeningHabitsRoute
+  '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
   '/appv1/$packageId/albums': typeof Appv1PackageIdAlbumsRoute
   '/appv1/$packageId/package': typeof Appv1PackageIdPackageRoute
@@ -126,6 +143,8 @@ export interface FileRoutesById {
   '/appv1/$packageId': typeof Appv1PackageIdRouteWithChildren
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
+  '/app/$packageId/listening-habits': typeof AppPackageIdListeningHabitsRoute
+  '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
   '/appv1/$packageId/albums': typeof Appv1PackageIdAlbumsRoute
   '/appv1/$packageId/package': typeof Appv1PackageIdPackageRoute
@@ -143,6 +162,8 @@ export interface FileRouteTypes {
     | '/appv1/$packageId'
     | '/app/$packageId/albums'
     | '/app/$packageId/artists'
+    | '/app/$packageId/listening-habits'
+    | '/app/$packageId/package'
     | '/app/$packageId/tracks'
     | '/appv1/$packageId/albums'
     | '/appv1/$packageId/package'
@@ -157,6 +178,8 @@ export interface FileRouteTypes {
     | '/app/$packageId'
     | '/app/$packageId/albums'
     | '/app/$packageId/artists'
+    | '/app/$packageId/listening-habits'
+    | '/app/$packageId/package'
     | '/app/$packageId/tracks'
     | '/appv1/$packageId/albums'
     | '/appv1/$packageId/package'
@@ -172,6 +195,8 @@ export interface FileRouteTypes {
     | '/appv1/$packageId'
     | '/app/$packageId/albums'
     | '/app/$packageId/artists'
+    | '/app/$packageId/listening-habits'
+    | '/app/$packageId/package'
     | '/app/$packageId/tracks'
     | '/appv1/$packageId/albums'
     | '/appv1/$packageId/package'
@@ -267,6 +292,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPackageIdTracksRouteImport
       parentRoute: typeof AppPackageIdRoute
     }
+    '/app/$packageId/package': {
+      id: '/app/$packageId/package'
+      path: '/package'
+      fullPath: '/app/$packageId/package'
+      preLoaderRoute: typeof AppPackageIdPackageRouteImport
+      parentRoute: typeof AppPackageIdRoute
+    }
+    '/app/$packageId/listening-habits': {
+      id: '/app/$packageId/listening-habits'
+      path: '/listening-habits'
+      fullPath: '/app/$packageId/listening-habits'
+      preLoaderRoute: typeof AppPackageIdListeningHabitsRouteImport
+      parentRoute: typeof AppPackageIdRoute
+    }
     '/app/$packageId/artists': {
       id: '/app/$packageId/artists'
       path: '/artists'
@@ -287,12 +326,16 @@ declare module '@tanstack/react-router' {
 interface AppPackageIdRouteChildren {
   AppPackageIdAlbumsRoute: typeof AppPackageIdAlbumsRoute
   AppPackageIdArtistsRoute: typeof AppPackageIdArtistsRoute
+  AppPackageIdListeningHabitsRoute: typeof AppPackageIdListeningHabitsRoute
+  AppPackageIdPackageRoute: typeof AppPackageIdPackageRoute
   AppPackageIdTracksRoute: typeof AppPackageIdTracksRoute
 }
 
 const AppPackageIdRouteChildren: AppPackageIdRouteChildren = {
   AppPackageIdAlbumsRoute: AppPackageIdAlbumsRoute,
   AppPackageIdArtistsRoute: AppPackageIdArtistsRoute,
+  AppPackageIdListeningHabitsRoute: AppPackageIdListeningHabitsRoute,
+  AppPackageIdPackageRoute: AppPackageIdPackageRoute,
   AppPackageIdTracksRoute: AppPackageIdTracksRoute,
 }
 

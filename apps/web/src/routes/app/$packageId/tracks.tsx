@@ -7,7 +7,7 @@ import { CatalogTable } from '@/components/catalog/catalog-table'
 import { query } from '@/lib/duck-query'
 import { ViewModeToggle } from '@/components/toolbar/view-mode-toggle'
 
-const topTracksQuery = query.tracks.top.queryOptions({ size: 50, from: '', to: '' })
+const topTracksQuery = query.tracks.top.queryOptions({ size: 50 })
 
 export const Route = createFileRoute('/app/$packageId/tracks')({
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {

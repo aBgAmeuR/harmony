@@ -58,6 +58,12 @@ pub enum AggregateError {
 }
 
 #[derive(Debug, thiserror::Error)]
+pub enum VerifyError {
+    #[error("verify stage failed")]
+    Failed,
+}
+
+#[derive(Debug, thiserror::Error)]
 pub enum PersistError {
     #[error("env var DUCKDB_DATA_DIR not set")]
     MissingDataDir,
@@ -92,6 +98,9 @@ pub enum PipelineError {
     #[error("aggregate stage failed")]
     Aggregate(#[from] AggregateError),
 
+    #[error("verify stage failed")]
+    Verify(#[from] VerifyError),
+
     #[error("persist stage failed")]
     Persist(#[from] PersistError),
 }
@@ -105,6 +114,7 @@ impl PipelineError {
             Self::Resolve(_) => "resolve",
             Self::Enrich(_) => "enrich",
             Self::Aggregate(_) => "aggregate",
+            Self::Verify(_) => "verify",
             Self::Persist(_) => "persist",
         }
     }

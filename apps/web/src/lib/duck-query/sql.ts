@@ -8,9 +8,9 @@ function assertDate(value: string, field: 'from' | 'to') {
   }
 }
 
-function interactionDateFilter(from: string, to: string): string {
-  assertDate(from, 'from')
-  assertDate(to, 'to')
+export function interactionDateFilter(from: string | undefined, to: string | undefined): string {
+  if (from) assertDate(from, 'from')
+  if (to) assertDate(to, 'to')
 
   if (!from && !to) return ''
 

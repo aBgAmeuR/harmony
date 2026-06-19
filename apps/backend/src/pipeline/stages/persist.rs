@@ -2,7 +2,7 @@ use std::env;
 use std::fs::{self, File};
 use std::path::{Path, PathBuf};
 
-use chrono::{NaiveDate, NaiveDateTime};
+use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
 use polars::prelude::*;
 use tempfile::TempDir;
 
@@ -286,9 +286,24 @@ fn parse_timestamp(value: &str) -> Option<i64> {
         return None;
     }
 
-    NaiveDateTime::parse_from_str(trimmed, "%Y-%m-%d %H:%M:%S")
+    const FORMATS: &[&str] = &[
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d %H:%M:%S%.f",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%dT%H:%M:%S%.f",
+        "%Y-%m-%dT%H:%M:%SZ",
+        "%Y-%m-%dT%H:%M:%S%.fZ",
+    ];
+
+    for format in FORMATS {
+        if let Ok(timestamp) = NaiveDateTime::parse_from_str(trimmed, format) {
+            return Some(timestamp.and_utc().timestamp_micros());
+        }
+    }
+
+    DateTime::parse_from_rfc3339(trimmed)
         .ok()
-        .map(|timestamp| timestamp.and_utc().timestamp_micros())
+        .map(|timestamp| timestamp.with_timezone(&Utc).timestamp_micros())
 }
 
 fn album_type_label(album_type: &DeezerAlbumType) -> &'static str {
@@ -404,6 +419,10 @@ mod tests {
     #[test]
     fn parse_timestamp_handles_valid_and_invalid_values() {
         assert!(parse_timestamp("2024-05-01 12:34:56").is_some());
+        assert!(parse_timestamp("2024-05-01 12:34:56.123").is_some());
+        assert!(parse_timestamp("2024-05-01T12:34:56").is_some());
+        assert!(parse_timestamp("2024-05-01T12:34:56Z").is_some());
+        assert!(parse_timestamp("2024-05-01T12:34:56.123Z").is_some());
         assert_eq!(parse_timestamp(""), None);
         assert_eq!(parse_timestamp("invalid"), None);
     }

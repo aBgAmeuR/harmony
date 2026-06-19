@@ -7,7 +7,7 @@ import { query } from '@/lib/duck-query'
 import { CatalogTable } from '@/components/catalog/catalog-table'
 import { ViewModeToggle } from '@/components/toolbar/view-mode-toggle'
 
-const topArtistsQuery = query.artists.top.queryOptions({ size: 50, from: '', to: '' })
+const topArtistsQuery = query.artists.top.queryOptions({ size: 50 })
 
 export const Route = createFileRoute('/app/$packageId/artists')({
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
