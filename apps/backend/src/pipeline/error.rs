@@ -59,11 +59,17 @@ pub enum AggregateError {
 
 #[derive(Debug, thiserror::Error)]
 pub enum PersistError {
-    #[error("database pool error: {0}")]
-    Pool(String),
+    #[error("env var DUCKDB_DATA_DIR not set")]
+    MissingDataDir,
 
-    #[error("database error")]
-    Db(#[from] diesel::result::Error),
+    #[error("I/O error: {0}")]
+    Io(#[from] std::io::Error),
+
+    #[error("polars error: {0}")]
+    Polars(#[from] polars::error::PolarsError),
+
+    #[error("duckdb error: {0}")]
+    DuckDb(#[from] duckdb::Error),
 }
 
 #[derive(Debug, thiserror::Error)]

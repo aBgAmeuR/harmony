@@ -5,12 +5,14 @@ use axum::{
     extract::DefaultBodyLimit,
     routing::{get, post},
 };
+use tower_http::cors::CorsLayer;
 use dashmap::DashMap;
 use harmony_rs::{DbPool, establish_pool};
 use tokio::sync::mpsc;
 
 #[path = "lib/otel.rs"]
 mod otel;
+mod db_file;
 mod package_data;
 mod upload;
 mod worker;
@@ -57,8 +59,6 @@ async fn main() {
 
 fn app(state: AppState) -> Router {
     Router::new()
-        .layer(otel::OtelInResponseLayer::default())
-        .layer(otel::OtelAxumLayer::default())
         .route("/health", get(health))
         .route(
             "/api/v1/packages",
@@ -68,5 +68,12 @@ fn app(state: AppState) -> Router {
             "/api/v1/packages/{id}/data",
             get(package_data::get_package_data),
         )
+        .route(
+            "/api/v1/packages/{id}/db",
+            get(db_file::get_db_file),
+        )
         .with_state(state)
+        .layer(otel::OtelInResponseLayer::default())
+        .layer(otel::OtelAxumLayer::default())
+        .layer(CorsLayer::permissive())
 }

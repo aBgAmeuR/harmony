@@ -27,7 +27,7 @@ import { useState } from 'react'
 import { api } from '@/lib/api'
 import { Pipeline } from '@/components/pipeline'
 
-export const Route = createFileRoute('/app/$packageId/package')({
+export const Route = createFileRoute('/appv1/$packageId/package')({
   loader: ({ context }) => {
     const { queryClient, pkg } = context
     void queryClient.prefetchQuery(

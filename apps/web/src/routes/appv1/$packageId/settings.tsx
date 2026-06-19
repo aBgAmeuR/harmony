@@ -14,7 +14,7 @@ import {
 } from '@harmony/ui/components/card'
 import { format } from '@/utils/format';
 
-export const Route = createFileRoute('/app/$packageId/settings')({
+export const Route = createFileRoute('/appv1/$packageId/settings')({
   component: RouteComponent,
 })
 

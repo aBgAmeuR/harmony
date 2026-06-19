@@ -17,10 +17,10 @@ export function NavSecondary({
   }>
 } & React.ComponentPropsWithoutRef<typeof SidebarMenu>) {
   return (
-    <SidebarMenu {...props}>
+    <SidebarMenu className="gap-0.5" {...props}>
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
-          <SidebarMenuButton asChild size="sm" className="group/external-link">
+          <SidebarMenuButton asChild size="xs" className="group/external-link">
             {item.isExternal ? (
               <a href={item.url} target="_blank" rel="noopener noreferrer">
                 {item.icon}

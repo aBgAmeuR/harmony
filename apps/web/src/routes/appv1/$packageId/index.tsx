@@ -21,7 +21,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Button } from '@harmony/ui/components/button'
 import { BarChartCard } from '@/components/bar-chart-card'
 
-export const Route = createFileRoute('/app/$packageId/')({
+export const Route = createFileRoute('/appv1/$packageId/')({
   component: RouteComponent,
 })
 

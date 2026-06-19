@@ -37,7 +37,7 @@ import { api } from '@/lib/api'
 import { Pipeline } from '@/components/pipeline'
 import { format } from '@/utils/format'
 
-export const Route = createFileRoute('/app/$packageId/packagev2')({
+export const Route = createFileRoute('/appv1/$packageId/packagev2')({
   loader: ({ context }) => {
     const { queryClient, pkg } = context
     void queryClient.prefetchQuery(

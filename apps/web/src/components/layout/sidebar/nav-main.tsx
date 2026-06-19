@@ -30,7 +30,7 @@ export function NavMain({
   return (
     <SidebarGroup>
       {title && <SidebarGroupLabel>{title}</SidebarGroupLabel>}
-      <SidebarMenu>
+      <SidebarMenu className="gap-0.5">
         {items.map((item) => {
           const to = item.url === '/' ? '.' : item.url.startsWith('/') ? `.${item.url}` : item.url
           const exact = item.url === '/'
@@ -52,10 +52,10 @@ export function NavMain({
             >
               <SidebarMenuItem>
                 {!item.items ? (
-                  <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+                  <SidebarMenuButton asChild tooltip={item.title} isActive={isActive} size="sm">
                     <Link from="/app/$packageId" to={to} preload="intent" activeOptions={{ exact }}>
                       {item.icon}
-                      <span className="text-foreground">{item.title}</span>
+                      <span className="text-foreground line-clamp-1">{item.title}</span>
                       {item.badge}
                     </Link>
                   </SidebarMenuButton>
@@ -64,7 +64,7 @@ export function NavMain({
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton tooltip={item.title}>
                         {item.icon}
-                        <span>{item.title}</span>
+                        <span className="line-clamp-1">{item.title}</span>
                         <HugeiconsIcon
                           icon={ArrowRight01Icon}
                           strokeWidth={2}

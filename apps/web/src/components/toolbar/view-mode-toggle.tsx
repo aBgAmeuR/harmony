@@ -4,18 +4,26 @@ import { LayoutGridIcon, Menu01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import React from 'react'
 
-export const ViewModeToggle = () => {
+type ViewModeToggleProps = {
+  size?: 'sm' | 'md'
+}
+
+export const ViewModeToggle = ({ size = 'md' }: ViewModeToggleProps) => {
   const [listLayout, setListLayout] = React.useState<'grid' | 'list'>('list')
 
   return (
     <Button
       asChild
       variant="outline"
-      size="default"
-      className="relative h-8 min-w-16 shrink-0 items-stretch gap-0 p-0.5 shadow-none ring-0 ring-offset-0 focus-visible:ring-0 focus-within:ring-0 active:translate-y-0 focus-visible:border-border dark:focus-visible:border-input focus-within:border-border dark:focus-within:border-input"
+      size={size === 'sm' ? 'sm' : 'default'}
+      className={cn(
+        'relative h-8 min-w-16 shrink-0 items-stretch gap-0 p-0.5 shadow-none ring-0 ring-offset-0 focus-visible:ring-0 focus-within:ring-0 active:translate-y-0 focus-visible:border-border dark:focus-visible:border-input focus-within:border-border dark:focus-within:border-input',
+        size === 'sm' && 'h-7 min-w-7',
+        size === 'md' && 'h-8 min-w-8'
+      )}
     >
       <div role="group" aria-label="Track list layout">
-        <div className="relative flex h-full min-w-16 w-full flex-1">
+        <div className={cn("relative flex size-full flex-1", size === 'sm' && 'min-w-14', size === 'md' && 'min-w-16')}>
           <span
             aria-hidden
             className={cn(
@@ -29,8 +37,10 @@ export const ViewModeToggle = () => {
             aria-label="List view"
             onClick={() => setListLayout('list')}
             className={cn(
-              'relative z-10 flex min-w-8 flex-1 items-center justify-center rounded-sm outline-none ring-0 ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0',
-              listLayout !== 'grid' ? 'text-primary-foreground' : 'text-muted-foreground/70'
+              'relative z-10 flex flex-1 items-center justify-center rounded-sm',
+              listLayout !== 'grid' ? 'text-primary-foreground' : 'text-muted-foreground/70',
+              size === 'sm' && 'min-w-7',
+              size === 'md' && 'min-w-8'
             )}
           >
             <HugeiconsIcon icon={Menu01Icon} strokeWidth={2} className="size-4" />
@@ -41,8 +51,10 @@ export const ViewModeToggle = () => {
             aria-label="Grid view"
             onClick={() => setListLayout('grid')}
             className={cn(
-              'relative z-10 flex min-w-8 flex-1 items-center justify-center rounded-sm outline-none ring-0 ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0',
-              listLayout === 'grid' ? 'text-primary-foreground' : 'text-muted-foreground/70'
+              'relative z-10 flex flex-1 items-center justify-center rounded-sm',
+              listLayout === 'grid' ? 'text-primary-foreground' : 'text-muted-foreground/70',
+              size === 'sm' && 'min-w-7',
+              size === 'md' && 'min-w-8'
             )}
           >
             <HugeiconsIcon icon={LayoutGridIcon} strokeWidth={2} className="size-4" />

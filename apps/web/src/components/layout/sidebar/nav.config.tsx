@@ -5,7 +5,6 @@ import {
   Book02Icon,
   Chart03Icon,
   CheckmarkBadge01Icon,
-  Github01FreeIcons,
   GithubIcon,
   MusicNote03Icon,
   PackageIcon,
@@ -43,18 +42,18 @@ export const navConfig = {
       title: 'My Package',
       url: '/package',
       icon: <HugeiconsIcon icon={PackageIcon} className="text-muted-foreground" />,
-    },
-  ],
-  library: [
-    {
-      title: 'Artists',
-      url: '#',
-      icon: <HugeiconsIcon icon={UserIcon} className="text-muted-foreground" />,
       badge: (
         <Badge variant="outline" className="ms-auto">
           Soon
         </Badge>
       ),
+    },
+  ],
+  library: [
+    {
+      title: 'Artists',
+      url: '/artists',
+      icon: <HugeiconsIcon icon={UserIcon} className="text-muted-foreground" />,
     },
     {
       title: 'Tracks',
