@@ -8,6 +8,8 @@
     "dev": "vite dev"
   },
   "dependencies": {
+    "@bprogress/core": "^1.3.4",
+    "@bprogress/react": "^1.2.7",
     "@harmony/charts": "workspace:*",
     "@harmony/duckdb": "workspace:*",
     "@harmony/font": "workspace:*",

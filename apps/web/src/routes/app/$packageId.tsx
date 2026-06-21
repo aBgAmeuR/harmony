@@ -1,7 +1,9 @@
+import { BProgress } from "@bprogress/core";
+import { Progress, ProgressProvider } from "@bprogress/react";
 import { db } from "@harmony/duckdb";
 import { Icon, Loading03Icon } from "@harmony/icons";
 import { SidebarInset, SidebarProvider } from "@harmony/ui/components/sidebar";
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useRouter } from "@tanstack/react-router";
 
 import { Icons } from "@/components/icons";
 import { AppSidebar } from "@/components/layout/sidebar/app-sidebar";
@@ -16,13 +18,21 @@ export const Route = createFileRoute("/app/$packageId")({
 });
 
 function RouteComponent() {
+  const router = useRouter();
+
+  router.subscribe("onBeforeNavigate", ({ pathChanged }) => pathChanged && BProgress.start());
+  router.subscribe("onResolved", () => BProgress.done());
+
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <Outlet />
-      </SidebarInset>
-    </SidebarProvider>
+    <ProgressProvider options={{ showSpinner: false }} color="#1ED760">
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <Progress />
+          <Outlet />
+        </SidebarInset>
+      </SidebarProvider>
+    </ProgressProvider>
   );
 }
 
