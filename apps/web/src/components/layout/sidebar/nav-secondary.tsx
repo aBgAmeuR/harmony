@@ -1,44 +1,55 @@
-import * as React from 'react'
-
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@harmony/ui/components/sidebar'
-import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import { Link } from '@tanstack/react-router'
+import { Icon, ArrowUpRight01Icon } from "@harmony/icons";
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@harmony/ui/components/sidebar";
+import { Link } from "@tanstack/react-router";
+import * as React from "react";
 
 export function NavSecondary({
   items,
   ...props
 }: {
   items: Array<{
-    title: string
-    url: string
-    icon: React.ReactNode
-    isExternal?: boolean
-  }>
+    title: string;
+    url: string;
+    icon: React.ReactNode;
+    isExternal?: boolean;
+  }>;
 } & React.ComponentPropsWithoutRef<typeof SidebarMenu>) {
   return (
-    <SidebarMenu className="gap-0.5" {...props}>
+    <SidebarMenu {...props}>
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
-          <SidebarMenuButton asChild size="xs" className="group/external-link">
-            {item.isExternal ? (
-              <a href={item.url} target="_blank" rel="noopener noreferrer">
-                {item.icon}
-                <span>{item.title}</span>
-                <HugeiconsIcon
-                  icon={ArrowUpRight01Icon}
-                  className="ms-auto hidden group-hover/external-link:block"
+          {item.isExternal ? (
+            <SidebarMenuButton
+              tooltip={item.title}
+              render={<a href={item.url} />}
+              size="sm"
+              className="group/external-link"
+            >
+              {item.icon}
+              <span>{item.title}</span>
+              <Icon
+                icon={ArrowUpRight01Icon}
+                className="ms-auto hidden group-hover/external-link:block"
+              />
+            </SidebarMenuButton>
+          ) : (
+            <SidebarMenuButton
+              tooltip={item.title}
+              render={
+                <Link
+                  from="/app/$packageId"
+                  to={item.url.startsWith("/") ? `.${item.url}` : item.url}
+                  preload="intent"
                 />
-              </a>
-            ) : (
-              <Link from="/app/$packageId" to={item.url.startsWith('/') ? `.${item.url}` : item.url} preload="intent">
-                {item.icon}
-                <span>{item.title}</span>
-              </Link>
-            )}
-          </SidebarMenuButton>
+              }
+              size="sm"
+            >
+              {item.icon}
+              <span>{item.title}</span>
+            </SidebarMenuButton>
+          )}
         </SidebarMenuItem>
       ))}
     </SidebarMenu>
-  )
+  );
 }

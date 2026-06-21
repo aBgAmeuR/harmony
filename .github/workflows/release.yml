@@ -38,7 +38,7 @@ jobs:
         app:
           - name: api
             dockerfile: docker/api.Dockerfile
-            build_args: ''
+            build_args: ""
           - name: web
             dockerfile: docker/web.Dockerfile
             build_args: |

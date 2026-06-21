@@ -1,19 +1,17 @@
-import * as React from 'react'
-
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
   SidebarHeader,
   SidebarRail,
-} from '@harmony/ui/components/sidebar'
+} from "@harmony/ui/components/sidebar";
+import * as React from "react";
 
-import { NavMain } from './nav-main'
-import { TeamSwitcher } from './team-switcher'
-import { CommandMenu } from './command-menu'
-import { navConfig } from './nav.config'
-import { NavSecondary } from './nav-secondary'
+import { CommandMenu } from "./command-menu";
+import { NavMain } from "./nav-main";
+import { NavSecondary } from "./nav-secondary";
+import { navConfig } from "./nav.config";
+import { TeamSwitcher } from "./team-switcher";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -22,9 +20,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <CommandMenu />
-        </SidebarGroup>
+        <CommandMenu />
         <NavMain items={navConfig.main} />
         <NavMain items={navConfig.library} title="Library" />
         <NavMain items={navConfig.insights} title="Insights" />
@@ -35,5 +31,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

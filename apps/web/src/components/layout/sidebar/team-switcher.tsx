@@ -1,9 +1,6 @@
-'use client'
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@harmony/ui/components/sidebar";
 
-import * as React from 'react'
-
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@harmony/ui/components/sidebar'
-import { Icons } from '@/components/icons'
+import { Icons } from "@/components/icons";
 
 export function TeamSwitcher() {
   return (
@@ -15,7 +12,7 @@ export function TeamSwitcher() {
         >
           <Icons.logo className="size-8!" />
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate scroll-m-20 text-xl font-bold tracking-tight text-balance text-foreground">
+            <span className="scroll-m-20 truncate text-xl font-bold tracking-tight text-balance text-foreground">
               Harmony
             </span>
           </div>
@@ -23,5 +20,5 @@ export function TeamSwitcher() {
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

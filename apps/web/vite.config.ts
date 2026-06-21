@@ -1,30 +1,35 @@
-import { defineConfig } from 'vite'
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-import viteReact from '@vitejs/plugin-react'
-import viteTsConfigPaths from 'vite-tsconfig-paths'
-import tailwindcss from '@tailwindcss/vite'
-import { nitro } from 'nitro/vite'
+import tailwindcss from "@tailwindcss/vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import viteReact from "@vitejs/plugin-react";
+import { nitro } from "nitro/vite";
+import { defineConfig } from "vite";
+import checker from "vite-plugin-checker";
 
-const config = defineConfig({
+export default defineConfig({
   plugins: [
     nitro(),
-    viteTsConfigPaths({
-      projects: ['./tsconfig.json'],
-    }),
     tailwindcss(),
     tanstackStart({
       spa: {
         enabled: true,
       },
+      router: {
+        codeSplittingOptions: {
+          splitBehavior: ({ routeId }) => {
+            if (routeId.startsWith("/app")) {
+              return [["loader", "component", "pendingComponent", "errorComponent"]];
+            }
+          },
+        },
+      },
     }),
-    // tanstackStart({
-    //   spa: {
-    //     enabled: true,
-    //     maskPath: '/app',
-    //   },
-    // }),
     viteReact(),
+    checker({ oxlint: true }),
   ],
-})
-
-export default config
+  server: {
+    port: 3001,
+  },
+  resolve: {
+    tsconfigPaths: true,
+  },
+});

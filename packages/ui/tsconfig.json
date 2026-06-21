@@ -1,10 +1,11 @@
 {
-  "include": ["."],
-  "extends": "@harmony/tsconfig/react-library.json",
+  "extends": "@harmony/config/tsconfig.react.json",
   "compilerOptions": {
+    "noEmit": true,
     "paths": {
       "@harmony/ui/*": ["./src/*"]
     }
   },
+  "include": ["."],
   "exclude": ["node_modules", "dist"]
 }

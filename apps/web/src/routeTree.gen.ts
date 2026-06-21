@@ -11,17 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as Appv1PackageIdRouteImport } from './routes/appv1/$packageId'
 import { Route as AppPackageIdRouteImport } from './routes/app/$packageId'
-import { Route as Appv1PackageIdIndexRouteImport } from './routes/appv1/$packageId/index'
-import { Route as Appv1PackageIdTracksRouteImport } from './routes/appv1/$packageId/tracks'
-import { Route as Appv1PackageIdSettingsRouteImport } from './routes/appv1/$packageId/settings'
-import { Route as Appv1PackageIdPackagev2RouteImport } from './routes/appv1/$packageId/packagev2'
-import { Route as Appv1PackageIdPackageRouteImport } from './routes/appv1/$packageId/package'
-import { Route as Appv1PackageIdAlbumsRouteImport } from './routes/appv1/$packageId/albums'
 import { Route as AppPackageIdTracksRouteImport } from './routes/app/$packageId/tracks'
-import { Route as AppPackageIdPackageRouteImport } from './routes/app/$packageId/package'
-import { Route as AppPackageIdListeningHabitsRouteImport } from './routes/app/$packageId/listening-habits'
 import { Route as AppPackageIdArtistsRouteImport } from './routes/app/$packageId/artists'
 import { Route as AppPackageIdAlbumsRouteImport } from './routes/app/$packageId/albums'
 
@@ -35,62 +26,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Appv1PackageIdRoute = Appv1PackageIdRouteImport.update({
-  id: '/appv1/$packageId',
-  path: '/appv1/$packageId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AppPackageIdRoute = AppPackageIdRouteImport.update({
   id: '/app/$packageId',
   path: '/app/$packageId',
   getParentRoute: () => rootRouteImport,
-} as any)
-const Appv1PackageIdIndexRoute = Appv1PackageIdIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => Appv1PackageIdRoute,
-} as any)
-const Appv1PackageIdTracksRoute = Appv1PackageIdTracksRouteImport.update({
-  id: '/tracks',
-  path: '/tracks',
-  getParentRoute: () => Appv1PackageIdRoute,
-} as any)
-const Appv1PackageIdSettingsRoute = Appv1PackageIdSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => Appv1PackageIdRoute,
-} as any)
-const Appv1PackageIdPackagev2Route = Appv1PackageIdPackagev2RouteImport.update({
-  id: '/packagev2',
-  path: '/packagev2',
-  getParentRoute: () => Appv1PackageIdRoute,
-} as any)
-const Appv1PackageIdPackageRoute = Appv1PackageIdPackageRouteImport.update({
-  id: '/package',
-  path: '/package',
-  getParentRoute: () => Appv1PackageIdRoute,
-} as any)
-const Appv1PackageIdAlbumsRoute = Appv1PackageIdAlbumsRouteImport.update({
-  id: '/albums',
-  path: '/albums',
-  getParentRoute: () => Appv1PackageIdRoute,
 } as any)
 const AppPackageIdTracksRoute = AppPackageIdTracksRouteImport.update({
   id: '/tracks',
   path: '/tracks',
   getParentRoute: () => AppPackageIdRoute,
 } as any)
-const AppPackageIdPackageRoute = AppPackageIdPackageRouteImport.update({
-  id: '/package',
-  path: '/package',
-  getParentRoute: () => AppPackageIdRoute,
-} as any)
-const AppPackageIdListeningHabitsRoute =
-  AppPackageIdListeningHabitsRouteImport.update({
-    id: '/listening-habits',
-    path: '/listening-habits',
-    getParentRoute: () => AppPackageIdRoute,
-  } as any)
 const AppPackageIdArtistsRoute = AppPackageIdArtistsRouteImport.update({
   id: '/artists',
   path: '/artists',
@@ -106,18 +51,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/upload': typeof UploadRoute
   '/app/$packageId': typeof AppPackageIdRouteWithChildren
-  '/appv1/$packageId': typeof Appv1PackageIdRouteWithChildren
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
-  '/app/$packageId/listening-habits': typeof AppPackageIdListeningHabitsRoute
-  '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
-  '/appv1/$packageId/albums': typeof Appv1PackageIdAlbumsRoute
-  '/appv1/$packageId/package': typeof Appv1PackageIdPackageRoute
-  '/appv1/$packageId/packagev2': typeof Appv1PackageIdPackagev2Route
-  '/appv1/$packageId/settings': typeof Appv1PackageIdSettingsRoute
-  '/appv1/$packageId/tracks': typeof Appv1PackageIdTracksRoute
-  '/appv1/$packageId/': typeof Appv1PackageIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -125,33 +61,16 @@ export interface FileRoutesByTo {
   '/app/$packageId': typeof AppPackageIdRouteWithChildren
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
-  '/app/$packageId/listening-habits': typeof AppPackageIdListeningHabitsRoute
-  '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
-  '/appv1/$packageId/albums': typeof Appv1PackageIdAlbumsRoute
-  '/appv1/$packageId/package': typeof Appv1PackageIdPackageRoute
-  '/appv1/$packageId/packagev2': typeof Appv1PackageIdPackagev2Route
-  '/appv1/$packageId/settings': typeof Appv1PackageIdSettingsRoute
-  '/appv1/$packageId/tracks': typeof Appv1PackageIdTracksRoute
-  '/appv1/$packageId': typeof Appv1PackageIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/upload': typeof UploadRoute
   '/app/$packageId': typeof AppPackageIdRouteWithChildren
-  '/appv1/$packageId': typeof Appv1PackageIdRouteWithChildren
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
-  '/app/$packageId/listening-habits': typeof AppPackageIdListeningHabitsRoute
-  '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
-  '/appv1/$packageId/albums': typeof Appv1PackageIdAlbumsRoute
-  '/appv1/$packageId/package': typeof Appv1PackageIdPackageRoute
-  '/appv1/$packageId/packagev2': typeof Appv1PackageIdPackagev2Route
-  '/appv1/$packageId/settings': typeof Appv1PackageIdSettingsRoute
-  '/appv1/$packageId/tracks': typeof Appv1PackageIdTracksRoute
-  '/appv1/$packageId/': typeof Appv1PackageIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,18 +78,9 @@ export interface FileRouteTypes {
     | '/'
     | '/upload'
     | '/app/$packageId'
-    | '/appv1/$packageId'
     | '/app/$packageId/albums'
     | '/app/$packageId/artists'
-    | '/app/$packageId/listening-habits'
-    | '/app/$packageId/package'
     | '/app/$packageId/tracks'
-    | '/appv1/$packageId/albums'
-    | '/appv1/$packageId/package'
-    | '/appv1/$packageId/packagev2'
-    | '/appv1/$packageId/settings'
-    | '/appv1/$packageId/tracks'
-    | '/appv1/$packageId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -178,39 +88,21 @@ export interface FileRouteTypes {
     | '/app/$packageId'
     | '/app/$packageId/albums'
     | '/app/$packageId/artists'
-    | '/app/$packageId/listening-habits'
-    | '/app/$packageId/package'
     | '/app/$packageId/tracks'
-    | '/appv1/$packageId/albums'
-    | '/appv1/$packageId/package'
-    | '/appv1/$packageId/packagev2'
-    | '/appv1/$packageId/settings'
-    | '/appv1/$packageId/tracks'
-    | '/appv1/$packageId'
   id:
     | '__root__'
     | '/'
     | '/upload'
     | '/app/$packageId'
-    | '/appv1/$packageId'
     | '/app/$packageId/albums'
     | '/app/$packageId/artists'
-    | '/app/$packageId/listening-habits'
-    | '/app/$packageId/package'
     | '/app/$packageId/tracks'
-    | '/appv1/$packageId/albums'
-    | '/appv1/$packageId/package'
-    | '/appv1/$packageId/packagev2'
-    | '/appv1/$packageId/settings'
-    | '/appv1/$packageId/tracks'
-    | '/appv1/$packageId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   UploadRoute: typeof UploadRoute
   AppPackageIdRoute: typeof AppPackageIdRouteWithChildren
-  Appv1PackageIdRoute: typeof Appv1PackageIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -229,13 +121,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/appv1/$packageId': {
-      id: '/appv1/$packageId'
-      path: '/appv1/$packageId'
-      fullPath: '/appv1/$packageId'
-      preLoaderRoute: typeof Appv1PackageIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/app/$packageId': {
       id: '/app/$packageId'
       path: '/app/$packageId'
@@ -243,67 +128,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPackageIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/appv1/$packageId/': {
-      id: '/appv1/$packageId/'
-      path: '/'
-      fullPath: '/appv1/$packageId/'
-      preLoaderRoute: typeof Appv1PackageIdIndexRouteImport
-      parentRoute: typeof Appv1PackageIdRoute
-    }
-    '/appv1/$packageId/tracks': {
-      id: '/appv1/$packageId/tracks'
-      path: '/tracks'
-      fullPath: '/appv1/$packageId/tracks'
-      preLoaderRoute: typeof Appv1PackageIdTracksRouteImport
-      parentRoute: typeof Appv1PackageIdRoute
-    }
-    '/appv1/$packageId/settings': {
-      id: '/appv1/$packageId/settings'
-      path: '/settings'
-      fullPath: '/appv1/$packageId/settings'
-      preLoaderRoute: typeof Appv1PackageIdSettingsRouteImport
-      parentRoute: typeof Appv1PackageIdRoute
-    }
-    '/appv1/$packageId/packagev2': {
-      id: '/appv1/$packageId/packagev2'
-      path: '/packagev2'
-      fullPath: '/appv1/$packageId/packagev2'
-      preLoaderRoute: typeof Appv1PackageIdPackagev2RouteImport
-      parentRoute: typeof Appv1PackageIdRoute
-    }
-    '/appv1/$packageId/package': {
-      id: '/appv1/$packageId/package'
-      path: '/package'
-      fullPath: '/appv1/$packageId/package'
-      preLoaderRoute: typeof Appv1PackageIdPackageRouteImport
-      parentRoute: typeof Appv1PackageIdRoute
-    }
-    '/appv1/$packageId/albums': {
-      id: '/appv1/$packageId/albums'
-      path: '/albums'
-      fullPath: '/appv1/$packageId/albums'
-      preLoaderRoute: typeof Appv1PackageIdAlbumsRouteImport
-      parentRoute: typeof Appv1PackageIdRoute
-    }
     '/app/$packageId/tracks': {
       id: '/app/$packageId/tracks'
       path: '/tracks'
       fullPath: '/app/$packageId/tracks'
       preLoaderRoute: typeof AppPackageIdTracksRouteImport
-      parentRoute: typeof AppPackageIdRoute
-    }
-    '/app/$packageId/package': {
-      id: '/app/$packageId/package'
-      path: '/package'
-      fullPath: '/app/$packageId/package'
-      preLoaderRoute: typeof AppPackageIdPackageRouteImport
-      parentRoute: typeof AppPackageIdRoute
-    }
-    '/app/$packageId/listening-habits': {
-      id: '/app/$packageId/listening-habits'
-      path: '/listening-habits'
-      fullPath: '/app/$packageId/listening-habits'
-      preLoaderRoute: typeof AppPackageIdListeningHabitsRouteImport
       parentRoute: typeof AppPackageIdRoute
     }
     '/app/$packageId/artists': {
@@ -326,16 +155,12 @@ declare module '@tanstack/react-router' {
 interface AppPackageIdRouteChildren {
   AppPackageIdAlbumsRoute: typeof AppPackageIdAlbumsRoute
   AppPackageIdArtistsRoute: typeof AppPackageIdArtistsRoute
-  AppPackageIdListeningHabitsRoute: typeof AppPackageIdListeningHabitsRoute
-  AppPackageIdPackageRoute: typeof AppPackageIdPackageRoute
   AppPackageIdTracksRoute: typeof AppPackageIdTracksRoute
 }
 
 const AppPackageIdRouteChildren: AppPackageIdRouteChildren = {
   AppPackageIdAlbumsRoute: AppPackageIdAlbumsRoute,
   AppPackageIdArtistsRoute: AppPackageIdArtistsRoute,
-  AppPackageIdListeningHabitsRoute: AppPackageIdListeningHabitsRoute,
-  AppPackageIdPackageRoute: AppPackageIdPackageRoute,
   AppPackageIdTracksRoute: AppPackageIdTracksRoute,
 }
 
@@ -343,33 +168,10 @@ const AppPackageIdRouteWithChildren = AppPackageIdRoute._addFileChildren(
   AppPackageIdRouteChildren,
 )
 
-interface Appv1PackageIdRouteChildren {
-  Appv1PackageIdAlbumsRoute: typeof Appv1PackageIdAlbumsRoute
-  Appv1PackageIdPackageRoute: typeof Appv1PackageIdPackageRoute
-  Appv1PackageIdPackagev2Route: typeof Appv1PackageIdPackagev2Route
-  Appv1PackageIdSettingsRoute: typeof Appv1PackageIdSettingsRoute
-  Appv1PackageIdTracksRoute: typeof Appv1PackageIdTracksRoute
-  Appv1PackageIdIndexRoute: typeof Appv1PackageIdIndexRoute
-}
-
-const Appv1PackageIdRouteChildren: Appv1PackageIdRouteChildren = {
-  Appv1PackageIdAlbumsRoute: Appv1PackageIdAlbumsRoute,
-  Appv1PackageIdPackageRoute: Appv1PackageIdPackageRoute,
-  Appv1PackageIdPackagev2Route: Appv1PackageIdPackagev2Route,
-  Appv1PackageIdSettingsRoute: Appv1PackageIdSettingsRoute,
-  Appv1PackageIdTracksRoute: Appv1PackageIdTracksRoute,
-  Appv1PackageIdIndexRoute: Appv1PackageIdIndexRoute,
-}
-
-const Appv1PackageIdRouteWithChildren = Appv1PackageIdRoute._addFileChildren(
-  Appv1PackageIdRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   UploadRoute: UploadRoute,
   AppPackageIdRoute: AppPackageIdRouteWithChildren,
-  Appv1PackageIdRoute: Appv1PackageIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

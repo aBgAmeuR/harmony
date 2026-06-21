@@ -1,4 +1,3 @@
-
 [harmony.webm](https://github.com/user-attachments/assets/93851771-a205-47fe-9e49-82a92d8bb246)
 
 ## Harmony
@@ -55,13 +54,13 @@ Personal Spotify analytics, rebuilt with a modern stack and a focus on speed, pr
 
 ## Quick start
 
-1) Install dependencies
+1. Install dependencies
 
 ```bash
 pnpm install
 ```
 
-2) Create `.env` at repo root
+2. Create `.env` at repo root
 
 ```bash
 DATABASE_URL="postgresql://user:password@localhost:5432/harmony"
@@ -78,19 +77,19 @@ CRON_SECRET="choose-a-strong-secret"   # for scheduled ranking updates
 NEXTAUTH_URL="http://localhost:3000"   # set in production
 ```
 
-3) Initialize the database
+3. Initialize the database
 
 ```bash
 pnpm db:push
 ```
 
-4) Start development (Web on `http://localhost:3000`)
+4. Start development (Web on `http://localhost:3000`)
 
 ```bash
 pnpm dev
 ```
 
-5) Optional tools
+5. Optional tools
 
 ```bash
 pnpm studio                 # Drizzle Studio

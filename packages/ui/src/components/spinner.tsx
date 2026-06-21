@@ -1,19 +1,18 @@
-import type { ComponentProps } from "react"
+import { Icon, Loading03Icon } from "@harmony/icons";
+import { cn } from "@harmony/ui/lib/utils";
 
-import { cn } from "@harmony/ui/lib/utils"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Loading03Icon } from "@hugeicons/core-free-icons"
-
-function Spinner({ className }: Pick<ComponentProps<"svg">, "className">) {
+function Spinner({ className, strokeWidth = 2, ...props }: React.ComponentProps<"svg">) {
   return (
-    <HugeiconsIcon
+    <Icon
+      strokeWidth={Number(strokeWidth)}
       icon={Loading03Icon}
-      strokeWidth={2}
+      data-slot="spinner"
       role="status"
       aria-label="Loading"
       className={cn("size-4 animate-spin", className)}
+      {...props}
     />
-  )
+  );
 }
 
-export { Spinner }
+export { Spinner };
