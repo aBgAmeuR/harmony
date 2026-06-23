@@ -4,7 +4,7 @@ import { topAlbumsFn } from "./queries/top";
 
 export const albumsQueries = {
   top: {
-    queryOptions: ({ size }: { size: number }) =>
+    queryOptions: ({ size = 50 }: { size?: number }) =>
       queryOptions({
         queryKey: ["albums", "top", { size }],
         queryFn: () => topAlbumsFn({ size }),

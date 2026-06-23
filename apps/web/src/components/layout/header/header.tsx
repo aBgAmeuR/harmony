@@ -1,6 +1,7 @@
 import { ArrowDown01Icon, FilterIcon, Icon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
 
+import { DateRangeFilter } from "./date-range-filter";
 import { ViewModeToggle } from "./view-mode-toggle";
 
 type HeaderProps = {
@@ -33,7 +34,7 @@ export function Header({ title }: HeaderProps) {
           Filters
         </Button>
         <ViewModeToggle size="sm" />
-        <Button variant="secondary">12 Jan 2024 - 15 Mar 2026</Button>
+        <DateRangeFilter />
       </div>
     </header>
   );

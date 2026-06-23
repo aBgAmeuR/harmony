@@ -5,7 +5,7 @@ import { CatalogTable } from "@/components/catalog/catalog-table";
 import { Header } from "@/components/layout/header/header";
 import { query } from "@/lib/query";
 
-const topAlbumsQuery = query.albums.top.queryOptions({ size: 50 });
+const topAlbumsQuery = query.albums.top.queryOptions({});
 
 export const Route = createFileRoute("/app/$packageId/albums")({
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {

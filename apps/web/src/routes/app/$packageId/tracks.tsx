@@ -5,7 +5,7 @@ import { CatalogTable } from "@/components/catalog/catalog-table";
 import { Header } from "@/components/layout/header/header";
 import { query } from "@/lib/query";
 
-const topTracksQuery = query.tracks.top.queryOptions({ size: 50 });
+const topTracksQuery = query.tracks.top.queryOptions({});
 
 export const Route = createFileRoute("/app/$packageId/tracks")({
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
