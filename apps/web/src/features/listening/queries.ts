@@ -2,11 +2,13 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { activeDaysFn } from "./queries/active-days";
 import { daysOfWeekFn } from "./queries/days-of-week";
+import { listeningStyleFn } from "./queries/listening-style";
 import { listeningTimeFn } from "./queries/listening-time";
 import { monthlyActivityFn } from "./queries/monthly-activity";
 import { peakHoursFn } from "./queries/peak-hours";
 import { platformsFn } from "./queries/platforms";
 import { totalStreamsFn } from "./queries/total-streams";
+import { trackEngagementFn } from "./queries/track-engagement";
 import { uniqueTracksFn } from "./queries/unique-tracks";
 
 export const listeningQueries = {
@@ -64,6 +66,20 @@ export const listeningQueries = {
       queryOptions({
         queryKey: ["listening", "platforms"],
         queryFn: () => platformsFn(),
+      }),
+  },
+  listeningStyle: {
+    queryOptions: () =>
+      queryOptions({
+        queryKey: ["listening", "listening-style"],
+        queryFn: () => listeningStyleFn(),
+      }),
+  },
+  trackEngagement: {
+    queryOptions: () =>
+      queryOptions({
+        queryKey: ["listening", "track-engagement"],
+        queryFn: () => trackEngagementFn(),
       }),
   },
 };

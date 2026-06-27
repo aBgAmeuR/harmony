@@ -41,3 +41,13 @@ export type PlatformPoint = {
   label: string;
   value: number;
 };
+
+export type ListeningStyleMetric = {
+  label: string;
+  value: number;
+};
+
+export type TrackEngagementStage = {
+  label: string;
+  value: number;
+};
