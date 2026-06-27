@@ -7,10 +7,16 @@ import { FormattedMetric } from "@/components/format/formatted-metric";
 import { MetricSparkline } from "./metric-sparkline";
 import { listeningQueries } from "../queries";
 
+type ListeningMetricQuery = (typeof listeningQueries)[
+  | "listeningTime"
+  | "totalStreams"
+  | "activeDays"
+  | "uniqueTracks"];
+
 type MetricCardProps = {
   label: string;
   unit?: string;
-  query: (typeof listeningQueries)[keyof typeof listeningQueries];
+  query: ListeningMetricQuery;
 };
 
 export const MetricCard = ({ label, unit, query }: MetricCardProps) => {

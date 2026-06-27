@@ -16,3 +16,18 @@ export type ListeningHabitTrendRow = {
 export type ListeningHabitValueRow = {
   value: number | null;
 };
+
+export type MonthlyActivityPoint = {
+  name: string;
+  value: number;
+};
+
+export type DayOfWeekRow = {
+  day_index: number;
+  value: number;
+};
+
+export type DaysOfWeekChartData = {
+  metrics: { key: string; label: string }[];
+  data: { label: string; values: Record<string, number> }[];
+};
