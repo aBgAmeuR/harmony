@@ -7,6 +7,8 @@ import { ActiveDaysWidget } from "@/features/listening/widgets/active-days-widge
 import { DaysOfWeekWidget } from "@/features/listening/widgets/days-of-week-widget";
 import { ListeningTimeWidget } from "@/features/listening/widgets/listening-time-widget";
 import { MonthlyActivityWidget } from "@/features/listening/widgets/monthly-activity-widget";
+import { PeakHoursWidget } from "@/features/listening/widgets/peak-hours-widget";
+import { PlatformsWidget } from "@/features/listening/widgets/platforms-widget";
 import { TotalStreamsWidget } from "@/features/listening/widgets/total-streams-widget";
 import { UniqueTracksWidget } from "@/features/listening/widgets/unique-tracks-widget";
 
@@ -32,6 +34,12 @@ export const Route = createFileRoute("/app/$packageId/listening")({
       queryClient.ensureQueryData(
         query.listeningHabits.daysOfWeek.queryOptions(),
       ),
+      queryClient.ensureQueryData(
+        query.listeningHabits.peakHours.queryOptions(),
+      ),
+      queryClient.ensureQueryData(
+        query.listeningHabits.platforms.queryOptions(),
+      ),
     ]);
   },
   component: RouteComponent,
@@ -51,6 +59,10 @@ function RouteComponent() {
         <div className="grid grid-cols-1 divide-y divide-border border-t border-border sm:grid-cols-[3fr_1fr] sm:divide-x sm:divide-y-0">
           <MonthlyActivityWidget />
           <DaysOfWeekWidget />
+        </div>
+        <div className="grid grid-cols-1 divide-y divide-border border-t border-border sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+          <PeakHoursWidget />
+          <PlatformsWidget />
         </div>
         <div className="border-t border-border"></div>
       </main>

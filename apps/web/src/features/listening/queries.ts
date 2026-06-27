@@ -4,6 +4,8 @@ import { activeDaysFn } from "./queries/active-days";
 import { daysOfWeekFn } from "./queries/days-of-week";
 import { listeningTimeFn } from "./queries/listening-time";
 import { monthlyActivityFn } from "./queries/monthly-activity";
+import { peakHoursFn } from "./queries/peak-hours";
+import { platformsFn } from "./queries/platforms";
 import { totalStreamsFn } from "./queries/total-streams";
 import { uniqueTracksFn } from "./queries/unique-tracks";
 
@@ -48,6 +50,20 @@ export const listeningQueries = {
       queryOptions({
         queryKey: ["listening", "days-of-week"],
         queryFn: () => daysOfWeekFn(),
+      }),
+  },
+  peakHours: {
+    queryOptions: () =>
+      queryOptions({
+        queryKey: ["listening", "peak-hours"],
+        queryFn: () => peakHoursFn(),
+      }),
+  },
+  platforms: {
+    queryOptions: () =>
+      queryOptions({
+        queryKey: ["listening", "platforms"],
+        queryFn: () => platformsFn(),
       }),
   },
 };

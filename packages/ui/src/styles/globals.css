@@ -64,6 +64,11 @@
   --color-chart-foreground-muted: var(--chart-foreground-muted);
   --color-chart-foreground: var(--chart-foreground);
   --color-chart-background: var(--chart-background);
+  --color-legend-track: var(--background);
+  --color-legend-muted-foreground: var(--muted-foreground);
+  --color-legend-muted: var(--muted);
+  --color-legend-foreground: var(--foreground);
+  --color-legend: var(--muted);
 }
 
 :root {

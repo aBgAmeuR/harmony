@@ -1,5 +1,6 @@
 export * from "./components/charts/heatmap";
 export * from "./components/charts/tooltip";
+export * from "./components/charts/legend";
 export * from "./components/charts/animation";
 export * from "./components/charts/area";
 export * from "./components/charts/area-chart";

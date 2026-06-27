@@ -31,3 +31,13 @@ export type DaysOfWeekChartData = {
   metrics: { key: string; label: string }[];
   data: { label: string; values: Record<string, number> }[];
 };
+
+export type PeakHourPoint = {
+  name: string;
+  value: number;
+};
+
+export type PlatformPoint = {
+  label: string;
+  value: number;
+};
