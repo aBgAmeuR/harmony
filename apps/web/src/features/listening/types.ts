@@ -55,3 +55,15 @@ export type TrackEngagementStage = {
 };
 
 export type WhenYouListenByYear = Record<number, HeatmapColumn[]>;
+
+export type ReleaseYearPoint = {
+  name: string;
+  value: number;
+};
+
+export type GenreSegment = {
+  key: string;
+  label: string;
+  value: number;
+  percentage: number;
+};

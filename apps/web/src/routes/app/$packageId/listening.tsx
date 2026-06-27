@@ -5,11 +5,13 @@ import { query } from "@/lib/query";
 
 import { ActiveDaysWidget } from "@/features/listening/widgets/active-days-widget";
 import { DaysOfWeekWidget } from "@/features/listening/widgets/days-of-week-widget";
+import { GenresWidget } from "@/features/listening/widgets/genres-widget";
 import { ListeningStyleWidget } from "@/features/listening/widgets/listening-style-widget";
 import { ListeningTimeWidget } from "@/features/listening/widgets/listening-time-widget";
 import { MonthlyActivityWidget } from "@/features/listening/widgets/monthly-activity-widget";
 import { PeakHoursWidget } from "@/features/listening/widgets/peak-hours-widget";
 import { PlatformsWidget } from "@/features/listening/widgets/platforms-widget";
+import { ReleaseYearWidget } from "@/features/listening/widgets/release-year-widget";
 import { TotalStreamsWidget } from "@/features/listening/widgets/total-streams-widget";
 import { TrackEngagementWidget } from "@/features/listening/widgets/track-engagement-widget";
 import { UniqueTracksWidget } from "@/features/listening/widgets/unique-tracks-widget";
@@ -52,6 +54,10 @@ export const Route = createFileRoute("/app/$packageId/listening")({
       queryClient.ensureQueryData(
         query.listeningHabits.whenYouListen.queryOptions(),
       ),
+      queryClient.ensureQueryData(
+        query.listeningHabits.releaseYear.queryOptions(),
+      ),
+      queryClient.ensureQueryData(query.listeningHabits.genres.queryOptions()),
     ]);
   },
   component: RouteComponent,
@@ -74,7 +80,6 @@ function RouteComponent() {
         </div>
         <div className="border-t border-border">
           <WhenYouListenWidget />
-          <div></div>
         </div>
         <div className="grid grid-cols-1 divide-y divide-border border-t border-border sm:grid-cols-2 sm:divide-x sm:divide-y-0">
           <PeakHoursWidget />
@@ -83,6 +88,10 @@ function RouteComponent() {
         <div className="grid grid-cols-1 divide-y divide-border border-t border-border md:grid-cols-[1fr_2fr] md:divide-x md:divide-y-0">
           <ListeningStyleWidget />
           <TrackEngagementWidget />
+        </div>
+        <div className="grid grid-cols-1 divide-y divide-border border-t border-border sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+          <ReleaseYearWidget />
+          <GenresWidget />
         </div>
       </main>
     </div>

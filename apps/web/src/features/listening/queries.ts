@@ -10,6 +10,8 @@ import { platformsFn } from "./queries/platforms";
 import { totalStreamsFn } from "./queries/total-streams";
 import { trackEngagementFn } from "./queries/track-engagement";
 import { uniqueTracksFn } from "./queries/unique-tracks";
+import { genresFn } from "./queries/genres";
+import { releaseYearFn } from "./queries/release-year";
 import { whenYouListenFn } from "./queries/when-you-listen";
 
 export const listeningQueries = {
@@ -88,6 +90,20 @@ export const listeningQueries = {
       queryOptions({
         queryKey: ["listening", "when-you-listen"],
         queryFn: () => whenYouListenFn(),
+      }),
+  },
+  releaseYear: {
+    queryOptions: () =>
+      queryOptions({
+        queryKey: ["listening", "release-year"],
+        queryFn: () => releaseYearFn(),
+      }),
+  },
+  genres: {
+    queryOptions: () =>
+      queryOptions({
+        queryKey: ["listening", "genres"],
+        queryFn: () => genresFn(),
       }),
   },
 };

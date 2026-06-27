@@ -272,14 +272,13 @@ const BarInner = memo(function BarInner({
 
         if (isHorizontal) {
           // Horizontal bars: category on y-axis, value on x-axis
-          const valuePos = scale(value) ?? 0;
-          barW = valuePos; // Width is the value position (grows from left)
           barHeight = barWidth;
 
           if (stacked && stackOffsets) {
             const offset = stackOffsets.get(i)?.get(dataKey) ?? 0;
+            const cumulative = offset + value;
             x = scale(offset) ?? 0;
-            barW = valuePos - x;
+            barW = (scale(cumulative) ?? 0) - x;
             // Apply stack gap for horizontal: shift right and reduce width
             const gapOffset = seriesIndex * stackGap;
             x += gapOffset;
@@ -287,6 +286,8 @@ const BarInner = memo(function BarInner({
               barW = Math.max(0, barW - stackGap);
             }
           } else {
+            const valuePos = scale(value) ?? 0;
+            barW = valuePos;
             x = 0;
             // For grouped bars, offset y position
             const effectiveGroupGap = seriesCount > 1 ? groupGap : 0;
