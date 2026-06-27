@@ -131,3 +131,8 @@
     cursor: pointer;
   }
 }
+
+@theme {
+  --spacing-8xl: 90rem;
+  --spacing-9xl: 120rem;
+}

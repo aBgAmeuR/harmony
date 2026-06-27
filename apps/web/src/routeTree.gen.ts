@@ -13,6 +13,7 @@ import { Route as UploadRouteImport } from './routes/upload'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppPackageIdRouteImport } from './routes/app/$packageId'
 import { Route as AppPackageIdTracksRouteImport } from './routes/app/$packageId/tracks'
+import { Route as AppPackageIdListeningRouteImport } from './routes/app/$packageId/listening'
 import { Route as AppPackageIdArtistsRouteImport } from './routes/app/$packageId/artists'
 import { Route as AppPackageIdAlbumsRouteImport } from './routes/app/$packageId/albums'
 
@@ -36,6 +37,11 @@ const AppPackageIdTracksRoute = AppPackageIdTracksRouteImport.update({
   path: '/tracks',
   getParentRoute: () => AppPackageIdRoute,
 } as any)
+const AppPackageIdListeningRoute = AppPackageIdListeningRouteImport.update({
+  id: '/listening',
+  path: '/listening',
+  getParentRoute: () => AppPackageIdRoute,
+} as any)
 const AppPackageIdArtistsRoute = AppPackageIdArtistsRouteImport.update({
   id: '/artists',
   path: '/artists',
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/app/$packageId': typeof AppPackageIdRouteWithChildren
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
+  '/app/$packageId/listening': typeof AppPackageIdListeningRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/app/$packageId': typeof AppPackageIdRouteWithChildren
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
+  '/app/$packageId/listening': typeof AppPackageIdListeningRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
 }
 export interface FileRoutesById {
@@ -70,6 +78,7 @@ export interface FileRoutesById {
   '/app/$packageId': typeof AppPackageIdRouteWithChildren
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
+  '/app/$packageId/listening': typeof AppPackageIdListeningRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
 }
 export interface FileRouteTypes {
@@ -80,6 +89,7 @@ export interface FileRouteTypes {
     | '/app/$packageId'
     | '/app/$packageId/albums'
     | '/app/$packageId/artists'
+    | '/app/$packageId/listening'
     | '/app/$packageId/tracks'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -88,6 +98,7 @@ export interface FileRouteTypes {
     | '/app/$packageId'
     | '/app/$packageId/albums'
     | '/app/$packageId/artists'
+    | '/app/$packageId/listening'
     | '/app/$packageId/tracks'
   id:
     | '__root__'
@@ -96,6 +107,7 @@ export interface FileRouteTypes {
     | '/app/$packageId'
     | '/app/$packageId/albums'
     | '/app/$packageId/artists'
+    | '/app/$packageId/listening'
     | '/app/$packageId/tracks'
   fileRoutesById: FileRoutesById
 }
@@ -135,6 +147,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPackageIdTracksRouteImport
       parentRoute: typeof AppPackageIdRoute
     }
+    '/app/$packageId/listening': {
+      id: '/app/$packageId/listening'
+      path: '/listening'
+      fullPath: '/app/$packageId/listening'
+      preLoaderRoute: typeof AppPackageIdListeningRouteImport
+      parentRoute: typeof AppPackageIdRoute
+    }
     '/app/$packageId/artists': {
       id: '/app/$packageId/artists'
       path: '/artists'
@@ -155,12 +174,14 @@ declare module '@tanstack/react-router' {
 interface AppPackageIdRouteChildren {
   AppPackageIdAlbumsRoute: typeof AppPackageIdAlbumsRoute
   AppPackageIdArtistsRoute: typeof AppPackageIdArtistsRoute
+  AppPackageIdListeningRoute: typeof AppPackageIdListeningRoute
   AppPackageIdTracksRoute: typeof AppPackageIdTracksRoute
 }
 
 const AppPackageIdRouteChildren: AppPackageIdRouteChildren = {
   AppPackageIdAlbumsRoute: AppPackageIdAlbumsRoute,
   AppPackageIdArtistsRoute: AppPackageIdArtistsRoute,
+  AppPackageIdListeningRoute: AppPackageIdListeningRoute,
   AppPackageIdTracksRoute: AppPackageIdTracksRoute,
 }
 
