@@ -10,6 +10,7 @@ import { platformsFn } from "./queries/platforms";
 import { totalStreamsFn } from "./queries/total-streams";
 import { trackEngagementFn } from "./queries/track-engagement";
 import { uniqueTracksFn } from "./queries/unique-tracks";
+import { whenYouListenFn } from "./queries/when-you-listen";
 
 export const listeningQueries = {
   listeningTime: {
@@ -80,6 +81,13 @@ export const listeningQueries = {
       queryOptions({
         queryKey: ["listening", "track-engagement"],
         queryFn: () => trackEngagementFn(),
+      }),
+  },
+  whenYouListen: {
+    queryOptions: () =>
+      queryOptions({
+        queryKey: ["listening", "when-you-listen"],
+        queryFn: () => whenYouListenFn(),
       }),
   },
 };

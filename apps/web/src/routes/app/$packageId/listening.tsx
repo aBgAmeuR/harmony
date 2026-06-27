@@ -13,6 +13,7 @@ import { PlatformsWidget } from "@/features/listening/widgets/platforms-widget";
 import { TotalStreamsWidget } from "@/features/listening/widgets/total-streams-widget";
 import { TrackEngagementWidget } from "@/features/listening/widgets/track-engagement-widget";
 import { UniqueTracksWidget } from "@/features/listening/widgets/unique-tracks-widget";
+import { WhenYouListenWidget } from "@/features/listening/widgets/when-you-listen-widget";
 
 export const Route = createFileRoute("/app/$packageId/listening")({
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
@@ -48,6 +49,9 @@ export const Route = createFileRoute("/app/$packageId/listening")({
       queryClient.ensureQueryData(
         query.listeningHabits.trackEngagement.queryOptions(),
       ),
+      queryClient.ensureQueryData(
+        query.listeningHabits.whenYouListen.queryOptions(),
+      ),
     ]);
   },
   component: RouteComponent,
@@ -57,7 +61,7 @@ function RouteComponent() {
   return (
     <div>
       <Header title="Listening Habits" />
-      <main className="2xl:border-x 2xl:border-border mx-auto max-w-(--breakpoint-2xl)">
+      <main className="2xl:border-x 2xl:border-border mx-auto max-w-7xl">
         <div className="grid grid-cols-1 divide-y divide-border sm:grid-cols-2 sm:divide-x lg:divide-y-0 lg:grid-cols-4">
           <ListeningTimeWidget />
           <TotalStreamsWidget />
@@ -68,6 +72,10 @@ function RouteComponent() {
           <MonthlyActivityWidget />
           <DaysOfWeekWidget />
         </div>
+        <div className="border-t border-border">
+          <WhenYouListenWidget />
+          <div></div>
+        </div>
         <div className="grid grid-cols-1 divide-y divide-border border-t border-border sm:grid-cols-2 sm:divide-x sm:divide-y-0">
           <PeakHoursWidget />
           <PlatformsWidget />
@@ -76,7 +84,6 @@ function RouteComponent() {
           <ListeningStyleWidget />
           <TrackEngagementWidget />
         </div>
-        <div className="border-t border-border"></div>
       </main>
     </div>
   );

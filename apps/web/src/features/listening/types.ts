@@ -1,3 +1,5 @@
+import type { HeatmapColumn } from "@harmony/charts";
+
 export type ListeningHabitTrendPoint = {
   date: Date;
   value: number;
@@ -51,3 +53,5 @@ export type TrackEngagementStage = {
   label: string;
   value: number;
 };
+
+export type WhenYouListenByYear = Record<number, HeatmapColumn[]>;
