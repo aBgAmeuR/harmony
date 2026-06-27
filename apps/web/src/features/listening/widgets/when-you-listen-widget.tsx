@@ -7,6 +7,7 @@ import {
   HeatmapTooltip,
   HeatmapXAxis,
   HeatmapYAxis,
+  levelStylesFromColors,
 } from "@harmony/charts";
 import { Tabs, TabsList, TabsTrigger } from "@harmony/ui/components/tabs";
 import { useQuery } from "@tanstack/react-query";
@@ -35,10 +36,10 @@ const LISTENING_HEATMAP_LEVEL_COLORS = [
 
 const colorScale = (count: number | null | undefined): string => {
   if (!count || count === 0) return "var(--muted)";
-  if (count > 50) return "var(--chart-4)";
-  if (count > 100) return "var(--chart-3)";
-  if (count > 150) return "var(--chart-2)";
-  return "var(--chart-1)";
+  if (count > 150) return "var(--chart-1)";
+  if (count > 100) return "var(--chart-2)";
+  if (count > 50) return "var(--chart-3)";
+  return "var(--chart-4)";
 };
 
 const EMPTY_WHEN_YOU_LISTEN: WhenYouListenByYear = {};
@@ -64,7 +65,7 @@ export function WhenYouListenWidget() {
           <HeatmapLegend
             align="end"
             cellSize={10}
-            colorScale={colorScale}
+            levelStyles={levelStylesFromColors(LISTENING_HEATMAP_LEVEL_COLORS)}
             className="text-muted-foreground"
             interactive={false}
           />
@@ -88,7 +89,6 @@ export function WhenYouListenWidget() {
         <HeatmapChart
           data={columns}
           margin={{ top: 24, right: 8, bottom: 0, left: 40 }}
-          levelColors={LISTENING_HEATMAP_LEVEL_COLORS}
           colorScale={colorScale}
         >
           <HeatmapCells />

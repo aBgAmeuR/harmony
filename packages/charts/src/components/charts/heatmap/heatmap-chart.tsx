@@ -128,7 +128,10 @@ function computeHeatmapDimensions({
   layout: HeatmapLayout;
 }) {
   const innerWidth = Math.max(width - margin.left - margin.right, 0);
-  const availableHeight = Math.max(parentHeight - margin.top - margin.bottom, 0);
+  const availableHeight = Math.max(
+    parentHeight - margin.top - margin.bottom,
+    0,
+  );
 
   let binWidth: number;
   let binHeight: number;
@@ -141,7 +144,10 @@ function computeHeatmapDimensions({
     binWidth = cellSize;
     binHeight = cellSize;
   } else {
-    const cellSize = Math.min(innerWidth / columnCount, availableHeight / rowCount);
+    const cellSize = Math.min(
+      innerWidth / columnCount,
+      availableHeight / rowCount,
+    );
     binWidth = cellSize;
     binHeight = cellSize;
   }
@@ -225,7 +231,10 @@ function HeatmapChartInner({
 }: HeatmapChartInnerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const visibleData = useMemo(() => filterHeatmapColumns(data, xDomain), [data, xDomain]);
+  const visibleData = useMemo(
+    () => filterHeatmapColumns(data, xDomain),
+    [data, xDomain],
+  );
 
   const visibleColumnCount = Math.max(visibleData.length, 1);
   const columnCount =
@@ -255,8 +264,14 @@ function HeatmapChartInner({
     [binSize, columnCount, layout, margin, parentHeight, rowCount, width],
   );
 
-  const xScale = useMemo(() => (columnIndex: number) => columnIndex * binWidth, [binWidth]);
-  const yScale = useMemo(() => (rowIndex: number) => rowIndex * binHeight, [binHeight]);
+  const xScale = useMemo(
+    () => (columnIndex: number) => columnIndex * binWidth,
+    [binWidth],
+  );
+  const yScale = useMemo(
+    () => (rowIndex: number) => rowIndex * binHeight,
+    [binHeight],
+  );
 
   const timeExtent = useMemo(() => getHeatmapTimeExtent(data), [data]);
 
@@ -361,7 +376,13 @@ function HeatmapChartInner({
   );
 }
 
-function HeatmapChartSurface({ layout, children }: { layout: HeatmapLayout; children: ReactNode }) {
+function HeatmapChartSurface({
+  layout,
+  children,
+}: {
+  layout: HeatmapLayout;
+  children: ReactNode;
+}) {
   const {
     containerRef,
     height,
@@ -375,7 +396,9 @@ function HeatmapChartSurface({ layout, children }: { layout: HeatmapLayout; chil
   } = useHeatmap();
   const { clearInteraction } = useHeatmapInteraction();
   const reducedOpacity =
-    chartPhase === "loading" || chartPhase === "exitingReady" ? loadingOpacity : 1;
+    chartPhase === "loading" || chartPhase === "exitingReady"
+      ? loadingOpacity
+      : 1;
 
   return (
     <div
@@ -398,7 +421,10 @@ function HeatmapChartSurface({ layout, children }: { layout: HeatmapLayout; chil
             height: Math.max(height - margin.top - margin.bottom, 0),
           }}
         >
-          <ChartLoadingLabel exiting={chartPhase !== "loading"} text={loadingLabel} />
+          <ChartLoadingLabel
+            exiting={chartPhase !== "loading"}
+            text={loadingLabel}
+          />
         </div>
       ) : null}
     </div>
@@ -496,7 +522,13 @@ function useHeatmapChartLifecycle({
     }
 
     beginReveal();
-  }, [animateEnter, animationDuration, beginReveal, chartStatus, revealSignature]);
+  }, [
+    animateEnter,
+    animationDuration,
+    beginReveal,
+    chartStatus,
+    revealSignature,
+  ]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: revealEpoch replays finish timer
   useEffect(() => {
@@ -552,14 +584,18 @@ export function HeatmapChart({
     () => colorScaleProp ?? buildHeatmapColorScaleFromStyles(levelStyles),
     [colorScaleProp, levelStyles],
   );
-  const fillScale = useMemo(() => buildHeatmapFillScale(levelStyles), [levelStyles]);
+  const fillScale = useMemo(
+    () => colorScaleProp ?? buildHeatmapFillScale(levelStyles),
+    [colorScaleProp, levelStyles],
+  );
 
-  const { chartPhase, isLoaded, revealEpoch, revealMode, animateCells } = useHeatmapChartLifecycle({
-    chartStatus: status,
-    animationDuration,
-    revealSignature,
-    animate,
-  });
+  const { chartPhase, isLoaded, revealEpoch, revealMode, animateCells } =
+    useHeatmapChartLifecycle({
+      chartStatus: status,
+      animationDuration,
+      revealSignature,
+      animate,
+    });
 
   const showLoadingLabel = Boolean(
     loadingLabel?.trim() &&
@@ -569,7 +605,11 @@ export function HeatmapChart({
 
   return (
     <div
-      className={cn("relative w-full", layout === "fill" && "h-full min-h-0", className)}
+      className={cn(
+        "relative w-full",
+        layout === "fill" && "h-full min-h-0",
+        className,
+      )}
       style={aspectRatio ? { aspectRatio } : undefined}
     >
       <ParentSize>
