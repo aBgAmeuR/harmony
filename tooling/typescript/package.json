@@ -1,5 +1,0 @@
-{
-  "name": "@harmony/tsconfig",
-  "private": true,
-  "files": ["*.json"]
-}

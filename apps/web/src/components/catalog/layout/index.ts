@@ -1,5 +1,0 @@
-export { catalogSearchSchema } from './catalog-route-search'
-export { CatalogDateRangeTabs } from './catalog-date-range-tabs'
-export { CatalogPageHeader } from './catalog-page-header'
-export { CatalogPageShellRoot, CatalogPageShellList, CatalogPageShellDetails } from './catalog-page-shell'
-export { CatalogScrollArea } from './catalog-scroll-area'

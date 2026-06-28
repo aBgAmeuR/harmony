@@ -1,13 +1,13 @@
-import { CARD_TOP_PX } from './types'
+import { CARD_TOP_PX } from "./types";
 
 interface DecorativeFrameProps {
-  cardHeight: number
+  cardHeight: number;
 }
 
-const EASE = '450ms cubic-bezier(0.4, 0, 0.2, 1)'
+const EASE = "450ms cubic-bezier(0.4, 0, 0.2, 1)";
 
 export function DecorativeFrame({ cardHeight }: DecorativeFrameProps) {
-  const bottomY = CARD_TOP_PX + cardHeight
+  const bottomY = CARD_TOP_PX + cardHeight;
 
   return (
     <>
@@ -33,11 +33,11 @@ export function DecorativeFrame({ cardHeight }: DecorativeFrameProps) {
       >
         <div
           className="absolute size-[7px] rounded-[1.5px] ring-1 ring-border/80 bg-background"
-          style={{ left: '-9px' }}
+          style={{ left: "-9px" }}
         />
         <div
           className="absolute size-[7px] rounded-[1.5px] ring-1 ring-border/80 bg-background rotate-90"
-          style={{ right: '-9px' }}
+          style={{ right: "-9px" }}
         />
       </div>
 
@@ -48,13 +48,13 @@ export function DecorativeFrame({ cardHeight }: DecorativeFrameProps) {
       >
         <div
           className="absolute size-[7px] rounded-[1.5px] ring-1 ring-border/80 bg-background -rotate-90"
-          style={{ left: '-9px' }}
+          style={{ left: "-9px" }}
         />
         <div
           className="absolute size-[7px] rounded-[1.5px] ring-1 ring-border/80 bg-background rotate-180"
-          style={{ right: '-9px' }}
+          style={{ right: "-9px" }}
         />
       </div>
     </>
-  )
+  );
 }

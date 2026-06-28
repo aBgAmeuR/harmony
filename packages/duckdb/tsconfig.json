@@ -1,0 +1,10 @@
+{
+  "extends": "@harmony/config/tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["DOM", "DOM.Iterable"],
+    "types": ["vite/client"]
+  },
+  "include": ["."],
+  "exclude": ["node_modules", "dist"]
+}

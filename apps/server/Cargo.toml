@@ -1,0 +1,72 @@
+[workspace]
+resolver = "2"
+members = ["crates/db", "crates/server"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["Your Name <your.email@example.com>"]
+license = "MIT"
+repository = ""
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1.51", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling (anyhow + thiserror)
+thiserror = "2.0"
+anyhow = "1.0"
+
+# Tracing (used by server logging, CLI, TUI, and WASM frontends)
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Environment variables
+dotenvy = "0.15"
+
+# Web framework (Axum)
+axum = { version = "0.8", features = ["multipart"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+
+# Database (Diesel + diesel-async)
+diesel = { version = "2.3", features = ["postgres", "chrono", "serde_json"] }
+diesel-async = { version = "0.8", features = ["postgres", "deadpool"] }
+
+# Date and time
+chrono = { version = "0.4.44", features = ["serde"] }
+
+# Pipeline / upload
+dashmap = "6"
+rand = "0.9"
+zip = "8.6"
+regex = "1.12"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+strsim = "0.11"
+futures = "0.3"
+tempfile = "3"
+duckdb = { version = "1.2", features = ["bundled"] }
+polars = { version = "0.46", features = ["parquet", "dtype-date", "dtype-datetime"] }
+
+# OpenTelemetry
+opentelemetry = "0.31"
+tracing-opentelemetry = "0.32.1"
+axum-tracing-opentelemetry = "0.33.1"
+init-tracing-opentelemetry = { version = "0.37.0", features = [
+    "otlp",
+    "tracing_subscriber_ext",
+    "metrics",
+    "logs",
+] }
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

@@ -1,0 +1,22 @@
+{
+  "name": "@harmony/icons",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "dependencies": {
+    "@hugeicons/core-free-icons": "^1.2.1",
+    "@hugeicons/react": "^1.1.6",
+    "@hugeicons/react-native": "^1.0.13",
+    "react": "^19.2.7"
+  },
+  "devDependencies": {
+    "@harmony/config": "workspace:*",
+    "@hugeicons/mcp-server": "^0.2.1",
+    "@types/node": "catalog:",
+    "@types/react": "^19.2.17",
+    "typescript": "catalog:"
+  }
+}

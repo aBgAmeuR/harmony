@@ -1,0 +1,57 @@
+[package]
+name = "harmony-server"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+# Async runtime
+tokio.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+thiserror.workspace = true
+anyhow.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Environment
+dotenvy.workspace = true
+
+# Web framework
+axum.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+
+# Database
+harmony-db = { path = "../db" }
+diesel.workspace = true
+diesel-async.workspace = true
+chrono.workspace = true
+
+# Pipeline / upload
+dashmap.workspace = true
+rand.workspace = true
+zip.workspace = true
+regex.workspace = true
+reqwest.workspace = true
+strsim.workspace = true
+futures.workspace = true
+tempfile.workspace = true
+duckdb.workspace = true
+polars.workspace = true
+
+# OpenTelemetry
+opentelemetry.workspace = true
+tracing-opentelemetry.workspace = true
+axum-tracing-opentelemetry.workspace = true
+init-tracing-opentelemetry.workspace = true
+
+[[bin]]
+name = "server"
+path = "src/main.rs"
