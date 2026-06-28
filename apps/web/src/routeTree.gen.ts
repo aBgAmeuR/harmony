@@ -13,6 +13,7 @@ import { Route as UploadRouteImport } from './routes/upload'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppPackageIdRouteImport } from './routes/app/$packageId'
 import { Route as AppPackageIdTracksRouteImport } from './routes/app/$packageId/tracks'
+import { Route as AppPackageIdPackageRouteImport } from './routes/app/$packageId/package'
 import { Route as AppPackageIdListeningRouteImport } from './routes/app/$packageId/listening'
 import { Route as AppPackageIdArtistsRouteImport } from './routes/app/$packageId/artists'
 import { Route as AppPackageIdAlbumsRouteImport } from './routes/app/$packageId/albums'
@@ -35,6 +36,11 @@ const AppPackageIdRoute = AppPackageIdRouteImport.update({
 const AppPackageIdTracksRoute = AppPackageIdTracksRouteImport.update({
   id: '/tracks',
   path: '/tracks',
+  getParentRoute: () => AppPackageIdRoute,
+} as any)
+const AppPackageIdPackageRoute = AppPackageIdPackageRouteImport.update({
+  id: '/package',
+  path: '/package',
   getParentRoute: () => AppPackageIdRoute,
 } as any)
 const AppPackageIdListeningRoute = AppPackageIdListeningRouteImport.update({
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
   '/app/$packageId/listening': typeof AppPackageIdListeningRoute
+  '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
   '/app/$packageId/listening': typeof AppPackageIdListeningRoute
+  '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
 }
 export interface FileRoutesById {
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
   '/app/$packageId/listening': typeof AppPackageIdListeningRoute
+  '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
 }
 export interface FileRouteTypes {
@@ -90,6 +99,7 @@ export interface FileRouteTypes {
     | '/app/$packageId/albums'
     | '/app/$packageId/artists'
     | '/app/$packageId/listening'
+    | '/app/$packageId/package'
     | '/app/$packageId/tracks'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/app/$packageId/albums'
     | '/app/$packageId/artists'
     | '/app/$packageId/listening'
+    | '/app/$packageId/package'
     | '/app/$packageId/tracks'
   id:
     | '__root__'
@@ -108,6 +119,7 @@ export interface FileRouteTypes {
     | '/app/$packageId/albums'
     | '/app/$packageId/artists'
     | '/app/$packageId/listening'
+    | '/app/$packageId/package'
     | '/app/$packageId/tracks'
   fileRoutesById: FileRoutesById
 }
@@ -147,6 +159,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPackageIdTracksRouteImport
       parentRoute: typeof AppPackageIdRoute
     }
+    '/app/$packageId/package': {
+      id: '/app/$packageId/package'
+      path: '/package'
+      fullPath: '/app/$packageId/package'
+      preLoaderRoute: typeof AppPackageIdPackageRouteImport
+      parentRoute: typeof AppPackageIdRoute
+    }
     '/app/$packageId/listening': {
       id: '/app/$packageId/listening'
       path: '/listening'
@@ -175,6 +194,7 @@ interface AppPackageIdRouteChildren {
   AppPackageIdAlbumsRoute: typeof AppPackageIdAlbumsRoute
   AppPackageIdArtistsRoute: typeof AppPackageIdArtistsRoute
   AppPackageIdListeningRoute: typeof AppPackageIdListeningRoute
+  AppPackageIdPackageRoute: typeof AppPackageIdPackageRoute
   AppPackageIdTracksRoute: typeof AppPackageIdTracksRoute
 }
 
@@ -182,6 +202,7 @@ const AppPackageIdRouteChildren: AppPackageIdRouteChildren = {
   AppPackageIdAlbumsRoute: AppPackageIdAlbumsRoute,
   AppPackageIdArtistsRoute: AppPackageIdArtistsRoute,
   AppPackageIdListeningRoute: AppPackageIdListeningRoute,
+  AppPackageIdPackageRoute: AppPackageIdPackageRoute,
   AppPackageIdTracksRoute: AppPackageIdTracksRoute,
 }
 

@@ -1,0 +1,230 @@
+import { createFileRoute } from "@tanstack/react-router";
+import {
+  Icon,
+  Alert02FreeIcons,
+  Calendar02Icon,
+  Clock01Icon,
+  Copy01Icon,
+  Delete02Icon,
+  Tick02Icon,
+} from "@harmony/icons";
+import { Button } from "@harmony/ui/components/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@harmony/ui/components/card";
+import { useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@harmony/ui/components/tooltip";
+import { cn } from "@harmony/ui/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@harmony/ui/components/alert-dialog";
+import { Pipeline } from "@/features/packages/components/pipeline";
+import { format } from "@/utils/format";
+
+export const Route = createFileRoute("/app/$packageId/package")({
+  component: RouteComponent,
+});
+
+type PackageHeaderProps = {
+  pkg: { fileName: string; status: string; id: string };
+  subtitle: string;
+};
+
+function PackageHeaderSection({ pkg, subtitle }: PackageHeaderProps) {
+  const [copied, setCopied] = useState<boolean>(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(pkg.id);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+  };
+
+  return (
+    <section className="space-y-2">
+      <Card>
+        <CardHeader>
+          <CardTitle className="truncate">
+            {pkg.fileName}
+          </CardTitle>
+          <CardDescription className="text-xs">{subtitle}</CardDescription>
+          <CardAction className="flex flex-wrap items-center gap-2">
+            <AlertDialog>
+              <AlertDialogTrigger
+                render={<Button variant="destructive" />}
+              >
+                <Icon icon={Delete02Icon} />
+                Delete
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    your account from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction variant="destructive">
+                    Continue
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="space-x-1 text-xs text-muted-foreground py-1!">
+          <span className="font-mono text-foreground/80">{pkg.id}</span>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="disabled:opacity-100"
+                  onClick={handleCopy}
+                  aria-label={copied ? "Copied" : "Copy to clipboard"}
+                  disabled={copied}
+                />
+              }
+            >
+              <div
+                className={cn(
+                  "transition-all",
+                  copied ? "scale-100 opacity-100" : "scale-0 opacity-0",
+                )}
+              >
+                <Icon icon={Tick02Icon} className="size-4 text-emerald-500" />
+              </div>
+              <div
+                className={cn(
+                  "absolute transition-all",
+                  copied ? "scale-0 opacity-0" : "scale-100 opacity-100",
+                )}
+              >
+                <Icon icon={Copy01Icon} className="size-4" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="px-2 py-1 text-xs">
+              Click to copy
+            </TooltipContent>
+          </Tooltip>
+        </CardFooter>
+      </Card>
+    </section>
+  );
+}
+
+function RouteComponent() {
+  return (
+    <div className="mx-auto w-full max-w-3xl space-y-6 p-3 pt-12">
+      <section className="space-y-2">
+        <h2 className="mb-3 text-xs font-semibold text-muted-foreground">
+          Overview
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+          <Card size="sm" className="gap-0!">
+            <CardHeader >
+              <CardAction>
+                <Icon
+                  icon={Clock01Icon}
+                  className="size-4 text-muted-foreground"
+                />
+              </CardAction>
+              <CardTitle className="text-muted-foreground">
+                Total duration
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg font-semibold">{format.duration(143753)}</p>
+              <p className="text-xs text-muted-foreground">
+                End-to-end processing time
+              </p>
+            </CardContent>
+          </Card>
+          <Card size="sm" className="gap-0!">
+            <CardHeader>
+              <CardAction>
+                <Icon
+                  icon={Calendar02Icon}
+                  className="size-4 text-muted-foreground"
+                />
+              </CardAction>
+              <CardTitle className="text-muted-foreground">Period</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg font-semibold">1,234 days</p>
+              <p className="text-xs text-muted-foreground">
+                From {format.date("2023-02-11")} to {format.date("2026-06-10")}
+              </p>
+            </CardContent>
+          </Card>
+          <Card size="sm" className="gap-0!">
+            <CardHeader>
+              <CardAction>
+                <Icon
+                  icon={Alert02FreeIcons}
+                  className="size-4 text-muted-foreground"
+                />
+              </CardAction>
+              <CardTitle className="text-muted-foreground">
+                Skipped tracks
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg font-semibold">64</p>
+              <p className="text-xs text-muted-foreground">During enrichment</p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="mb-3 text-xs font-semibold text-muted-foreground">
+          Pipeline
+        </h2>
+        <Pipeline />
+      </section>
+
+      {/* {details?.failure ? (
+        <section className="space-y-2">
+          <h2 className="mb-3 text-xs font-semibold text-destructive">Failure</h2>
+          <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
+            {details.failure.message}
+          </div>
+        </section>
+      ) : null} */}
+
+      <PackageHeaderSection
+        pkg={{
+          fileName: "package.json",
+          status: "completed",
+          id: "1234567890",
+        }}
+        subtitle={`${format.date("2023-02-11")} • ${format.bytes(1523532)}`}
+      />
+    </div>
+  );
+}

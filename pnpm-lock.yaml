@@ -102,6 +102,9 @@ importers:
       dotenv:
         specifier: 'catalog:'
         version: 17.4.2
+      fflate:
+        specifier: ^0.8.3
+        version: 0.8.3
       nitro:
         specifier: 3.0.260610-beta
         version: 3.0.260610-beta(chokidar@5.0.0)(dotenv@17.4.2)(jiti@2.7.0)(lru-cache@11.5.1)(vite@8.0.16(@types/node@26.0.0)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))
@@ -2827,6 +2830,9 @@ packages:
 
   fetchdts@0.1.7:
     resolution: {integrity: sha512-YoZjBdafyLIop9lSxXVI33oLD5kN31q4Td+CasofLLYeLXRFeOsuOw0Uo+XNRi9PZlbfdlN2GmRtm4tCEQ9/KA==}
+
+  fflate@0.8.3:
+    resolution: {integrity: sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==}
 
   figures@6.1.0:
     resolution: {integrity: sha512-d+l3qxjSesT4V7v2fh+QnmFnUWv9lSpjarhShNTgBOfA0ttejbQUAlHLitbjkoRiDulW0OPoQPYIGhIC8ohejg==}
@@ -7022,6 +7028,8 @@ snapshots:
       web-streams-polyfill: 3.3.3
 
   fetchdts@0.1.7: {}
+
+  fflate@0.8.3: {}
 
   figures@6.1.0:
     dependencies:
