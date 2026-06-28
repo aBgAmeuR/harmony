@@ -98,6 +98,26 @@ pub async fn set_failed(
         .await
 }
 
+pub async fn set_failed_with_data(
+    conn: &mut AsyncPgConnection,
+    package_id: i32,
+    stage: &str,
+    message: &str,
+    payload: serde_json::Value,
+) -> QueryResult<usize> {
+    use schema::packages::dsl::*;
+
+    diesel::update(packages.find(package_id))
+        .set((
+            status.eq("failed"),
+            error_stage.eq(Some(stage)),
+            error_message.eq(Some(message)),
+            data.eq(Some(payload)),
+        ))
+        .execute(conn)
+        .await
+}
+
 pub async fn get_package_data(
     conn: &mut AsyncPgConnection,
     public_id: &str,

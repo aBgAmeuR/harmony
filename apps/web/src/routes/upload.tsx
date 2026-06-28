@@ -1,9 +1,10 @@
 import { Icons } from "@/components/icons";
+import { UploadWizard } from "@/components/upload/upload-wizard";
 import { UploadStep } from "@/features/upload/components/upload-step";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/upload")({
-  component: RouteComponent,
+  component: UploadWizard,
 });
 
 function RouteComponent() {

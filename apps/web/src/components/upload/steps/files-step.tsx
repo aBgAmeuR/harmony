@@ -1,4 +1,4 @@
-import { type CSSProperties, useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { unzipSync } from "fflate";
 import { Button, buttonVariants } from "@harmony/ui/components/button";
 import { Checkbox } from "@harmony/ui/components/checkbox";
@@ -30,6 +30,10 @@ interface ArchiveJsonFile {
 const archiveJsonPattern =
   /Spotify Extended Streaming History\/Streaming_History_Audio_(\d{4}(-\d{4})?)_(\d+)\.json/;
 
+function normalizeArchivePath(path: string): string {
+  return path.replace(/\\/g, "/");
+}
+
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   const kb = bytes / 1024;
@@ -48,16 +52,21 @@ export function FilesStep({
   const [jsonFiles, setJsonFiles] = useState<Array<ArchiveJsonFile>>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const onSelectionChangeRef = useRef(onSelectionChange);
+
+  useEffect(() => {
+    onSelectionChangeRef.current = onSelectionChange;
+  }, [onSelectionChange]);
 
   useEffect(() => {
     let cancelled = false;
 
     const extractArchiveJsonFiles = async () => {
-      onSelectionChange([]);
       setJsonFiles([]);
       setError(null);
 
       if (!packageFile) {
+        onSelectionChangeRef.current([]);
         setError("No package selected. Please go back and upload a .zip file.");
         return;
       }
@@ -68,24 +77,28 @@ export function FilesStep({
         const archiveEntries = unzipSync(bytes);
 
         const extracted = Object.entries(archiveEntries)
-          .filter(([filename]) => archiveJsonPattern.test(filename))
+          .filter(([filename]) =>
+            archiveJsonPattern.test(normalizeArchivePath(filename)),
+          )
           .map(([filename, content]) => ({
-            path: filename,
+            path: normalizeArchivePath(filename),
             name: filename.split("/").pop() ?? filename,
-            size: formatBytes(content.byteLength),
+            size: formatBytes((content as Uint8Array).byteLength),
           }));
 
         if (cancelled) return;
 
         if (extracted.length === 0) {
+          onSelectionChangeRef.current([]);
           setError("No JSON files found in archive.");
           return;
         }
 
         setJsonFiles(extracted);
-        onSelectionChange(extracted.map((file) => file.path));
+        onSelectionChangeRef.current(extracted.map((file) => file.path));
       } catch {
         if (!cancelled) {
+          onSelectionChangeRef.current([]);
           setError("Unable to read archive. Please upload a valid .zip file.");
         }
       } finally {
@@ -100,7 +113,7 @@ export function FilesStep({
     return () => {
       cancelled = true;
     };
-  }, [packageFile, onSelectionChange]);
+  }, [packageFile]);
 
   const toggleFile = (path: string) => {
     onSelectionChange(
@@ -150,8 +163,7 @@ export function FilesStep({
                   >
                     <Checkbox
                       checked={selectedFiles.includes(file.path)}
-                      onCheckedChange={() => toggleFile(file.path)}
-                      onClick={(e) => e.stopPropagation()}
+                      className="pointer-events-none"
                     />
                     <p
                       className={cn(

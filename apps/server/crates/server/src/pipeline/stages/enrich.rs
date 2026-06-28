@@ -1,14 +1,16 @@
 use std::collections::HashSet;
 use std::sync::Arc;
+use std::time::Instant;
 
 use futures::stream::{self, StreamExt};
 use serde::Deserialize;
 use tokio::runtime::Handle;
 
-use crate::pipeline::deezer::{self, DeezerClient, DeezerFetchError};
+use crate::pipeline::deezer::{self, DeezerClient};
 use crate::pipeline::error::EnrichError;
 use crate::pipeline::types::{DeezerAlbum, DeezerAlbumType, DeezerArtist, DeezerTrack};
 use crate::pipeline::PipelineContext;
+use crate::progress::{ProgressAggregator, StepId, StepProgress};
 
 const DEEZER_TRACK_URL: &str = "https://api.deezer.com/track";
 const DEEZER_ALBUM_URL: &str = "https://api.deezer.com/album";
@@ -144,6 +146,59 @@ fn map_album(api: ApiAlbum) -> DeezerAlbum {
     }
 }
 
+fn enrich_request_output(
+    completed: u64,
+    total: u64,
+    fetched: usize,
+    failed: u64,
+) -> serde_json::Value {
+    serde_json::json!({
+        "total": total,
+        "completed": completed,
+        "fetched": fetched,
+        "failed": failed,
+    })
+}
+
+fn emit_enrich_progress(
+    reporter: &crate::progress::ProgressReporter,
+    step_id: StepId,
+    current: u64,
+    total: u64,
+    failed: u64,
+) {
+    if total == 0 {
+        return;
+    }
+
+    reporter.step_progress(
+        step_id,
+        StepProgress {
+            phase: None,
+            current,
+            total,
+            failed: if failed > 0 { Some(failed) } else { None },
+        },
+    );
+}
+
+fn complete_empty_enrich(ctx: &mut PipelineContext) {
+    if let Some(reporter) = ctx.reporter.as_ref() {
+        reporter.step_started(StepId::EnrichTracks);
+        reporter.step_completed(
+            StepId::EnrichTracks,
+            0,
+            Some(enrich_request_output(0, 0, 0, 0)),
+        );
+        reporter.step_started(StepId::EnrichAlbums);
+        reporter.step_completed(
+            StepId::EnrichAlbums,
+            0,
+            Some(enrich_request_output(0, 0, 0, 0)),
+        );
+    }
+}
+
 #[tracing::instrument(
     skip(ctx),
     name = "pipeline.enrich",
@@ -157,6 +212,7 @@ fn map_album(api: ApiAlbum) -> DeezerAlbum {
 pub fn run(ctx: &mut PipelineContext) -> Result<(), EnrichError> {
     if ctx.deezer_matches.is_empty() {
         tracing::info!("enrich stage finished with no resolved Deezer track ids");
+        complete_empty_enrich(ctx);
         return Ok(());
     }
 
@@ -177,79 +233,128 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), EnrichError> {
     let span = tracing::Span::current();
     span.record("track_ids_count", track_ids.len() as i64);
 
-    let track_results: Vec<Result<ApiTrack, DeezerFetchError>> = handle.block_on(async {
-        stream::iter(track_ids)
-            .map(|track_id| {
-                let client = Arc::clone(&client);
-                let url = format!("{DEEZER_TRACK_URL}/{track_id}");
-                async move {
-                    client
-                        .get_json::<ApiTrack>(&url)
-                        .await
-                        .map_err(|err| err)
-                }
-            })
-            .buffer_unordered(concurrency)
-            .collect()
-            .await
+    let track_total = track_ids.len() as u64;
+    let tracks_started = Instant::now();
+    if let Some(reporter) = ctx.reporter.as_ref() {
+        reporter.step_started(StepId::EnrichTracks);
+        emit_enrich_progress(reporter, StepId::EnrichTracks, 0, track_total, 0);
+    }
+
+    let mut track_aggregator = ctx.reporter.as_ref().map(|reporter| {
+        ProgressAggregator::new(StepId::EnrichTracks, reporter.clone(), track_total)
     });
 
     let mut tracks_fetched = 0usize;
+    let mut tracks_failed = 0u64;
     let mut album_ids = HashSet::new();
+    let mut track_done = 0u64;
 
-    for result in track_results {
-        match result {
-            Ok(api_track) => {
-                album_ids.insert(api_track.album.id);
-                let (track, artists) = map_track(api_track);
-                for artist in artists {
-                    ctx.deezer_artists.insert(artist.id, artist);
+    handle.block_on(async {
+        let mut stream = stream::iter(track_ids)
+            .map(|track_id| {
+                let client = Arc::clone(&client);
+                let url = format!("{DEEZER_TRACK_URL}/{track_id}");
+                async move { client.get_json::<ApiTrack>(&url).await }
+            })
+            .buffer_unordered(concurrency);
+
+        while let Some(result) = stream.next().await {
+            track_done += 1;
+            match result {
+                Ok(api_track) => {
+                    album_ids.insert(api_track.album.id);
+                    let (track, artists) = map_track(api_track);
+                    for artist in artists {
+                        ctx.deezer_artists.insert(artist.id, artist);
+                    }
+                    ctx.deezer_tracks.insert(track.id, track);
+                    tracks_fetched += 1;
                 }
-                ctx.deezer_tracks.insert(track.id, track);
-                tracks_fetched += 1;
+                Err(err) => {
+                    tracks_failed += 1;
+                    tracing::info!(?err, "failed to fetch Deezer track");
+                }
             }
-            Err(err) => {
-                tracing::info!(?err, "failed to fetch Deezer track");
+
+            if let Some(aggregator) = track_aggregator.as_mut() {
+                aggregator.on_item_done(track_done, tracks_failed);
             }
         }
+    });
+
+    if let Some(reporter) = ctx.reporter.as_ref() {
+        reporter.step_completed(
+            StepId::EnrichTracks,
+            tracks_started.elapsed().as_millis() as u64,
+            Some(enrich_request_output(
+                track_done,
+                track_total,
+                tracks_fetched,
+                tracks_failed,
+            )),
+        );
     }
 
     let album_id_list: Vec<i64> = album_ids.into_iter().collect();
+    let album_total = album_id_list.len() as u64;
+    let albums_started = Instant::now();
+    if let Some(reporter) = ctx.reporter.as_ref() {
+        reporter.step_started(StepId::EnrichAlbums);
+        emit_enrich_progress(reporter, StepId::EnrichAlbums, 0, album_total, 0);
+    }
 
-    let album_results: Vec<Result<ApiAlbum, DeezerFetchError>> = handle.block_on(async {
-        stream::iter(album_id_list)
-            .map(|album_id| {
-                let client = Arc::clone(&client);
-                let url = format!("{DEEZER_ALBUM_URL}/{album_id}");
-                async move {
-                    client
-                        .get_json::<ApiAlbum>(&url)
-                        .await
-                        .map_err(|err| err)
-                }
-            })
-            .buffer_unordered(concurrency)
-            .collect()
-            .await
+    let mut album_aggregator = ctx.reporter.as_ref().map(|reporter| {
+        ProgressAggregator::new(StepId::EnrichAlbums, reporter.clone(), album_total)
     });
 
     let mut albums_fetched = 0usize;
+    let mut albums_failed = 0u64;
+    let mut album_done = 0u64;
 
-    for result in album_results {
-        match result {
-            Ok(api_album) => {
-                let album = map_album(api_album);
-                ctx.deezer_albums.insert(album.id, album);
-                albums_fetched += 1;
+    handle.block_on(async {
+        let mut stream = stream::iter(album_id_list)
+            .map(|album_id| {
+                let client = Arc::clone(&client);
+                let url = format!("{DEEZER_ALBUM_URL}/{album_id}");
+                async move { client.get_json::<ApiAlbum>(&url).await }
+            })
+            .buffer_unordered(concurrency);
+
+        while let Some(result) = stream.next().await {
+            album_done += 1;
+            match result {
+                Ok(api_album) => {
+                    let album = map_album(api_album);
+                    ctx.deezer_albums.insert(album.id, album);
+                    albums_fetched += 1;
+                }
+                Err(err) => {
+                    albums_failed += 1;
+                    tracing::info!(?err, "failed to fetch Deezer album");
+                }
             }
-            Err(err) => {
-                tracing::info!(?err, "failed to fetch Deezer album");
+
+            if let Some(aggregator) = album_aggregator.as_mut() {
+                aggregator.on_item_done(album_done, albums_failed);
             }
         }
-    }
+    });
 
     ctx.stats.deezer_tracks_fetched_count = tracks_fetched;
     ctx.stats.deezer_albums_fetched_count = albums_fetched;
+
+    if let Some(reporter) = ctx.reporter.as_ref() {
+        reporter.step_completed(
+            StepId::EnrichAlbums,
+            albums_started.elapsed().as_millis() as u64,
+            Some(enrich_request_output(
+                album_done,
+                album_total,
+                albums_fetched,
+                albums_failed,
+            )),
+        );
+    }
 
     span.record("tracks_fetched", tracks_fetched as i64);
     span.record("albums_fetched", albums_fetched as i64);

@@ -75,6 +75,9 @@ importers:
       '@harmony/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@harmony/upload':
+        specifier: workspace:*
+        version: link:../../packages/upload
       '@tailwindcss/vite':
         specifier: ^4.3.1
         version: 4.3.1(vite@8.0.16(@types/node@26.0.0)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))
@@ -366,6 +369,22 @@ importers:
       tailwindcss:
         specifier: ^4
         version: 4.3.1
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.1-rc
+
+  packages/upload:
+    dependencies:
+      react:
+        specifier: ^19.2.7
+        version: 19.2.7
+    devDependencies:
+      '@harmony/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/react':
+        specifier: ^19.2.17
+        version: 19.2.17
       typescript:
         specifier: 'catalog:'
         version: 7.0.1-rc

@@ -10,6 +10,9 @@ pub use types::{
 };
 
 use std::collections::HashMap;
+use std::time::Instant;
+
+use crate::progress::{ProgressReporter, StepId};
 
 pub struct PipelineStats {
     pub files_taken_count: usize,
@@ -27,31 +30,11 @@ pub struct PipelineStats {
     pub verify_interactions_skipped_count: usize,
 }
 
-impl PipelineStats {
-    pub fn to_json(&self, total_duration_ms: u64) -> serde_json::Value {
-        serde_json::json!({
-            "total_duration_ms": total_duration_ms,
-            "files_taken_count": self.files_taken_count,
-            "parse_validated_count": self.parse_validated_count,
-            "parse_invalid_count": self.parse_invalid_count,
-            "normalize_kept_count": self.normalize_kept_count,
-            "normalize_rejected_count": self.normalize_rejected_count,
-            "deezer_resolved_count": self.deezer_resolved_count,
-            "deezer_missed_count": self.deezer_missed_count,
-            "deezer_error_count": self.deezer_error_count,
-            "deezer_tracks_fetched_count": self.deezer_tracks_fetched_count,
-            "deezer_albums_fetched_count": self.deezer_albums_fetched_count,
-            "interactions_skipped_count": self.interactions_skipped_count,
-            "verify_tracks_skipped_count": self.verify_tracks_skipped_count,
-            "verify_interactions_skipped_count": self.verify_interactions_skipped_count,
-        })
-    }
-}
-
 pub struct PipelineContext {
     pub package_id: i32,
     pub public_id: String,
     pub zip_bytes: Vec<u8>,
+    pub selected_files: Option<Vec<String>>,
     pub files: Vec<ArchiveFile>,
     pub raw: Vec<RawInteraction>,
     pub normalized: Vec<NormalizedInteraction>,
@@ -62,14 +45,22 @@ pub struct PipelineContext {
     pub deezer_albums: HashMap<i64, DeezerAlbum>,
     pub interactions: Vec<Interaction>,
     pub stats: PipelineStats,
+    pub reporter: Option<ProgressReporter>,
 }
 
 impl PipelineContext {
-    pub fn new(package_id: i32, public_id: String, zip_bytes: Vec<u8>) -> Self {
+    pub fn new(
+        package_id: i32,
+        public_id: String,
+        zip_bytes: Vec<u8>,
+        selected_files: Option<Vec<String>>,
+        reporter: Option<ProgressReporter>,
+    ) -> Self {
         Self {
             package_id,
             public_id,
             zip_bytes,
+            selected_files,
             files: Vec::new(),
             raw: Vec::new(),
             normalized: Vec::new(),
@@ -94,8 +85,36 @@ impl PipelineContext {
                 verify_tracks_skipped_count: 0,
                 verify_interactions_skipped_count: 0,
             },
+            reporter,
         }
     }
+}
+
+fn run_reported_stage<F>(
+    ctx: &mut PipelineContext,
+    step_id: StepId,
+    output: impl FnOnce(&PipelineContext) -> serde_json::Value,
+    stage: F,
+) -> Result<(), PipelineError>
+where
+    F: FnOnce(&mut PipelineContext) -> Result<(), PipelineError>,
+{
+    let started = Instant::now();
+    if let Some(reporter) = ctx.reporter.as_ref() {
+        reporter.step_started(step_id);
+    }
+
+    stage(ctx)?;
+
+    if let Some(reporter) = ctx.reporter.as_ref() {
+        reporter.step_completed(
+            step_id,
+            started.elapsed().as_millis() as u64,
+            Some(output(ctx)),
+        );
+    }
+
+    Ok(())
 }
 
 #[tracing::instrument(
@@ -121,14 +140,81 @@ impl PipelineContext {
     ),
 )]
 pub fn run(ctx: &mut PipelineContext) -> Result<(), PipelineError> {
-    stages::extract::run(ctx)?;
-    stages::parse::run(ctx)?;
-    stages::normalize::run(ctx)?;
-    stages::resolve::run(ctx)?;
-    stages::enrich::run(ctx)?;
-    stages::aggregate::run(ctx)?;
-    stages::verify::run(ctx)?;
-    stages::persist::run(ctx)?;
+    run_reported_stage(
+        ctx,
+        StepId::ExtractArchive,
+        |ctx| {
+            serde_json::json!({
+                "filesCount": ctx.stats.files_taken_count,
+            })
+        },
+        |ctx| stages::extract::run(ctx).map_err(PipelineError::Extract),
+    )?;
+
+    run_reported_stage(
+        ctx,
+        StepId::ParseInteractions,
+        |ctx| {
+            serde_json::json!({
+                "validated": ctx.stats.parse_validated_count,
+                "invalid": ctx.stats.parse_invalid_count,
+            })
+        },
+        |ctx| stages::parse::run(ctx).map_err(PipelineError::Parse),
+    )?;
+
+    run_reported_stage(
+        ctx,
+        StepId::NormalizeInteractions,
+        |ctx| {
+            serde_json::json!({
+                "kept": ctx.stats.normalize_kept_count,
+                "rejected": ctx.stats.normalize_rejected_count,
+            })
+        },
+        |ctx| stages::normalize::run(ctx).map_err(PipelineError::Normalize),
+    )?;
+
+    stages::resolve::run(ctx).map_err(PipelineError::Resolve)?;
+    stages::enrich::run(ctx).map_err(PipelineError::Enrich)?;
+
+    run_reported_stage(
+        ctx,
+        StepId::AggregateInteractions,
+        |ctx| {
+            serde_json::json!({
+                "interactions": ctx.interactions.len(),
+                "skipped": ctx.stats.interactions_skipped_count,
+            })
+        },
+        |ctx| stages::aggregate::run(ctx).map_err(PipelineError::Aggregate),
+    )?;
+
+    run_reported_stage(
+        ctx,
+        StepId::VerifyData,
+        |ctx| {
+            serde_json::json!({
+                "tracksSkipped": ctx.stats.verify_tracks_skipped_count,
+                "interactionsSkipped": ctx.stats.verify_interactions_skipped_count,
+            })
+        },
+        |ctx| stages::verify::run(ctx).map_err(PipelineError::Verify),
+    )?;
+
+    run_reported_stage(
+        ctx,
+        StepId::PersistInteractions,
+        |ctx| {
+            serde_json::json!({
+                "interactions": ctx.interactions.len(),
+                "tracks": ctx.deezer_tracks.len(),
+                "albums": ctx.deezer_albums.len(),
+                "artists": ctx.deezer_artists.len(),
+            })
+        },
+        |ctx| stages::persist::run(ctx).map_err(PipelineError::Persist),
+    )?;
 
     record_stats(ctx);
 

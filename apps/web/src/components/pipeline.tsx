@@ -25,9 +25,15 @@ const PipelineItemHeader = ({
 const PipelineItemIcon = ({
   status,
 }: {
-  status: "loading" | "done" | "error";
+  status: "pending" | "loading" | "done" | "error";
 }) => {
   switch (status) {
+    case "pending":
+      return (
+        <div className="grid size-4 place-items-center">
+          <div className="size-1.5 rounded-full bg-muted-foreground/35" />
+        </div>
+      );
     case "loading":
       return (
         <Icon
@@ -76,27 +82,34 @@ const PipelineItemLabel = ({
 const PipelineItemDuration = ({
   startAt,
   endAt,
+  now,
 }: {
   startAt: string;
   endAt?: string;
+  now?: number;
 }) => {
+  const startMs = new Date(startAt).getTime();
+  const endMs = endAt ? new Date(endAt).getTime() : now;
+  const durationMs =
+    endMs !== undefined && Number.isFinite(startMs)
+      ? Math.max(0, endMs - startMs)
+      : 0;
+
   return (
     <Tooltip>
       <TooltipTrigger>
         <span className="min-w-[52px] text-right text-xs tabular-nums text-muted-foreground">
-          {format.duration(
-            endAt ? new Date(endAt).getTime() - new Date(startAt).getTime() : 0,
-          )}
+          {format.duration(durationMs)}
         </span>
       </TooltipTrigger>
       <TooltipContent>
         <span>{format.time(startAt)}</span>
-        {endAt && (
+        {endAt ? (
           <>
             <span>-</span>
             <span>{format.time(endAt)}</span>
           </>
-        )}
+        ) : null}
       </TooltipContent>
     </Tooltip>
   );

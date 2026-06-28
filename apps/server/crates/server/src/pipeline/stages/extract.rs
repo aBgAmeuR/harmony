@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::io::{Cursor, Read};
 use std::sync::LazyLock;
 
@@ -15,6 +16,10 @@ static STREAMING_FILE_RE: LazyLock<Regex> = LazyLock::new(|| {
     .expect("invalid regex")
 });
 
+fn normalize_zip_path(path: &str) -> String {
+    path.replace('\\', "/")
+}
+
 #[tracing::instrument(
     skip(ctx),
     name = "pipeline.extract",
@@ -23,12 +28,20 @@ static STREAMING_FILE_RE: LazyLock<Regex> = LazyLock::new(|| {
         zip_size_bytes = ctx.zip_bytes.len(),
         input_files_count,
         files_taken_count,
+        selected_files_count,
     ),
 )]
 pub fn run(ctx: &mut PipelineContext) -> Result<(), ExtractError> {
     let cursor = Cursor::new(&ctx.zip_bytes);
     let mut archive = ZipArchive::new(cursor)?;
     let input_files_count = archive.len();
+
+    let selected: Option<HashSet<String>> = ctx.selected_files.as_ref().map(|files| {
+        files
+            .iter()
+            .map(|path| normalize_zip_path(path))
+            .collect()
+    });
 
     let mut files = Vec::new();
 
@@ -40,9 +53,15 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), ExtractError> {
                 source,
             })?;
 
-        let name = file.name().to_string();
+        let name = normalize_zip_path(file.name());
         if !STREAMING_FILE_RE.is_match(&name) {
             continue;
+        }
+
+        if let Some(selected) = selected.as_ref() {
+            if !selected.contains(&name) {
+                continue;
+            }
         }
 
         let mut content_bytes = Vec::new();
@@ -68,6 +87,10 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), ExtractError> {
     let span = tracing::Span::current();
     span.record("input_files_count", input_files_count as u64);
     span.record("files_taken_count", ctx.stats.files_taken_count as i64);
+    span.record(
+        "selected_files_count",
+        ctx.selected_files.as_ref().map(|f| f.len()).unwrap_or(0) as i64,
+    );
 
     Ok(())
 }
