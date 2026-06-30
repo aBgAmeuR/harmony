@@ -12,8 +12,6 @@ export const STEP_ORDER: StepId[] = [
   "resolve_tracks",
   "enrich_tracks",
   "enrich_albums",
-  "aggregate_interactions",
-  "verify_data",
   "persist_interactions",
 ];
 
@@ -24,8 +22,6 @@ export const STEP_LABELS: Record<StepId, string> = {
   resolve_tracks: "Resolve tracks",
   enrich_tracks: "Enrich tracks",
   enrich_albums: "Enrich albums",
-  aggregate_interactions: "Aggregate interactions",
-  verify_data: "Verify data",
   persist_interactions: "Save interactions",
 };
 

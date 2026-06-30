@@ -1,11 +1,7 @@
+import type { DeployInput, DeployResult, UploadConfig, UploadResponseBody } from "./types";
+
 import { UploadError } from "./errors";
 import { Pipeline } from "./pipeline";
-import type {
-  DeployInput,
-  DeployResult,
-  UploadConfig,
-  UploadResponseBody,
-} from "./types";
 
 export class UploadClient {
   constructor(private readonly config: UploadConfig) {}
@@ -15,9 +11,7 @@ export class UploadClient {
     formData.append("file", input.file);
 
     if (input.selectedFiles.length > 0) {
-      const normalized = input.selectedFiles.map((path) =>
-        path.replace(/\\/g, "/"),
-      );
+      const normalized = input.selectedFiles.map((path) => path.replace(/\\/g, "/"));
       formData.append("selected_files", JSON.stringify(normalized));
     }
 

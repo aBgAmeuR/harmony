@@ -1,4 +1,4 @@
-use std::sync::Arc;
+ use std::sync::Arc;
 
 use axum::{
     Router,
@@ -13,6 +13,7 @@ use tower_http::cors::CorsLayer;
 mod db_file;
 mod error;
 mod otel;
+mod package;
 mod package_data;
 mod package_upload;
 mod pipeline;
@@ -62,6 +63,7 @@ async fn main() {
         .expect("failed to bind to port");
 
     tracing::info!("server is running on http://{addr}");
+    println!("server is running on http://{addr}");
 
     axum::serve(listener, app.into_make_service())
         .await
@@ -75,6 +77,7 @@ fn app(state: AppState) -> Router {
             "/api/v1/packages",
             post(upload::upload_package).layer(DefaultBodyLimit::max(50 * 1024 * 1024)),
         )
+        .route("/api/v1/packages/{id}", get(package::get_package_handler))
         .route(
             "/api/v1/packages/{id}/stream",
             get(progress::stream_package_progress),

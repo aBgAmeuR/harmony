@@ -7,8 +7,6 @@ export type StepId =
   | "resolve_tracks"
   | "enrich_tracks"
   | "enrich_albums"
-  | "aggregate_interactions"
-  | "verify_data"
   | "persist_interactions";
 
 export type StepProgress = {

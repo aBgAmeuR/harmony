@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePipeline } from "@harmony/upload/react";
-import { UploadError, type Pipeline, type PipelineRunStatus } from "@harmony/upload";
+import {
+  UploadError,
+  type Pipeline,
+  type PipelineRunStatus,
+} from "@harmony/upload";
 import { Button } from "@harmony/ui/components/button";
 import {
   Card,
@@ -11,7 +15,7 @@ import {
   CardTitle,
 } from "@harmony/ui/components/card";
 import { upload } from "@/lib/upload";
-import type { UploadSession } from "@/lib/upload-session";
+import { clearUploadSession, type UploadSession } from "@/lib/upload-session";
 import { UploadPipelineList } from "@/components/upload/upload-pipeline-list";
 import { format } from "@/utils/format";
 
@@ -140,6 +144,12 @@ export function DeployStep({
     onRetry();
   };
 
+  const handleCancel = () => {
+    pipeline?.disconnect();
+    clearUploadSession();
+    window.location.reload();
+  };
+
   useEffect(() => {
     const t = window.setInterval(() => {
       setNowTs(Date.now());
@@ -186,7 +196,9 @@ export function DeployStep({
 
         <div className="grid grid-cols-3 divide-x rounded-lg border">
           <div className="flex flex-col px-3 py-2">
-            <span className="text-xs text-muted-foreground">Files included</span>
+            <span className="text-xs text-muted-foreground">
+              Files included
+            </span>
             <span className="text-sm font-medium text-foreground">
               {selectedFiles.length} JSON file
               {selectedFiles.length !== 1 ? "s" : ""}
@@ -210,9 +222,14 @@ export function DeployStep({
       </CardContent>
 
       <CardFooter className="justify-between">
-        <Button variant="ghost" disabled={!canRetry} onClick={handleRetry}>
-          Retry deploy
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="destructive" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button variant="ghost" disabled={!canRetry} onClick={handleRetry}>
+            Retry deploy
+          </Button>
+        </div>
 
         <Button disabled={!canContinue} onClick={onContinue}>
           Continue

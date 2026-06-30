@@ -1,14 +1,12 @@
 use super::events::StepId;
 
-pub const STEP_ORDER: [StepId; 9] = [
+pub const STEP_ORDER: [StepId; 7] = [
     StepId::ExtractArchive,
     StepId::ParseInteractions,
     StepId::NormalizeInteractions,
     StepId::ResolveTracks,
     StepId::EnrichTracks,
     StepId::EnrichAlbums,
-    StepId::AggregateInteractions,
-    StepId::VerifyData,
     StepId::PersistInteractions,
 ];
 
@@ -26,6 +24,15 @@ pub fn step_label(step_id: StepId) -> &'static str {
     }
 }
 
+pub fn sse_step_id(step_id: StepId) -> StepId {
+    match step_id {
+        StepId::AggregateInteractions | StepId::VerifyData | StepId::PersistInteractions => {
+            StepId::PersistInteractions
+        }
+        other => other,
+    }
+}
+
 pub fn stage_to_step_id(stage: &str) -> StepId {
     match stage {
         "extract" => StepId::ExtractArchive,
@@ -33,9 +40,7 @@ pub fn stage_to_step_id(stage: &str) -> StepId {
         "normalize" => StepId::NormalizeInteractions,
         "resolve" => StepId::ResolveTracks,
         "enrich" => StepId::EnrichTracks,
-        "aggregate" => StepId::AggregateInteractions,
-        "verify" => StepId::VerifyData,
-        "persist" => StepId::PersistInteractions,
+        "aggregate" | "verify" | "persist" => StepId::PersistInteractions,
         _ => StepId::ExtractArchive,
     }
 }

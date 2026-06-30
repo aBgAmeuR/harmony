@@ -126,7 +126,9 @@ export function UploadWizard() {
   const [isLockedAfterDeploy, setIsLockedAfterDeploy] = useState(
     initialState.isLockedAfterDeploy,
   );
-  const [uploadId, setUploadId] = useState<string | null>(initialState.uploadId);
+  const [uploadId, setUploadId] = useState<string | null>(
+    initialState.uploadId,
+  );
   const [uploadSteps, setUploadSteps] = useState<Array<UploadUiStep> | null>(
     null,
   );

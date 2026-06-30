@@ -117,6 +117,36 @@ where
     Ok(())
 }
 
+fn merged_save_output(ctx: &PipelineContext) -> serde_json::Value {
+    serde_json::json!({
+        "interactions": ctx.interactions.len(),
+        "tracks": ctx.deezer_tracks.len(),
+        "albums": ctx.deezer_albums.len(),
+        "artists": ctx.deezer_artists.len(),
+    })
+}
+
+fn run_save_bundle(ctx: &mut PipelineContext) -> Result<(), PipelineError> {
+    let started = Instant::now();
+    if let Some(reporter) = ctx.reporter.as_ref() {
+        reporter.step_started(StepId::PersistInteractions);
+    }
+
+    stages::aggregate::run(ctx).map_err(PipelineError::Aggregate)?;
+    stages::verify::run(ctx).map_err(PipelineError::Verify)?;
+    stages::persist::run(ctx).map_err(PipelineError::Persist)?;
+
+    if let Some(reporter) = ctx.reporter.as_ref() {
+        reporter.step_completed(
+            StepId::PersistInteractions,
+            started.elapsed().as_millis() as u64,
+            Some(merged_save_output(ctx)),
+        );
+    }
+
+    Ok(())
+}
+
 #[tracing::instrument(
     skip(ctx),
     name = "pipeline.run",
@@ -178,43 +208,7 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), PipelineError> {
     stages::resolve::run(ctx).map_err(PipelineError::Resolve)?;
     stages::enrich::run(ctx).map_err(PipelineError::Enrich)?;
 
-    run_reported_stage(
-        ctx,
-        StepId::AggregateInteractions,
-        |ctx| {
-            serde_json::json!({
-                "interactions": ctx.interactions.len(),
-                "skipped": ctx.stats.interactions_skipped_count,
-            })
-        },
-        |ctx| stages::aggregate::run(ctx).map_err(PipelineError::Aggregate),
-    )?;
-
-    run_reported_stage(
-        ctx,
-        StepId::VerifyData,
-        |ctx| {
-            serde_json::json!({
-                "tracksSkipped": ctx.stats.verify_tracks_skipped_count,
-                "interactionsSkipped": ctx.stats.verify_interactions_skipped_count,
-            })
-        },
-        |ctx| stages::verify::run(ctx).map_err(PipelineError::Verify),
-    )?;
-
-    run_reported_stage(
-        ctx,
-        StepId::PersistInteractions,
-        |ctx| {
-            serde_json::json!({
-                "interactions": ctx.interactions.len(),
-                "tracks": ctx.deezer_tracks.len(),
-                "albums": ctx.deezer_albums.len(),
-                "artists": ctx.deezer_artists.len(),
-            })
-        },
-        |ctx| stages::persist::run(ctx).map_err(PipelineError::Persist),
-    )?;
+    run_save_bundle(ctx)?;
 
     record_stats(ctx);
 

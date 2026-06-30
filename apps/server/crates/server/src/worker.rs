@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use crate::pipeline::{self, PipelineContext, PipelineError, PipelineStats};
-use crate::progress::{stage_to_step_id, ProgressReporter};
+use crate::progress::{sse_step_id, stage_to_step_id, ProgressReporter};
 use harmony_db::{mark_running, set_completed, set_failed_with_data};
 use opentelemetry::Context;
 use tokio::sync::mpsc;
@@ -141,9 +141,11 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
                     "pipeline failed - cancelled"
                 );
 
-                let step_id = reporter
-                    .active_step()
-                    .unwrap_or_else(|| stage_to_step_id(err.stage()));
+                let step_id = sse_step_id(
+                    reporter
+                        .active_step()
+                        .unwrap_or_else(|| stage_to_step_id(err.stage())),
+                );
                 reporter.run_failed(step_id, &err.to_string());
 
                 let data = state
