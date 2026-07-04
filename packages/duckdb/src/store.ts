@@ -3,13 +3,14 @@ import type { AsyncDuckDBConnection } from "@duckdb/duckdb-wasm";
 import { create } from "zustand";
 
 import { getDuckDBInstance, registerPackageDatabase } from "./duckdb";
+import { DuckDBError } from "./error";
 
 type DbStatus = "idle" | "loading" | "ready" | "error";
 
 type DbStore = {
   conn: AsyncDuckDBConnection | null;
   status: DbStatus;
-  error: Error | null;
+  error: DuckDBError | null;
   initialize: (packageId: string) => Promise<void>;
 };
 
@@ -20,8 +21,6 @@ export const useDbStore = create<DbStore>()((set, get) => ({
   status: "idle",
   error: null,
   initialize: async (packageId: string) => {
-    console.log("initialize db", packageId);
-
     const { status } = get();
     if (status === "ready" || status === "error") return;
     if (initPromise) return initPromise;
@@ -43,8 +42,7 @@ export const useDbStore = create<DbStore>()((set, get) => ({
 
         set({ conn, status: "ready" });
       } catch (err) {
-        const error = err instanceof Error ? err : new Error(String(err));
-        console.error("Error loading package database", err);
+        const error = err instanceof DuckDBError ? err : new DuckDBError(String(err));
         set({ conn: null, status: "error", error });
         initPromise = null;
         throw error;

@@ -1,3 +1,5 @@
+"use client";
+
 import { motion, useSpring } from "motion/react";
 import { useEffect } from "react";
 

@@ -3,6 +3,7 @@ import { query } from "@/lib/query";
 import {
   HeatmapCells,
   HeatmapChart,
+  HeatmapInteractionProvider,
   HeatmapLegend,
   HeatmapTooltip,
   HeatmapXAxis,
@@ -15,15 +16,9 @@ import { useState } from "react";
 
 import type { WhenYouListenByYear } from "../types";
 
-function formatTooltipLabel(count: number, date: Date): string {
+function formatTooltipLabel(count: number): string {
   const word = count === 1 ? "stream" : "streams";
-  return `${count.toLocaleString()} ${word} on ${new Intl.DateTimeFormat(
-    "en-US",
-    {
-      month: "long",
-      day: "numeric",
-    },
-  ).format(date)}`;
+  return `${count.toLocaleString()} ${word}`;
 }
 
 const LISTENING_HEATMAP_LEVEL_COLORS = [
@@ -86,16 +81,22 @@ export function WhenYouListenWidget() {
         </div>
       </div>
       <div className="px-2 py-3">
-        <HeatmapChart
-          data={columns}
-          margin={{ top: 24, right: 8, bottom: 0, left: 40 }}
-          colorScale={colorScale}
-        >
-          <HeatmapCells />
-          <HeatmapXAxis />
-          <HeatmapYAxis />
-          <HeatmapTooltip formatLabel={formatTooltipLabel} />
-        </HeatmapChart>
+        <HeatmapInteractionProvider>
+          {/* <HeatmapInteractionBoundary> */}
+          <HeatmapChart
+            data={columns}
+            layout="fluid"
+            margin={{ top: 24, right: 8, bottom: 0, left: 40 }}
+            colorScale={colorScale}
+          >
+            <HeatmapCells />
+            <HeatmapXAxis />
+            <HeatmapYAxis />
+            <HeatmapTooltip formatLabel={formatTooltipLabel} />
+          </HeatmapChart>
+          <HeatmapLegend />
+          {/* </HeatmapInteractionBoundary> */}
+        </HeatmapInteractionProvider>
       </div>
     </div>
   );

@@ -1,8 +1,11 @@
+"use client";
+
 import { cn } from "@harmony/ui/lib/utils";
 import { memo, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { useHeatmap } from "./heatmap-context";
+import { getHeatmapColumnMonthAnchor } from "./heatmap-utils";
 
 export interface HeatmapXAxisProps {
   /** Additional class name for labels */
@@ -12,7 +15,7 @@ export interface HeatmapXAxisProps {
 const monthFmt = new Intl.DateTimeFormat("en-US", { month: "short" });
 
 export const HeatmapXAxis = memo(function HeatmapXAxis({ className }: HeatmapXAxisProps) {
-  const { containerRef, data, margin, binWidth, xScale } = useHeatmap();
+  const { containerRef, data, margin, xScale } = useHeatmap();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -21,29 +24,34 @@ export const HeatmapXAxis = memo(function HeatmapXAxis({ className }: HeatmapXAx
 
   const labels = useMemo(() => {
     const ticks: { label: string; x: number; key: string }[] = [];
-    let lastMonth = -1;
+    let lastMonthKey = "";
 
     for (let columnIndex = 0; columnIndex < data.length; columnIndex++) {
-      const firstDate = data[columnIndex]?.bins[0]?.date;
-      if (!firstDate) {
+      const column = data[columnIndex];
+      if (!column) {
         continue;
       }
 
-      const month = firstDate.getMonth();
-      if (month === lastMonth) {
+      const monthAnchor = getHeatmapColumnMonthAnchor(column);
+      if (!monthAnchor) {
+        continue;
+      }
+
+      const monthKey = `${monthAnchor.getFullYear()}-${monthAnchor.getMonth()}`;
+      if (monthKey === lastMonthKey) {
         continue;
       }
 
       ticks.push({
-        label: monthFmt.format(firstDate),
-        x: margin.left + xScale(columnIndex) + binWidth / 2,
-        key: `${columnIndex}-${month}`,
+        label: monthFmt.format(monthAnchor),
+        x: margin.left + xScale(columnIndex),
+        key: monthKey,
       });
-      lastMonth = month;
+      lastMonthKey = monthKey;
     }
 
     return ticks;
-  }, [binWidth, data, margin.left, xScale]);
+  }, [data, margin.left, xScale]);
 
   const container = containerRef.current;
   if (!(mounted && container)) {
@@ -53,13 +61,14 @@ export const HeatmapXAxis = memo(function HeatmapXAxis({ className }: HeatmapXAx
   return createPortal(
     labels.map((tick) => (
       <div
-        className="pointer-events-none absolute top-0"
+        className="pointer-events-none absolute"
         key={tick.key}
         style={{
+          top: 0,
           left: tick.x,
           width: 0,
           display: "flex",
-          justifyContent: "center",
+          justifyContent: "flex-start",
         }}
       >
         <span className={cn("text-xs whitespace-nowrap text-chart-label", className)}>

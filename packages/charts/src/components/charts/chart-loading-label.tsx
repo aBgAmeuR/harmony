@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@harmony/ui/lib/utils";
 import { motion } from "motion/react";
 

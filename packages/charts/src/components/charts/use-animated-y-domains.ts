@@ -1,3 +1,5 @@
+"use client";
+
 import { animate, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 

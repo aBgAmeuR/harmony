@@ -1,3 +1,5 @@
+"use client";
+
 import type { ReactNode } from "react";
 
 import { intFmt } from "../chart-formatters";
@@ -20,7 +22,9 @@ export function TooltipContent({ title, rows, children }: TooltipContentProps) {
     <div className="overflow-hidden">
       <div className="px-3 py-2.5">
         {title && (
-          <div className="mb-2 text-xs font-medium text-chart-tooltip-foreground">{title}</div>
+          <div className="mb-2 text-left text-xs font-medium text-chart-tooltip-foreground">
+            {title}
+          </div>
         )}
         <div className="space-y-1.5">
           {rows.map((row) => (

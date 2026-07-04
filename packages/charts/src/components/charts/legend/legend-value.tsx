@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@harmony/ui/lib/utils";
+
 import { intFmt } from "../chart-formatters";
 import { useLegendItem } from "./legend-context";
 
@@ -27,17 +28,10 @@ export function LegendValue({
   const { item, percentage } = useLegendItem();
 
   return (
-    <span
-      className={cn(
-        "flex items-center gap-2 text-legend-muted-foreground",
-        className
-      )}
-    >
+    <span className={cn("flex items-center gap-2 text-legend-muted-foreground", className)}>
       <span>{formatValue(item.value)}</span>
       {showPercentage && item.maxValue && (
-        <span className={percentageClassName}>
-          {formatPercentage(percentage)}
-        </span>
+        <span className={percentageClassName}>{formatPercentage(percentage)}</span>
       )}
     </span>
   );

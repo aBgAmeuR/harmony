@@ -2,7 +2,8 @@ import { db } from "@harmony/duckdb";
 
 import { Catalog } from "@/components/catalog/catalog";
 
-export const topAlbumsFn = async ({ size }: { size: number }) => {
+export const topAlbumsFn = async ({ artistId }: { artistId?: number }) => {
+  const whereClause = artistId ? `WHERE v.album_artist_ids @> ARRAY[${artistId}]` : "";
   return await db.query<Catalog>(`
     SELECT
       v.album_id AS id,
@@ -13,8 +14,9 @@ export const topAlbumsFn = async ({ size }: { size: number }) => {
       SUM(i.ms_played) / 60000::INTEGER AS playtime
     FROM interactions i
     JOIN v_tracks_info v ON v.track_id = i.track_id
+    ${whereClause}
     GROUP BY v.album_id
     ORDER BY playtime DESC
-    LIMIT ${size}
+    LIMIT 50
   `);
 };

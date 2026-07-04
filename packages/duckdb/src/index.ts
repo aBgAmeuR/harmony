@@ -1,4 +1,13 @@
+import { DuckDBNotInitializedError } from "./error";
 import { useDbStore } from "./store";
+
+export {
+  DuckDBError,
+  DuckDBEnvironmentError,
+  DuckDBFetchError,
+  DuckDBNotInitializedError,
+  DuckDBPackageNotFoundError,
+} from "./error";
 
 export const db = {
   async init(packageId: string) {
@@ -7,9 +16,10 @@ export const db = {
   async query<T>(query: string): Promise<T[]> {
     const conn = useDbStore.getState().conn;
     if (!conn) {
-      throw new Error("Database not initialized");
+      throw new DuckDBNotInitializedError();
     }
     return (await conn.query(query)).toArray() as T[];
   },
   status: () => useDbStore.getState().status,
+  error: () => useDbStore.getState().error,
 };

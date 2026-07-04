@@ -72,6 +72,7 @@ const packageQuery = (packageId: string) =>
 const periodQuery = query.packages.period.queryOptions();
 
 export const Route = createFileRoute("/app/$packageId/package")({
+  ssr: false,
   loader: async ({ context: { queryClient }, parentMatchPromise, params }) => {
     await parentMatchPromise;
     await Promise.all([

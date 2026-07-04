@@ -15,9 +15,9 @@ import { ReleaseYearWidget } from "@/features/listening/widgets/release-year-wid
 import { TotalStreamsWidget } from "@/features/listening/widgets/total-streams-widget";
 import { TrackEngagementWidget } from "@/features/listening/widgets/track-engagement-widget";
 import { UniqueTracksWidget } from "@/features/listening/widgets/unique-tracks-widget";
-import { WhenYouListenWidget } from "@/features/listening/widgets/when-you-listen-widget";
 
 export const Route = createFileRoute("/app/$packageId/listening")({
+  ssr: false,
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
     await parentMatchPromise;
     await Promise.all([
@@ -51,9 +51,9 @@ export const Route = createFileRoute("/app/$packageId/listening")({
       queryClient.ensureQueryData(
         query.listeningHabits.trackEngagement.queryOptions(),
       ),
-      queryClient.ensureQueryData(
-        query.listeningHabits.whenYouListen.queryOptions(),
-      ),
+      // queryClient.ensureQueryData(
+      //   query.listeningHabits.whenYouListen.queryOptions(),
+      // ),
       queryClient.ensureQueryData(
         query.listeningHabits.releaseYear.queryOptions(),
       ),
@@ -78,9 +78,9 @@ function RouteComponent() {
           <MonthlyActivityWidget />
           <DaysOfWeekWidget />
         </div>
-        <div className="border-t border-border">
+        {/* <div className="border-t border-border">
           <WhenYouListenWidget />
-        </div>
+        </div> */}
         <div className="grid grid-cols-1 divide-y divide-border border-t border-border sm:grid-cols-2 sm:divide-x sm:divide-y-0">
           <PeakHoursWidget />
           <PlatformsWidget />

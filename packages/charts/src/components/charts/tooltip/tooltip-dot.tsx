@@ -1,3 +1,5 @@
+"use client";
+
 import { motion, useSpring } from "motion/react";
 
 import { type SpringConfig, useChartConfig } from "../chart-config-context";

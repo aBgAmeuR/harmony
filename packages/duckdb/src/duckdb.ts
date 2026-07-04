@@ -1,4 +1,10 @@
 import * as duckdb from "@duckdb/duckdb-wasm";
+
+import {
+  DuckDBEnvironmentError,
+  DuckDBFetchError,
+  DuckDBPackageNotFoundError,
+} from "./error";
 import eh_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url";
 import mvp_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url";
 import duckdb_wasm_eh from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
@@ -20,7 +26,7 @@ let initPromise: Promise<duckdb.AsyncDuckDB> | null = null;
 
 export const getDuckDBInstance = async () => {
   if (typeof window === "undefined") {
-    throw new Error("DuckDB WASM is only available in the browser");
+    throw new DuckDBEnvironmentError();
   }
 
   if (dbInstance) return dbInstance;
@@ -49,7 +55,10 @@ export async function registerPackageDatabase(
 ) {
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Failed to fetch package database: ${response.status}`);
+    if (response.status === 404) {
+      throw new DuckDBPackageNotFoundError(packageId);
+    }
+    throw new DuckDBFetchError(packageId, response.status);
   }
 
   const buffer = new Uint8Array(await response.arrayBuffer());
