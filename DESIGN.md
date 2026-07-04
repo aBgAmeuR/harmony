@@ -260,6 +260,7 @@ The visual system is compact but not cramped. The page floor is {colors.backgrou
 Typography does quiet work. Spotify Mix gives the product a music-native voice, while small sizes, medium weights, and tabular numeric alignment keep the dashboard dense. The result should feel focused, nocturnal, and personal: a listening archive presented as a polished analytics report rather than a raw export.
 
 **Key Characteristics:**
+
 - Always-dark canvas: {colors.background} holds every authenticated screen and makes charts, album art, and green accents carry the energy.
 - Single green accent family: {colors.primary} anchors controls; {colors.primary-bright}, {colors.primary-mid}, {colors.primary-dim}, and {colors.primary-deep} extend that hue for charts.
 - Flat depth model: surfaces separate through charcoal steps and {colors.hairline} borders, not drop shadows.
@@ -269,12 +270,14 @@ Typography does quiet work. Spotify Mix gives the product a music-native voice, 
 ## Colors
 
 ### Brand & Accent
+
 - **Harmony Green** ({colors.primary} - #57B660): The primary interactive and brand color. Use for primary buttons, active toggle sliders, upload progress, selected controls, link accents, logo bars, and moments that should feel "live."
 - **Chart Glow Green** ({colors.primary-bright} - #72E97D): The brightest visualization green. Use for foreground chart series, tall active bars, line peaks, and heatmap cells that represent the highest listening intensity.
 - **Chart Mid Green** ({colors.primary-mid} - #5DC267): The middle chart tier. Use for secondary bars, ring segments, and intermediate activity levels.
 - **Chart Deep Green** ({colors.primary-dim} - #37783D) and **Chart Forest Green** ({colors.primary-deep} - #25562A): The low-intensity end of the data scale. Use behind brighter marks to keep charts tonal rather than rainbow-coded.
 
 ### Surface
+
 - **Absolute Black** ({colors.background} - #000000): The app canvas and primary page floor. It should remain dominant; most screens are black first, green second.
 - **Chart Black** ({colors.chart-background} - #0A0A0A): A barely lifted black for plot interiors and visualization backplates when a chart needs separation from the page.
 - **Sidebar Charcoal** ({colors.surface-sidebar} - #121212): The fixed navigation surface and the default card plate. It is close enough to black to feel integrated but visible enough to frame controls.
@@ -284,6 +287,7 @@ Typography does quiet work. Spotify Mix gives the product a music-native voice, 
 - **Active Slate** ({colors.surface-accent} - #404040): Active sidebar rows, expanded trigger states, and stronger hover states.
 
 ### Text
+
 - **Studio White** ({colors.foreground} - #FFFFFF): Primary headings, track names, selected labels, metric values, and high-emphasis chart text.
 - **Soft White** ({colors.foreground-soft} - #FAFAFA): Popover foregrounds and selected nav text when pure white would feel too sharp.
 - **Silver Body** ({colors.body} - #D9D9D9): Default readable copy, sidebar labels, table labels, button text, and most secondary foreground.
@@ -291,11 +295,13 @@ Typography does quiet work. Spotify Mix gives the product a music-native voice, 
 - **Chart Label Gray** ({colors.chart-label} - #AAAEB4): Axis labels and visualization annotations. It is cooler than body text and tuned for chart grids.
 
 ### Hairlines & Inputs
+
 - **Whisper Hairline** ({colors.hairline} - #FFFFFF1A): The structural line for sidebar edges, table rows, card rings, widget dividers, and header bottoms. It should read as a boundary only after the eye settles.
 - **Translucent Input Fill** ({colors.input-fill} - #FFFFFF26): Search, select, and text input fill. It creates a frosted control surface without introducing a new neutral.
 - **Focus Ring Gray** ({colors.focus-ring} - #737373): Keyboard focus rings and active input borders, usually applied with opacity so the ring is visible without becoming a brand accent.
 
 ### Semantic & Rank
+
 - **Alert Coral** ({colors.destructive} - #FF6467): Destructive actions, failed uploads, validation errors, and serious warnings.
 - **Champion Gold** ({colors.rank-gold-fill} / {colors.rank-gold-text}): First-place rank badge. This is the only warm celebration color and should stay limited to rank/status.
 - **Runner-Up Silver** ({colors.rank-silver-fill} / {colors.rank-silver-text}): Second-place rank badge with cool slate character.
@@ -305,16 +311,16 @@ Typography does quiet work. Spotify Mix gives the product a music-native voice, 
 
 **Primary Font Family:** {typography.body-md} uses Spotify Mix with `ui-sans-serif`, `system-ui`, and `sans-serif` fallbacks. The face is geometric and rounded enough to feel music-native, with numerals that hold up in tables and metrics.
 
-| Token | Role | Size | Weight | Line Height | Letter Spacing |
-|---|---|---:|---:|---:|---:|
-| {typography.brand} | Sidebar wordmark | 20px | 700 | 1.2 | -0.4px |
-| {typography.page-title} | Route titles and compact headings | 14px | 600 | 1.25 | -0.2px |
-| {typography.widget-value} | Large metric values | 22px | 700 | 1 | -0.3px |
-| {typography.body-md} | Track names, normal content | 14px | 400 | 1.45 | 0 |
-| {typography.body-sm} | Descriptions, nav items, controls | 12px | 400 | 1.625 | 0 |
-| {typography.table-label} | Table headers and metric labels | 12px | 500 | 1.33 | 0 |
-| {typography.micro} | Tiny badges and hints | 10px | 500 | 1.2 | 0 |
-| {typography.button} | Buttons and segmented controls | 12px | 500 | 1.625 | 0 |
+| Token                     | Role                              | Size | Weight | Line Height | Letter Spacing |
+| ------------------------- | --------------------------------- | ---: | -----: | ----------: | -------------: |
+| {typography.brand}        | Sidebar wordmark                  | 20px |    700 |         1.2 |         -0.4px |
+| {typography.page-title}   | Route titles and compact headings | 14px |    600 |        1.25 |         -0.2px |
+| {typography.widget-value} | Large metric values               | 22px |    700 |           1 |         -0.3px |
+| {typography.body-md}      | Track names, normal content       | 14px |    400 |        1.45 |              0 |
+| {typography.body-sm}      | Descriptions, nav items, controls | 12px |    400 |       1.625 |              0 |
+| {typography.table-label}  | Table headers and metric labels   | 12px |    500 |        1.33 |              0 |
+| {typography.micro}        | Tiny badges and hints             | 10px |    500 |         1.2 |              0 |
+| {typography.button}       | Buttons and segmented controls    | 12px |    500 |       1.625 |              0 |
 
 ### Principles
 
@@ -410,12 +416,12 @@ Use no drop shadow for ordinary dashboard panels, cards, tables, or widgets. Sub
 
 ## Responsive Behavior
 
-| Name | Width | Key Changes |
-|---|---:|---|
-| Mobile | < 768px | Sidebar becomes a sheet at {spacing.sidebar-mobile}; main content takes full width; tables scroll horizontally; chart grids stack one column. |
-| Tablet | 768-1024px | Sidebar can persist or collapse; insight widgets move to two-column grids; headers keep toolbar controls compact. |
-| Desktop | 1024-1536px | Full {spacing.sidebar-expanded} sidebar, full catalog tables, four-up metric rows, and mixed chart grids. |
-| Wide | > 1536px | Listening Habits can cap content width and add side border rails; catalog routes may continue full-width for table legibility. |
+| Name    |       Width | Key Changes                                                                                                                                   |
+| ------- | ----------: | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mobile  |     < 768px | Sidebar becomes a sheet at {spacing.sidebar-mobile}; main content takes full width; tables scroll horizontally; chart grids stack one column. |
+| Tablet  |  768-1024px | Sidebar can persist or collapse; insight widgets move to two-column grids; headers keep toolbar controls compact.                             |
+| Desktop | 1024-1536px | Full {spacing.sidebar-expanded} sidebar, full catalog tables, four-up metric rows, and mixed chart grids.                                     |
+| Wide    |    > 1536px | Listening Habits can cap content width and add side border rails; catalog routes may continue full-width for table legibility.                |
 
 ### Touch Targets
 
