@@ -11,18 +11,14 @@ export const Route = createFileRoute("/app/$packageId/albums")({
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
     await parentMatchPromise;
     const artistId = useArtistStore.getState().artist?.id;
-    await queryClient.ensureQueryData(
-      query.albums.top.queryOptions({ artistId }),
-    );
+    await queryClient.ensureQueryData(query.albums.top.queryOptions({ artistId }));
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const artistId = useArtistStore((s) => s.artist?.id);
-  const { data, isLoading } = useQuery(
-    query.albums.top.queryOptions({ artistId }),
-  );
+  const { data, isLoading } = useQuery(query.albums.top.queryOptions({ artistId }));
 
   return (
     <div>

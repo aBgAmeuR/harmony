@@ -1,7 +1,4 @@
-import { type CSSProperties, useEffect, useRef, useState } from "react";
-import { unzipSync } from "fflate";
 import { Button, buttonVariants } from "@harmony/ui/components/button";
-import { Checkbox } from "@harmony/ui/components/checkbox";
 import {
   Card,
   CardContent,
@@ -10,8 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@harmony/ui/components/card";
+import { Checkbox } from "@harmony/ui/components/checkbox";
 import { ScrollArea } from "@harmony/ui/components/scroll-area";
 import { cn } from "@harmony/ui/lib/utils";
+import { unzipSync } from "fflate";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 
 interface FilesStepProps {
   packageFile: File | null;
@@ -77,9 +77,7 @@ export function FilesStep({
         const archiveEntries = unzipSync(bytes);
 
         const extracted = Object.entries(archiveEntries)
-          .filter(([filename]) =>
-            archiveJsonPattern.test(normalizeArchivePath(filename)),
-          )
+          .filter(([filename]) => archiveJsonPattern.test(normalizeArchivePath(filename)))
           .map(([filename, content]) => ({
             path: normalizeArchivePath(filename),
             name: filename.split("/").pop() ?? filename,
@@ -133,16 +131,14 @@ export function FilesStep({
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {isLoading ? (
-          <p className="text-sm text-muted-foreground">Extracting archive…</p>
-        ) : null}
+        {isLoading ? <p className="text-sm text-muted-foreground">Extracting archive…</p> : null}
 
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
         {!error ? (
           <>
             <ScrollArea
-              className="rounded-lg border h-[min(14rem,calc(var(--rows)*2rem))]"
+              className="h-[min(14rem,calc(var(--rows)*2rem))] rounded-lg border"
               style={
                 {
                   "--rows": String(Math.max(jsonFiles.length, 1)),
@@ -156,7 +152,7 @@ export function FilesStep({
                     onClick={() => toggleFile(file.path)}
                     className={cn(
                       buttonVariants({ variant: "ghost" }),
-                      "active:translate-y-0 rounded-none cursor-pointer",
+                      "cursor-pointer rounded-none active:translate-y-0",
                       index === 0 && "rounded-t-lg",
                       index === jsonFiles.length - 1 && "rounded-b-lg",
                     )}
@@ -175,9 +171,7 @@ export function FilesStep({
                     >
                       {file.name}
                     </p>
-                    <span className="text-xs text-muted-foreground font-mono">
-                      {file.size}
-                    </span>
+                    <span className="font-mono text-xs text-muted-foreground">{file.size}</span>
                   </div>
                 ))}
               </div>

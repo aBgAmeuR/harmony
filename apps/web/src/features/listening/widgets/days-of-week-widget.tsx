@@ -1,6 +1,7 @@
-import { query } from "@/lib/query";
 import { RadarArea, RadarChart, RadarGrid, RadarLabels } from "@harmony/charts";
 import { useQuery } from "@tanstack/react-query";
+
+import { query } from "@/lib/query";
 
 export function DaysOfWeekWidget() {
   const { data } = useQuery(query.listeningHabits.daysOfWeek.queryOptions());
@@ -14,13 +15,7 @@ export function DaysOfWeekWidget() {
         <span className="text-xs text-muted-foreground">Days of the Week</span>
       </div>
       <div className="px-2">
-        <RadarChart
-          animate
-          data={series}
-          enterDurationMs={500}
-          margin={24}
-          metrics={metrics}
-        >
+        <RadarChart animate data={series} enterDurationMs={500} margin={24} metrics={metrics}>
           <RadarGrid showLabels={false} />
           <RadarLabels fontSize={10} offset={16} />
           {series.map((_, index) => (

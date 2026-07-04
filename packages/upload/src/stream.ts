@@ -13,10 +13,7 @@ function parsePipelineEvent(data: string): PipelineEvent {
   return parsed as PipelineEvent;
 }
 
-export function connectPipelineStream(
-  streamUrl: string,
-  handlers: StreamHandlers,
-): () => void {
+export function connectPipelineStream(streamUrl: string, handlers: StreamHandlers): () => void {
   const source = new EventSource(streamUrl);
 
   const handleMessage = (event: MessageEvent<string>) => {

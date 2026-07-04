@@ -15,12 +15,7 @@ export function MetricSparkline({ trend = [] }: MetricSparklineProps) {
       margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
       xDataKey="date"
     >
-      <Line
-        dataKey="value"
-        strokeWidth={2}
-        fadeEdges={false}
-        showHighlight={false}
-      />
+      <Line dataKey="value" strokeWidth={2} fadeEdges={false} showHighlight={false} />
     </LineChart>
   );
 }

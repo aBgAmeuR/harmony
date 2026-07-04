@@ -1,5 +1,6 @@
 import { Button } from "@harmony/ui/components/button";
 import { cn } from "@harmony/ui/lib/utils";
+
 import { STEP_CONFIG, type WizardStep } from "./types";
 
 interface StepNavigationProps {
@@ -14,7 +15,7 @@ export function StepNavigation({
   onStepClick,
 }: StepNavigationProps) {
   return (
-    <div className="absolute left-full translate-x-10 top-0 hidden lg:flex flex-col">
+    <div className="absolute top-0 left-full hidden translate-x-10 flex-col lg:flex">
       {STEP_CONFIG.map((step, i) => {
         const stepIndex = i as WizardStep;
         const isFuture = stepIndex > currentStep;
@@ -28,14 +29,11 @@ export function StepNavigation({
             disabled={isDisabled}
             onClick={() => !isDisabled && onStepClick(stepIndex)}
             variant="ghost"
-            className={cn(
-              "w-full justify-start",
-              isDisabled && "text-muted-foreground/40",
-            )}
+            className={cn("w-full justify-start", isDisabled && "text-muted-foreground/40")}
           >
             <div
               className={cn(
-                "size-2 rounded-full m-1",
+                "m-1 size-2 rounded-full",
                 isFuture && "border border-muted-foreground/30",
                 isBeforeMin && "bg-foreground/60",
                 !isDisabled && "bg-foreground",

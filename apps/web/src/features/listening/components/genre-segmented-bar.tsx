@@ -1,9 +1,9 @@
 import { defaultPieColors } from "@harmony/charts";
+import { Button } from "@harmony/ui/components/button";
 import { cn } from "@harmony/ui/lib/utils";
 import { useState } from "react";
 
 import type { GenreSegment } from "../types";
-import { Button } from "@harmony/ui/components/button";
 
 function segmentColor(index: number): string {
   return defaultPieColors[index % defaultPieColors.length] ?? "var(--chart-1)";
@@ -34,9 +34,7 @@ export function GenreSegmentedBar({ segments }: GenreSegmentedBarProps) {
                 <span
                   className={cn(
                     "text-xs tabular-nums transition-opacity",
-                    isDimmed
-                      ? "text-muted-foreground/40"
-                      : "text-muted-foreground",
+                    isDimmed ? "text-muted-foreground/40" : "text-muted-foreground",
                   )}
                 >
                   {segment.percentage}%
@@ -51,10 +49,7 @@ export function GenreSegmentedBar({ segments }: GenreSegmentedBarProps) {
               </div>
 
               <div
-                className={cn(
-                  "h-6 w-full rounded-lg transition-opacity",
-                  isDimmed && "opacity-40",
-                )}
+                className={cn("h-6 w-full rounded-lg transition-opacity", isDimmed && "opacity-40")}
                 style={{ backgroundColor: segmentColor(index) }}
               />
             </div>
@@ -62,7 +57,7 @@ export function GenreSegmentedBar({ segments }: GenreSegmentedBarProps) {
         })}
       </div>
 
-      <div className="flex flex-wrap gap-y-1 -ml-2.5">
+      <div className="-ml-2.5 flex flex-wrap gap-y-1">
         {segments.map((segment, index) => {
           const isDimmed = hoveredIndex !== null && hoveredIndex !== index;
 

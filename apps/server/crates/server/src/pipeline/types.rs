@@ -62,7 +62,8 @@ pub struct DeezerTrack {
 pub struct DeezerArtist {
     pub id: i64,
     pub name: String,
-    pub picture: String,
+    pub image_uri: String,
+    pub image: Option<String>,
 }
 
 #[derive(serde::Serialize)]
@@ -75,7 +76,8 @@ pub enum DeezerAlbumType {
 pub struct DeezerAlbum {
     pub id: i64,
     pub title: String,
-    pub cover: String,
+    pub image_uri: String,
+    pub image: Option<String>,
     pub release_date: Option<String>,
     pub genres: Vec<String>,
     pub nb_tracks: i64,

@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@harmony/ui/components/button";
 import {
   Card,
@@ -8,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@harmony/ui/components/card";
+import { useQuery } from "@tanstack/react-query";
 
 interface StatsStepProps {
   packageName: string;
@@ -38,12 +38,7 @@ function formatListeningTime(totalMinutes: number): string {
   return `${hours}h ${minutes}m`;
 }
 
-export function StatsStep({
-  uploadId,
-  uploadCompleted,
-  onBack,
-  canBack = true,
-}: StatsStepProps) {
+export function StatsStep({ uploadId, uploadCompleted, onBack, canBack = true }: StatsStepProps) {
   const statsQuery = useQuery({
     queryKey: ["upload-stats", uploadId],
     enabled: Boolean(uploadId) && uploadCompleted,
@@ -67,42 +62,32 @@ export function StatsStep({
       <CardHeader>
         <CardTitle>Package stats ready</CardTitle>
         <CardDescription>
-          Your package has been uploaded. You can now view usage and file
-          insights.
+          Your package has been uploaded. You can now view usage and file insights.
         </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-3">
         {statsQuery.isLoading && (
-          <p className="text-sm text-muted-foreground">
-            Loading upload stats...
-          </p>
+          <p className="text-sm text-muted-foreground">Loading upload stats...</p>
         )}
         {statsQuery.isError && (
-          <p className="text-sm text-destructive">
-            Unable to load upload stats for this package.
-          </p>
+          <p className="text-sm text-destructive">Unable to load upload stats for this package.</p>
         )}
         {!uploadCompleted && (
           <p className="text-sm text-muted-foreground">
             Stats will be available once upload is completed.
           </p>
         )}
-        {!statsQuery.isLoading &&
-          !statsQuery.isError &&
-          uploadCompleted &&
-          !stats && (
-            <p className="text-sm text-muted-foreground">
-              No stats are available yet for this upload.
-            </p>
-          )}
+        {!statsQuery.isLoading && !statsQuery.isError && uploadCompleted && !stats && (
+          <p className="text-sm text-muted-foreground">
+            No stats are available yet for this upload.
+          </p>
+        )}
 
-        <div className="rounded-lg border overflow-hidden">
-          <div className="grid grid-cols-1 sm:grid-cols-3 max-sm:divide-y sm:divide-x">
+        <div className="overflow-hidden rounded-lg border">
+          <div className="grid grid-cols-1 max-sm:divide-y sm:grid-cols-3 sm:divide-x">
             <div className="flex flex-col px-3 py-2">
-              <span className="text-xs text-muted-foreground">
-                Total tracks
-              </span>
+              <span className="text-xs text-muted-foreground">Total tracks</span>
               <span className="text-xl font-semibold text-foreground">
                 {(stats?.totalTracks ?? 0).toLocaleString()}
               </span>
@@ -114,15 +99,13 @@ export function StatsStep({
               </span>
             </div>
             <div className="flex flex-col px-3 py-2">
-              <span className="text-xs text-muted-foreground">
-                Listening time
-              </span>
+              <span className="text-xs text-muted-foreground">Listening time</span>
               <span className="text-xl font-semibold text-foreground">
                 {formatListeningTime(stats?.totalListeningMinutes ?? 0)}
               </span>
             </div>
           </div>
-          {/* 
+          {/*
           <div className="border-t p-3">
             <ChartContainer
               config={STATS_CHART_CONFIG}

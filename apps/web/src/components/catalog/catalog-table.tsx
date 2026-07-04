@@ -8,11 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from "@harmony/ui/components/table";
-import { useNavigate } from "@tanstack/react-router";
 
 import type { Catalog } from "./catalog";
 
-import { FormattedMetric } from "../format/formatted-metric";
+import { MetricCell } from "../format/metric-cell";
 import { CatalogImage } from "./catalog-image";
 
 const getRankClassName = (rank: number) => {
@@ -39,7 +38,7 @@ export const CatalogTable = ({
   empty = "No items yet.",
   loading = false,
 }: CatalogTableProps) => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   if (!loading && (!catalog || catalog.length <= 0)) {
     return (
@@ -82,9 +81,7 @@ export const CatalogTable = ({
           catalog?.map((item, index) => (
             <TableRow
               key={item.id}
-              onClick={() =>
-                navigate({ to: ".", search: { details: item.id }, resetScroll: false })
-              }
+              className="[contain-intrinsic-size:0_36px] [content-visibility:auto]"
             >
               <TableCell className="pl-4 text-center tabular-nums">
                 <span
@@ -103,15 +100,10 @@ export const CatalogTable = ({
                 </div>
               </TableCell>
               <TableCell className="text-right">
-                <FormattedMetric value={item.streams} className="justify-end" size="sm" />
+                <MetricCell value={item.streams} />
               </TableCell>
               <TableCell className="pr-4">
-                <FormattedMetric
-                  value={item.playtime}
-                  unit="min"
-                  className="justify-end"
-                  size="sm"
-                />
+                <MetricCell value={item.playtime} unit="min" />
               </TableCell>
             </TableRow>
           ))

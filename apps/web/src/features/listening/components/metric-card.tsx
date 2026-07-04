@@ -4,8 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 
 import { FormattedMetric } from "@/components/format/formatted-metric";
 
-import { MetricSparkline } from "./metric-sparkline";
 import { listeningQueries } from "../queries";
+import { MetricSparkline } from "./metric-sparkline";
 
 type ListeningMetricQuery = (typeof listeningQueries)[
   | "listeningTime"

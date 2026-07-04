@@ -11,18 +11,18 @@ export const Route = createFileRoute("/app/$packageId/artists")({
   ssr: false,
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
     await parentMatchPromise;
-    return queryClient.ensureQueryData(topArtistsQuery);
+    await queryClient.ensureQueryData(topArtistsQuery);
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { data } = useQuery(topArtistsQuery);
+  const { data, isLoading } = useQuery(topArtistsQuery);
 
   return (
     <div>
       <Header title="Artists" showArtistSelect={false} />
-      <CatalogTable catalog={data} />
+      <CatalogTable catalog={data} loading={isLoading} />
     </div>
   );
 }

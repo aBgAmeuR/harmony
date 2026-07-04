@@ -1,9 +1,9 @@
 import { FilterIcon, Icon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
 
+import { ArtistsSelect } from "./artists-select";
 import { DateRangeFilter } from "./date-range-filter";
 import { ViewModeToggle } from "./view-mode-toggle";
-import { ArtistsSelect } from "./artists-select";
 
 type HeaderProps = {
   title: string;

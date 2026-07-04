@@ -1,20 +1,22 @@
-import { useCallback, useMemo, useRef, useState } from "react";
 import { cn } from "@harmony/ui/lib/utils";
 import { Link } from "@tanstack/react-router";
-import { Icons } from "../icons";
-import { CARD_TOP_PX, type WizardStep } from "./types";
-import { StepNavigation } from "./step-navigation";
-import { DecorativeFrame } from "./decorative-frame";
-import { PackageStep } from "./steps/package-step";
-import { FilesStep } from "./steps/files-step";
-import { DeployStep } from "./steps/deploy-step";
-import { StatsStep } from "./steps/stats-step";
+import { useCallback, useMemo, useRef, useState } from "react";
+
 import {
   clearUploadSession,
   loadUploadSession,
   saveUploadSession,
   type UploadSession,
 } from "@/lib/upload-session";
+
+import { Icons } from "../icons";
+import { DecorativeFrame } from "./decorative-frame";
+import { StepNavigation } from "./step-navigation";
+import { DeployStep } from "./steps/deploy-step";
+import { FilesStep } from "./steps/files-step";
+import { PackageStep } from "./steps/package-step";
+import { StatsStep } from "./steps/stats-step";
+import { CARD_TOP_PX, type WizardStep } from "./types";
 
 type UploadUiStepStatus = "pending" | "running" | "done" | "error";
 
@@ -64,11 +66,7 @@ function parkTransform(cardHeight: number): string {
   return `translateY(${ty}px) scale(0.85)`;
 }
 
-function cardTransform(
-  i: number,
-  current: number,
-  heights: Record<number, number>,
-): string {
+function cardTransform(i: number, current: number, heights: Record<number, number>): string {
   if (i < current - 1) return "translateY(-210%)";
   if (i === current - 1) return parkTransform(heights[i] ?? 360);
   if (i === current) return "translateY(0px)";
@@ -113,33 +111,21 @@ function getInitialWizardState() {
 
 export function UploadWizard() {
   const initialState = useMemo(() => getInitialWizardState(), []);
-  const [currentStep, setCurrentStep] = useState<WizardStep>(
-    initialState.currentStep,
-  );
+  const [currentStep, setCurrentStep] = useState<WizardStep>(initialState.currentStep);
   const [packageFile, setPackageFile] = useState<File | null>(null);
   const [packageFileName, setPackageFileName] = useState<string | null>(
     initialState.packageFileName,
   );
-  const [selectedFiles, setSelectedFiles] = useState<Array<string>>(
-    initialState.selectedFiles,
-  );
-  const [isLockedAfterDeploy, setIsLockedAfterDeploy] = useState(
-    initialState.isLockedAfterDeploy,
-  );
-  const [uploadId, setUploadId] = useState<string | null>(
-    initialState.uploadId,
-  );
-  const [uploadSteps, setUploadSteps] = useState<Array<UploadUiStep> | null>(
-    null,
-  );
+  const [selectedFiles, setSelectedFiles] = useState<Array<string>>(initialState.selectedFiles);
+  const [isLockedAfterDeploy, setIsLockedAfterDeploy] = useState(initialState.isLockedAfterDeploy);
+  const [uploadId, setUploadId] = useState<string | null>(initialState.uploadId);
+  const [uploadSteps, setUploadSteps] = useState<Array<UploadUiStep> | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
   const [deployRequestId, setDeployRequestId] = useState(0);
   const [deploySelection, setDeploySelection] = useState<Array<string>>(
     initialState.deploySelection,
   );
-  const [resumePublicId, setResumePublicId] = useState<string | null>(
-    initialState.resumePublicId,
-  );
+  const [resumePublicId, setResumePublicId] = useState<string | null>(initialState.resumePublicId);
   const lastSeqRef = useRef(0);
 
   const [cardHeights, setCardHeights] = useState<Record<number, number>>({});
@@ -220,28 +206,22 @@ export function UploadWizard() {
 
   const cardRefs = useMemo(
     () =>
-      ([0, 1, 2, 3] as const).map(
-        (idx) =>
-          (el: HTMLDivElement | null): (() => void) | void => {
-            if (!el) return;
-            const observer = new ResizeObserver(([entry]) => {
-              if (!entry) return;
-              const h = Math.round(entry.contentRect.height);
-              setCardHeights((prev) =>
-                prev[idx] === h ? prev : { ...prev, [idx]: h },
-              );
-            });
-            observer.observe(el);
-            return () => observer.disconnect();
-          },
-      ),
+      ([0, 1, 2, 3] as const).map((idx) => (el: HTMLDivElement | null): (() => void) | void => {
+        if (!el) return;
+        const observer = new ResizeObserver(([entry]) => {
+          if (!entry) return;
+          const h = Math.round(entry.contentRect.height);
+          setCardHeights((prev) => (prev[idx] === h ? prev : { ...prev, [idx]: h }));
+        });
+        observer.observe(el);
+        return () => observer.disconnect();
+      }),
     [],
   );
 
   const containerHeight = cardHeights[currentStep] ?? 360;
   const isUploadCompleted =
-    uploadSteps?.find((s) => s.key === "persist_interactions")?.status ===
-    "done";
+    uploadSteps?.find((s) => s.key === "persist_interactions")?.status === "done";
 
   const minNavigableStep: WizardStep = isLockedAfterDeploy ? 2 : 0;
 
@@ -278,7 +258,7 @@ export function UploadWizard() {
         onPackageSelect={handlePackageSelect}
         onContinue={goForward}
       />
-      <div className="flex justify-center text-center mt-5">
+      <div className="mt-5 flex justify-center text-center">
         <p className="bg-background px-2 text-sm text-muted-foreground">
           <span>Don't have a package? </span>
           <a
@@ -322,11 +302,11 @@ export function UploadWizard() {
   ];
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden relative">
+    <div className="relative min-h-screen overflow-hidden bg-background">
       <DecorativeFrame cardHeight={containerHeight} />
 
-      <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 w-full max-w-152">
-        <p className="absolute right-[calc(100%+3rem)] top-[180px] pt-2 hidden lg:block text-sm font-medium text-foreground/70 whitespace-nowrap text-right">
+      <div className="pointer-events-none absolute left-1/2 w-full max-w-152 -translate-x-1/2">
+        <p className="absolute top-[180px] right-[calc(100%+3rem)] hidden pt-2 text-right text-sm font-medium whitespace-nowrap text-foreground/70 lg:block">
           Deploy Package
         </p>
       </div>
@@ -360,7 +340,7 @@ export function UploadWizard() {
                   "absolute inset-x-0 top-0",
                   "transition-[transform,opacity] duration-450 ease-in-out",
                   canClickParked &&
-                    "cursor-pointer [&_button]:pointer-events-none [&_a]:pointer-events-none",
+                    "cursor-pointer [&_a]:pointer-events-none [&_button]:pointer-events-none",
                   isHidden && "pointer-events-none",
                 )}
               >
@@ -373,11 +353,11 @@ export function UploadWizard() {
 
       <Link
         to="/"
-        className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-2"
+        className="absolute bottom-1 left-1/2 flex -translate-x-1/2 items-center gap-2 px-3 py-2"
       >
         <Icons.logo className="size-7!" />
         <div className="grid flex-1 text-left text-sm leading-tight">
-          <span className="truncate scroll-m-20 text-lg font-bold tracking-tight text-balance text-foreground">
+          <span className="scroll-m-20 truncate text-lg font-bold tracking-tight text-balance text-foreground">
             Harmony
           </span>
         </div>

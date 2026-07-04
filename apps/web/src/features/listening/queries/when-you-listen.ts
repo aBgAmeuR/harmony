@@ -1,4 +1,5 @@
 import type { HeatmapColumn } from "@harmony/charts";
+
 import { db } from "@harmony/duckdb";
 
 import type { WhenYouListenByYear } from "../types";
@@ -28,10 +29,7 @@ function sundayOnOrBefore(date: Date): Date {
   return sunday;
 }
 
-function buildYearHeatmap(
-  year: number,
-  countsByDate: Map<string, number>,
-): HeatmapColumn[] {
+function buildYearHeatmap(year: number, countsByDate: Map<string, number>): HeatmapColumn[] {
   const columns: HeatmapColumn[] = [];
   let weekStart = sundayOnOrBefore(new Date(year, 0, 1));
   const lastWeekStart = sundayOnOrBefore(new Date(year, 11, 31));
@@ -67,9 +65,7 @@ function toHeatmapsByYear(rows: DailyCountRow[]): WhenYouListenByYear {
     years.add(date.getFullYear());
   }
 
-  return Object.fromEntries(
-    [...years].map((year) => [year, buildYearHeatmap(year, countsByDate)]),
-  );
+  return Object.fromEntries([...years].map((year) => [year, buildYearHeatmap(year, countsByDate)]));
 }
 
 export const whenYouListenFn = async (): Promise<WhenYouListenByYear> => {

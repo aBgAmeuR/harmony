@@ -1,10 +1,3 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { usePipeline } from "@harmony/upload/react";
-import {
-  UploadError,
-  type Pipeline,
-  type PipelineRunStatus,
-} from "@harmony/upload";
 import { Button } from "@harmony/ui/components/button";
 import {
   Card,
@@ -14,9 +7,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@harmony/ui/components/card";
+import { UploadError, type Pipeline, type PipelineRunStatus } from "@harmony/upload";
+import { usePipeline } from "@harmony/upload/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { UploadPipelineList } from "@/components/upload/upload-pipeline-list";
 import { upload } from "@/lib/upload";
 import { clearUploadSession, type UploadSession } from "@/lib/upload-session";
-import { UploadPipelineList } from "@/components/upload/upload-pipeline-list";
 import { format } from "@/utils/format";
 
 interface DeployStepProps {
@@ -164,23 +161,15 @@ export function DeployStep({
     !isDeploying;
   const canContinue = pipelineState.runStatus === "done";
   const errorMessage =
-    pipelineState.error ??
-    deployError ??
-    connectionError ??
-    mutationError ??
-    null;
+    pipelineState.error ?? deployError ?? connectionError ?? mutationError ?? null;
 
   const startMs = getIsoMs(pipelineState.startedAt);
   const endMs = getIsoMs(pipelineState.endedAt) ?? nowTs;
-  const headerElapsed =
-    startMs !== null ? format.duration(Math.max(0, endMs - startMs)) : "—";
+  const headerElapsed = startMs !== null ? format.duration(Math.max(0, endMs - startMs)) : "—";
 
-  const headerStatus = isDeploying
-    ? "Uploading…"
-    : formatRunStatus(pipelineState.runStatus);
+  const headerStatus = isDeploying ? "Uploading…" : formatRunStatus(pipelineState.runStatus);
 
-  const displayName =
-    packageFile?.name ?? packageFileName ?? "No package selected";
+  const displayName = packageFile?.name ?? packageFileName ?? "No package selected";
 
   return (
     <Card>
@@ -190,15 +179,11 @@ export function DeployStep({
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {errorMessage ? (
-          <p className="text-sm text-destructive">{errorMessage}</p>
-        ) : null}
+        {errorMessage ? <p className="text-sm text-destructive">{errorMessage}</p> : null}
 
         <div className="grid grid-cols-3 divide-x rounded-lg border">
           <div className="flex flex-col px-3 py-2">
-            <span className="text-xs text-muted-foreground">
-              Files included
-            </span>
+            <span className="text-xs text-muted-foreground">Files included</span>
             <span className="text-sm font-medium text-foreground">
               {selectedFiles.length} JSON file
               {selectedFiles.length !== 1 ? "s" : ""}
@@ -206,15 +191,11 @@ export function DeployStep({
           </div>
           <div className="flex flex-col px-3 py-2">
             <span className="text-xs text-muted-foreground">Time</span>
-            <span className="text-sm font-medium text-foreground">
-              {headerElapsed}
-            </span>
+            <span className="text-sm font-medium text-foreground">{headerElapsed}</span>
           </div>
           <div className="flex flex-col px-3 py-2">
             <span className="text-xs text-muted-foreground">Status</span>
-            <span className="text-sm font-medium text-primary">
-              {headerStatus}
-            </span>
+            <span className="text-sm font-medium text-primary">{headerStatus}</span>
           </div>
         </div>
 

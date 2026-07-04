@@ -7,7 +7,7 @@ export const topArtistsFn = async ({ size }: { size: number }) => {
     SELECT
       a.id AS id,
       ANY_VALUE(a.name) AS name,
-      ANY_VALUE(a.picture) AS image,
+      ANY_VALUE(a.image) AS image,
       COUNT(*)::INTEGER AS streams,
       SUM(i.ms_played) / 60000::INTEGER AS playtime
     FROM interactions i

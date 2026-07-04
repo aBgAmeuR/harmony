@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -6,8 +6,9 @@ use futures::stream::{self, StreamExt};
 use serde::Deserialize;
 use tokio::runtime::Handle;
 
-use crate::pipeline::deezer::{self, DeezerClient};
+use crate::pipeline::deezer::{self, DeezerClient, DeezerFetchError};
 use crate::pipeline::error::EnrichError;
+use crate::pipeline::image_encode::{build_image_data_url, cdn_http_client};
 use crate::pipeline::types::{DeezerAlbum, DeezerAlbumType, DeezerArtist, DeezerTrack};
 use crate::pipeline::PipelineContext;
 use crate::progress::{ProgressAggregator, StepId, StepProgress};
@@ -20,6 +21,8 @@ struct ApiArtist {
     id: i64,
     name: String,
     picture: String,
+    #[serde(default)]
+    picture_small: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -58,6 +61,8 @@ struct ApiAlbum {
     id: i64,
     title: String,
     cover: String,
+    #[serde(default)]
+    cover_small: String,
     #[serde(default)]
     release_date: Option<String>,
     nb_tracks: i64,
@@ -99,7 +104,8 @@ fn map_track(api: ApiTrack) -> (DeezerTrack, Vec<DeezerArtist>) {
         vec![DeezerArtist {
             id: api.artist.id,
             name: api.artist.name,
-            picture: api.artist.picture,
+            image_uri: api.artist.picture,
+            image: None,
         }]
     } else {
         api.contributors
@@ -107,7 +113,8 @@ fn map_track(api: ApiTrack) -> (DeezerTrack, Vec<DeezerArtist>) {
             .map(|artist| DeezerArtist {
                 id: artist.id,
                 name: artist.name,
-                picture: artist.picture,
+                image_uri: artist.picture,
+                image: None,
             })
             .collect()
     };
@@ -126,7 +133,7 @@ fn map_track(api: ApiTrack) -> (DeezerTrack, Vec<DeezerArtist>) {
     (track, deezer_artists)
 }
 
-fn map_album(api: ApiAlbum) -> DeezerAlbum {
+fn map_album(api: ApiAlbum, image: Option<String>) -> DeezerAlbum {
     let artists: Vec<i64> = if api.contributors.is_empty() {
         vec![api.artist.id]
     } else {
@@ -136,13 +143,33 @@ fn map_album(api: ApiAlbum) -> DeezerAlbum {
     DeezerAlbum {
         id: api.id,
         title: api.title,
-        cover: api.cover,
+        image_uri: api.cover,
+        image,
         release_date: normalize_release_date(api.release_date),
         genres: api.genres.data.into_iter().map(|genre| genre.name).collect(),
         nb_tracks: api.nb_tracks,
         duration: api.duration,
         album_type: map_album_type(&api.record_type),
         artists,
+    }
+}
+
+fn collect_artist_picture_small_urls(
+    artist_urls: &mut HashMap<i64, String>,
+    api_album: &ApiAlbum,
+) {
+    let artists = if api_album.contributors.is_empty() {
+        std::slice::from_ref(&api_album.artist)
+    } else {
+        api_album.contributors.as_slice()
+    };
+
+    for artist in artists {
+        if !artist.picture_small.trim().is_empty() {
+            artist_urls
+                .entry(artist.id)
+                .or_insert_with(|| artist.picture_small.clone());
+        }
     }
 }
 
@@ -310,21 +337,30 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), EnrichError> {
     let mut albums_fetched = 0usize;
     let mut albums_failed = 0u64;
     let mut album_done = 0u64;
+    let mut artist_picture_small_urls = HashMap::<i64, String>::new();
+    let cdn_http = Arc::new(cdn_http_client()?);
 
     handle.block_on(async {
         let mut stream = stream::iter(album_id_list)
             .map(|album_id| {
                 let client = Arc::clone(&client);
+                let cdn_http = Arc::clone(&cdn_http);
                 let url = format!("{DEEZER_ALBUM_URL}/{album_id}");
-                async move { client.get_json::<ApiAlbum>(&url).await }
+                async move {
+                    let api_album = client.get_json::<ApiAlbum>(&url).await?;
+                    let image =
+                        build_image_data_url(cdn_http.as_ref(), &api_album.cover_small).await;
+                    Ok::<_, DeezerFetchError>((api_album, image))
+                }
             })
             .buffer_unordered(concurrency);
 
         while let Some(result) = stream.next().await {
             album_done += 1;
             match result {
-                Ok(api_album) => {
-                    let album = map_album(api_album);
+                Ok((api_album, image)) => {
+                    collect_artist_picture_small_urls(&mut artist_picture_small_urls, &api_album);
+                    let album = map_album(api_album, image);
                     ctx.deezer_albums.insert(album.id, album);
                     albums_fetched += 1;
                 }
@@ -336,6 +372,42 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), EnrichError> {
 
             if let Some(aggregator) = album_aggregator.as_mut() {
                 aggregator.on_item_done(album_done, albums_failed);
+            }
+        }
+    });
+
+    let artist_image_ids: Vec<i64> = artist_picture_small_urls
+        .keys()
+        .copied()
+        .filter(|artist_id| {
+            ctx.deezer_artists
+                .get(artist_id)
+                .is_none_or(|artist| artist.image.is_none())
+        })
+        .collect();
+
+    handle.block_on(async {
+        let mut stream = stream::iter(artist_image_ids)
+            .map(|artist_id| {
+                let cdn_http = Arc::clone(&cdn_http);
+                let picture_small = artist_picture_small_urls
+                    .get(&artist_id)
+                    .cloned()
+                    .unwrap_or_default();
+                async move {
+                    let image = build_image_data_url(cdn_http.as_ref(), &picture_small).await;
+                    (artist_id, image)
+                }
+            })
+            .buffer_unordered(concurrency);
+
+        while let Some((artist_id, image)) = stream.next().await {
+            if let Some(image) = image {
+                if let Some(artist) = ctx.deezer_artists.get_mut(&artist_id) {
+                    artist.image = Some(image);
+                }
+            } else {
+                tracing::info!(artist_id, "failed to build artist image from picture_small");
             }
         }
     });

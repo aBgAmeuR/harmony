@@ -13,6 +13,7 @@ import { Skeleton } from "@harmony/ui/components/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@harmony/ui/components/tabs";
 import { cn } from "@harmony/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { query } from "@/lib/query";
 import {
@@ -42,15 +43,18 @@ const isDateInRange = (date: Date, startDate?: Date, endDate?: Date) => {
 };
 
 export const DateRangeFilter = () => {
+  const [open, setOpen] = useState(false);
+
   const mode = useDateRangeStore((s) => s.mode);
   const setMode = useDateRangeStore((s) => s.setMode);
   const step = useDateRangeStore((s) => s.step);
   const setCursor = useDateRangeStore((s) => s.setCursor);
   const { from, to } = useInstantRangeQuery();
 
-  const { data: monthlyListens, isLoading } = useQuery(
-    query.interactions.monthlyListens.queryOptions(),
-  );
+  const { data: monthlyListens, isLoading } = useQuery({
+    ...query.interactions.monthlyListens.queryOptions(),
+    enabled: open,
+  });
 
   const maxCount = Math.max(...(monthlyListens?.map((item) => item.value) ?? []));
 
@@ -62,7 +66,7 @@ export const DateRangeFilter = () => {
         </Button>
       )}
 
-      <Dialog>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger render={<Button variant="secondary" />}>
           {mode === "month" && `${MONTHS[from.getMonth()]} ${from.getFullYear()}`}
           {mode === "year" && `${from.getFullYear()}`}

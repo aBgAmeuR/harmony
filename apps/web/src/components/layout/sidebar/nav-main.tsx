@@ -66,7 +66,7 @@ export function NavMain({
                   className="text-sm"
                 >
                   {item.icon}
-                  <span className="text-foreground line-clamp-1">{item.title}</span>
+                  <span className="line-clamp-1 text-foreground">{item.title}</span>
                   {item.badge}
                 </SidebarMenuButton>
               ) : (

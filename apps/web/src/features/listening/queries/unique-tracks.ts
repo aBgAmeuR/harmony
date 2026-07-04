@@ -1,6 +1,10 @@
 import { db } from "@harmony/duckdb";
 
-import type { ListeningHabitMetric, ListeningHabitTrendRow, ListeningHabitValueRow } from "../types";
+import type {
+  ListeningHabitMetric,
+  ListeningHabitTrendRow,
+  ListeningHabitValueRow,
+} from "../types";
 
 import { mapTrendRows } from "./map-trend";
 

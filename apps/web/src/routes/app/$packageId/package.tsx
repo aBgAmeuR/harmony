@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import {
   Icon,
   Alert02FreeIcons,
@@ -8,23 +7,6 @@ import {
   Delete02Icon,
   Tick02Icon,
 } from "@harmony/icons";
-import { Button } from "@harmony/ui/components/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@harmony/ui/components/card";
-import { useState } from "react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@harmony/ui/components/tooltip";
-import { cn } from "@harmony/ui/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,16 +18,29 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@harmony/ui/components/alert-dialog";
+import { Button } from "@harmony/ui/components/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@harmony/ui/components/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/tooltip";
+import { cn } from "@harmony/ui/lib/utils";
+import { PipelineStep } from "@harmony/upload";
+import { queryOptions, useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+
 import { Pipeline } from "@/features/packages/components/pipeline";
 import { query } from "@/lib/query";
 import { format } from "@/utils/format";
-import { PipelineStep } from "@harmony/upload";
-import { queryOptions, useQuery } from "@tanstack/react-query";
 
 const getPackage = async (packageId: string) => {
-  const pkg = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/v1/packages/${packageId}`,
-  );
+  const pkg = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/packages/${packageId}`);
   return (await pkg.json()) as {
     public_id: string;
     file_name: string;
@@ -117,21 +112,19 @@ function PackageHeaderSection({ pkg, subtitle }: PackageHeaderProps) {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    your account from our servers.
+                    This action cannot be undone. This will permanently delete your account from our
+                    servers.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction variant="destructive">
-                    Continue
-                  </AlertDialogAction>
+                  <AlertDialogAction variant="destructive">Continue</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           </CardAction>
         </CardHeader>
-        <CardFooter className="space-x-1 text-xs text-muted-foreground py-1!">
+        <CardFooter className="space-x-1 py-1! text-xs text-muted-foreground">
           <span className="font-mono text-foreground/80">{pkg.id}</span>
           <Tooltip>
             <TooltipTrigger
@@ -163,9 +156,7 @@ function PackageHeaderSection({ pkg, subtitle }: PackageHeaderProps) {
                 <Icon icon={Copy01Icon} className="size-4" />
               </div>
             </TooltipTrigger>
-            <TooltipContent className="px-2 py-1 text-xs">
-              Click to copy
-            </TooltipContent>
+            <TooltipContent className="px-2 py-1 text-xs">Click to copy</TooltipContent>
           </Tooltip>
         </CardFooter>
       </Card>
@@ -180,33 +171,23 @@ function RouteComponent() {
 
   if (!data) return null;
 
-  const missedTracks = data.data.steps.find(
-    (step) => step.id === "resolve_tracks",
-  )?.output?.missed as number | undefined;
+  const missedTracks = data.data.steps.find((step) => step.id === "resolve_tracks")?.output
+    ?.missed as number | undefined;
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 p-3 pt-12">
       <section className="space-y-2">
-        <h2 className="mb-3 text-xs font-semibold text-muted-foreground">
-          Overview
-        </h2>
+        <h2 className="mb-3 text-xs font-semibold text-muted-foreground">Overview</h2>
         <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
           <Card size="sm" className="gap-0!">
             <CardHeader>
               <CardAction>
-                <Icon
-                  icon={Clock01Icon}
-                  className="size-4 text-muted-foreground"
-                />
+                <Icon icon={Clock01Icon} className="size-4 text-muted-foreground" />
               </CardAction>
-              <CardTitle className="text-muted-foreground">
-                Total duration
-              </CardTitle>
+              <CardTitle className="text-muted-foreground">Total duration</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg font-semibold">
-                {format.duration(data.data.totalDurationMs)}
-              </p>
+              <p className="text-lg font-semibold">{format.duration(data.data.totalDurationMs)}</p>
               <p className="text-xs text-muted-foreground">
                 Started at {format.date(data.started_at)}
               </p>
@@ -215,10 +196,7 @@ function RouteComponent() {
           <Card size="sm" className="gap-0!">
             <CardHeader>
               <CardAction>
-                <Icon
-                  icon={Calendar02Icon}
-                  className="size-4 text-muted-foreground"
-                />
+                <Icon icon={Calendar02Icon} className="size-4 text-muted-foreground" />
               </CardAction>
               <CardTitle className="text-muted-foreground">Period</CardTitle>
             </CardHeader>
@@ -236,31 +214,20 @@ function RouteComponent() {
           <Card size="sm" className="gap-0!">
             <CardHeader>
               <CardAction>
-                <Icon
-                  icon={Alert02FreeIcons}
-                  className="size-4 text-muted-foreground"
-                />
+                <Icon icon={Alert02FreeIcons} className="size-4 text-muted-foreground" />
               </CardAction>
-              <CardTitle className="text-muted-foreground">
-                Missed tracks
-              </CardTitle>
+              <CardTitle className="text-muted-foreground">Missed tracks</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg font-semibold">
-                {missedTracks?.toLocaleString() ?? "-"}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                During track resolution
-              </p>
+              <p className="text-lg font-semibold">{missedTracks?.toLocaleString() ?? "-"}</p>
+              <p className="text-xs text-muted-foreground">During track resolution</p>
             </CardContent>
           </Card>
         </div>
       </section>
 
       <section className="space-y-2">
-        <h2 className="mb-3 text-xs font-semibold text-muted-foreground">
-          Pipeline
-        </h2>
+        <h2 className="mb-3 text-xs font-semibold text-muted-foreground">Pipeline</h2>
         <Pipeline steps={data.data.steps} />
       </section>
 

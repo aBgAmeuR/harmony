@@ -1,14 +1,12 @@
-import { query } from "@/lib/query";
-
 import { Gauge } from "@harmony/charts";
 import { useQuery } from "@tanstack/react-query";
+
+import { query } from "@/lib/query";
 
 const GAUGE_SIZE = 132;
 
 export function ListeningStyleWidget() {
-  const { data = [] } = useQuery(
-    query.listeningHabits.listeningStyle.queryOptions(),
-  );
+  const { data = [] } = useQuery(query.listeningHabits.listeningStyle.queryOptions());
 
   return (
     <div className="flex flex-col">

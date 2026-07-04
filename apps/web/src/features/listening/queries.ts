@@ -2,16 +2,16 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { activeDaysFn } from "./queries/active-days";
 import { daysOfWeekFn } from "./queries/days-of-week";
+import { genresFn } from "./queries/genres";
 import { listeningStyleFn } from "./queries/listening-style";
 import { listeningTimeFn } from "./queries/listening-time";
 import { monthlyActivityFn } from "./queries/monthly-activity";
 import { peakHoursFn } from "./queries/peak-hours";
 import { platformsFn } from "./queries/platforms";
+import { releaseYearFn } from "./queries/release-year";
 import { totalStreamsFn } from "./queries/total-streams";
 import { trackEngagementFn } from "./queries/track-engagement";
 import { uniqueTracksFn } from "./queries/unique-tracks";
-import { genresFn } from "./queries/genres";
-import { releaseYearFn } from "./queries/release-year";
 import { whenYouListenFn } from "./queries/when-you-listen";
 
 export const listeningQueries = {

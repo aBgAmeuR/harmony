@@ -1,5 +1,3 @@
-import { query } from "@/lib/query";
-
 import {
   HeatmapCells,
   HeatmapChart,
@@ -13,6 +11,8 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@harmony/ui/components/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+
+import { query } from "@/lib/query";
 
 import type { WhenYouListenByYear } from "../types";
 
