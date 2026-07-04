@@ -37,9 +37,49 @@ import {
   AlertDialogTrigger,
 } from "@harmony/ui/components/alert-dialog";
 import { Pipeline } from "@/features/packages/components/pipeline";
+import { query } from "@/lib/query";
 import { format } from "@/utils/format";
+import { PipelineStep } from "@harmony/upload";
+import { queryOptions, useQuery } from "@tanstack/react-query";
+
+const getPackage = async (packageId: string) => {
+  const pkg = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/v1/packages/${packageId}`,
+  );
+  return (await pkg.json()) as {
+    public_id: string;
+    file_name: string;
+    file_size: number;
+    status: string;
+    started_at: string;
+    updated_at: string;
+    created_at: string;
+    data: {
+      endedAt: string;
+      startedAt: string;
+      totalDurationMs: number;
+      steps: PipelineStep[];
+    };
+  };
+};
+
+const packageQuery = (packageId: string) =>
+  queryOptions({
+    queryKey: ["package", packageId],
+    queryFn: () => getPackage(packageId),
+  });
+
+const periodQuery = query.packages.period.queryOptions();
 
 export const Route = createFileRoute("/app/$packageId/package")({
+  ssr: false,
+  loader: async ({ context: { queryClient }, parentMatchPromise, params }) => {
+    await parentMatchPromise;
+    await Promise.all([
+      queryClient.ensureQueryData(packageQuery(params.packageId)),
+      queryClient.ensureQueryData(periodQuery),
+    ]);
+  },
   component: RouteComponent,
 });
 
@@ -63,17 +103,13 @@ function PackageHeaderSection({ pkg, subtitle }: PackageHeaderProps) {
 
   return (
     <section className="space-y-2">
-      <Card>
+      <Card size="sm">
         <CardHeader>
-          <CardTitle className="truncate">
-            {pkg.fileName}
-          </CardTitle>
+          <CardTitle className="truncate">{pkg.fileName}</CardTitle>
           <CardDescription className="text-xs">{subtitle}</CardDescription>
           <CardAction className="flex flex-wrap items-center gap-2">
             <AlertDialog>
-              <AlertDialogTrigger
-                render={<Button variant="destructive" />}
-              >
+              <AlertDialogTrigger render={<Button variant="destructive" />}>
                 <Icon icon={Delete02Icon} />
                 Delete
               </AlertDialogTrigger>
@@ -138,6 +174,16 @@ function PackageHeaderSection({ pkg, subtitle }: PackageHeaderProps) {
 }
 
 function RouteComponent() {
+  const { packageId } = Route.useParams();
+  const { data } = useQuery(packageQuery(packageId));
+  const { data: period } = useQuery(periodQuery);
+
+  if (!data) return null;
+
+  const missedTracks = data.data.steps.find(
+    (step) => step.id === "resolve_tracks",
+  )?.output?.missed as number | undefined;
+
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 p-3 pt-12">
       <section className="space-y-2">
@@ -146,7 +192,7 @@ function RouteComponent() {
         </h2>
         <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
           <Card size="sm" className="gap-0!">
-            <CardHeader >
+            <CardHeader>
               <CardAction>
                 <Icon
                   icon={Clock01Icon}
@@ -158,9 +204,11 @@ function RouteComponent() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg font-semibold">{format.duration(143753)}</p>
+              <p className="text-lg font-semibold">
+                {format.duration(data.data.totalDurationMs)}
+              </p>
               <p className="text-xs text-muted-foreground">
-                End-to-end processing time
+                Started at {format.date(data.started_at)}
               </p>
             </CardContent>
           </Card>
@@ -175,9 +223,13 @@ function RouteComponent() {
               <CardTitle className="text-muted-foreground">Period</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg font-semibold">1,234 days</p>
+              <p className="text-lg font-semibold">
+                {period ? `${period.days.toLocaleString()} days` : "-"}
+              </p>
               <p className="text-xs text-muted-foreground">
-                From {format.date("2023-02-11")} to {format.date("2026-06-10")}
+                {period
+                  ? `From ${format.date(period.startDate)} to ${format.date(period.endDate)}`
+                  : "No listening history"}
               </p>
             </CardContent>
           </Card>
@@ -190,12 +242,16 @@ function RouteComponent() {
                 />
               </CardAction>
               <CardTitle className="text-muted-foreground">
-                Skipped tracks
+                Missed tracks
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg font-semibold">64</p>
-              <p className="text-xs text-muted-foreground">During enrichment</p>
+              <p className="text-lg font-semibold">
+                {missedTracks?.toLocaleString() ?? "-"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                During track resolution
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -205,7 +261,7 @@ function RouteComponent() {
         <h2 className="mb-3 text-xs font-semibold text-muted-foreground">
           Pipeline
         </h2>
-        <Pipeline />
+        <Pipeline steps={data.data.steps} />
       </section>
 
       {/* {details?.failure ? (
@@ -219,11 +275,11 @@ function RouteComponent() {
 
       <PackageHeaderSection
         pkg={{
-          fileName: "package.json",
-          status: "completed",
-          id: "1234567890",
+          fileName: data.file_name,
+          status: data.status,
+          id: data.public_id,
         }}
-        subtitle={`${format.date("2023-02-11")} • ${format.bytes(1523532)}`}
+        subtitle={`${format.date(data.created_at)} • ${format.bytes(data.file_size)}`}
       />
     </div>
   );

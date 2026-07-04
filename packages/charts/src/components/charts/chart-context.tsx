@@ -1,3 +1,5 @@
+"use client";
+
 import type { scaleBand, scaleLinear, scaleTime } from "@visx/scale";
 
 type ScaleLinear<Output, _Input = number> = ReturnType<typeof scaleLinear<Output>>;
@@ -43,6 +45,7 @@ export const chartCssVars = {
   segmentBackground: "var(--chart-segment-background)",
   segmentLine: "var(--chart-segment-line)",
   brushBorder: "var(--chart-brush-border)",
+  tooltipBackground: "var(--chart-tooltip-background)",
 };
 
 /** Default scatter series colors from the chart palette (`--chart-1` … `--chart-5`). */

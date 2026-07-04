@@ -1,9 +1,11 @@
 "use client";
 
+import type { Transition } from "motion/react";
+
+import { cn } from "@harmony/ui/lib/utils";
 import { Group } from "@visx/group";
 import { ParentSize } from "@visx/responsive";
 import { arc as arcGenerator } from "@visx/shape";
-import type { Transition } from "motion/react";
 import {
   Children,
   isValidElement,
@@ -15,7 +17,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { cn } from "@harmony/ui/lib/utils";
+
 import {
   defaultRingColors,
   type RingContextValue,
@@ -29,7 +31,7 @@ function generateRingArcPath(
   outerRadius: number,
   startAngle: number,
   endAngle: number,
-  cornerRadius: number
+  cornerRadius: number,
 ): string {
   const generator = arcGenerator<unknown>({
     innerRadius,
@@ -145,9 +147,7 @@ const RingChartCore = memo(function RingChartCore({
   enterStaggerScale,
   geometryScrubbing,
 }: RingChartInnerProps) {
-  const [internalHoveredIndex, setInternalHoveredIndex] = useState<
-    number | null
-  >(null);
+  const [internalHoveredIndex, setInternalHoveredIndex] = useState<number | null>(null);
   const [animationKey] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -162,7 +162,7 @@ const RingChartCore = memo(function RingChartCore({
         setInternalHoveredIndex(index);
       }
     },
-    [isControlled, onHoverChange]
+    [isControlled, onHoverChange],
   );
 
   // Use the smaller dimension to ensure the chart fits
@@ -177,9 +177,7 @@ const RingChartCore = memo(function RingChartCore({
 
   // Calculate the "design" outer radius (what we'd need at 1:1 scale)
   const designOuterRadius =
-    baseInnerRadiusProp +
-    (ringCount - 1) * (strokeWidthProp + ringGapProp) +
-    strokeWidthProp;
+    baseInnerRadiusProp + (ringCount - 1) * (strokeWidthProp + ringGapProp) + strokeWidthProp;
 
   // Scale factor to fit within available space
   const scale = Math.min(1, availableRadius / designOuterRadius);
@@ -190,10 +188,7 @@ const RingChartCore = memo(function RingChartCore({
   const baseInnerRadius = baseInnerRadiusProp * scale;
 
   // Calculate total value
-  const totalValue = useMemo(
-    () => data.reduce((sum, d) => sum + d.value, 0),
-    [data]
-  );
+  const totalValue = useMemo(() => data.reduce((sum, d) => sum + d.value, 0), [data]);
 
   // Get color for a ring index
   const getColor = useCallback(
@@ -204,7 +199,7 @@ const RingChartCore = memo(function RingChartCore({
       }
       return defaultRingColors[index % defaultRingColors.length] as string;
     },
-    [data]
+    [data],
   );
 
   // Get ring radii for an index
@@ -214,7 +209,7 @@ const RingChartCore = memo(function RingChartCore({
       const outerRadius = innerRadius + strokeWidth;
       return { innerRadius, outerRadius };
     },
-    [baseInnerRadius, strokeWidth, ringGap]
+    [baseInnerRadius, strokeWidth, ringGap],
   );
 
   const arcRange = endAngle - startAngle;
@@ -228,13 +223,7 @@ const RingChartCore = memo(function RingChartCore({
       const progress = ringData.value / ringData.maxValue;
       const progressEndAngle = startAngle + arcRange * progress;
       return {
-        bgPath: generateRingArcPath(
-          innerRadius,
-          outerRadius,
-          startAngle,
-          endAngle,
-          cornerRadius
-        ),
+        bgPath: generateRingArcPath(innerRadius, outerRadius, startAngle, endAngle, cornerRadius),
         progressPath:
           progressEndAngle <= startAngle + 0.01
             ? ""
@@ -243,20 +232,12 @@ const RingChartCore = memo(function RingChartCore({
                 outerRadius,
                 startAngle,
                 progressEndAngle,
-                cornerRadius
+                cornerRadius,
               ),
         color: getColor(index),
       };
     });
-  }, [
-    geometryScrubbing,
-    data,
-    getRingRadii,
-    getColor,
-    startAngle,
-    endAngle,
-    arcRange,
-  ]);
+  }, [geometryScrubbing, data, getRingRadii, getColor, startAngle, endAngle, arcRange]);
 
   const effectiveIsLoaded = geometryScrubbing || isLoaded;
 
@@ -333,7 +314,7 @@ const RingChartCore = memo(function RingChartCore({
       startAngle,
       endAngle,
       geometryScrubbing,
-    ]
+    ],
   );
 
   // Use CSS Grid stacking to layer SVG and HTML content
@@ -362,9 +343,7 @@ const RingChartCore = memo(function RingChartCore({
               ? scrubRingLayers.map((layer, index) => (
                   <g key={data[index]?.label ?? index}>
                     <path d={layer.bgPath} fill={ringCssVars.ringBackground} />
-                    {layer.progressPath ? (
-                      <path d={layer.progressPath} fill={layer.color} />
-                    ) : null}
+                    {layer.progressPath ? <path d={layer.progressPath} fill={layer.color} /> : null}
                   </g>
                 ))
               : null}
@@ -386,10 +365,7 @@ const RingChartCore = memo(function RingChartCore({
   );
 }, ringChartCorePropsEqual);
 
-function ringChartCorePropsEqual(
-  prev: RingChartInnerProps,
-  next: RingChartInnerProps
-): boolean {
+function ringChartCorePropsEqual(prev: RingChartInnerProps, next: RingChartInnerProps): boolean {
   return (
     prev.width === next.width &&
     prev.height === next.height &&
@@ -458,10 +434,7 @@ export function RingChart({
 
   // Otherwise use ParentSize for responsive sizing
   return (
-    <div
-      className={cn("relative aspect-square w-full", className)}
-      ref={containerRef}
-    >
+    <div className={cn("relative aspect-square w-full", className)} ref={containerRef}>
       <ParentSize debounceTime={10}>
         {({ width, height }) => (
           <RingChartInner

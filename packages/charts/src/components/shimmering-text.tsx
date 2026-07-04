@@ -1,8 +1,13 @@
+"use client";
+
 import { cn } from "@harmony/ui/lib/utils";
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { type ComponentProps, useCallback } from "react";
 
-export type ShimmeringTextProps = Omit<ComponentProps<typeof motion.span>, "children"> & {
+export type ShimmeringTextProps = Omit<
+  ComponentProps<typeof motion.span>,
+  "children"
+> & {
   /** The text to render with the shimmering effect. */
   text: string;
   /**
@@ -11,7 +16,12 @@ export type ShimmeringTextProps = Omit<ComponentProps<typeof motion.span>, "chil
    */
   duration?: number;
   /**
-   * Whether the shimmer animation is paused.
+   * Pause the shimmer (e.g. when the hero leaves the viewport).
+   * @defaultValue false
+   */
+  paused?: boolean;
+  /**
+   * Legacy alias for `paused`.
    * @defaultValue false
    */
   isStopped?: boolean;
@@ -21,11 +31,12 @@ export function ShimmeringText({
   text,
   duration = 1,
   isStopped = false,
+  paused = false,
   className,
   ...props
 }: ShimmeringTextProps) {
   const reducedMotion = useReducedMotion();
-  const stopped = isStopped || reducedMotion === true;
+  const stopped = isStopped || paused || reducedMotion === true;
 
   const createCharVariants = useCallback(
     (charIndex: number): Variants => ({

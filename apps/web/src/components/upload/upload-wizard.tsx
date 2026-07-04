@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { cn } from "@harmony/ui/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { Icons } from "../icons";
@@ -9,6 +9,12 @@ import { PackageStep } from "./steps/package-step";
 import { FilesStep } from "./steps/files-step";
 import { DeployStep } from "./steps/deploy-step";
 import { StatsStep } from "./steps/stats-step";
+import {
+  clearUploadSession,
+  loadUploadSession,
+  saveUploadSession,
+  type UploadSession,
+} from "@/lib/upload-session";
 
 type UploadUiStepStatus = "pending" | "running" | "done" | "error";
 
@@ -80,17 +86,60 @@ function cardZIndex(i: number, current: number): number {
   return i === current ? 30 : 0;
 }
 
+function getInitialWizardState() {
+  const session = loadUploadSession();
+  if (!session) {
+    return {
+      currentStep: 0 as WizardStep,
+      isLockedAfterDeploy: false,
+      resumePublicId: null as string | null,
+      packageFileName: null as string | null,
+      deploySelection: [] as string[],
+      selectedFiles: [] as string[],
+      uploadId: null as string | null,
+    };
+  }
+
+  return {
+    currentStep: 2 as WizardStep,
+    isLockedAfterDeploy: true,
+    resumePublicId: session.publicId,
+    packageFileName: session.packageFileName,
+    deploySelection: session.deploySelection,
+    selectedFiles: session.selectedFiles,
+    uploadId: session.publicId,
+  };
+}
+
 export function UploadWizard() {
-  const [currentStep, setCurrentStep] = useState<WizardStep>(0);
+  const initialState = useMemo(() => getInitialWizardState(), []);
+  const [currentStep, setCurrentStep] = useState<WizardStep>(
+    initialState.currentStep,
+  );
   const [packageFile, setPackageFile] = useState<File | null>(null);
-  const [selectedFiles, setSelectedFiles] = useState<Array<string>>([]);
-  const [isLockedAfterDeploy, setIsLockedAfterDeploy] = useState(false);
-  const [uploadId, setUploadId] = useState<string | null>(null);
+  const [packageFileName, setPackageFileName] = useState<string | null>(
+    initialState.packageFileName,
+  );
+  const [selectedFiles, setSelectedFiles] = useState<Array<string>>(
+    initialState.selectedFiles,
+  );
+  const [isLockedAfterDeploy, setIsLockedAfterDeploy] = useState(
+    initialState.isLockedAfterDeploy,
+  );
+  const [uploadId, setUploadId] = useState<string | null>(
+    initialState.uploadId,
+  );
   const [uploadSteps, setUploadSteps] = useState<Array<UploadUiStep> | null>(
     null,
   );
   const [mutationError, setMutationError] = useState<string | null>(null);
-  const [hasTriggeredDeploy, setHasTriggeredDeploy] = useState(false);
+  const [deployRequestId, setDeployRequestId] = useState(0);
+  const [deploySelection, setDeploySelection] = useState<Array<string>>(
+    initialState.deploySelection,
+  );
+  const [resumePublicId, setResumePublicId] = useState<string | null>(
+    initialState.resumePublicId,
+  );
   const lastSeqRef = useRef(0);
 
   const [cardHeights, setCardHeights] = useState<Record<number, number>>({});
@@ -111,22 +160,38 @@ export function UploadWizard() {
   //   })
   // )
 
-  const startDeploy = () => {
+  const triggerDeploy = () => {
     if (!packageFile) return;
     if (selectedFiles.length === 0) return;
 
+    setDeploySelection([...selectedFiles]);
+    setResumePublicId(null);
     setUploadId(null);
     setUploadSteps(null);
     setMutationError(null);
     lastSeqRef.current = 0;
-
-    // deployMutation.mutate({
-    //   body: {
-    //     file: packageFile,
-    //     json_files: selectedFiles,
-    //   },
-    // })
+    setDeployRequestId((id) => id + 1);
   };
+
+  const handlePackageSelect = (file: File | null) => {
+    clearUploadSession();
+    setResumePublicId(null);
+    setPackageFileName(file?.name ?? null);
+    setPackageFile(file);
+    setSelectedFiles([]);
+    setDeploySelection([]);
+    setDeployRequestId(0);
+    setUploadId(null);
+    setIsLockedAfterDeploy(false);
+    setCurrentStep(0);
+  };
+
+  const handleDeployActive = useCallback((session: UploadSession) => {
+    saveUploadSession(session);
+    setResumePublicId(session.publicId);
+    setUploadId(session.publicId);
+    setPackageFileName(session.packageFileName);
+  }, []);
 
   // useEffect(() => {
   //   if (!uploadId) return
@@ -188,9 +253,12 @@ export function UploadWizard() {
   const goForward = () => {
     if (currentStep < 3) {
       const next = (currentStep + 1) as WizardStep;
-      if (currentStep === 1 && next === 2 && !hasTriggeredDeploy) {
-        setHasTriggeredDeploy(true);
-        startDeploy();
+      if (currentStep === 1 && next === 2) {
+        triggerDeploy();
+      }
+      if (currentStep === 2 && next === 3) {
+        clearUploadSession();
+        setResumePublicId(null);
       }
       if (next >= 2) {
         setIsLockedAfterDeploy(true);
@@ -207,7 +275,7 @@ export function UploadWizard() {
     <>
       <PackageStep
         packageFile={packageFile}
-        onPackageSelect={setPackageFile}
+        onPackageSelect={handlePackageSelect}
         onContinue={goForward}
       />
       <div className="flex justify-center text-center mt-5">
@@ -232,17 +300,19 @@ export function UploadWizard() {
     />,
     <DeployStep
       key="deploy"
+      deployRequestId={deployRequestId}
       packageFile={packageFile}
-      selectedFiles={selectedFiles}
-      steps={uploadSteps}
+      packageFileName={packageFileName}
+      selectedFiles={deploySelection}
+      resumePublicId={resumePublicId}
       mutationError={mutationError}
-      canViewStats={isUploadCompleted}
-      onRetry={() => startDeploy()}
+      onDeployActive={handleDeployActive}
+      onRetry={triggerDeploy}
       onContinue={goForward}
     />,
     <StatsStep
       key="stats"
-      packageName={packageFile?.name || "package.zip"}
+      packageName={packageFile?.name || packageFileName || "package.zip"}
       selectedFiles={selectedFiles}
       uploadId={uploadId}
       uploadCompleted={Boolean(isUploadCompleted)}

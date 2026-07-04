@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@harmony/ui/lib/utils";
+
 import { useLegendItem } from "./legend-context";
 
 export interface LegendMarkerProps {

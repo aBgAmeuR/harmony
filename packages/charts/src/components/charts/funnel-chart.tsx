@@ -1,6 +1,8 @@
 "use client";
 
 import type { Transition } from "motion/react";
+
+import { cn } from "@harmony/ui/lib/utils";
 import { motion, useTransform } from "motion/react";
 import {
   type CSSProperties,
@@ -10,7 +12,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { cn } from "@harmony/ui/lib/utils";
+
 import { useEnterComplete } from "./use-enter-complete";
 import { useMountProgress } from "./use-mount-progress";
 
@@ -128,7 +130,7 @@ function hSegmentPath(
   segW: number,
   H: number,
   layerScale: number,
-  straight = false
+  straight = false,
 ) {
   const my = H / 2;
   const h0 = normStart * H * 0.44 * layerScale;
@@ -150,7 +152,7 @@ function vSegmentPath(
   segH: number,
   W: number,
   layerScale: number,
-  straight = false
+  straight = false,
 ) {
   const mx = W / 2;
   const w0 = normStart * W * 0.44 * layerScale;
@@ -236,11 +238,7 @@ function HSegment({
 }) {
   const patternId = `funnel-h-pattern-${index}`;
   const gradientId = `funnel-h-grad-${index}`;
-  const mountProgress = useMountProgress(
-    enterTransition,
-    index * staggerDelay,
-    index
-  );
+  const mountProgress = useMountProgress(enterTransition, index * staggerDelay, index);
   const enterComplete = useEnterComplete(mountProgress);
   const entranceScaleX = useTransform(mountProgress, [0, 1], [0, 1]);
   const entranceScaleY = useTransform(mountProgress, [0, 1], [0, 1]);
@@ -281,9 +279,7 @@ function HSegment({
                     <stop
                       key={`${stop.offset}-${stop.color}`}
                       offset={
-                        typeof stop.offset === "number"
-                          ? `${stop.offset * 100}%`
-                          : stop.offset
+                        typeof stop.offset === "number" ? `${stop.offset * 100}%` : stop.offset
                       }
                       stopColor={stop.color}
                     />
@@ -339,9 +335,7 @@ function HSegment({
                     <stop
                       key={`${stop.offset}-${stop.color}`}
                       offset={
-                        typeof stop.offset === "number"
-                          ? `${stop.offset * 100}%`
-                          : stop.offset
+                        typeof stop.offset === "number" ? `${stop.offset * 100}%` : stop.offset
                       }
                       stopColor={stop.color}
                     />
@@ -447,11 +441,7 @@ function VSegment({
 }) {
   const patternId = `funnel-v-pattern-${index}`;
   const gradientId = `funnel-v-grad-${index}`;
-  const mountProgress = useMountProgress(
-    enterTransition,
-    index * staggerDelay,
-    index
-  );
+  const mountProgress = useMountProgress(enterTransition, index * staggerDelay, index);
   const enterComplete = useEnterComplete(mountProgress);
   const entranceScaleY = useTransform(mountProgress, [0, 1], [0, 1]);
   const entranceScaleX = useTransform(mountProgress, [0, 1], [0, 1]);
@@ -492,9 +482,7 @@ function VSegment({
                     <stop
                       key={`${stop.offset}-${stop.color}`}
                       offset={
-                        typeof stop.offset === "number"
-                          ? `${stop.offset * 100}%`
-                          : stop.offset
+                        typeof stop.offset === "number" ? `${stop.offset * 100}%` : stop.offset
                       }
                       stopColor={stop.color}
                     />
@@ -550,9 +538,7 @@ function VSegment({
                     <stop
                       key={`${stop.offset}-${stop.color}`}
                       offset={
-                        typeof stop.offset === "number"
-                          ? `${stop.offset * 100}%`
-                          : stop.offset
+                        typeof stop.offset === "number" ? `${stop.offset * 100}%` : stop.offset
                       }
                       stopColor={stop.color}
                     />
@@ -624,17 +610,15 @@ function SegmentLabel({
   const display = stage.displayValue ?? formatValue(stage.value);
 
   const valueEl = showValues && (
-    <span className="whitespace-nowrap font-semibold text-foreground text-sm">
-      {display}
-    </span>
+    <span className="text-sm font-semibold whitespace-nowrap text-foreground">{display}</span>
   );
   const pctEl = showPercentage && (
-    <span className="rounded-full bg-foreground px-3 py-1 font-bold text-background text-xs shadow-sm">
+    <span className="rounded-full bg-foreground px-3 py-1 text-xs font-bold text-background shadow-sm">
       {formatPercentage(pct)}
     </span>
   );
   const labelEl = showLabels && (
-    <span className="whitespace-nowrap font-medium text-muted-foreground text-xs">
+    <span className="text-xs font-medium whitespace-nowrap text-muted-foreground">
       {stage.label}
     </span>
   );
@@ -646,7 +630,7 @@ function SegmentLabel({
         animate={{ opacity: 1 }}
         className={cn(
           "absolute inset-0 flex",
-          isHorizontal ? "flex-col items-center" : "flex-row items-center"
+          isHorizontal ? "flex-col items-center" : "flex-row items-center",
         )}
         initial={{ opacity: 0 }}
         transition={{
@@ -657,27 +641,15 @@ function SegmentLabel({
       >
         {isHorizontal ? (
           <>
-            <div className="flex h-[16%] items-end justify-center pb-1">
-              {valueEl}
-            </div>
-            <div className="flex flex-1 items-center justify-center">
-              {pctEl}
-            </div>
-            <div className="flex h-[16%] items-start justify-center pt-1">
-              {labelEl}
-            </div>
+            <div className="flex h-[16%] items-end justify-center pb-1">{valueEl}</div>
+            <div className="flex flex-1 items-center justify-center">{pctEl}</div>
+            <div className="flex h-[16%] items-start justify-center pt-1">{labelEl}</div>
           </>
         ) : (
           <>
-            <div className="flex w-[16%] items-center justify-end pr-2">
-              {valueEl}
-            </div>
-            <div className="flex flex-1 items-center justify-center">
-              {pctEl}
-            </div>
-            <div className="flex w-[16%] items-center justify-start pl-2">
-              {labelEl}
-            </div>
+            <div className="flex w-[16%] items-center justify-end pr-2">{valueEl}</div>
+            <div className="flex flex-1 items-center justify-center">{pctEl}</div>
+            <div className="flex w-[16%] items-center justify-start pl-2">{labelEl}</div>
           </>
         )}
       </motion.div>
@@ -685,8 +657,7 @@ function SegmentLabel({
   }
 
   // ── Grouped layout: items stacked tightly together ──
-  const resolvedOrientation =
-    orientation ?? (isHorizontal ? "vertical" : "horizontal");
+  const resolvedOrientation = orientation ?? (isHorizontal ? "vertical" : "horizontal");
   const isVerticalStack = resolvedOrientation === "vertical";
 
   // Map align to flexbox alignment on the cross axes
@@ -712,7 +683,7 @@ function SegmentLabel({
         // For vertical funnel, align controls horizontal placement
         isHorizontal
           ? cn("flex-col items-center", justifyMap[align])
-          : cn("flex-row items-center", justifyMap[align])
+          : cn("flex-row items-center", justifyMap[align]),
       )}
       initial={{ opacity: 0 }}
       style={{
@@ -729,7 +700,7 @@ function SegmentLabel({
           "flex gap-1.5",
           isVerticalStack
             ? cn("flex-col", itemsMap[isHorizontal ? "center" : align])
-            : cn("flex-row", itemsMap.center)
+            : cn("flex-row", itemsMap.center),
         )}
       >
         {valueEl}
@@ -768,9 +739,7 @@ export function FunnelChart({
 }: FunnelChartProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [sz, setSz] = useState({ w: 0, h: 0 });
-  const [internalHoveredIndex, setInternalHoveredIndex] = useState<
-    number | null
-  >(null);
+  const [internalHoveredIndex, setInternalHoveredIndex] = useState<number | null>(null);
 
   const isControlled = hoveredIndexProp !== undefined;
   const hoveredIndex = isControlled ? hoveredIndexProp : internalHoveredIndex;
@@ -782,7 +751,7 @@ export function FunnelChart({
         setInternalHoveredIndex(index);
       }
     },
-    [isControlled, onHoverChange]
+    [isControlled, onHoverChange],
   );
 
   const measure = useCallback(() => {
@@ -834,7 +803,7 @@ export function FunnelChart({
 
   return (
     <div
-      className={cn("relative w-full select-none overflow-visible", className)}
+      className={cn("relative w-full overflow-visible select-none", className)}
       ref={ref}
       style={{
         aspectRatio: horiz ? "2.2 / 1" : "1 / 1.8",
@@ -890,7 +859,7 @@ export function FunnelChart({
           <div
             className={cn(
               "absolute inset-0 flex overflow-visible",
-              horiz ? "flex-row" : "flex-col"
+              horiz ? "flex-row" : "flex-col",
             )}
             style={{ gap }}
           >
@@ -898,9 +867,7 @@ export function FunnelChart({
               const normStart = norms[i] ?? 0;
               const normEnd = norms[Math.min(i + 1, n - 1)] ?? 0;
               const firstStop = stage.gradient?.[0];
-              const segColor = firstStop
-                ? firstStop.color
-                : (stage.color ?? color);
+              const segColor = firstStop ? firstStop.color : (stage.color ?? color);
 
               return horiz ? (
                 <HSegment

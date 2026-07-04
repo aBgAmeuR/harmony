@@ -4,10 +4,10 @@ import { topAlbumsFn } from "./queries/top";
 
 export const albumsQueries = {
   top: {
-    queryOptions: ({ size = 50 }: { size?: number }) =>
+    queryOptions: ({ artistId }: { artistId?: number }) =>
       queryOptions({
-        queryKey: ["albums", "top", { size }],
-        queryFn: () => topAlbumsFn({ size }),
+        queryKey: ["albums", "top", { artistId }],
+        queryFn: () => topAlbumsFn({ artistId }),
       }),
   },
 };

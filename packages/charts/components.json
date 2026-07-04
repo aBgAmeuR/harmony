@@ -11,11 +11,11 @@
   },
   "iconLibrary": "hugeicons",
   "aliases": {
-    "components": "@harmony/ui/components",
+    "components": "@harmony/charts/components",
     "utils": "@harmony/ui/lib/utils",
     "hooks": "@harmony/ui/hooks",
     "lib": "@harmony/ui/lib",
-    "ui": "@harmony/ui/components"
+    "ui": "@harmony/charts/components"
   },
   "rtl": false,
   "menuColor": "default",

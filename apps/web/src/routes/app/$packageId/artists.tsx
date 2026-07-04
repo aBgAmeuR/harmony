@@ -8,6 +8,7 @@ import { query } from "@/lib/query";
 const topArtistsQuery = query.artists.top.queryOptions({});
 
 export const Route = createFileRoute("/app/$packageId/artists")({
+  ssr: false,
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
     await parentMatchPromise;
     return queryClient.ensureQueryData(topArtistsQuery);
@@ -20,7 +21,7 @@ function RouteComponent() {
 
   return (
     <div>
-      <Header title="Artists" />
+      <Header title="Artists" showArtistSelect={false} />
       <CatalogTable catalog={data} />
     </div>
   );

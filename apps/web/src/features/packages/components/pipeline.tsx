@@ -1,160 +1,212 @@
-import { Icon, ArrowDown01Icon } from "@harmony/icons";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@harmony/ui/components/collapsible";
-import { Button } from "@harmony/ui/components/button";
+import { Badge } from "@harmony/ui/components/badge";
+import { PipelineStep, StepId } from "@harmony/upload";
+
 import {
   PipelineItem,
-  PipelineItemContent,
   PipelineItemDuration,
-  PipelineItemHeader,
   PipelineItemIcon,
   PipelineItemLabel,
 } from "@/components/pipeline";
-import { format } from "@/utils/format";
+import { Alert02Icon, Cancel01Icon, Icon, Tick02Icon } from "@harmony/icons";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@harmony/ui/components/tooltip";
 
-const STEP_MOCK = [
-  {
-    key: "extract_archive",
-    label: "Extract archive",
-    status: "done",
-    startAt: "2026-06-10T12:00:00.000Z",
-    endAt: "2026-06-10T12:00:00.039Z", // 39 ms
-    data: {
-      file: {
-        name: "data.zip",
-        size: 100000,
-      },
-    },
-  },
-  {
-    key: "parse_interactions",
-    label: "Parse interactions",
-    status: "done",
-    startAt: "2026-06-10T12:00:00.039Z",
-    endAt: "2026-06-10T12:00:00.039Z", // 0 ms
-    data: {
-      count: 100,
-    },
-  },
-  {
-    key: "normalize_interactions",
-    label: "Normalize interactions",
-    status: "error",
-    startAt: "2026-06-10T12:00:00.055Z",
-    endAt: "2026-06-10T12:00:00.071Z", // 16 ms
-    data: {
-      keptCount: 90,
-      rejectedCount: 10,
-      period: {
-        startAt: "2023-02-11",
-        endAt: "2026-06-10",
-      },
-    },
-  },
-  {
-    key: "resolve_tracks",
-    label: "Resolve tracks",
-    status: "done",
-    startAt: "2026-06-10T12:00:00.071Z",
-    endAt: "2026-06-10T12:00:00.549Z", // 478 ms
-  },
-  {
-    key: "enrich_tracks",
-    label: "Enrich tracks",
-    status: "done",
-    startAt: "2026-06-10T12:00:00.549Z",
-    endAt: "2026-06-10T12:00:27.359Z", // 26.81 s
-    data: {
-      count: 100,
-      skippedCount: 10,
-      tracksNotFound: ["track1", "track2", "track3"],
-    },
-  },
-  {
-    key: "persist_interactions",
-    label: "Save interactions",
-    status: "loading",
-    startAt: "2026-06-10T12:00:27.391Z",
-    // endAt: '2026-06-10T12:00:27.423Z',
-    endAt: undefined,
-    data: {
-      count: 100,
-    },
-  },
-] as const;
-
-export function Pipeline() {
+export function Pipeline({ steps }: { steps: PipelineStep[] }) {
   return (
-    <div className="space-y-3 py-3 rounded-lg bg-card">
-      {STEP_MOCK.map((item) => (
-        <PipelineItem key={item.key}>
-          <PipelineItemHeader>
-            <PipelineItemIcon status={item.status} />
-            <PipelineItemLabel label={item.label} />
-            <PipelineItemDuration startAt={item.startAt} endAt={item.endAt} />
-          </PipelineItemHeader>
-          <PipelineItemContent>
-            <PipelineItemContentContent item={item} />
-          </PipelineItemContent>
+    <div className="divide-y divide-border/50 rounded-lg bg-card">
+      {steps.map((item) => (
+        <PipelineItem key={item.id}>
+          <PipelineItemIcon status={item.status} />
+          <PipelineItemLabel label={item.label} />
+          <PipelineItemOutput output={item.output} stepId={item.id} />
+          <PipelineItemDuration startAt={item.startedAt} endAt={item.endedAt} />
         </PipelineItem>
       ))}
     </div>
   );
 }
 
-function PipelineItemContentContent({
-  item,
+function PipelineItemOutput({
+  output,
+  stepId,
 }: {
-  item: (typeof STEP_MOCK)[number];
+  output?: Record<string, unknown>;
+  stepId: StepId;
 }) {
-  switch (item.key) {
+  switch (stepId) {
     case "extract_archive":
+      const filesCount = output?.filesCount as number;
+      if (filesCount === undefined) return null;
       return (
-        <span>
-          {item.data.file.name} • {format.bytes(item.data.file.size)}
-        </span>
+        <Tooltip>
+          <TooltipTrigger render={<Badge variant="secondary" />}>
+            {filesCount.toLocaleString()} files
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{filesCount.toLocaleString()} files extracted</p>
+          </TooltipContent>
+        </Tooltip>
       );
     case "parse_interactions":
-      return <span>{item.data.count.toLocaleString()} parsed</span>;
-    case "normalize_interactions":
+      const validated = output?.validated as number;
+      const invalid = output?.invalid as number;
+      if (validated === undefined || invalid === undefined) return null;
       return (
-        <span>
-          {item.data.keptCount.toLocaleString()} kept •{" "}
-          {item.data.rejectedCount.toLocaleString()} rejected
-        </span>
+        <Tooltip>
+          <TooltipTrigger render={<Badge variant="secondary" />}>
+            <div className="flex items-center gap-0.5">
+              <Icon icon={Tick02Icon} className="text-primary size-3" />
+              {validated.toLocaleString()}
+            </div>
+            <div className="flex items-center gap-0.5">
+              <Icon icon={Cancel01Icon} className="text-destructive size-3" />
+              {invalid.toLocaleString()}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{validated.toLocaleString()} validated</p>
+            <p>-</p>
+            <p>{invalid.toLocaleString()} invalid</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    case "normalize_interactions":
+      const kept = output?.kept as number;
+      const rejected = output?.rejected as number;
+      if (kept === undefined || rejected === undefined) return null;
+      return (
+        <Tooltip>
+          <TooltipTrigger render={<Badge variant="secondary" />}>
+            <div className="flex items-center gap-0.5">
+              <Icon icon={Tick02Icon} className="text-primary size-3" />
+              {kept.toLocaleString()}
+            </div>
+            <div className="flex items-center gap-0.5">
+              <Icon icon={Cancel01Icon} className="text-destructive size-3" />
+              {rejected.toLocaleString()}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{kept.toLocaleString()} kept</p>
+            <p>-</p>
+            <p>{rejected.toLocaleString()} rejected</p>
+          </TooltipContent>
+        </Tooltip>
       );
     case "resolve_tracks":
-      return null;
-    case "enrich_tracks":
+      const resolved = output?.resolved as number;
+      const missed = output?.missed as number;
+      const errors = output?.errors as number;
+      if (
+        resolved === undefined ||
+        missed === undefined ||
+        errors === undefined
+      )
+        return null;
       return (
-        <Collapsible>
-          <CollapsibleTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="sm"
-                className="group p-0 h-auto hover:bg-transparent! text-xs"
-              />
-            }
-          >
-            {item.data.count.toLocaleString()} resolved •{" "}
-            {item.data.skippedCount.toLocaleString()} skipped
-            <Icon
-              icon={ArrowDown01Icon}
-              strokeWidth={2}
-              className="group-data-[state=open]:rotate-180"
-            />
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <span>{item.data.tracksNotFound.join(", ")}</span>
-          </CollapsibleContent>
-        </Collapsible>
+        <Tooltip>
+          <TooltipTrigger render={<Badge variant="secondary" />}>
+            <div className="flex items-center gap-0.5">
+              <Icon icon={Tick02Icon} className="text-primary size-3" />
+              {resolved.toLocaleString()}
+            </div>
+            <div className="flex items-center gap-0.5">
+              <Icon icon={Alert02Icon} className="text-yellow-600 size-3" />
+              {missed.toLocaleString()}
+            </div>
+            <div className="flex items-center gap-0.5">
+              <Icon icon={Cancel01Icon} className="text-destructive size-3" />
+              {errors.toLocaleString()}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{resolved.toLocaleString()} resolved</p>
+            <p>-</p>
+            <p>{missed.toLocaleString()} missed</p>
+            <p>-</p>
+            <p>{errors.toLocaleString()} errors</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    case "enrich_tracks":
+      const tracksCompleted = output?.completed as number;
+      const tracksFailed = output?.failed as number;
+      if (tracksCompleted === undefined || tracksFailed === undefined)
+        return null;
+      return (
+        <Tooltip>
+          <TooltipTrigger render={<Badge variant="secondary" />}>
+            <div className="flex items-center gap-0.5">
+              <Icon icon={Tick02Icon} className="text-primary size-3" />
+              {tracksCompleted.toLocaleString()}
+            </div>
+            <div className="flex items-center gap-0.5">
+              <Icon icon={Cancel01Icon} className="text-destructive size-3" />
+              {tracksFailed.toLocaleString()}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{tracksCompleted.toLocaleString()} completed</p>
+            <p>-</p>
+            <p>{tracksFailed.toLocaleString()} failed</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    case "enrich_albums":
+      const albumsCompleted = output?.completed as number;
+      const albumsFailed = output?.failed as number;
+      if (albumsCompleted === undefined || albumsFailed === undefined)
+        return null;
+      return (
+        <Tooltip>
+          <TooltipTrigger render={<Badge variant="secondary" />}>
+            <div className="flex items-center gap-0.5">
+              <Icon icon={Tick02Icon} className="text-primary size-3" />
+              {albumsCompleted.toLocaleString()}
+            </div>
+            <div className="flex items-center gap-0.5">
+              <Icon icon={Cancel01Icon} className="text-destructive size-3" />
+              {albumsFailed.toLocaleString()}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{albumsCompleted.toLocaleString()} completed</p>
+            <p>-</p>
+            <p>{albumsFailed.toLocaleString()} failed</p>
+          </TooltipContent>
+        </Tooltip>
       );
     case "persist_interactions":
-      return <span>{item.data.count.toLocaleString()} saved</span>;
+      const interactions = output?.interactions as number;
+      const tracks = output?.tracks as number;
+      const albums = output?.albums as number;
+      const artists = output?.artists as number;
+      if (
+        interactions === undefined ||
+        tracks === undefined ||
+        albums === undefined ||
+        artists === undefined
+      )
+        return null;
+      return (
+        <Tooltip>
+          <TooltipTrigger render={<Badge variant="secondary" />}>
+            <div className="flex items-center gap-0.5">
+              <Icon icon={Tick02Icon} className="text-primary size-3" />
+              {interactions.toLocaleString()}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent className="flex flex-col items-start gap-0.5">
+            <p>{interactions.toLocaleString()} interactions</p>
+            <p>{tracks.toLocaleString()} tracks</p>
+            <p>{albums.toLocaleString()} albums</p>
+            <p>{artists.toLocaleString()} artists</p>
+          </TooltipContent>
+        </Tooltip>
+      );
     default:
       return null;
   }

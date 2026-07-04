@@ -2,6 +2,7 @@
 
 import { Progress } from "@base-ui/react/progress";
 import { cn } from "@harmony/ui/lib/utils";
+
 import { useLegendItem } from "./legend-context";
 
 export interface LegendProgressProps {
@@ -31,14 +32,11 @@ export function LegendProgress({
         className={cn(
           "w-full overflow-hidden rounded-full bg-legend-track",
           height,
-          trackClassName
+          trackClassName,
         )}
       >
         <Progress.Indicator
-          className={cn(
-            "h-full rounded-full transition-all duration-500",
-            indicatorClassName
-          )}
+          className={cn("h-full rounded-full transition-all duration-500", indicatorClassName)}
           style={{ backgroundColor: item.color }}
         />
       </Progress.Track>

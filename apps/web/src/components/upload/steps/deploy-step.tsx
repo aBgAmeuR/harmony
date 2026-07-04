@@ -1,5 +1,10 @@
-import { useEffect, useState } from "react";
-import { Icon, Cancel01Icon, Loading03Icon, Tick02Icon } from "@harmony/icons";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { usePipeline } from "@harmony/upload/react";
+import {
+  UploadError,
+  type Pipeline,
+  type PipelineRunStatus,
+} from "@harmony/upload";
 import { Button } from "@harmony/ui/components/button";
 import {
   Card,
@@ -9,151 +14,141 @@ import {
   CardHeader,
   CardTitle,
 } from "@harmony/ui/components/card";
-import { cn } from "@harmony/ui/lib/utils";
-// import { TextMorph } from "torph/react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@harmony/ui/components/tooltip";
-import { Badge } from "@harmony/ui/components/badge";
+import { upload } from "@/lib/upload";
+import { clearUploadSession, type UploadSession } from "@/lib/upload-session";
+import { UploadPipelineList } from "@/components/upload/upload-pipeline-list";
+import { format } from "@/utils/format";
 
-type UploadUiStepStatus = "pending" | "running" | "done" | "error";
-
-type UploadUiStepKey =
-  | "extract_archive"
-  | "parse_interactions"
-  | "normalize_interactions"
-  | "resolve_tracks"
-  | "enrich_tracks"
-  | "persist_interactions";
-
-type EnrichTracksStepData = {
-  tracksToProcess: number;
-  tracksProcessed: number;
-  tracksSkipped: number;
-};
-
-type NormalizeInteractionsStepData = {
-  rejectedCount: number;
-  keptCount: number;
-};
-
-type UploadUiStepData = EnrichTracksStepData | NormalizeInteractionsStepData;
-
-type UploadUiStep = {
-  key: UploadUiStepKey;
-  label: string;
-  status: UploadUiStepStatus;
-  startAt?: string;
-  endAt?: string;
-  error?: string;
-  data?: UploadUiStepData;
-};
-
-const STEP_ORDER: Array<UploadUiStepKey> = [
-  "extract_archive",
-  "parse_interactions",
-  "normalize_interactions",
-  "resolve_tracks",
-  "enrich_tracks",
-  "persist_interactions",
-];
-
-const STEP_LABEL: Record<UploadUiStepKey, string> = {
-  extract_archive: "Extract archive",
-  parse_interactions: "Parse interactions",
-  normalize_interactions: "Normalize interactions",
-  resolve_tracks: "Resolve tracks",
-  enrich_tracks: "Enrich tracks",
-  persist_interactions: "Save interactions",
-};
+interface DeployStepProps {
+  deployRequestId: number;
+  packageFile: File | null;
+  packageFileName?: string | null;
+  selectedFiles: Array<string>;
+  resumePublicId?: string | null;
+  mutationError?: string | null;
+  onContinue: () => void;
+  onRetry: () => void;
+  onDeployActive?: (session: UploadSession) => void;
+}
 
 function getIsoMs(iso?: string): number | null {
   if (!iso) return null;
-  const d = new Date(iso);
-  const ms = d.getTime();
-  if (Number.isNaN(ms)) return null;
-  return ms;
+  const ms = new Date(iso).getTime();
+  return Number.isNaN(ms) ? null : ms;
 }
 
-function formatDurationMs(durationMs: number): string | null {
-  if (!Number.isFinite(durationMs) || durationMs < 0) return null;
-  if (durationMs < 1000) return `${Math.round(durationMs)}ms`;
-  return `${(durationMs / 1000).toFixed(1)}s`;
-}
-
-function formatDurationSeconds(
-  startAt?: string,
-  endAt?: string,
-): string | null {
-  const startMs = getIsoMs(startAt);
-  const endMs = getIsoMs(endAt);
-  if (startMs === null || endMs === null) return null;
-  return formatDurationMs(endMs - startMs);
-}
-
-function formatElapsedSince(startAt?: string, nowTs?: number): string | null {
-  if (!startAt || nowTs === undefined) return null;
-  const startMs = getIsoMs(startAt);
-  if (startMs === null) return null;
-  return formatDurationMs(nowTs - startMs);
-}
-
-function isEnrichData(
-  data: UploadUiStepData | undefined,
-): data is EnrichTracksStepData {
-  return Boolean(data && "tracksToProcess" in data);
-}
-
-function isNormalizeData(
-  data: UploadUiStepData | undefined,
-): data is NormalizeInteractionsStepData {
-  return Boolean(data && "keptCount" in data);
-}
-
-interface DeployStepProps {
-  packageFile: File | null;
-  selectedFiles: Array<string>;
-  steps: Array<UploadUiStep> | null;
-  mutationError: string | null;
-  canViewStats: boolean;
-  onContinue: () => void;
-  onRetry: () => void;
-}
-
-function StepStatusIcon({ status }: { status: UploadUiStepStatus }) {
-  if (status === "done") {
-    return <Icon icon={Tick02Icon} className="size-4 text-primary" />;
+function formatRunStatus(status: PipelineRunStatus): string {
+  switch (status) {
+    case "done":
+      return "Completed";
+    case "error":
+      return "Failed";
+    case "running":
+      return "In progress";
+    default:
+      return "Waiting";
   }
-
-  if (status === "running") {
-    return (
-      <Icon icon={Loading03Icon} className="size-4 text-primary animate-spin" />
-    );
-  }
-
-  if (status === "error") {
-    return <Icon icon={Cancel01Icon} className="size-4  text-destructive" />;
-  }
-
-  return (
-    <div className="grid place-items-center size-4">
-      <div className="size-1.5 rounded-full bg-muted-foreground/35" />
-    </div>
-  );
 }
 
 export function DeployStep({
+  deployRequestId,
   packageFile,
+  packageFileName = null,
   selectedFiles,
-  steps,
-  mutationError,
-  canViewStats,
+  resumePublicId = null,
+  mutationError = null,
   onContinue,
   onRetry,
+  onDeployActive,
 }: DeployStepProps) {
   const [nowTs, setNowTs] = useState(() => Date.now());
+  const [publicId, setPublicId] = useState<string | null>(null);
+  const [deployError, setDeployError] = useState<string | null>(null);
+  const [pipeline, setPipeline] = useState<Pipeline | null>(null);
+  const [isDeploying, setIsDeploying] = useState(false);
+  const resumeAppliedRef = useRef(false);
+
+  useEffect(() => {
+    if (!publicId) {
+      setPipeline(null);
+      return;
+    }
+
+    const nextPipeline = upload.pipeline(publicId).connect();
+    setPipeline(nextPipeline);
+
+    return () => {
+      nextPipeline.disconnect();
+    };
+  }, [publicId]);
+
+  const { state: pipelineState, connectionError } = usePipeline(pipeline);
+
+  const persistSession = useCallback(
+    (nextPublicId: string) => {
+      onDeployActive?.({
+        publicId: nextPublicId,
+        packageFileName: packageFile?.name ?? packageFileName ?? "package.zip",
+        selectedFiles,
+        deploySelection: selectedFiles,
+      });
+    },
+    [onDeployActive, packageFile, packageFileName, selectedFiles],
+  );
+
+  const runDeploy = useCallback(async () => {
+    if (!packageFile || selectedFiles.length === 0) return;
+
+    setIsDeploying(true);
+    setDeployError(null);
+    setPublicId(null);
+
+    try {
+      const result = await upload.deploy({
+        file: packageFile,
+        selectedFiles,
+      });
+      setPublicId(result.publicId);
+      persistSession(result.publicId);
+    } catch (err) {
+      if (err instanceof UploadError) {
+        setDeployError(err.message);
+        return;
+      }
+      if (err instanceof Error) {
+        setDeployError(err.message);
+        return;
+      }
+      setDeployError("Unable to deploy package.");
+    } finally {
+      setIsDeploying(false);
+    }
+  }, [packageFile, selectedFiles, persistSession]);
+
+  useEffect(() => {
+    if (deployRequestId === 0) return;
+    resumeAppliedRef.current = false;
+    void runDeploy();
+  }, [deployRequestId, runDeploy]);
+
+  useEffect(() => {
+    if (!resumePublicId || resumeAppliedRef.current || deployRequestId > 0) {
+      return;
+    }
+
+    resumeAppliedRef.current = true;
+    setPublicId(resumePublicId);
+  }, [resumePublicId, deployRequestId]);
+
+  const handleRetry = () => {
+    onRetry();
+  };
+
+  const handleCancel = () => {
+    pipeline?.disconnect();
+    clearUploadSession();
+    window.location.reload();
+  };
 
   useEffect(() => {
     const t = window.setInterval(() => {
@@ -162,63 +157,44 @@ export function DeployStep({
     return () => window.clearInterval(t);
   }, []);
 
-  const orderedSteps = STEP_ORDER.map((key): UploadUiStep => {
-    const step = steps?.find((s) => s.key === key);
-    return {
-      key,
-      label: step?.label ?? STEP_LABEL[key],
-      status: step?.status ?? "pending",
-      startAt: step?.startAt,
-      endAt: step?.endAt,
-      error: step?.error,
-      data: step?.data,
-    };
-  });
-
-  const persistStep = orderedSteps.find(
-    (s) => s.key === "persist_interactions",
-  );
-  const enrichStep = steps?.find((s) => s.key === "enrich_tracks");
-  const normalizeStep = steps?.find((s) => s.key === "normalize_interactions");
-
   const canRetry =
-    persistStep?.status === "error" &&
+    pipelineState.runStatus === "error" &&
     Boolean(packageFile) &&
-    selectedFiles.length > 0;
-  const errorMessage = persistStep?.error ?? mutationError;
+    selectedFiles.length > 0 &&
+    !isDeploying;
+  const canContinue = pipelineState.runStatus === "done";
+  const errorMessage =
+    pipelineState.error ??
+    deployError ??
+    connectionError ??
+    mutationError ??
+    null;
 
-  const enrichData = enrichStep?.data;
-  const normalizeData = normalizeStep?.data;
-  const totalElapsedMs = orderedSteps.reduce((acc, step) => {
-    const startMs = getIsoMs(step.startAt);
-    if (startMs === null) return acc;
-    const endMs = getIsoMs(step.endAt) ?? nowTs;
-    if (endMs === null) return acc;
-    const diff = endMs - startMs;
-    if (!Number.isFinite(diff) || diff < 0) return acc;
-    return acc + diff;
-  }, 0);
+  const startMs = getIsoMs(pipelineState.startedAt);
+  const endMs = getIsoMs(pipelineState.endedAt) ?? nowTs;
+  const headerElapsed =
+    startMs !== null ? format.duration(Math.max(0, endMs - startMs)) : "—";
 
-  const hasAnyStarted = orderedSteps.some((s) => getIsoMs(s.startAt) !== null);
-  const headerElapsed = hasAnyStarted ? formatDurationMs(totalElapsedMs) : null;
+  const headerStatus = isDeploying
+    ? "Uploading…"
+    : formatRunStatus(pipelineState.runStatus);
 
-  const enrich = isEnrichData(enrichData) ? enrichData : null;
-  const normalize = isNormalizeData(normalizeData) ? normalizeData : null;
+  const displayName =
+    packageFile?.name ?? packageFileName ?? "No package selected";
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Deploy package</CardTitle>
-        <CardDescription className="truncate">
-          {packageFile?.name ?? "No package selected"}
-        </CardDescription>
+        <CardDescription className="truncate">{displayName}</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-3">
         {errorMessage ? (
           <p className="text-sm text-destructive">{errorMessage}</p>
         ) : null}
-        <div className="rounded-lg grid grid-cols-3 border divide-x">
+
+        <div className="grid grid-cols-3 divide-x rounded-lg border">
           <div className="flex flex-col px-3 py-2">
             <span className="text-xs text-muted-foreground">
               Files included
@@ -231,155 +207,31 @@ export function DeployStep({
           <div className="flex flex-col px-3 py-2">
             <span className="text-xs text-muted-foreground">Time</span>
             <span className="text-sm font-medium text-foreground">
-              {headerElapsed ?? "—"}
+              {headerElapsed}
             </span>
           </div>
           <div className="flex flex-col px-3 py-2">
             <span className="text-xs text-muted-foreground">Status</span>
             <span className="text-sm font-medium text-primary">
-              {persistStep?.status === "done"
-                ? "Completed"
-                : persistStep?.status === "error"
-                  ? "Failed"
-                  : "In progress"}
+              {headerStatus}
             </span>
           </div>
         </div>
 
-        <div className="flex flex-col gap-px rounded-lg border divide-y divide-border/50 overflow-hidden">
-          {orderedSteps.map((step) => (
-            <div
-              key={step.key}
-              className={cn(
-                "flex items-center gap-2 px-3 py-2",
-                step.status === "done" && "bg-muted/10",
-                step.status === "running" && "bg-primary/5",
-                step.status === "pending" && "opacity-50",
-              )}
-            >
-              <StepStatusIcon status={step.status} />
-              <div className="flex-1 flex items-center gap-2 min-w-0">
-                <p
-                  className={cn(
-                    "text-sm transition-colors",
-                    step.status === "done"
-                      ? "text-foreground/70"
-                      : step.status === "running"
-                        ? "text-foreground font-medium"
-                        : "text-muted-foreground",
-                  )}
-                >
-                  {step.label}
-                </p>
-
-                {step.key === "enrich_tracks" && enrich ? (
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={<Badge variant="secondary" className="gap-1.5" />}
-                    >
-                      <span className="text-xs text-muted-foreground">
-                        {enrich.tracksProcessed + enrich.tracksSkipped} /{" "}
-                        {enrich.tracksToProcess}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>
-                        Processed: {enrich.tracksProcessed} • Skipped:{" "}
-                        {enrich.tracksSkipped}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                ) : null}
-
-                {step.key === "normalize_interactions" && normalize ? (
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={<Badge variant="secondary" className="gap-1.5" />}
-                    >
-                      <Icon icon={Tick02Icon} className="size-3 text-primary" />
-                      <span className="text-xs text-muted-foreground">
-                        {normalize.keptCount}
-                      </span>
-                      <Icon
-                        icon={Cancel01Icon}
-                        className="size-3 text-destructive"
-                      />
-                      <span className="text-xs text-muted-foreground">
-                        {normalize.rejectedCount}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>
-                        Kept: {normalize.keptCount} • Rejected:{" "}
-                        {normalize.rejectedCount}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                ) : null}
-
-                {step.status === "error" && step.error ? (
-                  <p className="text-xs text-destructive">{step.error}</p>
-                ) : null}
-              </div>
-
-              {step.startAt && step.endAt ? (
-                <Tooltip>
-                  <TooltipTrigger>
-                    <span className="text-xs text-muted-foreground font-mono shrink-0">
-                      {formatDurationSeconds(step.startAt, step.endAt)}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="space-y-1">
-                      <p>
-                        Start{" "}
-                        {new Date(step.startAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          second: "2-digit",
-                        })}
-                      </p>
-                      <p>
-                        End{" "}
-                        {new Date(step.endAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          second: "2-digit",
-                        })}
-                      </p>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              ) : step.startAt && !step.endAt ? (
-                <Tooltip>
-                  <TooltipTrigger>
-                    <span className="text-xs text-muted-foreground font-mono shrink-0">
-                      {formatElapsedSince(step.startAt, nowTs)}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>
-                      Start{" "}
-                      {new Date(step.startAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                      })}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              ) : null}
-            </div>
-          ))}
-        </div>
+        <UploadPipelineList steps={pipelineState.steps} nowTs={nowTs} />
       </CardContent>
 
       <CardFooter className="justify-between">
-        <Button variant="ghost" disabled={!canRetry} onClick={onRetry}>
-          Retry deploy
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="destructive" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button variant="ghost" disabled={!canRetry} onClick={handleRetry}>
+            Retry deploy
+          </Button>
+        </div>
 
-        <Button disabled={!canViewStats} onClick={onContinue}>
+        <Button disabled={!canContinue} onClick={onContinue}>
           Continue
         </Button>
       </CardFooter>

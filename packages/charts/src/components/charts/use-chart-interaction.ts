@@ -1,3 +1,5 @@
+"use client";
+
 import type { scaleLinear, scaleTime } from "@visx/scale";
 
 import { localPoint } from "@visx/event";

@@ -1,3 +1,5 @@
+"use client";
+
 import type { scaleLinear, scaleTime } from "@visx/scale";
 import type { Transition } from "motion/react";
 
@@ -16,6 +18,7 @@ import {
 
 import type { Margin } from "../chart-context";
 import type { ChartPhase, ChartStatus } from "../chart-phase";
+import type { HeatmapSeparatorLayout, HeatmapWeekStartDay } from "./heatmap-utils";
 
 import { HEATMAP_DEFAULT_LEVEL_COLORS, type HeatmapLevelStyles } from "./heatmap-colors";
 
@@ -62,8 +65,10 @@ export interface HeatmapContextValue {
   binWidth: number;
   binHeight: number;
   gap: number;
+  weekStartDay: HeatmapWeekStartDay;
   xScale: (columnIndex: number) => number;
   yScale: (rowIndex: number) => number;
+  separatorLayout: HeatmapSeparatorLayout | null;
   timeXScale: HeatmapTimeScale;
   brushYScale: HeatmapLinearScale;
   isReady: boolean;

@@ -1,3 +1,8 @@
+---
+description: 
+alwaysApply: false
+---
+
 # React Composition Patterns
 
 **Version 1.0.0**  

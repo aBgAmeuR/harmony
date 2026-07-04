@@ -13,15 +13,6 @@ export default defineConfig({
       spa: {
         enabled: true,
       },
-      router: {
-        codeSplittingOptions: {
-          splitBehavior: ({ routeId }) => {
-            if (routeId.startsWith("/app")) {
-              return [["loader", "component", "pendingComponent", "errorComponent"]];
-            }
-          },
-        },
-      },
     }),
     viteReact(),
     checker({ oxlint: true }),

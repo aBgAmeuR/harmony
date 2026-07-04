@@ -1,7 +1,9 @@
+use std::sync::Arc;
 use std::time::Instant;
 
 use crate::pipeline::{self, PipelineContext, PipelineError, PipelineStats};
-use harmony_db::{mark_running, set_completed, set_failed};
+use crate::progress::{sse_step_id, stage_to_step_id, ProgressReporter};
+use harmony_db::{mark_running, set_completed, set_failed_with_data};
 use opentelemetry::Context;
 use tokio::sync::mpsc;
 use tracing::Instrument;
@@ -61,7 +63,7 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
     }
 
     async {
-        let Some((_, zip_bytes)) = state.ram_store.remove(&package_id) else {
+        let Some((_, upload)) = state.ram_store.remove(&package_id) else {
             set_failed_best_effort(state, package_id, "worker", "zip bytes missing from ram store")
                 .await;
             return Err(WorkerError::BytesMissing { package_id });
@@ -71,7 +73,7 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
         let worker_span = tracing::Span::current();
         let pipeline_span = worker_span.clone();
 
-        let zip_size_bytes = zip_bytes.len();
+        let zip_size_bytes = upload.zip_bytes.len();
         worker_span.record("zip_size_bytes", zip_size_bytes as i64);
 
         {
@@ -83,22 +85,44 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
             mark_running(&mut conn, package_id).await?;
         }
 
+        state.progress.register(&public_id);
+        let reporter = ProgressReporter::new(Arc::clone(&state.progress), public_id.clone());
+
         let public_id_for_pipeline = public_id.clone();
+        let reporter_for_pipeline = reporter.clone();
+        let selected_files = upload.selected_files;
+        let zip_bytes = upload.zip_bytes;
         let pipeline_result = tokio::task::spawn_blocking(move || -> Result<PipelineStats, PipelineError> {
             let _guard = pipeline_span.enter();
 
-            let mut ctx =
-                PipelineContext::new(package_id, public_id_for_pipeline, zip_bytes);
+            let mut ctx = PipelineContext::new(
+                package_id,
+                public_id_for_pipeline,
+                zip_bytes,
+                selected_files,
+                Some(reporter_for_pipeline),
+            );
             pipeline::run(&mut ctx)?;
             Ok(ctx.stats)
         })
         .await
         .map_err(WorkerError::Join)?;
 
+        let duration_ms = started.elapsed().as_millis() as u64;
+
         match pipeline_result {
-            Ok(stats) => {
-                let duration_ms = started.elapsed().as_millis() as u64;
-                let data = stats.to_json(duration_ms);
+            Ok(_stats) => {
+                reporter.run_completed(duration_ms);
+                let data = state
+                    .progress
+                    .finalize_json(&public_id, duration_ms)
+                    .unwrap_or_else(|| {
+                        serde_json::json!({
+                            "totalDurationMs": duration_ms,
+                            "steps": [],
+                        })
+                    });
+
                 let mut conn = state
                     .pool
                     .get()
@@ -116,15 +140,37 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
                     ?err,
                     "pipeline failed - cancelled"
                 );
+
+                let step_id = sse_step_id(
+                    reporter
+                        .active_step()
+                        .unwrap_or_else(|| stage_to_step_id(err.stage())),
+                );
+                reporter.run_failed(step_id, &err.to_string());
+
+                let data = state
+                    .progress
+                    .finalize_json(&public_id, duration_ms)
+                    .unwrap_or_else(|| {
+                        serde_json::json!({
+                            "totalDurationMs": duration_ms,
+                            "steps": [],
+                        })
+                    });
+
                 let mut conn = state
                     .pool
                     .get()
                     .await
                     .map_err(|e| WorkerError::Pool(e.to_string()))?;
-                set_failed(&mut conn, package_id, err.stage(), &err.to_string()).await?;
+                set_failed_with_data(&mut conn, package_id, err.stage(), &err.to_string(), data)
+                    .await?;
+                state.progress.unregister(&public_id);
                 return Err(WorkerError::Pipeline(err));
             }
         }
+
+        state.progress.unregister(&public_id);
 
         Ok(())
     }
@@ -138,7 +184,8 @@ async fn set_failed_best_effort(state: &AppState, package_id: i32, stage: &str, 
 
     match state.pool.get().await {
         Ok(mut conn) => {
-            if let Err(err) = set_failed(&mut conn, package_id, &stage, &message).await {
+            if let Err(err) = harmony_db::set_failed(&mut conn, package_id, &stage, &message).await
+            {
                 tracing::error!(package_id, ?err, "failed to mark package as failed");
             }
         }

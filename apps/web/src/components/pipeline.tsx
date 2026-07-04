@@ -1,18 +1,24 @@
+import type { PropsWithChildren } from "react";
+
+import { Icon, Cancel01Icon, Loading03Icon, Tick02Icon } from "@harmony/icons";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@harmony/ui/components/tooltip";
 import { cn } from "@harmony/ui/lib/utils";
-import { Icon, Cancel01Icon, Loading03Icon, Tick02Icon } from "@harmony/icons";
-import type { PropsWithChildren } from "react";
+
 import { format } from "@/utils/format";
 
 const PipelineItem = ({
   children,
   className,
 }: PropsWithChildren<{ className?: string }>) => {
-  return <div className={cn("px-3", className)}>{children}</div>;
+  return (
+    <div className={cn("flex items-center px-3 py-2", className)}>
+      {children}
+    </div>
+  );
 };
 
 const PipelineItemHeader = ({
@@ -25,10 +31,16 @@ const PipelineItemHeader = ({
 const PipelineItemIcon = ({
   status,
 }: {
-  status: "loading" | "done" | "error";
+  status: "pending" | "running" | "done" | "error";
 }) => {
   switch (status) {
-    case "loading":
+    case "pending":
+      return (
+        <div className="grid size-4 place-items-center">
+          <div className="size-1.5 rounded-full bg-muted-foreground/35" />
+        </div>
+      );
+    case "running":
       return (
         <Icon
           icon={Loading03Icon}
@@ -66,7 +78,7 @@ const PipelineItemLabel = ({
 }) => {
   return (
     <span
-      className={cn("min-w-0 flex-1 text-sm text-foreground ml-3", className)}
+      className={cn("mx-3 flex-1 min-w-0 text-sm text-foreground", className)}
     >
       {label}
     </span>
@@ -76,40 +88,38 @@ const PipelineItemLabel = ({
 const PipelineItemDuration = ({
   startAt,
   endAt,
+  now,
 }: {
-  startAt: string;
+  startAt?: string;
   endAt?: string;
+  now?: number;
 }) => {
+  const startMs = startAt ? new Date(startAt).getTime() : 0;
+  const endMs = endAt ? new Date(endAt).getTime() : now;
+  const durationMs =
+    endMs !== undefined && Number.isFinite(startMs)
+      ? Math.max(0, endMs - startMs)
+      : 0;
+
   return (
     <Tooltip>
-      <TooltipTrigger>
-        <span className="min-w-[52px] text-right text-xs tabular-nums text-muted-foreground">
-          {format.duration(
-            endAt ? new Date(endAt).getTime() - new Date(startAt).getTime() : 0,
-          )}
-        </span>
+      <TooltipTrigger
+        render={
+          <span className="min-w-[52px] text-right text-xs text-muted-foreground tabular-nums" />
+        }
+      >
+        {format.duration(durationMs)}
       </TooltipTrigger>
       <TooltipContent>
         <span>{format.time(startAt)}</span>
-        {endAt && (
+        {endAt ? (
           <>
             <span>-</span>
             <span>{format.time(endAt)}</span>
           </>
-        )}
+        ) : null}
       </TooltipContent>
     </Tooltip>
-  );
-};
-
-const PipelineItemContent = ({
-  children,
-  className,
-}: PropsWithChildren<{ className?: string }>) => {
-  return (
-    <div className={cn("ms-7 text-xs text-muted-foreground", className)}>
-      {children}
-    </div>
   );
 };
 
@@ -119,5 +129,4 @@ export {
   PipelineItemIcon,
   PipelineItemLabel,
   PipelineItemDuration,
-  PipelineItemContent,
 };

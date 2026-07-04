@@ -1,5 +1,6 @@
 use std::env;
 use std::sync::Arc;
+use std::time::Instant;
 
 use futures::stream::{self, StreamExt};
 use opentelemetry::trace::Status;
@@ -11,6 +12,7 @@ use tracing_opentelemetry::OpenTelemetrySpanExt;
 use crate::pipeline::deezer::{self, DeezerClient};
 use crate::pipeline::error::ResolveError;
 use crate::pipeline::PipelineContext;
+use crate::progress::{ProgressAggregator, StepId};
 
 const DEEZER_SEARCH: &str = "https://api.deezer.com/search";
 
@@ -136,8 +138,10 @@ async fn resolve_track(
     ),
 )]
 pub fn run(ctx: &mut PipelineContext) -> Result<(), ResolveError> {
-    let config = deezer::load_config().map_err(ResolveError::MissingConfig)?;
-    let match_threshold = load_match_threshold();
+    let started = Instant::now();
+    if let Some(reporter) = ctx.reporter.as_ref() {
+        reporter.step_started(StepId::ResolveTracks);
+    }
 
     let items: Vec<ResolveItem> = ctx
         .catalogue
@@ -151,46 +155,70 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), ResolveError> {
 
     if items.is_empty() {
         tracing::info!("resolve stage finished with empty catalogue");
+        if let Some(reporter) = ctx.reporter.as_ref() {
+            reporter.step_completed(
+                StepId::ResolveTracks,
+                started.elapsed().as_millis() as u64,
+                Some(serde_json::json!({
+                    "resolved": 0,
+                    "missed": 0,
+                    "errors": 0,
+                })),
+            );
+        }
         return Ok(());
     }
+
+    let config = deezer::load_config().map_err(ResolveError::MissingConfig)?;
+    let match_threshold = load_match_threshold();
 
     let client = DeezerClient::new(config).map_err(ResolveError::HttpClient)?;
     let concurrency = client.concurrency();
     let client = Arc::new(client);
     let handle = Handle::current();
+    let total = items.len() as u64;
 
-    let outcomes: Vec<TrackOutcome> = handle.block_on(async {
-        stream::iter(items)
-            .map(|item| {
-                let client = Arc::clone(&client);
-                async move { resolve_track(&client, match_threshold, item).await }
-            })
-            .buffer_unordered(concurrency)
-            .collect()
-            .await
-    });
+    let mut aggregator = ctx
+        .reporter
+        .as_ref()
+        .map(|reporter| ProgressAggregator::new(StepId::ResolveTracks, reporter.clone(), total));
 
     let mut resolved = 0usize;
     let mut missed = 0usize;
     let mut errors = 0usize;
+    let mut done = 0u64;
 
-    for outcome in outcomes {
-        match outcome {
-            TrackOutcome::Matched {
-                track_key,
-                deezer_id,
-            } => {
-                ctx.deezer_matches.insert(track_key, deezer_id);
-                resolved += 1;
+    handle.block_on(async {
+        let mut stream = stream::iter(items)
+            .map(|item| {
+                let client = Arc::clone(&client);
+                async move { resolve_track(&client, match_threshold, item).await }
+            })
+            .buffer_unordered(concurrency);
+
+        while let Some(outcome) = stream.next().await {
+            done += 1;
+            match outcome {
+                TrackOutcome::Matched {
+                    track_key,
+                    deezer_id,
+                } => {
+                    ctx.deezer_matches.insert(track_key, deezer_id);
+                    resolved += 1;
+                }
+                TrackOutcome::Missed => {
+                    missed += 1;
+                }
+                TrackOutcome::Error => {
+                    errors += 1;
+                }
             }
-            TrackOutcome::Missed => {
-                missed += 1;
-            }
-            TrackOutcome::Error => {
-                errors += 1;
+
+            if let Some(aggregator) = aggregator.as_mut() {
+                aggregator.on_item_done(done, errors as u64);
             }
         }
-    }
+    });
 
     ctx.stats.deezer_resolved_count = resolved;
     ctx.stats.deezer_missed_count = missed;
@@ -207,6 +235,18 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), ResolveError> {
         errors = errors,
         "resolve stage finished"
     );
+
+    if let Some(reporter) = ctx.reporter.as_ref() {
+        reporter.step_completed(
+            StepId::ResolveTracks,
+            started.elapsed().as_millis() as u64,
+            Some(serde_json::json!({
+                "resolved": resolved,
+                "missed": missed,
+                "errors": errors,
+            })),
+        );
+    }
 
     Ok(())
 }

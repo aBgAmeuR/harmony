@@ -1,4 +1,4 @@
-use std::sync::Arc;
+ use std::sync::Arc;
 
 use axum::{
     Router,
@@ -13,18 +13,24 @@ use tower_http::cors::CorsLayer;
 mod db_file;
 mod error;
 mod otel;
+mod package;
 mod package_data;
+mod package_upload;
 mod pipeline;
+mod progress;
 mod upload;
 mod worker;
 
-pub type RamStore = Arc<DashMap<i32, Vec<u8>>>;
+use package_upload::PackageUpload;
+
+pub type RamStore = Arc<DashMap<i32, PackageUpload>>;
 
 #[derive(Clone)]
 pub struct AppState {
     pub pool: harmony_db::DbPool,
     pub ram_store: RamStore,
     pub jobs: mpsc::Sender<worker::Job>,
+    pub progress: Arc<progress::ProgressHub>,
 }
 
 async fn health() -> &'static str {
@@ -41,6 +47,7 @@ async fn main() {
         pool,
         ram_store: Arc::new(DashMap::new()),
         jobs: jobs_tx,
+        progress: Arc::new(progress::ProgressHub::new()),
     };
 
     tokio::spawn(worker::run(state.clone(), jobs_rx));
@@ -56,6 +63,7 @@ async fn main() {
         .expect("failed to bind to port");
 
     tracing::info!("server is running on http://{addr}");
+    println!("server is running on http://{addr}");
 
     axum::serve(listener, app.into_make_service())
         .await
@@ -68,6 +76,11 @@ fn app(state: AppState) -> Router {
         .route(
             "/api/v1/packages",
             post(upload::upload_package).layer(DefaultBodyLimit::max(50 * 1024 * 1024)),
+        )
+        .route("/api/v1/packages/{id}", get(package::get_package_handler))
+        .route(
+            "/api/v1/packages/{id}/stream",
+            get(progress::stream_package_progress),
         )
         .route(
             "/api/v1/packages/{id}/data",

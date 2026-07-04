@@ -1,3 +1,5 @@
+"use client";
+
 import { motion, useSpring } from "motion/react";
 import { memo, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -64,6 +66,11 @@ export interface ChartTooltipProps {
   boxSpringConfig?: SpringConfig;
   /** Inline styles for the tooltip panel (background, blur, etc.). */
   panelStyle?: React.CSSProperties;
+  /**
+   * Tooltip panel background color (CSS variable or color value).
+   * Default: `var(--chart-tooltip-background)`.
+   */
+  backgroundColor?: string;
 }
 
 interface ChartTooltipInnerProps extends ChartTooltipProps {
@@ -89,6 +96,7 @@ const ChartTooltipInner = memo(function ChartTooltipInner({
   indicatorFadeLength,
   boxSpringConfig,
   panelStyle,
+  backgroundColor,
 }: ChartTooltipInnerProps) {
   const {
     tooltipData,
@@ -247,6 +255,7 @@ const ChartTooltipInner = memo(function ChartTooltipInner({
       {/* Tooltip Box */}
       <TooltipBox
         animate={boxMotion.animate}
+        backgroundColor={backgroundColor}
         className={className}
         containerHeight={height}
         containerRef={containerRef}
