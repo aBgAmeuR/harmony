@@ -22,9 +22,16 @@ export const db = {
     const start = performance.now();
     const result = await conn.query(query);
     const durationMs = performance.now() - start;
-    console.log({ durationMs: durationMs.toFixed(2) + "ms", query });
 
-    return result.toArray() as T[];
+    const startToArray = performance.now();
+    const array = result.toArray() as T[];
+    const durationToArrayMs = performance.now() - startToArray;
+    console.log({
+      durationToArrayMs: durationToArrayMs.toFixed(2) + "ms",
+      durationMs: durationMs.toFixed(2) + "ms",
+      query,
+    });
+    return array;
   },
   status: () => useDbStore.getState().status,
   error: () => useDbStore.getState().error,

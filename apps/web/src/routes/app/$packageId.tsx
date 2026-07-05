@@ -1,5 +1,3 @@
-import { BProgress } from "@bprogress/core";
-import { Progress, ProgressProvider } from "@bprogress/react";
 import { db, DuckDBFetchError, DuckDBPackageNotFoundError } from "@harmony/duckdb";
 import { Alert02Icon, Icon, Loading03Icon, RefreshIcon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
@@ -8,7 +6,6 @@ import {
   createFileRoute,
   Link,
   Outlet,
-  useRouter,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 
@@ -64,21 +61,21 @@ export const Route = createFileRoute("/app/$packageId")({
 });
 
 function RouteComponent() {
-  const router = useRouter();
+  // const router = useRouter();
 
-  router.subscribe("onBeforeNavigate", ({ pathChanged }) => pathChanged && BProgress.start());
-  router.subscribe("onResolved", () => BProgress.done());
+  // router.subscribe("onBeforeNavigate", ({ pathChanged }) => pathChanged && BProgress.start());
+  // router.subscribe("onResolved", () => BProgress.done());
 
   return (
-    <ProgressProvider options={{ showSpinner: false }} color="#1ED760">
+    // <ProgressProvider options={{ showSpinner: false }} color="#1ED760">
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <Progress />
+          {/* <Progress /> */}
           <Outlet />
         </SidebarInset>
       </SidebarProvider>
-    </ProgressProvider>
+    // </ProgressProvider>
   );
 }
 

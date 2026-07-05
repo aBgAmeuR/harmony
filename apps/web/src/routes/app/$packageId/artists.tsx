@@ -4,20 +4,25 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CatalogTable } from "@/components/catalog/catalog-table";
 import { Header } from "@/components/layout/header/header";
 import { query } from "@/lib/query";
-
-const topArtistsQuery = query.artists.top.queryOptions({});
+import {
+  buildInstantRangeQuery,
+  useDateRangeStore,
+  useInstantRangeQuery,
+} from "@/lib/stores/date-range-store";
 
 export const Route = createFileRoute("/app/$packageId/artists")({
   ssr: false,
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
     await parentMatchPromise;
-    await queryClient.ensureQueryData(topArtistsQuery);
+    const { from, to } = buildInstantRangeQuery(useDateRangeStore.getState());
+    await queryClient.ensureQueryData(query.artists.top.queryOptions({ from, to }));
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { data, isLoading } = useQuery(topArtistsQuery);
+  const { from, to } = useInstantRangeQuery();
+  const { data, isLoading } = useQuery(query.artists.top.queryOptions({ from, to }));
 
   return (
     <div>

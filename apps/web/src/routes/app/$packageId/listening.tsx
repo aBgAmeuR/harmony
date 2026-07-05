@@ -5,16 +5,17 @@ import { Header } from "@/components/layout/header/header";
 import { ActiveDaysWidget } from "@/features/listening/widgets/active-days-widget";
 import { DaysOfWeekWidget } from "@/features/listening/widgets/days-of-week-widget";
 import { GenresWidget } from "@/features/listening/widgets/genres-widget";
-import { ListeningStyleWidget } from "@/features/listening/widgets/listening-style-widget";
 import { ListeningTimeWidget } from "@/features/listening/widgets/listening-time-widget";
 import { MonthlyActivityWidget } from "@/features/listening/widgets/monthly-activity-widget";
-import { PeakHoursWidget } from "@/features/listening/widgets/peak-hours-widget";
-import { PlatformsWidget } from "@/features/listening/widgets/platforms-widget";
 import { ReleaseYearWidget } from "@/features/listening/widgets/release-year-widget";
 import { TotalStreamsWidget } from "@/features/listening/widgets/total-streams-widget";
-import { TrackEngagementWidget } from "@/features/listening/widgets/track-engagement-widget";
 import { UniqueTracksWidget } from "@/features/listening/widgets/unique-tracks-widget";
 import { query } from "@/lib/query";
+import { PeakHoursWidget } from "@/features/listening/widgets/peak-hours-widget";
+import { PlatformsWidget } from "@/features/listening/widgets/platforms-widget";
+import { ListeningStyleWidget } from "@/features/listening/widgets/listening-style-widget";
+import { TrackEngagementWidget } from "@/features/listening/widgets/track-engagement-widget";
+import { WhenYouListenWidget } from "@/features/listening/widgets/when-you-listen-widget";
 
 export const Route = createFileRoute("/app/$packageId/listening")({
   ssr: false,
@@ -37,29 +38,33 @@ function RouteComponent() {
     <div>
       <Header title="Listening Habits" />
       <StaticChartPreviewProvider>
-        <main className="mx-auto max-w-7xl 2xl:border-x 2xl:border-border">
-          <div className="grid grid-cols-1 divide-y divide-border sm:grid-cols-2 sm:divide-x lg:grid-cols-4 lg:divide-y-0">
+        <main className="mx-auto max-w-7xl space-y-3 p-3">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <ListeningTimeWidget />
             <TotalStreamsWidget />
             <ActiveDaysWidget />
             <UniqueTracksWidget />
+            <div className="col-span-2 lg:col-span-3 lg:row-start-2">
+              <MonthlyActivityWidget />
+            </div>
+            <div className="h-full col-span-2 self-start lg:col-span-1 lg:col-start-4 lg:row-start-2">
+              <DaysOfWeekWidget />
+            </div>
           </div>
-          <div className="grid grid-cols-1 divide-y divide-border border-t border-border sm:grid-cols-[3fr_1fr] sm:divide-x sm:divide-y-0">
-            <MonthlyActivityWidget />
-            <DaysOfWeekWidget />
-          </div>
-          {/* <div className="border-t border-border">
+
           <WhenYouListenWidget />
-        </div> */}
-          <div className="grid grid-cols-1 divide-y divide-border border-t border-border sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <PeakHoursWidget />
             <PlatformsWidget />
           </div>
-          <div className="grid grid-cols-1 divide-y divide-border border-t border-border md:grid-cols-[1fr_2fr] md:divide-x md:divide-y-0">
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_2fr]">
             <ListeningStyleWidget />
             <TrackEngagementWidget />
           </div>
-          <div className="grid grid-cols-1 divide-y divide-border border-t border-border sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <ReleaseYearWidget />
             <GenresWidget />
           </div>

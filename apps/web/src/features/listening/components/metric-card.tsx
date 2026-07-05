@@ -1,5 +1,12 @@
 import { ArrowExpandIcon, Icon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@harmony/ui/components/card";
 import { useQuery } from "@tanstack/react-query";
 
 import { FormattedMetric } from "@/components/format/formatted-metric";
@@ -23,17 +30,21 @@ export const MetricCard = ({ label, unit, query }: MetricCardProps) => {
   const { data } = useQuery(query.queryOptions());
 
   return (
-    <div className="flex flex-col justify-between">
-      <div className="flex justify-between px-4 pt-3">
+    <Card size="xs">
+      <CardHeader className="px-3 pt-3">
         <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground">{label}</span>
+          <CardTitle className="text-muted-foreground">{label}</CardTitle>
           <FormattedMetric size="lg" value={data?.value} unit={unit} />
         </div>
-        <Button variant="ghost" size="icon" className="-me-1! -mt-1!">
-          <Icon icon={ArrowExpandIcon} />
-        </Button>
-      </div>
-      <MetricSparkline trend={data?.trend} />
-    </div>
+        <CardAction>
+          <Button variant="ghost" size="icon" className="-me-1! -mt-1!">
+            <Icon icon={ArrowExpandIcon} />
+          </Button>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        <MetricSparkline trend={data?.trend} />
+      </CardContent>
+    </Card>
   );
 };

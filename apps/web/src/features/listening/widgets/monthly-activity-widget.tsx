@@ -1,4 +1,5 @@
 import { Bar, BarChart, BarXAxis, chartCssVars, ChartTooltip, Grid } from "@harmony/charts";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@harmony/ui/components/card";
 import { useQuery } from "@tanstack/react-query";
 
 import { query } from "@/lib/query";
@@ -7,20 +8,26 @@ export function MonthlyActivityWidget() {
   const { data = [] } = useQuery(query.listeningHabits.monthlyActivity.queryOptions());
 
   return (
-    <div className="flex flex-col">
-      <div className="flex justify-between px-4 pt-3">
-        <span className="text-xs text-muted-foreground">Monthly Activity</span>
-      </div>
-      <div className="px-2">
+    <Card size="xs">
+      <CardHeader className="px-3 pt-3">
+        <CardTitle>Monthly Activity</CardTitle>
+        <CardAction>
+          <div className="flex items-center gap-2">
+            <div className="size-2 shrink-0 rounded-full bg-chart-2" />
+            <span className="text-xs text-legend-foreground">Time Listening</span>
+          </div>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
         <BarChart
-          aspectRatio="3 / 1"
-          barGap={0.1}
+          aspectRatio="4 / 1"
+          barGap={0.2}
           data={data}
-          margin={{ top: 0, right: 8, bottom: 40, left: 8 }}
+          margin={{ top: 0, right: 12, bottom: 40, left: 12 }}
           xDataKey="name"
         >
-          <Grid horizontal />
-          <Bar dataKey="value" lineCap="butt" />
+          <Grid horizontal hideHorizontalEdgeLines />
+          <Bar dataKey="value" lineCap="butt" fill="var(--chart-2)" />
           <BarXAxis maxLabels={8} />
           <ChartTooltip
             rows={(point) => [
@@ -32,7 +39,7 @@ export function MonthlyActivityWidget() {
             ]}
           />
         </BarChart>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

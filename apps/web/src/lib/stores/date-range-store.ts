@@ -5,6 +5,8 @@ import { useShallow } from "zustand/react/shallow";
 
 export type DateRangeMode = "month" | "year" | "custom";
 
+export type DateRangeDraft = Pick<DateRangeState, "mode" | "cursorMs" | "customFrom" | "customTo">;
+
 type DateRangeState = {
   mode: DateRangeMode;
   cursorMs: number;
@@ -16,7 +18,7 @@ type DateRangeState = {
   setCustomRange: (from: string, to: string) => void;
 };
 
-function buildInstantRangeQuery({
+export function buildInstantRangeQuery({
   mode,
   cursorMs,
   customFrom,
@@ -32,6 +34,20 @@ function buildInstantRangeQuery({
   }
   if (mode === "month") return { from: new Date(y, m, 1), to: new Date(y, m + 1, 0) };
   return { from: new Date(y, 0, 1), to: new Date(y, 11, 31) };
+}
+
+export function snapshotDateRangeDraft(): DateRangeDraft {
+  const { mode, cursorMs, customFrom, customTo } = useDateRangeStore.getState();
+  return { mode, cursorMs, customFrom, customTo };
+}
+
+export function commitDateRangeDraft(draft: DateRangeDraft): void {
+  const { setMode, setCursor, setCustomRange } = useDateRangeStore.getState();
+  setMode(draft.mode);
+  setCursor(new Date(draft.cursorMs));
+  if (draft.mode === "custom" && draft.customFrom && draft.customTo) {
+    setCustomRange(draft.customFrom, draft.customTo);
+  }
 }
 
 export function useInstantRangeQuery() {

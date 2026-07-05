@@ -17,12 +17,20 @@ export interface BarXAxisProps {
 interface BarXAxisLabelProps {
   label: string;
   x: number;
+  justifyContent: "flex-start" | "center" | "flex-end";
   crosshairX: number | null;
   isHovering: boolean;
   tickerHalfWidth: number;
 }
 
-function BarXAxisLabel({ label, x, crosshairX, isHovering, tickerHalfWidth }: BarXAxisLabelProps) {
+function BarXAxisLabel({
+  label,
+  x,
+  justifyContent,
+  crosshairX,
+  isHovering,
+  tickerHalfWidth,
+}: BarXAxisLabelProps) {
   const fadeBuffer = 20;
   const fadeRadius = tickerHalfWidth + fadeBuffer;
 
@@ -36,7 +44,7 @@ function BarXAxisLabel({ label, x, crosshairX, isHovering, tickerHalfWidth }: Ba
     }
   }
 
-  // Zero-width container approach for perfect centering
+  // Zero-width anchor: align start/end at edges, center for middle labels
   return (
     <div
       className="absolute"
@@ -45,7 +53,7 @@ function BarXAxisLabel({ label, x, crosshairX, isHovering, tickerHalfWidth }: Ba
         bottom: 12,
         width: 0,
         display: "flex",
-        justifyContent: "center",
+        justifyContent,
       }}
     >
       <motion.span
@@ -117,10 +125,13 @@ const BarXAxisInner = memo(function BarXAxisInner({
 
   return createPortal(
     <div className="pointer-events-none absolute inset-0">
-      {labelsToShow.map((item) => (
+      {labelsToShow.map((item, index) => (
         <BarXAxisLabel
           crosshairX={crosshairX}
           isHovering={isHovering}
+          justifyContent={
+            index === 0 ? "flex-start" : index === labelsToShow.length - 1 ? "flex-end" : "center"
+          }
           key={`${item.label}-${item.x}`}
           label={item.label}
           tickerHalfWidth={tickerHalfWidth}

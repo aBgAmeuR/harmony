@@ -11,6 +11,7 @@ export const getRouter = () => {
     defaultPreloadStaleTime: 1000 * 60 * 60, // 1h
     context: { queryClient },
     defaultPendingComponent: () => <Loader />,
+    defaultPendingMs: 1000,
     defaultNotFoundComponent: () => <div>Not Found</div>,
     Wrap: ({ children }) => <>{children}</>,
   });

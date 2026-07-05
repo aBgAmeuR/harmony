@@ -171,11 +171,13 @@ function RadarChartInner({
 
   return (
     <RadarProvider value={contextValue}>
-      <svg aria-hidden="true" height={size} style={{ overflow: "visible" }} width={size}>
-        <Group left={size / 2} top={size / 2}>
-          {children}
-        </Group>
-      </svg>
+      <div className="flex items-center justify-center" style={{ width, height }}>
+        <svg aria-hidden="true" height={size} style={{ overflow: "visible" }} width={size}>
+          <Group left={size / 2} top={size / 2}>
+            {children}
+          </Group>
+        </svg>
+      </div>
     </RadarProvider>
   );
 }
