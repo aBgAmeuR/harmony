@@ -1,12 +1,6 @@
 import { ArrowExpandIcon, Icon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@harmony/ui/components/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@harmony/ui/components/card";
 import { useQuery } from "@tanstack/react-query";
 
 import { FormattedMetric } from "@/components/format/formatted-metric";

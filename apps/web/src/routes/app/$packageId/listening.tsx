@@ -5,17 +5,17 @@ import { Header } from "@/components/layout/header/header";
 import { ActiveDaysWidget } from "@/features/listening/widgets/active-days-widget";
 import { DaysOfWeekWidget } from "@/features/listening/widgets/days-of-week-widget";
 import { GenresWidget } from "@/features/listening/widgets/genres-widget";
+import { ListeningStyleWidget } from "@/features/listening/widgets/listening-style-widget";
 import { ListeningTimeWidget } from "@/features/listening/widgets/listening-time-widget";
 import { MonthlyActivityWidget } from "@/features/listening/widgets/monthly-activity-widget";
-import { ReleaseYearWidget } from "@/features/listening/widgets/release-year-widget";
-import { TotalStreamsWidget } from "@/features/listening/widgets/total-streams-widget";
-import { UniqueTracksWidget } from "@/features/listening/widgets/unique-tracks-widget";
-import { query } from "@/lib/query";
 import { PeakHoursWidget } from "@/features/listening/widgets/peak-hours-widget";
 import { PlatformsWidget } from "@/features/listening/widgets/platforms-widget";
-import { ListeningStyleWidget } from "@/features/listening/widgets/listening-style-widget";
+import { ReleaseYearWidget } from "@/features/listening/widgets/release-year-widget";
+import { TotalStreamsWidget } from "@/features/listening/widgets/total-streams-widget";
 import { TrackEngagementWidget } from "@/features/listening/widgets/track-engagement-widget";
+import { UniqueTracksWidget } from "@/features/listening/widgets/unique-tracks-widget";
 import { WhenYouListenWidget } from "@/features/listening/widgets/when-you-listen-widget";
+import { query } from "@/lib/query";
 
 export const Route = createFileRoute("/app/$packageId/listening")({
   ssr: false,
@@ -47,7 +47,7 @@ function RouteComponent() {
             <div className="col-span-2 lg:col-span-3 lg:row-start-2">
               <MonthlyActivityWidget />
             </div>
-            <div className="h-full col-span-2 self-start lg:col-span-1 lg:col-start-4 lg:row-start-2">
+            <div className="col-span-2 h-full self-start lg:col-span-1 lg:col-start-4 lg:row-start-2">
               <DaysOfWeekWidget />
             </div>
           </div>

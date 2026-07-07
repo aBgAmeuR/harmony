@@ -1,3 +1,5 @@
+import type { AsyncDuckDBConnection } from "@duckdb/duckdb-wasm";
+
 import { DuckDBNotInitializedError } from "./error";
 import { useDbStore } from "./store";
 
@@ -9,29 +11,50 @@ export {
   DuckDBPackageNotFoundError,
 } from "./error";
 
+export type BenchmarkQueryResult<T> = {
+  rows: T[];
+  queryMs: number;
+  toArrayMs: number;
+};
+
+async function executeTimedQuery<T>(
+  conn: AsyncDuckDBConnection,
+  query: string,
+): Promise<BenchmarkQueryResult<T>> {
+  const start = performance.now();
+  const result = await conn.query(query);
+  const queryMs = performance.now() - start;
+
+  const startToArray = performance.now();
+  const rows = result.toArray() as T[];
+  const toArrayMs = performance.now() - startToArray;
+
+  return { rows, queryMs, toArrayMs };
+}
+
+function getConnection(): AsyncDuckDBConnection {
+  const conn = useDbStore.getState().conn;
+  if (!conn) {
+    throw new DuckDBNotInitializedError();
+  }
+  return conn;
+}
+
 export const db = {
   async init(packageId: string) {
     return await useDbStore.getState().initialize(packageId);
   },
   async query<T>(query: string): Promise<T[]> {
-    const conn = useDbStore.getState().conn;
-    if (!conn) {
-      throw new DuckDBNotInitializedError();
-    }
-
-    const start = performance.now();
-    const result = await conn.query(query);
-    const durationMs = performance.now() - start;
-
-    const startToArray = performance.now();
-    const array = result.toArray() as T[];
-    const durationToArrayMs = performance.now() - startToArray;
+    const { rows, queryMs, toArrayMs } = await executeTimedQuery<T>(getConnection(), query);
     console.log({
-      durationToArrayMs: durationToArrayMs.toFixed(2) + "ms",
-      durationMs: durationMs.toFixed(2) + "ms",
+      durationToArrayMs: toArrayMs.toFixed(2) + "ms",
+      durationMs: queryMs.toFixed(2) + "ms",
       query,
     });
-    return array;
+    return rows;
+  },
+  async queryBenchmark<T>(query: string): Promise<BenchmarkQueryResult<T>> {
+    return executeTimedQuery<T>(getConnection(), query);
   },
   status: () => useDbStore.getState().status,
   error: () => useDbStore.getState().error,

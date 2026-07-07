@@ -2,12 +2,7 @@ import { db, DuckDBFetchError, DuckDBPackageNotFoundError } from "@harmony/duckd
 import { Alert02Icon, Icon, Loading03Icon, RefreshIcon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
 import { SidebarInset, SidebarProvider } from "@harmony/ui/components/sidebar";
-import {
-  createFileRoute,
-  Link,
-  Outlet,
-  type ErrorComponentProps,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, type ErrorComponentProps } from "@tanstack/react-router";
 
 import { Icons } from "@/components/icons";
 import { AppSidebar } from "@/components/layout/sidebar/app-sidebar";
@@ -68,13 +63,13 @@ function RouteComponent() {
 
   return (
     // <ProgressProvider options={{ showSpinner: false }} color="#1ED760">
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          {/* <Progress /> */}
-          <Outlet />
-        </SidebarInset>
-      </SidebarProvider>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        {/* <Progress /> */}
+        <Outlet />
+      </SidebarInset>
+    </SidebarProvider>
     // </ProgressProvider>
   );
 }
