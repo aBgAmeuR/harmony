@@ -46,6 +46,8 @@ rand = "0.9"
 zip = "8.6"
 regex = "1.12"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
+base64 = "0.22"
 strsim = "0.11"
 futures = "0.3"
 tempfile = "3"
@@ -57,10 +59,10 @@ opentelemetry = "0.31"
 tracing-opentelemetry = "0.32.1"
 axum-tracing-opentelemetry = "0.33.1"
 init-tracing-opentelemetry = { version = "0.37.0", features = [
-    "otlp",
-    "tracing_subscriber_ext",
-    "metrics",
-    "logs",
+  "otlp",
+  "tracing_subscriber_ext",
+  "metrics",
+  "logs",
 ] }
 
 [profile.dev]

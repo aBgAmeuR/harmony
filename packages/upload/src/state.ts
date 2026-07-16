@@ -1,9 +1,4 @@
-import type {
-  PipelineEvent,
-  PipelineState,
-  PipelineStep,
-  StepId,
-} from "./types";
+import type { PipelineEvent, PipelineState, PipelineStep, StepId } from "./types";
 
 export const STEP_ORDER: StepId[] = [
   "extract_archive",
@@ -37,23 +32,17 @@ export function createInitialPipelineState(): PipelineState {
   };
 }
 
-export const INITIAL_PIPELINE_STATE: PipelineState =
-  createInitialPipelineState();
+export const INITIAL_PIPELINE_STATE: PipelineState = createInitialPipelineState();
 
 function updateStep(
   steps: PipelineStep[],
   stepId: StepId,
   patch: Partial<PipelineStep>,
 ): PipelineStep[] {
-  return steps.map((step) =>
-    step.id === stepId ? { ...step, ...patch } : step,
-  );
+  return steps.map((step) => (step.id === stepId ? { ...step, ...patch } : step));
 }
 
-export function reducePipelineEvent(
-  state: PipelineState,
-  event: PipelineEvent,
-): PipelineState {
+export function reducePipelineEvent(state: PipelineState, event: PipelineEvent): PipelineState {
   if (event.seq <= state.seq) {
     return state;
   }

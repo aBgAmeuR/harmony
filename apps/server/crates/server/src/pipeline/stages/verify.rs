@@ -91,7 +91,8 @@ mod tests {
         DeezerAlbum {
             id,
             title: format!("Album {id}"),
-            cover: String::new(),
+            image_uri: String::new(),
+            image: None,
             release_date: None,
             genres: Vec::new(),
             nb_tracks: 1,

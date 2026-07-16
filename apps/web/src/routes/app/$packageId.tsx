@@ -1,20 +1,8 @@
-import { BProgress } from "@bprogress/core";
-import { Progress, ProgressProvider } from "@bprogress/react";
-import {
-  db,
-  DuckDBFetchError,
-  DuckDBPackageNotFoundError,
-} from "@harmony/duckdb";
+import { db, DuckDBFetchError, DuckDBPackageNotFoundError } from "@harmony/duckdb";
 import { Alert02Icon, Icon, Loading03Icon, RefreshIcon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
 import { SidebarInset, SidebarProvider } from "@harmony/ui/components/sidebar";
-import {
-  createFileRoute,
-  Link,
-  Outlet,
-  useRouter,
-  type ErrorComponentProps,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, type ErrorComponentProps } from "@tanstack/react-router";
 
 import { Icons } from "@/components/icons";
 import { AppSidebar } from "@/components/layout/sidebar/app-sidebar";
@@ -40,8 +28,7 @@ function getErrorContent(error: Error | null) {
 
   return {
     title: "Couldn't set up your database",
-    description:
-      error?.message ?? "Something went wrong while loading your package data.",
+    description: error?.message ?? "Something went wrong while loading your package data.",
     showUpload: false,
   };
 }
@@ -69,24 +56,21 @@ export const Route = createFileRoute("/app/$packageId")({
 });
 
 function RouteComponent() {
-  const router = useRouter();
+  // const router = useRouter();
 
-  router.subscribe(
-    "onBeforeNavigate",
-    ({ pathChanged }) => pathChanged && BProgress.start(),
-  );
-  router.subscribe("onResolved", () => BProgress.done());
+  // router.subscribe("onBeforeNavigate", ({ pathChanged }) => pathChanged && BProgress.start());
+  // router.subscribe("onResolved", () => BProgress.done());
 
   return (
-    <ProgressProvider options={{ showSpinner: false }} color="#1ED760">
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <Progress />
-          <Outlet />
-        </SidebarInset>
-      </SidebarProvider>
-    </ProgressProvider>
+    // <ProgressProvider options={{ showSpinner: false }} color="#1ED760">
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        {/* <Progress /> */}
+        <Outlet />
+      </SidebarInset>
+    </SidebarProvider>
+    // </ProgressProvider>
   );
 }
 
@@ -105,8 +89,7 @@ function PendingComponent() {
 
 function ErrorComponent({ error }: ErrorComponentProps) {
   const storedError = db.error();
-  const resolvedError =
-    error instanceof Error ? error : (storedError ?? new Error(String(error)));
+  const resolvedError = error instanceof Error ? error : (storedError ?? new Error(String(error)));
   const { title, description, showUpload } = getErrorContent(resolvedError);
 
   return (
@@ -118,9 +101,7 @@ function ErrorComponent({ error }: ErrorComponentProps) {
 
         <div className="space-y-1">
           <h1 className="text-sm font-medium text-foreground">{title}</h1>
-          <p className="text-sm text-balance text-muted-foreground">
-            {description}
-          </p>
+          <p className="text-sm text-balance text-muted-foreground">{description}</p>
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-2">

@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from "react";
-import { INITIAL_PIPELINE_STATE } from "../state";
+
 import type { Pipeline } from "../pipeline";
+
+import { INITIAL_PIPELINE_STATE } from "../state";
 
 export function usePipeline(pipeline: Pipeline | null) {
   const state = useSyncExternalStore(

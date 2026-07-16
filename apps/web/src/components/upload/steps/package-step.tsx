@@ -1,4 +1,3 @@
-import { useRef, useState } from "react";
 import { Icon, Cancel01FreeIcons, FolderUploadIcon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
 import {
@@ -10,6 +9,7 @@ import {
   CardTitle,
 } from "@harmony/ui/components/card";
 import { cn } from "@harmony/ui/lib/utils";
+import { useRef, useState } from "react";
 
 interface PackageStepProps {
   packageFile: File | null;
@@ -31,11 +31,7 @@ function isZipFile(file: File): boolean {
   return file.name.toLowerCase().endsWith(".zip");
 }
 
-export function PackageStep({
-  packageFile,
-  onPackageSelect,
-  onContinue,
-}: PackageStepProps) {
+export function PackageStep({ packageFile, onPackageSelect, onContinue }: PackageStepProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -92,10 +88,8 @@ export function PackageStep({
         <CardTitle>Upload your package</CardTitle>
         <CardDescription>
           Select or drag and drop your{" "}
-          <span className="font-mono text-xs bg-muted px-1 py-0.5 rounded">
-            .zip
-          </span>{" "}
-          file to get started.
+          <span className="rounded bg-muted px-1 py-0.5 font-mono text-xs">.zip</span> file to get
+          started.
         </CardDescription>
       </CardHeader>
 
@@ -108,13 +102,13 @@ export function PackageStep({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           className={cn(
-            "relative group flex flex-col items-center justify-center gap-3 rounded-lg",
-            "h-44 w-full transition-colors cursor-pointer outline-none",
-            "ring-1 ring-border/50 bg-background/50 hover:bg-background/30",
+            "group relative flex flex-col items-center justify-center gap-3 rounded-lg",
+            "h-44 w-full cursor-pointer transition-colors outline-none",
+            "bg-background/50 ring-1 ring-border/50 hover:bg-background/30",
             isDragOver && "bg-background/30 ring-primary/50",
             "after:absolute after:inset-1 after:rounded-md",
             "after:border after:border-dashed after:border-border/50",
-            "hover:after:border-border/80 after:pointer-events-none after:transition-colors",
+            "after:pointer-events-none after:transition-colors hover:after:border-border/80",
             isDragOver && "after:border-primary/60",
           )}
         >
@@ -125,7 +119,7 @@ export function PackageStep({
             onChange={handleInputChange}
             className="hidden"
           />
-          <div className="grid place-items-center size-8 rounded-md ring-1 ring-border/50 bg-muted text-muted-foreground group-hover:text-foreground group-hover:bg-background transition-all">
+          <div className="grid size-8 place-items-center rounded-md bg-muted text-muted-foreground ring-1 ring-border/50 transition-all group-hover:bg-background group-hover:text-foreground">
             <Icon icon={FolderUploadIcon} size={16} />
           </div>
           <div className="text-center">
@@ -135,7 +129,7 @@ export function PackageStep({
                 click to upload
               </span>
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="mt-1 text-xs text-muted-foreground">
               Supports <span className="font-mono">.zip</span> files up to 50 MB
             </p>
           </div>
@@ -144,11 +138,11 @@ export function PackageStep({
         {error ? <p className="text-xs text-destructive">{error}</p> : null}
 
         {packageFile && (
-          <div className="flex items-center gap-1 rounded-lg border px-3 py-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate flex-1">
+          <div className="flex min-w-0 items-center gap-1 rounded-lg border px-3 py-1">
+            <p className="flex-1 truncate text-sm font-medium text-foreground">
               {packageFile.name}
             </p>
-            <p className="text-xs text-muted-foreground font-mono">
+            <p className="font-mono text-xs text-muted-foreground">
               {formatBytes(packageFile.size)}
             </p>
             <Button

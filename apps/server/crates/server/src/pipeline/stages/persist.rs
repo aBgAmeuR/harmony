@@ -74,18 +74,21 @@ fn build_artists_df(ctx: &PipelineContext) -> Result<DataFrame, PersistError> {
 
     let mut ids = Vec::with_capacity(ctx.deezer_artists.len());
     let mut names = Vec::with_capacity(ctx.deezer_artists.len());
-    let mut pictures = Vec::with_capacity(ctx.deezer_artists.len());
+    let mut images = Vec::with_capacity(ctx.deezer_artists.len());
+    let mut image_uris = Vec::with_capacity(ctx.deezer_artists.len());
 
     for (id, artist) in &ctx.deezer_artists {
         ids.push(*id as u32);
         names.push(artist.name.clone());
-        pictures.push(artist.picture.clone());
+        images.push(artist.image.clone());
+        image_uris.push(artist.image_uri.clone());
     }
 
     DataFrame::new(vec![
         Series::new("id".into(), ids).into(),
         Series::new("name".into(), names).into(),
-        Series::new("picture".into(), pictures).into(),
+        Series::new("image".into(), images).into(),
+        Series::new("image_uri".into(), image_uris).into(),
     ])
     .map_err(PersistError::from)
 }
@@ -97,7 +100,8 @@ fn build_albums_df(ctx: &PipelineContext) -> Result<DataFrame, PersistError> {
 
     let mut ids = Vec::with_capacity(ctx.deezer_albums.len());
     let mut titles = Vec::with_capacity(ctx.deezer_albums.len());
-    let mut covers = Vec::with_capacity(ctx.deezer_albums.len());
+    let mut images = Vec::with_capacity(ctx.deezer_albums.len());
+    let mut image_uris = Vec::with_capacity(ctx.deezer_albums.len());
     let mut release_dates = Vec::with_capacity(ctx.deezer_albums.len());
     let mut genres = Vec::with_capacity(ctx.deezer_albums.len());
     let mut nb_tracks = Vec::with_capacity(ctx.deezer_albums.len());
@@ -108,7 +112,8 @@ fn build_albums_df(ctx: &PipelineContext) -> Result<DataFrame, PersistError> {
     for (id, album) in &ctx.deezer_albums {
         ids.push(*id as u32);
         titles.push(album.title.clone());
-        covers.push(album.cover.clone());
+        images.push(album.image.clone());
+        image_uris.push(album.image_uri.clone());
         release_dates.push(parse_date(album.release_date.as_deref()));
         genres.push(album.genres.clone());
         nb_tracks.push(album.nb_tracks as i32);
@@ -120,7 +125,8 @@ fn build_albums_df(ctx: &PipelineContext) -> Result<DataFrame, PersistError> {
     DataFrame::new(vec![
         Series::new("id".into(), ids).into(),
         Series::new("title".into(), titles).into(),
-        Series::new("cover".into(), covers).into(),
+        Series::new("image".into(), images).into(),
+        Series::new("image_uri".into(), image_uris).into(),
         date_series("release_date", release_dates).into(),
         string_list_series("genres", &genres).into(),
         Series::new("nb_tracks".into(), nb_tracks).into(),
@@ -217,13 +223,15 @@ fn create_tables(conn: &duckdb::Connection) -> Result<(), PersistError> {
         CREATE TABLE artists (
             id UINTEGER PRIMARY KEY,
             name VARCHAR,
-            picture VARCHAR
+            image VARCHAR,
+            image_uri VARCHAR
         );
 
         CREATE TABLE albums (
             id UINTEGER PRIMARY KEY,
             title VARCHAR,
-            cover VARCHAR,
+            image VARCHAR,
+            image_uri VARCHAR,
             release_date DATE,
             genres VARCHAR[],
             nb_tracks INTEGER,
@@ -280,7 +288,8 @@ fn create_views(conn: &duckdb::Connection) -> Result<(), PersistError> {
                 FROM unnest(al.artists) WITH ORDINALITY AS u(artist_id, ordinality)
                 JOIN artists a ON a.id = u.artist_id
             ) AS album_artists_description,
-            al.cover AS image
+            al.image AS image,
+            al.image_uri AS image_uri
         FROM tracks t
         LEFT JOIN albums al ON t.album_id = al.id;
         ",
@@ -380,7 +389,8 @@ fn empty_artists_df() -> DataFrame {
     DataFrame::empty_with_schema(&Schema::from_iter([
         Field::new("id".into(), DataType::UInt32),
         Field::new("name".into(), DataType::String),
-        Field::new("picture".into(), DataType::String),
+        Field::new("image".into(), DataType::String),
+        Field::new("image_uri".into(), DataType::String),
     ]))
 }
 
@@ -388,7 +398,8 @@ fn empty_albums_df() -> DataFrame {
     DataFrame::empty_with_schema(&Schema::from_iter([
         Field::new("id".into(), DataType::UInt32),
         Field::new("title".into(), DataType::String),
-        Field::new("cover".into(), DataType::String),
+        Field::new("image".into(), DataType::String),
+        Field::new("image_uri".into(), DataType::String),
         Field::new("release_date".into(), DataType::Date),
         Field::new(
             "genres".into(),
@@ -464,11 +475,11 @@ mod tests {
 
         conn.execute_batch(
             r"
-            INSERT INTO artists (id, name, picture) VALUES
-                (1, 'Artist A', 'pic-a'),
-                (2, 'Artist B', 'pic-b');
-            INSERT INTO albums (id, title, cover, release_date, genres, nb_tracks, duration, album_type, artists)
-                VALUES (10, 'Album', 'cover.jpg', DATE '2024-01-01', ['Pop'], 1, 180, 'Album', [1, 2]);
+            INSERT INTO artists (id, name, image, image_uri) VALUES
+                (1, 'Artist A', 'data:image/jpeg;base64,artist-a', 'https://api.deezer.com/artist/1/image'),
+                (2, 'Artist B', NULL, 'https://api.deezer.com/artist/2/image');
+            INSERT INTO albums (id, title, image, image_uri, release_date, genres, nb_tracks, duration, album_type, artists)
+                VALUES (10, 'Album', 'data:image/jpeg;base64,cover', 'https://api.deezer.com/album/10/image', DATE '2024-01-01', ['Pop'], 1, 180, 'Album', [1, 2]);
             INSERT INTO tracks (id, title, duration, track_position, disk_number, release_date, album_id, artists)
                 VALUES (100, 'Track One', 180, 1, 1, DATE '2024-01-01', 10, [1, 2]);
             ",
@@ -477,7 +488,7 @@ mod tests {
         create_views(&conn)?;
 
         let mut stmt = conn.prepare(
-            "SELECT track_id, track_name, album_id, album_title, track_artists_description, album_artists_description, image FROM v_tracks_info WHERE track_id = 100",
+            "SELECT track_id, track_name, album_id, album_title, track_artists_description, album_artists_description, image, image_uri FROM v_tracks_info WHERE track_id = 100",
         )?;
         let row = stmt.query_row([], |row| {
             Ok((
@@ -488,6 +499,7 @@ mod tests {
                 row.get::<_, Option<String>>(4)?,
                 row.get::<_, Option<String>>(5)?,
                 row.get::<_, Option<String>>(6)?,
+                row.get::<_, Option<String>>(7)?,
             ))
         })?;
 
@@ -497,7 +509,8 @@ mod tests {
         assert_eq!(row.3.as_deref(), Some("Album"));
         assert_eq!(row.4.as_deref(), Some("Artist A, Artist B"));
         assert_eq!(row.5.as_deref(), Some("Artist A, Artist B"));
-        assert_eq!(row.6.as_deref(), Some("cover.jpg"));
+        assert_eq!(row.6.as_deref(), Some("data:image/jpeg;base64,cover"));
+        assert_eq!(row.7.as_deref(), Some("https://api.deezer.com/album/10/image"));
 
         Ok(())
     }

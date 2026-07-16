@@ -1,14 +1,10 @@
 import * as duckdb from "@duckdb/duckdb-wasm";
-
-import {
-  DuckDBEnvironmentError,
-  DuckDBFetchError,
-  DuckDBPackageNotFoundError,
-} from "./error";
 import eh_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url";
 import mvp_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url";
 import duckdb_wasm_eh from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
 import duckdb_wasm from "@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url";
+
+import { DuckDBEnvironmentError, DuckDBFetchError, DuckDBPackageNotFoundError } from "./error";
 
 const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
   mvp: {
@@ -36,7 +32,7 @@ export const getDuckDBInstance = async () => {
     const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
 
     const worker = new Worker(bundle.mainWorker!);
-    const logger = new duckdb.ConsoleLogger();
+    const logger = new duckdb.VoidLogger();
     const db = new duckdb.AsyncDuckDB(logger, worker);
 
     await db.instantiate(bundle.mainModule, bundle.pthreadWorker);

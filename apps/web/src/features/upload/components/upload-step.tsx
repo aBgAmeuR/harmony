@@ -1,6 +1,7 @@
-import { WizardStep } from "@/components/upload/types";
 import { Button } from "@harmony/ui/components/button";
 import { cn } from "@harmony/ui/lib/utils";
+
+import { WizardStep } from "@/components/upload/types";
 
 type UploadStepProps = {
   index: WizardStep;
@@ -28,14 +29,11 @@ export const UploadStep = ({
       disabled={isDisabled}
       onClick={() => onStepClick(stepIndex)}
       variant="ghost"
-      className={cn(
-        "w-full justify-start",
-        isDisabled && "text-muted-foreground/40",
-      )}
+      className={cn("w-full justify-start", isDisabled && "text-muted-foreground/40")}
     >
       <div
         className={cn(
-          "size-2 rounded-full m-1",
+          "m-1 size-2 rounded-full",
           isFuture && "border border-muted-foreground/30",
           isBeforeMin && "bg-foreground/60",
           !isDisabled && "bg-foreground",

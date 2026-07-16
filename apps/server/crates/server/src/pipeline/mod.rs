@@ -1,5 +1,6 @@
 mod deezer;
 mod error;
+mod image_encode;
 mod stages;
 mod types;
 

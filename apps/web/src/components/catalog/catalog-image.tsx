@@ -1,5 +1,4 @@
 import { Icon, MusicNote03Icon } from "@harmony/icons";
-import { Avatar, AvatarFallback, AvatarImage } from "@harmony/ui/components/avatar";
 import { cn } from "@harmony/ui/lib/utils";
 
 type CatalogImageProps = {
@@ -7,13 +6,30 @@ type CatalogImageProps = {
   alt: string;
   className?: string;
 };
+
 export const CatalogImage = ({ image, alt, className }: CatalogImageProps) => {
+  if (!image) {
+    return (
+      <div
+        className={cn(
+          "flex size-8 shrink-0 items-center justify-center rounded-md bg-muted",
+          className,
+        )}
+      >
+        <Icon icon={MusicNote03Icon} className="size-3" />
+      </div>
+    );
+  }
+
   return (
-    <Avatar className={cn("size-8 rounded-md after:border-0", className)}>
-      <AvatarImage src={image ?? undefined} alt={alt} className="rounded-sm" />
-      <AvatarFallback className="rounded-md text-[10px]">
-        <Icon icon={MusicNote03Icon} strokeWidth={1} className="size-3" />
-      </AvatarFallback>
-    </Avatar>
+    <img
+      src={image}
+      alt={alt}
+      width={32}
+      height={32}
+      loading="lazy"
+      decoding="async"
+      className={cn("size-8 shrink-0 rounded-md object-cover", className)}
+    />
   );
 };

@@ -1,4 +1,6 @@
+import { Alert02Icon, Cancel01Icon, Icon, Tick02Icon } from "@harmony/icons";
 import { Badge } from "@harmony/ui/components/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/tooltip";
 import { PipelineStep, StepId } from "@harmony/upload";
 
 import {
@@ -7,12 +9,6 @@ import {
   PipelineItemIcon,
   PipelineItemLabel,
 } from "@/components/pipeline";
-import { Alert02Icon, Cancel01Icon, Icon, Tick02Icon } from "@harmony/icons";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@harmony/ui/components/tooltip";
 
 export function Pipeline({ steps }: { steps: PipelineStep[] }) {
   return (
@@ -58,11 +54,11 @@ function PipelineItemOutput({
         <Tooltip>
           <TooltipTrigger render={<Badge variant="secondary" />}>
             <div className="flex items-center gap-0.5">
-              <Icon icon={Tick02Icon} className="text-primary size-3" />
+              <Icon icon={Tick02Icon} className="size-3 text-primary" />
               {validated.toLocaleString()}
             </div>
             <div className="flex items-center gap-0.5">
-              <Icon icon={Cancel01Icon} className="text-destructive size-3" />
+              <Icon icon={Cancel01Icon} className="size-3 text-destructive" />
               {invalid.toLocaleString()}
             </div>
           </TooltipTrigger>
@@ -81,11 +77,11 @@ function PipelineItemOutput({
         <Tooltip>
           <TooltipTrigger render={<Badge variant="secondary" />}>
             <div className="flex items-center gap-0.5">
-              <Icon icon={Tick02Icon} className="text-primary size-3" />
+              <Icon icon={Tick02Icon} className="size-3 text-primary" />
               {kept.toLocaleString()}
             </div>
             <div className="flex items-center gap-0.5">
-              <Icon icon={Cancel01Icon} className="text-destructive size-3" />
+              <Icon icon={Cancel01Icon} className="size-3 text-destructive" />
               {rejected.toLocaleString()}
             </div>
           </TooltipTrigger>
@@ -100,25 +96,20 @@ function PipelineItemOutput({
       const resolved = output?.resolved as number;
       const missed = output?.missed as number;
       const errors = output?.errors as number;
-      if (
-        resolved === undefined ||
-        missed === undefined ||
-        errors === undefined
-      )
-        return null;
+      if (resolved === undefined || missed === undefined || errors === undefined) return null;
       return (
         <Tooltip>
           <TooltipTrigger render={<Badge variant="secondary" />}>
             <div className="flex items-center gap-0.5">
-              <Icon icon={Tick02Icon} className="text-primary size-3" />
+              <Icon icon={Tick02Icon} className="size-3 text-primary" />
               {resolved.toLocaleString()}
             </div>
             <div className="flex items-center gap-0.5">
-              <Icon icon={Alert02Icon} className="text-yellow-600 size-3" />
+              <Icon icon={Alert02Icon} className="size-3 text-yellow-600" />
               {missed.toLocaleString()}
             </div>
             <div className="flex items-center gap-0.5">
-              <Icon icon={Cancel01Icon} className="text-destructive size-3" />
+              <Icon icon={Cancel01Icon} className="size-3 text-destructive" />
               {errors.toLocaleString()}
             </div>
           </TooltipTrigger>
@@ -134,17 +125,16 @@ function PipelineItemOutput({
     case "enrich_tracks":
       const tracksCompleted = output?.completed as number;
       const tracksFailed = output?.failed as number;
-      if (tracksCompleted === undefined || tracksFailed === undefined)
-        return null;
+      if (tracksCompleted === undefined || tracksFailed === undefined) return null;
       return (
         <Tooltip>
           <TooltipTrigger render={<Badge variant="secondary" />}>
             <div className="flex items-center gap-0.5">
-              <Icon icon={Tick02Icon} className="text-primary size-3" />
+              <Icon icon={Tick02Icon} className="size-3 text-primary" />
               {tracksCompleted.toLocaleString()}
             </div>
             <div className="flex items-center gap-0.5">
-              <Icon icon={Cancel01Icon} className="text-destructive size-3" />
+              <Icon icon={Cancel01Icon} className="size-3 text-destructive" />
               {tracksFailed.toLocaleString()}
             </div>
           </TooltipTrigger>
@@ -158,17 +148,16 @@ function PipelineItemOutput({
     case "enrich_albums":
       const albumsCompleted = output?.completed as number;
       const albumsFailed = output?.failed as number;
-      if (albumsCompleted === undefined || albumsFailed === undefined)
-        return null;
+      if (albumsCompleted === undefined || albumsFailed === undefined) return null;
       return (
         <Tooltip>
           <TooltipTrigger render={<Badge variant="secondary" />}>
             <div className="flex items-center gap-0.5">
-              <Icon icon={Tick02Icon} className="text-primary size-3" />
+              <Icon icon={Tick02Icon} className="size-3 text-primary" />
               {albumsCompleted.toLocaleString()}
             </div>
             <div className="flex items-center gap-0.5">
-              <Icon icon={Cancel01Icon} className="text-destructive size-3" />
+              <Icon icon={Cancel01Icon} className="size-3 text-destructive" />
               {albumsFailed.toLocaleString()}
             </div>
           </TooltipTrigger>
@@ -195,7 +184,7 @@ function PipelineItemOutput({
         <Tooltip>
           <TooltipTrigger render={<Badge variant="secondary" />}>
             <div className="flex items-center gap-0.5">
-              <Icon icon={Tick02Icon} className="text-primary size-3" />
+              <Icon icon={Tick02Icon} className="size-3 text-primary" />
               {interactions.toLocaleString()}
             </div>
           </TooltipTrigger>

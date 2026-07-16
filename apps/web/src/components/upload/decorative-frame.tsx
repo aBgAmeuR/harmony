@@ -12,13 +12,13 @@ export function DecorativeFrame({ cardHeight }: DecorativeFrameProps) {
   return (
     <>
       {/* Vertical dashed rail */}
-      <div className="pointer-events-none fixed inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-152">
-        <div className="absolute h-full -left-[6px] w-[calc(100%+12px)] border-x border-y-0 border-dashed border-border/50" />
+      <div className="pointer-events-none fixed inset-y-0 left-1/2 w-full max-w-152 -translate-x-1/2">
+        <div className="absolute -left-[6px] h-full w-[calc(100%+12px)] border-x border-y-0 border-dashed border-border/50" />
       </div>
 
       {/* Horizontal dashed lines */}
       <div
-        className="pointer-events-none fixed inset-x-0 border-y border-x-0 border-dashed border-border/50"
+        className="pointer-events-none fixed inset-x-0 border-x-0 border-y border-dashed border-border/50"
         style={{
           top: CARD_TOP_PX - 40,
           height: cardHeight + 80,
@@ -28,30 +28,30 @@ export function DecorativeFrame({ cardHeight }: DecorativeFrameProps) {
 
       {/* Top corner markers */}
       <div
-        className="pointer-events-none fixed left-1/2 -translate-x-1/2 w-full max-w-152 z-10"
+        className="pointer-events-none fixed left-1/2 z-10 w-full max-w-152 -translate-x-1/2"
         style={{ top: CARD_TOP_PX - 40 - 3 }}
       >
         <div
-          className="absolute size-[7px] rounded-[1.5px] ring-1 ring-border/80 bg-background"
+          className="absolute size-[7px] rounded-[1.5px] bg-background ring-1 ring-border/80"
           style={{ left: "-9px" }}
         />
         <div
-          className="absolute size-[7px] rounded-[1.5px] ring-1 ring-border/80 bg-background rotate-90"
+          className="absolute size-[7px] rotate-90 rounded-[1.5px] bg-background ring-1 ring-border/80"
           style={{ right: "-9px" }}
         />
       </div>
 
       {/* Bottom corner markers */}
       <div
-        className="pointer-events-none fixed left-1/2 -translate-x-1/2 w-full max-w-152 z-10"
+        className="pointer-events-none fixed left-1/2 z-10 w-full max-w-152 -translate-x-1/2"
         style={{ top: bottomY + 40 - 3, transition: `top ${EASE}` }}
       >
         <div
-          className="absolute size-[7px] rounded-[1.5px] ring-1 ring-border/80 bg-background -rotate-90"
+          className="absolute size-[7px] -rotate-90 rounded-[1.5px] bg-background ring-1 ring-border/80"
           style={{ left: "-9px" }}
         />
         <div
-          className="absolute size-[7px] rounded-[1.5px] ring-1 ring-border/80 bg-background rotate-180"
+          className="absolute size-[7px] rotate-180 rounded-[1.5px] bg-background ring-1 ring-border/80"
           style={{ right: "-9px" }}
         />
       </div>

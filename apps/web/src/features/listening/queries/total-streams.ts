@@ -1,24 +1,45 @@
 import { db } from "@harmony/duckdb";
 
-import type { ListeningHabitMetric, ListeningHabitTrendRow, ListeningHabitValueRow } from "../types";
+import type {
+  ListeningHabitMetric,
+  ListeningHabitTrendRow,
+  ListeningHabitValueRow,
+} from "../types";
 
+import { buildListeningFilter, type ListeningRangeParams } from "./listening-filter";
 import { mapTrendRows } from "./map-trend";
 
-export const totalStreamsFn = async (): Promise<ListeningHabitMetric> => {
+export const totalStreamsFn = async (
+  params: ListeningRangeParams,
+): Promise<ListeningHabitMetric> => {
+  const { artistJoin, where, periodRange, periodExpr } = buildListeningFilter(params);
+
   const [valueRows, trendRows] = await Promise.all([
     db.query<ListeningHabitValueRow>(`
       SELECT COUNT(*)::INTEGER AS value
       FROM interactions i
-      WHERE i.ts IS NOT NULL
+      ${artistJoin}
+      ${where}
     `),
     db.query<ListeningHabitTrendRow>(`
+      WITH period_range AS (
+        ${periodRange}
+      ),
+      stats AS (
+        SELECT
+          ${periodExpr} AS period,
+          COUNT(*)::INTEGER AS value
+        FROM interactions i
+        ${artistJoin}
+        ${where}
+        GROUP BY ${periodExpr}
+      )
       SELECT
-        date_trunc('month', i.ts) AS month,
-        COUNT(*)::INTEGER AS value
-      FROM interactions i
-      WHERE i.ts IS NOT NULL
-      GROUP BY date_trunc('month', i.ts)
-      ORDER BY month
+        p.period AS month,
+        COALESCE(s.value, 0)::INTEGER AS value
+      FROM period_range p
+      LEFT JOIN stats s ON s.period = p.period
+      ORDER BY p.period
     `),
   ]);
 

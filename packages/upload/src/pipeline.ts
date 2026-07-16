@@ -1,10 +1,8 @@
-import { connectPipelineStream } from "./stream";
-import {
-  createInitialPipelineState,
-  reducePipelineEvent,
-} from "./state";
 import type { UploadClient } from "./client";
 import type { PipelineEvent, PipelineState } from "./types";
+
+import { createInitialPipelineState, reducePipelineEvent } from "./state";
+import { connectPipelineStream } from "./stream";
 
 export class Pipeline {
   private readonly listeners = new Set<() => void>();

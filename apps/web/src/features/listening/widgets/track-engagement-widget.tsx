@@ -1,12 +1,10 @@
-import { query } from "@/lib/query";
-
 import { defaultRadarColors, FunnelChart } from "@harmony/charts";
 import { useQuery } from "@tanstack/react-query";
 
+import { query } from "@/lib/query";
+
 export function TrackEngagementWidget() {
-  const { data = [] } = useQuery(
-    query.listeningHabits.trackEngagement.queryOptions(),
-  );
+  const { data = [] } = useQuery(query.listeningHabits.trackEngagement.queryOptions());
 
   return (
     <div className="flex flex-col">

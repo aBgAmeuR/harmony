@@ -1,19 +1,10 @@
-import { query } from "@/lib/query";
-
-import {
-  Bar,
-  BarChart,
-  BarXAxis,
-  chartCssVars,
-  ChartTooltip,
-  Grid,
-} from "@harmony/charts";
+import { Bar, BarChart, BarXAxis, chartCssVars, ChartTooltip, Grid } from "@harmony/charts";
 import { useQuery } from "@tanstack/react-query";
 
+import { query } from "@/lib/query";
+
 export function PeakHoursWidget() {
-  const { data = [] } = useQuery(
-    query.listeningHabits.peakHours.queryOptions(),
-  );
+  const { data = [] } = useQuery(query.listeningHabits.peakHours.queryOptions());
 
   return (
     <div className="flex flex-col">

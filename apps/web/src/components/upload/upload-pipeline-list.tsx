@@ -1,11 +1,9 @@
 import type { PipelineStep } from "@harmony/upload";
+
 import { Badge } from "@harmony/ui/components/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@harmony/ui/components/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/tooltip";
 import { cn } from "@harmony/ui/lib/utils";
+
 import {
   PipelineItem,
   PipelineItemDuration,
@@ -28,11 +26,7 @@ function StepProgressBadge({ step }: { step: PipelineStep }) {
 
   return (
     <Tooltip>
-      <TooltipTrigger
-        render={
-          <Badge variant="secondary" className="gap-1.5 shrink-0 me-1.5" />
-        }
-      >
+      <TooltipTrigger render={<Badge variant="secondary" className="me-1.5 shrink-0 gap-1.5" />}>
         <span className="text-xs text-muted-foreground">
           {current.toLocaleString()} / {total.toLocaleString()}
         </span>
@@ -49,7 +43,7 @@ function StepProgressBadge({ step }: { step: PipelineStep }) {
 
 export function UploadPipelineList({ steps, nowTs }: UploadPipelineListProps) {
   return (
-    <div className="flex flex-col gap-px overflow-hidden rounded-lg border divide-y divide-border/50">
+    <div className="flex flex-col gap-px divide-y divide-border/50 overflow-hidden rounded-lg border">
       {steps.map((step) => {
         return (
           <PipelineItem

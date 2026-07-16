@@ -1,9 +1,20 @@
 import { db } from "@harmony/duckdb";
 
 import { Catalog } from "@/components/catalog/catalog";
+import { interactionDateConditions, joinWhere } from "@/lib/sql/date-range";
 
-export const topAlbumsFn = async ({ artistId }: { artistId?: number }) => {
-  const whereClause = artistId ? `WHERE v.album_artist_ids @> ARRAY[${artistId}]` : "";
+type TopAlbumsParams = {
+  artistId?: number;
+  from: Date;
+  to: Date;
+};
+
+export const topAlbumsFn = async ({ artistId, from, to }: TopAlbumsParams) => {
+  const conditions = [
+    ...interactionDateConditions(from, to),
+    ...(artistId ? [`v.album_artist_ids @> ARRAY[${artistId}]`] : []),
+  ];
+
   return await db.query<Catalog>(`
     SELECT
       v.album_id AS id,
@@ -14,7 +25,7 @@ export const topAlbumsFn = async ({ artistId }: { artistId?: number }) => {
       SUM(i.ms_played) / 60000::INTEGER AS playtime
     FROM interactions i
     JOIN v_tracks_info v ON v.track_id = i.track_id
-    ${whereClause}
+    ${joinWhere(conditions)}
     GROUP BY v.album_id
     ORDER BY playtime DESC
     LIMIT 50
