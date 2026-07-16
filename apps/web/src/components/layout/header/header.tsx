@@ -12,7 +12,7 @@ type HeaderProps = {
 
 export function Header({ title, showArtistSelect = true }: HeaderProps) {
   return (
-    <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-2">
+    <header className="flex items-center justify-between gap-2 px-4 py-2">
       <div className="flex items-center gap-2">
         <h4 className="font-semibold tracking-tight">{title}</h4>
 

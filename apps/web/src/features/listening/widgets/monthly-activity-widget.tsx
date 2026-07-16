@@ -1,15 +1,21 @@
-import { Bar, BarChart, BarXAxis, chartCssVars, ChartTooltip, Grid } from "@harmony/charts";
+import { Bar, BarChart, ChartTooltip, Grid, XAxis } from "@harmony/charts/v2";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@harmony/ui/components/card";
 import { useQuery } from "@tanstack/react-query";
 
 import { query } from "@/lib/query";
+import { useArtistStore } from "@/lib/stores/artist-store";
+import { useInstantRangeQuery } from "@/lib/stores/date-range-store";
 
 export function MonthlyActivityWidget() {
-  const { data = [] } = useQuery(query.listeningHabits.monthlyActivity.queryOptions());
+  const artistId = useArtistStore((s) => s.artist?.id);
+  const { from, to } = useInstantRangeQuery();
+  const { data = [] } = useQuery(
+    query.listeningHabits.monthlyActivity.queryOptions({ artistId, from, to }),
+  );
 
   return (
-    <Card size="xs">
-      <CardHeader className="px-3 pt-3">
+    <Card size="sm">
+      <CardHeader>
         <CardTitle>Monthly Activity</CardTitle>
         <CardAction>
           <div className="flex items-center gap-2">
@@ -19,25 +25,11 @@ export function MonthlyActivityWidget() {
         </CardAction>
       </CardHeader>
       <CardContent>
-        <BarChart
-          aspectRatio="4 / 1"
-          barGap={0.2}
-          data={data}
-          margin={{ top: 0, right: 12, bottom: 40, left: 12 }}
-          xDataKey="name"
-        >
-          <Grid horizontal hideHorizontalEdgeLines />
-          <Bar dataKey="value" lineCap="butt" fill="var(--chart-2)" />
-          <BarXAxis maxLabels={8} />
-          <ChartTooltip
-            rows={(point) => [
-              {
-                color: chartCssVars.linePrimary,
-                label: "Activity",
-                value: `${point.value?.toLocaleString()} min`,
-              },
-            ]}
-          />
+        <BarChart className="aspect-[4/1]" data={data} xDataKey="name">
+          <Bar dataKey="value" fill="var(--chart-2)" />
+          <Grid />
+          <XAxis />
+          <ChartTooltip suffix="min" />
         </BarChart>
       </CardContent>
     </Card>

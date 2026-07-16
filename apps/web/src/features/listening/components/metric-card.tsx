@@ -4,6 +4,8 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@harmony/u
 import { useQuery } from "@tanstack/react-query";
 
 import { FormattedMetric } from "@/components/format/formatted-metric";
+import { useArtistStore } from "@/lib/stores/artist-store";
+import { useInstantRangeQuery } from "@/lib/stores/date-range-store";
 
 import { listeningQueries } from "../queries";
 import { MetricSparkline } from "./metric-sparkline";
@@ -21,7 +23,9 @@ type MetricCardProps = {
 };
 
 export const MetricCard = ({ label, unit, query }: MetricCardProps) => {
-  const { data } = useQuery(query.queryOptions());
+  const artistId = useArtistStore((s) => s.artist?.id);
+  const { from, to } = useInstantRangeQuery();
+  const { data } = useQuery(query.queryOptions({ artistId, from, to }));
 
   return (
     <Card size="xs">
@@ -36,7 +40,7 @@ export const MetricCard = ({ label, unit, query }: MetricCardProps) => {
           </Button>
         </CardAction>
       </CardHeader>
-      <CardContent>
+      <CardContent style={{ marginBottom: "-5px" }}>
         <MetricSparkline trend={data?.trend} />
       </CardContent>
     </Card>

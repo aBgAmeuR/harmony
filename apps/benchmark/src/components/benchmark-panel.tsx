@@ -107,10 +107,7 @@ function ResultTable({ rows }: { rows: BenchmarkResult["firstResult"] }) {
                   key={column}
                   className={cn("max-w-48", isNumeric ? "text-right" : undefined)}
                 >
-                  <span
-                    className={cn("block truncate", isNumeric && "tabular-nums")}
-                    title={text}
-                  >
+                  <span className={cn("block truncate", isNumeric && "tabular-nums")} title={text}>
                     {text}
                   </span>
                 </TableCell>
