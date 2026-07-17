@@ -13,8 +13,8 @@ import {
   xAxisLabelsPlugin,
 } from "./axis/x-axis-plugin";
 import { chartColor, resolveSeriesColorToken } from "./chart-color";
-import { marginToPadding, resolveMargin, type Margin } from "./chart-margin";
 import { toChartData } from "./chart-data";
+import { marginToPadding, resolveMargin, type Margin } from "./chart-margin";
 import { fadedGridPlugin } from "./grid/faded-grid-plugin";
 import { createTooltipPlugin } from "./tooltip/tooltip-plugin";
 

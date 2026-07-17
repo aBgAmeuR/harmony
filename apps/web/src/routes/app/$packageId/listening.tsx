@@ -33,7 +33,7 @@ function RouteComponent() {
   return (
     <div>
       <Header title="Listening Habits" />
-      <main className="mx-auto max-w-7xl space-y-3 p-3">
+      <main className="mx-auto max-w-7xl space-y-3 p-4 pt-0">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <ListeningTimeWidget />
           <TotalStreamsWidget />
