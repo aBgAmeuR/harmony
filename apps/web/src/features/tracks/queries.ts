@@ -17,7 +17,7 @@ export const tracksQueries = {
     queryOptions: (trackId: number | null) =>
       queryOptions({
         queryKey: ["tracks", "get", trackId],
-        queryFn: () => trackId ? getTrackFn(trackId) : null,
+        queryFn: () => (trackId ? getTrackFn(trackId) : null),
         enabled: trackId !== null,
       }),
   },

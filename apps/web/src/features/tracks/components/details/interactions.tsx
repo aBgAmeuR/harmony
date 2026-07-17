@@ -11,7 +11,10 @@ type InteractionsProps = {
 
 export const Interactions = ({ trackId, enabled }: InteractionsProps) => {
   const { from, to } = useInstantRangeQuery();
-  const { data } = useQuery(query.interactions.track.queryOptions({ trackId, from, to }));
+  const { data } = useQuery({
+    ...query.interactions.track.queryOptions({ trackId, from, to }),
+    enabled,
+  });
 
   return (
     <div className="h-full min-h-0">

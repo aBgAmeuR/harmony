@@ -128,8 +128,18 @@ export const InteractionsTable = ({ interactions, enabled = true }: Interactions
 function ContextCell({ interaction }: { interaction: Interaction }) {
   return (
     <div className="flex items-center justify-end gap-2">
-      <Flag show={interaction.offline} icon={WifiOffIcon} label="Offline" className="text-blue-400" />
-      <Flag show={interaction.shuffle} icon={ShuffleIcon} label="Shuffled" className="text-primary" />
+      <Flag
+        show={interaction.offline}
+        icon={WifiOffIcon}
+        label="Offline"
+        className="text-blue-400"
+      />
+      <Flag
+        show={interaction.shuffle}
+        icon={ShuffleIcon}
+        label="Shuffled"
+        className="text-primary"
+      />
       <Flag show={interaction.skipped} icon={NextIcon} label="Skipped" className="text-red-400" />
     </div>
   );
