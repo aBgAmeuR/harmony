@@ -1,4 +1,5 @@
-import { Icon, Loading03Icon } from "@harmony/icons";
+import { Icon, Loading03Icon, ViewIcon, ViewOffSlashIcon } from "@harmony/icons";
+import { Button } from "@harmony/ui/components/button";
 import { Card, CardContent } from "@harmony/ui/components/card";
 import {
   Table,
@@ -9,11 +10,14 @@ import {
   TableRow,
 } from "@harmony/ui/components/table";
 import { cn } from "@harmony/ui/lib/utils";
+import { useState } from "react";
 
 import type { Catalog } from "./catalog";
+import type { CatalogTrendPoint } from "./catalog-trend-sparkline";
 
 import { MetricCell } from "../format/metric-cell";
 import { CatalogImage } from "./catalog-image";
+import { CatalogTrendSparkline } from "./catalog-trend-sparkline";
 
 const getRankClassName = (rank: number) => {
   switch (rank) {
@@ -35,6 +39,7 @@ type CatalogTableProps = {
   selectedId?: number;
   onSelectItem?: (item: Catalog) => void;
   stickyHeader?: boolean;
+  trends?: Record<number, CatalogTrendPoint[]>;
 };
 
 export const CatalogTable = ({
@@ -44,7 +49,12 @@ export const CatalogTable = ({
   selectedId,
   onSelectItem,
   stickyHeader = false,
+  trends,
 }: CatalogTableProps) => {
+  const [showSparklines, setShowSparklines] = useState(true);
+  const showTrendColumn = trends !== undefined;
+  const columnCount = showTrendColumn ? 5 : 4;
+
   if (!loading && (!catalog || catalog.length <= 0)) {
     return (
       <Card size="sm">
@@ -59,9 +69,23 @@ export const CatalogTable = ({
     <div className={cn(stickyHeader && "[&_[data-slot=table-container]]:overflow-visible")}>
       <Table className="pb-2">
         <TableHeader className={cn(stickyHeader ? "bg-background!" : "bg-muted/50")}>
-          <TableRow className={cn("bg-background", stickyHeader && "sticky top-0 z-10")}>
+          <TableRow className={cn("bg-background!", stickyHeader && "sticky top-0 z-10")}>
             <TableHead className={cn(headClassName, "w-[35.5px] pl-4 text-center")}>#</TableHead>
             <TableHead className={cn(headClassName, "text-left")}>Title</TableHead>
+            {showTrendColumn && (
+              <TableHead className={cn(headClassName, "w-32")}>
+                <div className="flex items-center">
+                  <span>Trend</span>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => setShowSparklines((current) => !current)}
+                  >
+                    <Icon icon={showSparklines ? ViewIcon : ViewOffSlashIcon} />
+                  </Button>
+                </div>
+              </TableHead>
+            )}
             <TableHead className={cn(headClassName, "w-16 text-right tabular-nums")}>
               Streams
             </TableHead>
@@ -74,7 +98,7 @@ export const CatalogTable = ({
           {loading ? (
             <TableRow>
               <TableCell
-                colSpan={4}
+                colSpan={columnCount}
                 className="h-32 text-center align-middle text-sm text-muted-foreground"
               >
                 <div className="flex items-center justify-center gap-2">
@@ -86,6 +110,7 @@ export const CatalogTable = ({
           ) : (
             catalog?.map((item, index) => {
               const selected = selectedId === item.id;
+              const trend = trends?.[item.id];
 
               return (
                 <TableRow
@@ -110,6 +135,13 @@ export const CatalogTable = ({
                       </div>
                     </div>
                   </TableCell>
+                  {showTrendColumn ? (
+                    <TableCell className="py-1.5">
+                      {showSparklines && trend && trend.length > 0 ? (
+                        <CatalogTrendSparkline trend={trend} />
+                      ) : null}
+                    </TableCell>
+                  ) : null}
                   <TableCell className="py-1.5 text-right">
                     <MetricCell value={item.streams} />
                   </TableCell>

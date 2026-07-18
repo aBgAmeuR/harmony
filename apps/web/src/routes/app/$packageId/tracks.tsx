@@ -37,6 +37,8 @@ function RouteComponent() {
   const artistId = useArtistStore((s) => s.artist?.id);
   const { from, to } = useInstantRangeQuery();
   const { data, isLoading } = useQuery(query.tracks.top.queryOptions({ artistId, from, to }));
+  const trackIds = data?.map((track) => track.id) ?? [];
+  const { data: trends } = useQuery(query.tracks.trends.queryOptions({ trackIds, from, to }));
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -77,6 +79,7 @@ function RouteComponent() {
               selectedId={selectedId ?? undefined}
               onSelectItem={handleSelectItem}
               stickyHeader
+              trends={trends ?? {}}
             />
           </ScrollArea>
         </ResizablePanel>

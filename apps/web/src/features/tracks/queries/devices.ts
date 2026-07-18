@@ -46,9 +46,7 @@ function toPrimaryDevices(rows: PlatformRow[]): DeviceShare[] {
   }
 
   const top = withPercent.slice(0, 2);
-  const othersPercentage = withPercent
-    .slice(2)
-    .reduce((sum, device) => sum + device.percentage, 0);
+  const othersPercentage = withPercent.slice(2).reduce((sum, device) => sum + device.percentage, 0);
 
   return [...top, { label: "Others", percentage: othersPercentage }];
 }
