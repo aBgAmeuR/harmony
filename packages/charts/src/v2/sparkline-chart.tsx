@@ -1,8 +1,9 @@
 import { useMemo, type ReactNode } from "react";
 
+import type { Margin } from "./chart-margin";
+
 import { chartAreaFill } from "./chart-color";
 import { chartContainerClassName, DEFAULT_SPARKLINE_ASPECT_CLASS } from "./chart-container";
-import type { Margin } from "./chart-margin";
 import { extractChartConfig } from "./extract-config";
 import { makeAreaSeries, makeLineSeries, useUplotChart } from "./use-uplot-chart";
 

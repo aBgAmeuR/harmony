@@ -1,5 +1,6 @@
 import { cn } from "@harmony/ui/lib/utils";
 import * as ResizablePrimitive from "react-resizable-panels";
+import { useDefaultLayout } from "react-resizable-panels";
 
 function ResizablePanelGroup({ className, ...props }: ResizablePrimitive.GroupProps) {
   return (
@@ -36,4 +37,4 @@ function ResizableHandle({
   );
 }
 
-export { ResizableHandle, ResizablePanel, ResizablePanelGroup };
+export { ResizableHandle, ResizablePanel, ResizablePanelGroup, useDefaultLayout };

@@ -1,7 +1,8 @@
 import { useMemo, type ReactNode } from "react";
 
-import { chartContainerClassName } from "./chart-container";
 import type { Margin } from "./chart-margin";
+
+import { chartContainerClassName } from "./chart-container";
 import { extractChartConfig } from "./extract-config";
 import { makeBarSeries, useUplotChart } from "./use-uplot-chart";
 
@@ -18,13 +19,7 @@ export interface BarChartProps {
   children: ReactNode;
 }
 
-export function BarChart({
-  data,
-  xDataKey = "name",
-  className,
-  margin,
-  children,
-}: BarChartProps) {
+export function BarChart({ data, xDataKey = "name", className, margin, children }: BarChartProps) {
   const config = useMemo(() => extractChartConfig(children), [children]);
 
   const buildSeries = useMemo(() => {

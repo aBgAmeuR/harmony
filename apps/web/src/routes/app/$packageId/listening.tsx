@@ -9,6 +9,12 @@ import { UniqueTracksWidget } from "@/features/listening/widgets/unique-tracks-w
 import { query } from "@/lib/query";
 import { useArtistStore } from "@/lib/stores/artist-store";
 import { buildInstantRangeQuery, useDateRangeStore } from "@/lib/stores/date-range-store";
+import { PeakHoursWidget } from "@/features/listening/widgets/peak-hours-widget";
+import { PlatformsWidget } from "@/features/listening/widgets/platforms-widget";
+import { ListeningStyleWidget } from "@/features/listening/widgets/listening-style-widget";
+import { TrackEngagementWidget } from "@/features/listening/widgets/track-engagement-widget";
+import { ReleaseYearWidget } from "@/features/listening/widgets/release-year-widget";
+import { GenresWidget } from "@/features/listening/widgets/genres-widget";
 
 export const Route = createFileRoute("/app/$packageId/listening")({
   ssr: false,
@@ -33,7 +39,7 @@ function RouteComponent() {
   return (
     <div>
       <Header title="Listening Habits" />
-      <main className="mx-auto max-w-7xl space-y-3 p-3">
+      <main className="mx-auto max-w-7xl space-y-3 p-4 pt-0">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <ListeningTimeWidget />
           <TotalStreamsWidget />
@@ -46,8 +52,8 @@ function RouteComponent() {
             {/* <DaysOfWeekWidget /> */}
           </div>
         </div>
-        {/*
-          <WhenYouListenWidget />
+        
+          {/* <WhenYouListenWidget /> */}
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <PeakHoursWidget />
@@ -62,7 +68,7 @@ function RouteComponent() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <ReleaseYearWidget />
             <GenresWidget />
-          </div> */}
+          </div>
       </main>
     </div>
   );

@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@harmony/ui/components/table";
+import { cn } from "@harmony/ui/lib/utils";
 
 import type { Catalog } from "./catalog";
 
@@ -31,15 +32,19 @@ type CatalogTableProps = {
   catalog: Array<Catalog> | undefined;
   empty?: string;
   loading?: boolean;
+  selectedId?: number;
+  onSelectItem?: (item: Catalog) => void;
+  stickyHeader?: boolean;
 };
 
 export const CatalogTable = ({
   catalog,
   empty = "No items yet.",
   loading = false,
+  selectedId,
+  onSelectItem,
+  stickyHeader = false,
 }: CatalogTableProps) => {
-  // const navigate = useNavigate();
-
   if (!loading && (!catalog || catalog.length <= 0)) {
     return (
       <Card size="sm">
@@ -48,67 +53,75 @@ export const CatalogTable = ({
     );
   }
 
+  const headClassName = cn("h-7 bg-muted/50 text-xs font-medium text-muted-foreground");
+
   return (
-    <Table className="pb-2">
-      <TableHeader className="bg-muted/50">
-        <TableRow className="hover:bg-transparent">
-          <TableHead className="h-7 w-[35.5px] pl-4 text-center text-xs font-medium text-muted-foreground">
-            #
-          </TableHead>
-          <TableHead className="h-7 text-xs font-medium text-muted-foreground">Title</TableHead>
-          <TableHead className="h-7 w-16 text-right text-xs font-medium text-muted-foreground tabular-nums">
-            Streams
-          </TableHead>
-          <TableHead className="h-7 w-28 pr-4 text-right text-xs font-medium text-muted-foreground tabular-nums">
-            Time Listened
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {loading ? (
-          <TableRow>
-            <TableCell
-              colSpan={4}
-              className="h-32 text-center align-middle text-sm text-muted-foreground"
-            >
-              <div className="flex items-center justify-center gap-2">
-                <Icon icon={Loading03Icon} className="size-4 animate-spin" />
-                <span className="text-sm font-medium">Loading...</span>
-              </div>
-            </TableCell>
+    <div className={cn(stickyHeader && "[&_[data-slot=table-container]]:overflow-visible")}>
+      <Table className="pb-2">
+        <TableHeader className={cn(stickyHeader ? "bg-background!" : "bg-muted/50")}>
+          <TableRow className={cn("bg-background", stickyHeader && "sticky top-0 z-10")}>
+            <TableHead className={cn(headClassName, "w-[35.5px] pl-4 text-center")}>#</TableHead>
+            <TableHead className={cn(headClassName, "text-left")}>Title</TableHead>
+            <TableHead className={cn(headClassName, "w-16 text-right tabular-nums")}>
+              Streams
+            </TableHead>
+            <TableHead className={cn(headClassName, "w-28 pr-4 text-right tabular-nums")}>
+              Time Listened
+            </TableHead>
           </TableRow>
-        ) : (
-          catalog?.map((item, index) => (
-            <TableRow
-              key={item.id}
-              className="[contain-intrinsic-size:0_36px] [content-visibility:auto]"
-            >
-              <TableCell className="pl-4 text-center tabular-nums">
-                <span
-                  className={`inline-flex h-5 min-w-5 items-center justify-center rounded-md text-xs font-medium ${getRankClassName(index + 1)}`}
-                >
-                  {index + 1}
-                </span>
-              </TableCell>
-              <TableCell className="max-w-0">
-                <div className="flex min-w-0 items-center gap-3">
-                  <CatalogImage image={item.image} alt={item.name} />
-                  <div className="flex min-h-9 min-w-0 flex-col justify-center">
-                    <p className="truncate text-sm font-medium">{item.name}</p>
-                    <p className="truncate text-xs text-muted-foreground">{item.description}</p>
-                  </div>
+        </TableHeader>
+        <TableBody>
+          {loading ? (
+            <TableRow>
+              <TableCell
+                colSpan={4}
+                className="h-32 text-center align-middle text-sm text-muted-foreground"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Icon icon={Loading03Icon} className="size-4 animate-spin" />
+                  <span className="text-sm font-medium">Loading...</span>
                 </div>
               </TableCell>
-              <TableCell className="text-right">
-                <MetricCell value={item.streams} />
-              </TableCell>
-              <TableCell className="pr-4">
-                <MetricCell value={item.playtime} unit="min" />
-              </TableCell>
             </TableRow>
-          ))
-        )}
-      </TableBody>
-    </Table>
+          ) : (
+            catalog?.map((item, index) => {
+              const selected = selectedId === item.id;
+
+              return (
+                <TableRow
+                  key={item.id}
+                  data-state={selected ? "selected" : undefined}
+                  className={cn(onSelectItem && "cursor-pointer")}
+                  onClick={onSelectItem ? () => onSelectItem(item) : undefined}
+                >
+                  <TableCell className="py-1.5 pl-4 text-center tabular-nums">
+                    <span
+                      className={`inline-flex h-5 min-w-5 items-center justify-center rounded-md text-xs font-medium ${getRankClassName(index + 1)}`}
+                    >
+                      {index + 1}
+                    </span>
+                  </TableCell>
+                  <TableCell className="max-w-0 py-1.5">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <CatalogImage image={item.image} alt={item.name} />
+                      <div className="flex min-h-9 min-w-0 flex-col justify-center">
+                        <p className="truncate text-sm font-medium">{item.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">{item.description}</p>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-1.5 text-right">
+                    <MetricCell value={item.streams} />
+                  </TableCell>
+                  <TableCell className="py-1.5 pr-4">
+                    <MetricCell value={item.playtime} unit="min" />
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 };

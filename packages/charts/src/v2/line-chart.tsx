@@ -1,7 +1,8 @@
 import { useMemo, type ReactNode } from "react";
 
-import { chartContainerClassName } from "./chart-container";
 import type { Margin } from "./chart-margin";
+
+import { chartContainerClassName } from "./chart-container";
 import { extractChartConfig } from "./extract-config";
 import { makeLineSeries, useUplotChart } from "./use-uplot-chart";
 

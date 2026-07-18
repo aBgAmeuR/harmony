@@ -27,7 +27,14 @@ export const FormattedMetric = ({ value, unit, size = "md", className }: Formatt
         {value ? formatter.format(value) : "-"}
       </span>
       {unit && (
-        <span className="text-md text-muted-foreground group-data-[size=sm]/formatted-metric:text-xs">
+        <span
+          className={cn(
+            "text-muted-foreground",
+            "group-data-[size=sm]/formatted-metric:text-xs",
+            "group-data-[size=md]/formatted-metric:text-sm",
+            "group-data-[size=lg]/formatted-metric:text-md",
+          )}
+        >
           {unit}
         </span>
       )}
