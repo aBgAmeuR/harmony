@@ -6,6 +6,7 @@ import {
   Loading03Icon,
 } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
+import { ScrollArea } from "@harmony/ui/components/scroll-area";
 import { useEffect, useState } from "react";
 
 import type { TrackDetails } from "@/features/tracks/queries/get";
@@ -13,6 +14,7 @@ import type { TrackDetails } from "@/features/tracks/queries/get";
 import { CatalogImage } from "@/components/catalog/catalog-image";
 
 import { Interactions } from "./details/interactions";
+import { Overview } from "./details/overview";
 
 type TrackDetailsPanelProps = {
   track: TrackDetails | undefined;
@@ -28,7 +30,7 @@ export const TrackDetailsPanel = ({ track, onClose }: TrackDetailsPanelProps) =>
   }, [track?.id]);
 
   return (
-    <aside className="flex size-full flex-col overflow-hidden bg-background">
+    <aside className="flex size-full flex-col overflow-hidden border-t border-border bg-background">
       <div className="flex shrink-0 items-center justify-between px-4 py-2">
         {showInteractions ? (
           <Button
@@ -55,7 +57,7 @@ export const TrackDetailsPanel = ({ track, onClose }: TrackDetailsPanelProps) =>
               showInteractions ? "-translate-x-1/2" : "translate-x-0"
             }`}
           >
-            <div className="flex w-1/2 flex-col gap-3 overflow-hidden">
+            <div className="flex w-1/2 flex-col overflow-hidden">
               <div className="flex items-center gap-3 px-4">
                 <CatalogImage size="xl" image={track.image} alt={track.name} blur />
                 <div className="min-w-0">
@@ -67,9 +69,9 @@ export const TrackDetailsPanel = ({ track, onClose }: TrackDetailsPanelProps) =>
                   ) : null}
                 </div>
               </div>
-              <div className="min-h-0 flex-1 px-4">
-                <p className="text-sm font-medium">Overview</p>
-              </div>
+              <ScrollArea className="min-h-0 flex-1 overflow-hidden px-4 pt-3">
+                <Overview trackId={track.id} />
+              </ScrollArea>
               <div className="w-full border-t border-border px-4 py-2">
                 <Button
                   className="w-full"
