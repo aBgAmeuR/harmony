@@ -2,13 +2,14 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { toSqlDate } from "@/lib/sql/date-range";
 
-import { getTrackFn } from "./queries/get";
 import { trackBehavioralFn } from "./queries/behavioral";
 import { trackDevicesFn } from "./queries/devices";
+import { getTrackFn } from "./queries/get";
 import { trackHistoryFn } from "./queries/history";
 import { trackListeningFn } from "./queries/listening";
 import { trackOverviewFn } from "./queries/overview";
 import { topTracksFn } from "./queries/top";
+import { trackTrendsFn } from "./queries/trends";
 import { trackVsAverageFn } from "./queries/vs-average";
 
 type TrackRangeArgs = { trackId: number; from: Date; to: Date };
@@ -19,6 +20,14 @@ export const tracksQueries = {
       queryOptions({
         queryKey: ["tracks", "top", { artistId, from: toSqlDate(from), to: toSqlDate(to) }],
         queryFn: () => topTracksFn({ artistId, from, to }),
+      }),
+  },
+  trends: {
+    queryOptions: ({ trackIds, from, to }: { trackIds: number[]; from: Date; to: Date }) =>
+      queryOptions({
+        queryKey: ["tracks", "trends", { trackIds, from: toSqlDate(from), to: toSqlDate(to) }],
+        queryFn: () => trackTrendsFn({ trackIds, from, to }),
+        enabled: trackIds.length > 0,
       }),
   },
   get: {

@@ -18,7 +18,7 @@ export function Header({ title, showArtistSelect = true }: HeaderProps) {
 
         {showArtistSelect && (
           <>
-            <span className="pb-0.5 text-muted-foreground pe-1">/</span>
+            <span className="pe-1 pb-0.5 text-muted-foreground">/</span>
             <ArtistsSelect />
           </>
         )}

@@ -44,10 +44,7 @@ function buildTrackPeriodFilter({ trackId, from, to }: TrackListeningParams) {
   const fromSql = toSqlDate(from);
   const toSql = toSqlDate(to);
   const byDay = calendarDaySpan(from, to) < 31;
-  const where = joinWhere([
-    ...interactionDateConditions(from, to),
-    `i.track_id = ${trackId}`,
-  ]);
+  const where = joinWhere([...interactionDateConditions(from, to), `i.track_id = ${trackId}`]);
 
   const periodRange = byDay
     ? `
