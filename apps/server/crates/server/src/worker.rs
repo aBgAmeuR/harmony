@@ -92,6 +92,7 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
         let reporter_for_pipeline = reporter.clone();
         let selected_files = upload.selected_files;
         let zip_bytes = upload.zip_bytes;
+        let object_store = Arc::clone(&state.object_store);
         let pipeline_result = tokio::task::spawn_blocking(move || -> Result<PipelineStats, PipelineError> {
             let _guard = pipeline_span.enter();
 
@@ -101,6 +102,7 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
                 zip_bytes,
                 selected_files,
                 Some(reporter_for_pipeline),
+                object_store,
             );
             pipeline::run(&mut ctx)?;
             Ok(ctx.stats)

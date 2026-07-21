@@ -1,6 +1,5 @@
-use std::env;
-use std::fs::{self, File};
-use std::path::{Path, PathBuf};
+use std::fs::File;
+use std::path::Path;
 
 use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
 use polars::prelude::*;
@@ -9,6 +8,7 @@ use tempfile::TempDir;
 use crate::pipeline::error::PersistError;
 use crate::pipeline::types::DeezerAlbumType;
 use crate::pipeline::PipelineContext;
+use crate::storage::ObjectStore;
 
 const EPOCH: NaiveDate = match NaiveDate::from_ymd_opt(1970, 1, 1) {
     Some(date) => date,
@@ -28,16 +28,9 @@ const EPOCH: NaiveDate = match NaiveDate::from_ymd_opt(1970, 1, 1) {
     ),
 )]
 pub fn run(ctx: &mut PipelineContext) -> Result<(), PersistError> {
-    let data_dir = env::var("DUCKDB_DATA_DIR").map_err(|_| PersistError::MissingDataDir)?;
-    fs::create_dir_all(&data_dir)?;
-
-    let db_path = PathBuf::from(&data_dir).join(format!("{}.duckdb", ctx.public_id));
-    if db_path.exists() {
-        fs::remove_file(&db_path)?;
-    }
-
     let temp_dir = TempDir::new()?;
     let temp_path = temp_dir.path();
+    let db_path = temp_path.join("package.duckdb");
 
     let artists_df = build_artists_df(&ctx)?;
     let albums_df = build_albums_df(&ctx)?;
@@ -54,15 +47,25 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), PersistError> {
     write_parquet(&tracks_df, &tracks_parquet)?;
     write_parquet(&interactions_df, &interactions_parquet)?;
 
-    let conn = duckdb::Connection::open(&db_path)?;
-    create_tables(&conn)?;
-    load_parquet(&conn, "artists", &artists_parquet)?;
-    load_parquet(&conn, "albums", &albums_parquet)?;
-    load_parquet(&conn, "tracks", &tracks_parquet)?;
-    load_parquet(&conn, "interactions", &interactions_parquet)?;
-    create_views(&conn)?;
+    {
+        let conn = duckdb::Connection::open(&db_path)?;
+        create_tables(&conn)?;
+        load_parquet(&conn, "artists", &artists_parquet)?;
+        load_parquet(&conn, "albums", &albums_parquet)?;
+        load_parquet(&conn, "tracks", &tracks_parquet)?;
+        load_parquet(&conn, "interactions", &interactions_parquet)?;
+        create_views(&conn)?;
+    }
 
-    tracing::info!(db_path = %db_path.display(), "persisted package data to duckdb");
+    let object_key = format!("harmony/{}.duckdb", ctx.public_id);
+    let handle =
+        tokio::runtime::Handle::try_current().map_err(|_| PersistError::RuntimeUnavailable)?;
+    handle.block_on(ctx.object_store.put_file(&object_key, &db_path))?;
+
+    tracing::info!(
+        object_key = %object_key,
+        "persisted package data to object storage"
+    );
 
     Ok(())
 }
@@ -401,17 +404,11 @@ fn empty_albums_df() -> DataFrame {
         Field::new("image".into(), DataType::String),
         Field::new("image_uri".into(), DataType::String),
         Field::new("release_date".into(), DataType::Date),
-        Field::new(
-            "genres".into(),
-            DataType::List(Box::new(DataType::String)),
-        ),
+        Field::new("genres".into(), DataType::List(Box::new(DataType::String))),
         Field::new("nb_tracks".into(), DataType::Int32),
         Field::new("duration".into(), DataType::Int32),
         Field::new("album_type".into(), DataType::String),
-        Field::new(
-            "artists".into(),
-            DataType::List(Box::new(DataType::UInt32)),
-        ),
+        Field::new("artists".into(), DataType::List(Box::new(DataType::UInt32))),
     ]))
 }
 
@@ -424,10 +421,7 @@ fn empty_tracks_df() -> DataFrame {
         Field::new("disk_number".into(), DataType::Int32),
         Field::new("release_date".into(), DataType::Date),
         Field::new("album_id".into(), DataType::UInt32),
-        Field::new(
-            "artists".into(),
-            DataType::List(Box::new(DataType::UInt32)),
-        ),
+        Field::new("artists".into(), DataType::List(Box::new(DataType::UInt32))),
     ]))
 }
 
@@ -510,7 +504,10 @@ mod tests {
         assert_eq!(row.4.as_deref(), Some("Artist A, Artist B"));
         assert_eq!(row.5.as_deref(), Some("Artist A, Artist B"));
         assert_eq!(row.6.as_deref(), Some("data:image/jpeg;base64,cover"));
-        assert_eq!(row.7.as_deref(), Some("https://api.deezer.com/album/10/image"));
+        assert_eq!(
+            row.7.as_deref(),
+            Some("https://api.deezer.com/album/10/image")
+        );
 
         Ok(())
     }

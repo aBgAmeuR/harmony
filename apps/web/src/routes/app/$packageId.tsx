@@ -48,8 +48,11 @@ function HarmonyFooter() {
 
 export const Route = createFileRoute("/app/$packageId")({
   ssr: false,
-  loader: ({ params }) => db.init(params.packageId),
-  staleTime: Infinity,
+  loader: ({ params }) =>
+    db.init(
+      params.packageId,
+      `${import.meta.env.VITE_DUCKDB_BASE_URL}/${params.packageId}.duckdb`,
+    ),
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,

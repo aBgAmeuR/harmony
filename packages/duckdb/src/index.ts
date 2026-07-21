@@ -41,8 +41,8 @@ function getConnection(): AsyncDuckDBConnection {
 }
 
 export const db = {
-  async init(packageId: string) {
-    return await useDbStore.getState().initialize(packageId);
+  async init(packageId: string, url: string) {
+    return await useDbStore.getState().initialize(packageId, url);
   },
   async query<T>(query: string): Promise<T[]> {
     const { rows, queryMs, toArrayMs } = await executeTimedQuery<T>(getConnection(), query);
