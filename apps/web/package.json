@@ -5,7 +5,8 @@
   "scripts": {
     "build": "vite build",
     "serve": "vite preview",
-    "dev": "vite dev"
+    "dev": "vite dev",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@bprogress/core": "^1.3.4",
