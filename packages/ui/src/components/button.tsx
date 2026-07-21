@@ -17,6 +17,8 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        gradient:
+          "duration-300 ease-in disabled:shadow-none disabled:cursor-not-allowed focus:shadow-none shadow-sm hover:shadow-md relative bg-gradient-to-b from-primary to-[#37783D] border-[#25562A] text-primary-foreground hover:bg-gradient-to-b hover:from-[#37783D] hover:to-[#37783D] hover:border-[#25562A] after:absolute after:inset-0 after:rounded-[inherit] after:box-shadow after:shadow-[inset_0_1px_0px_rgba(255,255,255,0.25),inset_0_-2px_0px_rgba(0,0,0,0.35)] after:pointer-events-none antialiased",
       },
       size: {
         default:

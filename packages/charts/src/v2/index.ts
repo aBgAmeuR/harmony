@@ -3,6 +3,7 @@ export { AreaChart, type AreaChartProps } from "./area-chart";
 export { Bar, type BarProps } from "./bar";
 export { BarChart, type BarChartProps } from "./bar-chart";
 export type {
+  AreaFillPattern,
   ChartChildComponent,
   ChartChildDescriptor,
   SeriesConfig,

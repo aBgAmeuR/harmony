@@ -3,6 +3,7 @@ import { useMemo, type ReactNode } from "react";
 import type { Margin } from "./chart-margin";
 
 import { chartContainerClassName } from "./chart-container";
+import { ChartShell } from "./chart-shell";
 import { extractChartConfig } from "./extract-config";
 import { makeLineSeries, useUplotChart } from "./use-uplot-chart";
 
@@ -37,7 +38,7 @@ export function LineChart({
     };
   }, [config.series]);
 
-  const { ref, hasSeries, isEmpty } = useUplotChart({
+  const { plotRef, labelsRef, showXAxis, xAxisGap, hasSeries, isEmpty } = useUplotChart({
     data,
     xDataKey,
     config,
@@ -51,9 +52,13 @@ export function LineChart({
   }
 
   return (
-    <div className={chartContainerClassName(className)}>
-      <div className="absolute inset-0" ref={ref} />
-    </div>
+    <ChartShell
+      className={className}
+      labelsRef={labelsRef}
+      plotRef={plotRef}
+      showXAxis={showXAxis}
+      xAxisGap={xAxisGap}
+    />
   );
 }
 

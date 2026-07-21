@@ -1,5 +1,6 @@
 import { Children, isValidElement, type ReactNode } from "react";
 
+import { X_AXIS_GAP } from "./axis/x-axis-plugin";
 import { getChartChildDescriptor, type SeriesConfig, type SeriesKind } from "./chart-child";
 
 export type { SeriesConfig, SeriesKind } from "./chart-child";
@@ -9,6 +10,8 @@ export interface ExtractedChartConfig {
   seriesKind: SeriesKind | null;
   showGrid: boolean;
   showXAxis: boolean;
+  /** CSS px gap between plot and x-axis labels when showXAxis is true. */
+  xAxisGap: number;
   showTooltip: boolean;
   tooltipSuffix: string | null;
 }
@@ -18,6 +21,7 @@ const EMPTY_CONFIG: ExtractedChartConfig = {
   seriesKind: null,
   showGrid: false,
   showXAxis: false,
+  xAxisGap: X_AXIS_GAP,
   showTooltip: false,
   tooltipSuffix: null,
 };
@@ -51,6 +55,11 @@ export function extractChartConfig(children: ReactNode): ExtractedChartConfig {
 
     if (descriptor.role === "xAxis") {
       config.showXAxis = true;
+      const xAxisProps = descriptor.extract?.(child.props);
+      const gap = xAxisProps?.gap;
+      if (typeof gap === "number" && Number.isFinite(gap)) {
+        config.xAxisGap = Math.max(0, gap);
+      }
       return;
     }
 
