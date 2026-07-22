@@ -3,7 +3,7 @@
 
 services:
   web:
-    image: ghcr.io/abgameur/harmony/web:latest
+    image: ghcr.io/abgameur/harmony/web:c3b15d8dc265dc5eec5c144da28b8a711309df73
     ports:
       - "3001:3001"
     environment:
@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
 
   api:
-    image: ghcr.io/abgameur/harmony/api:latest
+    image: ghcr.io/abgameur/harmony/api:c3b15d8dc265dc5eec5c144da28b8a711309df73
     ports:
       - "3000:3000"
     environment:
