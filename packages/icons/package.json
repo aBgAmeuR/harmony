@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@hugeicons/core-free-icons": "^1.2.1",
-    "@hugeicons/react": "^1.1.6",
-    "@hugeicons/react-native": "^1.0.13",
-    "react": "^19.2.7"
+    "@hugeicons/react": "^1.1.9",
+    "@hugeicons/react-native": "^1.0.15",
+    "react": "^19.2.8"
   },
   "devDependencies": {
     "@harmony/config": "workspace:*",

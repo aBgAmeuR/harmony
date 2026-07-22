@@ -9,10 +9,11 @@ import {
 } from "@harmony/ui/components/card";
 import { UploadError, type Pipeline, type PipelineRunStatus } from "@harmony/upload";
 import { usePipeline } from "@harmony/upload/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouteContext } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { UploadPipelineList } from "@/components/upload/upload-pipeline-list";
-import { upload } from "@/lib/upload";
+import { createUploadClient } from "@/lib/upload";
 import { clearUploadSession, type UploadSession } from "@/lib/upload-session";
 import { format } from "@/utils/format";
 
@@ -65,6 +66,9 @@ export function DeployStep({
   const [isDeploying, setIsDeploying] = useState(false);
   const resumeAppliedRef = useRef(false);
 
+  const { config } = useRouteContext({ from: "/upload" });
+  const upload = useMemo(() => createUploadClient(config.apiUrl), [config.apiUrl]);
+
   useEffect(() => {
     if (!publicId) {
       setPipeline(null);
@@ -77,7 +81,7 @@ export function DeployStep({
     return () => {
       nextPipeline.disconnect();
     };
-  }, [publicId]);
+  }, [publicId, upload]);
 
   const { state: pipelineState, connectionError } = usePipeline(pipeline);
 
@@ -120,7 +124,7 @@ export function DeployStep({
     } finally {
       setIsDeploying(false);
     }
-  }, [packageFile, selectedFiles, persistSession]);
+  }, [packageFile, selectedFiles, persistSession, upload]);
 
   useEffect(() => {
     if (deployRequestId === 0) return;

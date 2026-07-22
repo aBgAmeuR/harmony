@@ -48,11 +48,9 @@ function HarmonyFooter() {
 
 export const Route = createFileRoute("/app/$packageId")({
   ssr: false,
-  loader: ({ params }) =>
-    db.init(
-      params.packageId,
-      `${import.meta.env.VITE_DUCKDB_BASE_URL}/${params.packageId}.duckdb`,
-    ),
+  loader: async ({ params, context }) => {
+    await db.init(params.packageId, `${context.config.bucketUrl}/${params.packageId}.duckdb`);
+  },
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,

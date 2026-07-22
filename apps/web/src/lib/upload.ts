@@ -1,5 +1,5 @@
 import { UploadClient } from "@harmony/upload";
 
-export const upload = new UploadClient({
-  baseUrl: import.meta.env.VITE_API_URL,
-});
+export function createUploadClient(baseUrl: string) {
+  return new UploadClient({ baseUrl });
+}

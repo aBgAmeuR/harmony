@@ -72,20 +72,9 @@ pub fn load_config() -> Result<DeezerConfig, String> {
         return Err("DEEZER_PROXY_SECRET is empty".to_string());
     }
 
-    let request_gap_ms = env::var("DEEZER_REQUEST_GAP_MS")
-        .ok()
-        .and_then(|value| value.parse().ok())
-        .unwrap_or(50);
-
-    let max_retries = env::var("DEEZER_MAX_RETRIES")
-        .ok()
-        .and_then(|value| value.parse().ok())
-        .unwrap_or(3);
-
-    let retry_delay_ms = env::var("DEEZER_RETRY_DELAY_MS")
-        .ok()
-        .and_then(|value| value.parse().ok())
-        .unwrap_or(1000);
+    let request_gap_ms = 50;
+    let max_retries = 3;
+    let retry_delay_ms = 1000;
 
     Ok(DeezerConfig {
         proxy_urls,

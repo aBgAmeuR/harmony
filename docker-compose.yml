@@ -1,0 +1,32 @@
+# Image tags are pinned to a commit SHA by .github/workflows/release.yml after each push to v3.
+# Set stack environment variables in Portainer (do not commit secrets).
+
+services:
+  web:
+    image: ghcr.io/abgameur/harmony/web:latest
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      API_URL: ${API_URL}
+      BUCKET_URL: ${BUCKET_URL}
+    restart: unless-stopped
+
+  api:
+    image: ghcr.io/abgameur/harmony/api:latest
+    ports:
+      - "3000:3000"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "3000"
+      RUST_LOG: info
+      APP_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      S3_BUCKET: ${S3_BUCKET}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      DEEZER_PROXY_URLS: ${DEEZER_PROXY_URLS}
+      DEEZER_PROXY_SECRET: ${DEEZER_PROXY_SECRET}
+    restart: unless-stopped

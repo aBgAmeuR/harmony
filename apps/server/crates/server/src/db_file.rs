@@ -1,4 +1,3 @@
-use std::env;
 use std::path::PathBuf;
 
 use axum::{
@@ -14,9 +13,6 @@ pub async fn get_db_file(
     axum::extract::State(_state): axum::extract::State<AppState>,
     Path(id): Path<String>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let data_dir = env::var("DUCKDB_DATA_DIR")
-        .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "DUCKDB_DATA_DIR not set".into()))?;
-
     let safe_id = id
         .chars()
         .filter(|c| c.is_alphanumeric() || *c == '-' || *c == '_')
@@ -26,7 +22,7 @@ pub async fn get_db_file(
         return Err((StatusCode::BAD_REQUEST, "invalid package id".into()));
     }
 
-    let path = PathBuf::from(data_dir).join(format!("{safe_id}.duckdb"));
+    let path = PathBuf::from("/data/duckdb").join(format!("{safe_id}.duckdb"));
 
     let bytes = fs::read(&path).await.map_err(|_| {
         (StatusCode::NOT_FOUND, format!("package '{safe_id}' not found"))

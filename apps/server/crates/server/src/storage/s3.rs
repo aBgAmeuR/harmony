@@ -31,7 +31,7 @@ impl S3ObjectStore {
             .map_err(|_| StorageConfigError::MissingEnv("S3_ENDPOINT"))?;
         let bucket =
             env::var("S3_BUCKET").map_err(|_| StorageConfigError::MissingEnv("S3_BUCKET"))?;
-        let region = env::var("S3_REGION").unwrap_or_else(|_| "auto".to_string());
+        let region = "auto".to_string();
 
         let shared = aws_config::defaults(BehaviorVersion::latest())
             .endpoint_url(endpoint)
