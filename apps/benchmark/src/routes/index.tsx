@@ -11,7 +11,7 @@ import { BENCHMARK_PACKAGE_ID } from "@/lib/benchmark-query";
 
 export const Route = createFileRoute("/")({
   ssr: false,
-  loader: () => db.init(BENCHMARK_PACKAGE_ID),
+  loader: () => db.init(BENCHMARK_PACKAGE_ID, import.meta.env.VITE_API_URL),
   staleTime: Infinity,
   component: HomeComponent,
   pendingComponent: Pending,
