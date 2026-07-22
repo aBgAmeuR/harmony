@@ -4,6 +4,7 @@ import type { Margin } from "./chart-margin";
 
 import { chartAreaFill } from "./chart-color";
 import { chartContainerClassName, DEFAULT_SPARKLINE_ASPECT_CLASS } from "./chart-container";
+import { ChartShell } from "./chart-shell";
 import { extractChartConfig } from "./extract-config";
 import { makeAreaSeries, makeLineSeries, useUplotChart } from "./use-uplot-chart";
 
@@ -46,7 +47,7 @@ export function SparklineChart({
     };
   }, [config.series, config.seriesKind]);
 
-  const { ref, hasSeries, isEmpty } = useUplotChart({
+  const { plotRef, labelsRef, showXAxis, xAxisGap, hasSeries, isEmpty } = useUplotChart({
     data,
     xDataKey,
     config,
@@ -61,9 +62,14 @@ export function SparklineChart({
   }
 
   return (
-    <div className={chartContainerClassName(className, DEFAULT_SPARKLINE_ASPECT_CLASS)}>
-      <div className="absolute inset-0" ref={ref} />
-    </div>
+    <ChartShell
+      aspectClass={DEFAULT_SPARKLINE_ASPECT_CLASS}
+      className={className}
+      labelsRef={labelsRef}
+      plotRef={plotRef}
+      showXAxis={showXAxis}
+      xAxisGap={xAxisGap}
+    />
   );
 }
 

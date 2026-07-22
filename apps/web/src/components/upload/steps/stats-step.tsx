@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@harmony/ui/components/card";
 import { useQuery } from "@tanstack/react-query";
+import { useRouteContext } from "@tanstack/react-router";
 
 interface StatsStepProps {
   packageName: string;
@@ -39,12 +40,14 @@ function formatListeningTime(totalMinutes: number): string {
 }
 
 export function StatsStep({ uploadId, uploadCompleted, onBack, canBack = true }: StatsStepProps) {
+  const { config } = useRouteContext({ from: "/app/$packageId/package" });
+  
   const statsQuery = useQuery({
     queryKey: ["upload-stats", uploadId],
     enabled: Boolean(uploadId) && uploadCompleted,
     queryFn: async () => {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:3333"}/api/v1/uploads/${uploadId}/stats`,
+        `${config.apiUrl || "http://localhost:3333"}/api/v1/uploads/${uploadId}/stats`,
       );
       if (!res.ok) {
         throw new Error("Failed to fetch upload stats");

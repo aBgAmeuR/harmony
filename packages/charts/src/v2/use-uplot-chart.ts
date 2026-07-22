@@ -8,11 +8,9 @@ import {
   createHiddenXAxis,
   createHiddenYAxis,
   createSparklineYRange,
-  createXAxis,
-  createYRangeWithBottomGap,
   xAxisLabelsPlugin,
 } from "./axis/x-axis-plugin";
-import { chartColor, resolveSeriesColorToken } from "./chart-color";
+import { chartColor, resolveSeriesColorToken, type AreaFillPattern } from "./chart-color";
 import { toChartData } from "./chart-data";
 import { marginToPadding, resolveMargin, type Margin } from "./chart-margin";
 import { fadedGridPlugin } from "./grid/faded-grid-plugin";
@@ -50,8 +48,9 @@ export function useUplotChart({
   margin,
   buildSeries,
 }: UseUplotChartOptions) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { series, showGrid, showXAxis, showTooltip, tooltipSuffix } = config;
+  const plotRef = useRef<HTMLDivElement>(null);
+  const labelsRef = useRef<HTMLDivElement>(null);
+  const { series, showGrid, showXAxis, xAxisGap, showTooltip, tooltipSuffix } = config;
 
   const prepared = useMemo(() => {
     if (!series || data.length === 0) {
@@ -61,8 +60,13 @@ export function useUplotChart({
   }, [data, series, xDataKey]);
 
   useEffect(() => {
-    const el = ref.current;
+    const el = plotRef.current;
     if (!el || !prepared || !series) {
+      return;
+    }
+
+    const labelsEl = showXAxis ? labelsRef.current : null;
+    if (showXAxis && !labelsEl) {
       return;
     }
 
@@ -84,62 +88,91 @@ export function useUplotChart({
     if (showGrid) {
       plugins.push(fadedGridPlugin());
     }
-    if (showXAxis) {
-      plugins.push(xAxisLabelsPlugin(labels));
+    if (showXAxis && labelsEl) {
+      plugins.push(xAxisLabelsPlugin(labels, labelsEl, xAxisGap));
     }
 
-    const size = () => {
-      const { width, height } = el.getBoundingClientRect();
-      return { width, height };
-    };
+    // Layout size only — getBoundingClientRect includes parent CSS transforms
+    // (landing showcase rotate/scale) and desyncs the plot from the HTML label band.
+    const readSize = () => ({
+      width: el.clientWidth,
+      height: el.clientHeight,
+    });
 
     const isSparkline = layout === "sparkline";
-
     const padding = marginToPadding(resolveMargin(margin));
 
-    const chart = new uPlot(
-      {
-        ...size(),
-        padding,
-        plugins,
-        scales: {
-          x: {
-            time: false,
-            range: (_u, min, max) => (xRangeMode === "bar" ? [min - 0.5, max + 0.5] : [min, max]),
-          },
-          y: {
-            auto: true,
-            range: isSparkline ? createSparklineYRange() : createYRangeWithBottomGap(),
-          },
-        },
-        axes: [showXAxis ? createXAxis() : createHiddenXAxis(), createHiddenYAxis()],
-        series: [{}, buildSeries(1, colorToken)],
-        cursor: isSparkline
-          ? { show: false }
-          : {
-              drag: { setScale: false },
-              focus: { prox: 24 },
-              y: false,
-              x: false,
-            },
-        select: {
-          left: 0,
-          top: 0,
-          width: 0,
-          height: 0,
-          show: false,
-        },
-      },
-      chartData,
-      el,
-    );
+    let chart: uPlot | null = null;
 
-    const ro = new ResizeObserver(() => chart.setSize(size()));
+    const mountChart = (width: number, height: number) => {
+      if (chart || width <= 0 || height <= 0) {
+        return;
+      }
+
+      chart = new uPlot(
+        {
+          width,
+          height,
+          padding,
+          plugins,
+          legend: { show: false },
+          scales: {
+            x: {
+              time: false,
+              range: (_u, min, max) => (xRangeMode === "bar" ? [min - 0.5, max + 0.5] : [min, max]),
+            },
+            y: {
+              auto: true,
+              range: isSparkline
+                ? createSparklineYRange()
+                : xRangeMode === "bar"
+                  ? // Pin baseline to 0 so bars sit flush with the plot bottom;
+                    // the HTML label band owns the gap under the plot.
+                    (_u, _min, max) => [0, max ?? 1]
+                  : undefined,
+            },
+          },
+          // X labels live in a separate HTML band — keep uPlot's axis slot empty.
+          axes: [createHiddenXAxis(), createHiddenYAxis()],
+          series: [{}, buildSeries(1, colorToken)],
+          cursor: isSparkline
+            ? { show: false }
+            : {
+                drag: { setScale: false },
+                focus: { prox: 24 },
+                y: false,
+                x: false,
+              },
+          select: {
+            left: 0,
+            top: 0,
+            width: 0,
+            height: 0,
+            show: false,
+          },
+        },
+        chartData,
+        el,
+      );
+    };
+
+    const { width: initialWidth, height: initialHeight } = readSize();
+    mountChart(initialWidth, initialHeight);
+
+    const ro = new ResizeObserver(() => {
+      const { width, height } = readSize();
+      if (!chart) {
+        mountChart(width, height);
+        return;
+      }
+      chart.setSize({ width, height });
+    });
     ro.observe(el);
 
     return () => {
       ro.disconnect();
-      chart.destroy();
+      chart?.destroy();
+      labelsEl?.replaceChildren();
     };
   }, [
     buildSeries,
@@ -154,10 +187,18 @@ export function useUplotChart({
     showTooltip,
     showXAxis,
     tooltipSuffix,
+    xAxisGap,
     xRangeMode,
   ]);
 
-  return { ref, hasSeries: series != null, isEmpty: data.length === 0 };
+  return {
+    plotRef,
+    labelsRef,
+    showXAxis,
+    xAxisGap,
+    hasSeries: series != null,
+    isEmpty: data.length === 0,
+  };
 }
 
 export function makeBarSeries(series: { label: string; fill?: string }): uPlot.Series {
@@ -188,8 +229,19 @@ export function makeLineSeries(series: {
 }
 
 export function makeAreaSeries(
-  series: { label: string; stroke?: string; fill?: string; strokeWidth?: number },
-  fillFn: (u: uPlot, colorToken: string) => CanvasGradient | string,
+  series: {
+    label: string;
+    stroke?: string;
+    fill?: string;
+    strokeWidth?: number;
+    fillPattern?: AreaFillPattern;
+  },
+  fillFn: (
+    u: uPlot,
+    colorToken: string,
+    topOpacity?: number,
+    pattern?: AreaFillPattern,
+  ) => CanvasGradient | CanvasPattern | string,
   colorToken: string,
 ): uPlot.Series {
   const spline = uPlot.paths.spline;
@@ -198,7 +250,7 @@ export function makeAreaSeries(
     label: series.label,
     paths: spline?.({}),
     stroke: (self) => resolveColorValue(self, series.stroke),
-    fill: (u) => fillFn(u, colorToken),
+    fill: (u) => fillFn(u, colorToken, undefined, series.fillPattern),
     width: series.strokeWidth ?? 2,
     points: { show: false },
   };

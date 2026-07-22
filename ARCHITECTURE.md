@@ -41,7 +41,9 @@ icons, fonts, and browser-side DuckDB access.
 ├── .github/workflows/               # Release workflow configuration
 ├── CONTEXT.md                       # Product, schema, and feature context
 ├── DESIGN.md                        # Design system and interface guidelines
+├── DEPLOY.md                        # Portainer GitOps / GHCR production deploy
 ├── Agents.md                        # Short agent-facing project summary
+├── docker-compose.yml               # Production image-based compose (SHA-pinned)
 ├── package.json                     # Root workspace scripts
 ├── pnpm-workspace.yaml              # pnpm workspace and catalog versions
 ├── turbo.json                       # Turborepo task graph
@@ -237,8 +239,7 @@ Purpose: Resolves and enriches Spotify listening records with track, artist, and
 album metadata.
 
 Integration Method: HTTP requests through configured proxy URLs. The server uses
-`DEEZER_PROXY_URLS`, `DEEZER_PROXY_SECRET`, `DEEZER_REQUEST_GAP_MS`,
-`DEEZER_MAX_RETRIES`, and `DEEZER_RETRY_DELAY_MS`; proxy requests include the
+`DEEZER_PROXY_URLS` and `DEEZER_PROXY_SECRET`; proxy requests include the
 `X-Harmony-Secret` header.
 
 Service Name: OpenTelemetry Collector
@@ -250,24 +251,29 @@ environment-driven by the telemetry setup.
 
 ## 6. Deployment & Infrastructure
 
-Cloud Provider: Not fixed in the current codebase. README mentions Vercel for
-web deployment, while `.github/workflows/release.yml` builds and pushes images
-to GHCR on the `v3` branch.
+Production runs on a self-hosted NAS via Portainer CE GitOps. Images are built
+and pushed to GHCR on the `v3` branch; CI pins commit SHAs in
+`docker-compose.yml` so Portainer polling redeploys without Watchtower or
+webhooks. Full Portainer setup steps live in `DEPLOY.md`.
 
 Key Services Used:
 
 - Web runtime/build: Vite, Nitro, TanStack Start.
 - API runtime: Rust Axum service.
 - Database: PostgreSQL.
-- File storage: filesystem directory configured by `DUCKDB_DATA_DIR`.
+- File storage: DuckDB files under `/data/duckdb` in the API container
+  (see `db_file.rs`; persist via a host/volume mount in Portainer if needed).
+- Object storage: S3-compatible (Cloudflare R2).
 - Observability: OpenTelemetry-compatible tracing.
+- Container registry: GHCR (`ghcr.io/abgameur/harmony/{web,api}`).
 
 CI/CD Pipeline:
 
 - GitHub Actions release workflow on pushes to `v3`.
-- Workflow currently references npm commands and Dockerfiles that do not appear
-  in the current tree, so it likely needs reconciliation with the pnpm/Turbo and
-  Rust workspace setup.
+- Lint with pnpm, build/push `apps/web/Dockerfile` and `apps/server/Dockerfile`
+  (tags `:latest` and `:<sha>`), then commit pinned tags into
+  `docker-compose.yml` with `[skip ci]`.
+- `docker-compose.yml` uses GHCR `image:` tags only (no NAS-side builds).
 
 Local development commands:
 
@@ -307,7 +313,8 @@ Integration secrets:
 - Deezer proxy access uses `DEEZER_PROXY_SECRET` and the `X-Harmony-Secret`
   request header.
 - `DATABASE_URL` and telemetry credentials should stay server-only.
-- The frontend only needs public build-time values such as `VITE_API_URL`.
+- The frontend only needs public runtime values such as `API_URL` and
+  `BUCKET_URL`.
 
 Notable risk:
 
@@ -337,7 +344,7 @@ Required local environment:
 
 - `DATABASE_URL` for Postgres.
 - `DUCKDB_DATA_DIR` for generated DuckDB files.
-- `VITE_API_URL` for the web upload client.
+- `API_URL` for the web upload client.
 - `HOST` and `PORT` for the Rust API bind address; defaults are
   `127.0.0.1:3000`.
 - Deezer proxy variables when running ingestion against Deezer metadata.

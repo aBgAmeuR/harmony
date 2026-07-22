@@ -48,6 +48,10 @@ tempfile.workspace = true
 duckdb.workspace = true
 polars.workspace = true
 
+# Object storage (S3-compatible / Cloudflare R2)
+aws-config.workspace = true
+aws-sdk-s3.workspace = true
+
 # OpenTelemetry
 opentelemetry.workspace = true
 tracing-opentelemetry.workspace = true

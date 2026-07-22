@@ -39,8 +39,8 @@ import { Pipeline } from "@/features/packages/components/pipeline";
 import { query } from "@/lib/query";
 import { format } from "@/utils/format";
 
-const getPackage = async (packageId: string) => {
-  const pkg = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/packages/${packageId}`);
+const getPackage = async (apiUrl: string, packageId: string) => {
+  const pkg = await fetch(`${apiUrl}/api/v1/packages/${packageId}`);
   return (await pkg.json()) as {
     public_id: string;
     file_name: string;
@@ -58,20 +58,20 @@ const getPackage = async (packageId: string) => {
   };
 };
 
-const packageQuery = (packageId: string) =>
+const packageQuery = (apiUrl: string, packageId: string) =>
   queryOptions({
     queryKey: ["package", packageId],
-    queryFn: () => getPackage(packageId),
+    queryFn: () => getPackage(apiUrl, packageId),
   });
 
 const periodQuery = query.packages.period.queryOptions();
 
 export const Route = createFileRoute("/app/$packageId/package")({
   ssr: false,
-  loader: async ({ context: { queryClient }, parentMatchPromise, params }) => {
+  loader: async ({ context: { queryClient, config }, parentMatchPromise, params  }) => {
     await parentMatchPromise;
     await Promise.all([
-      queryClient.ensureQueryData(packageQuery(params.packageId)),
+      queryClient.ensureQueryData(packageQuery(config.apiUrl, params.packageId)),
       queryClient.ensureQueryData(periodQuery),
     ]);
   },
@@ -165,8 +165,9 @@ function PackageHeaderSection({ pkg, subtitle }: PackageHeaderProps) {
 }
 
 function RouteComponent() {
+  const { config } = Route.useRouteContext();
   const { packageId } = Route.useParams();
-  const { data } = useQuery(packageQuery(packageId));
+  const { data } = useQuery(packageQuery(config.apiUrl, packageId));
   const { data: period } = useQuery(periodQuery);
 
   if (!data) return null;

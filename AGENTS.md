@@ -51,6 +51,8 @@ harmony-v3/
 ├── ARCHITECTURE.md           # System map and development environment
 ├── CONTEXT.md                # Product, schema, and feature context
 ├── DESIGN.md                 # Design system tokens and UI rules
+├── DEPLOY.md                 # Portainer GitOps / GHCR production deploy
+├── docker-compose.yml        # Production image-based compose (SHA-pinned)
 ├── pnpm-workspace.yaml       # Workspace packages and catalog versions
 └── turbo.json                # Turborepo task graph
 ```

@@ -5,12 +5,18 @@ import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanst
 import { queryClient } from "@/lib/query-client";
 
 import appCss from "../index.css?url";
+import { getPublicConfig } from "@/lib/public-config";
 
 export interface RouterAppContext {
   queryClient: QueryClient;
+  config: Awaited<ReturnType<typeof getPublicConfig>>;
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
+  beforeLoad: async () => {
+    const config = await getPublicConfig();
+    return { config };
+  },
   head: () => ({
     meta: [
       {

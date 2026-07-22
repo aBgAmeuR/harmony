@@ -54,6 +54,10 @@ tempfile = "3"
 duckdb = { version = "1.2", features = ["bundled"] }
 polars = { version = "0.46", features = ["parquet", "dtype-date", "dtype-datetime"] }
 
+# Object storage (S3-compatible / Cloudflare R2)
+aws-config = { version = "1", features = ["behavior-version-latest"] }
+aws-sdk-s3 = "1"
+
 # OpenTelemetry
 opentelemetry = "0.31"
 tracing-opentelemetry = "0.32.1"

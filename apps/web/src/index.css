@@ -1,3 +1,40 @@
 @import "@harmony/font/spotify-mix.css";
 @import "@harmony/ui/globals.css";
 @import "@bprogress/core/css";
+
+/* App-local keyframes referenced by Tailwind `animate-*` utilities. */
+@theme {
+  --animate-glow-pulse: glow-pulse 5.5s ease-in-out infinite;
+}
+
+@keyframes logo-bar {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.38);
+  }
+}
+
+@keyframes card-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.22;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 0.3;
+  }
+}

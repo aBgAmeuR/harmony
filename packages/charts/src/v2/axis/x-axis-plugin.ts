@@ -1,15 +1,20 @@
 import uPlot from "uplot";
 
-const LABEL_AXIS_SIZE = 22;
-const LABEL_FONT = "12px";
-/** CSS px gap between chart content and x-axis labels. */
-export const BAR_X_AXIS_GAP = 6;
-/** Minimum horizontal whitespace (px) required between two adjacent labels. */
-const MIN_LABEL_GAP = 10;
-/** Whitespace (px) kept between a label and the canvas edge when clamped. */
-const EDGE_PAD = 2;
+/** CSS px between plot bottom and label text. */
+export const X_AXIS_GAP = 8;
+/** CSS px reserved for the label line. */
+export const X_AXIS_LABEL_SIZE = 14;
 
-type AxisLayout = uPlot.Axis & { _pos?: number };
+/** Total CSS px band under the plot for a given label gap. */
+export function xAxisBandHeight(gap: number = X_AXIS_GAP): number {
+  return Math.max(0, gap) + X_AXIS_LABEL_SIZE;
+}
+
+const LABEL_FONT = `12px ${typeof CSS !== "undefined" && CSS.supports("font-family", "system-ui") ? "system-ui, sans-serif" : "sans-serif"}`;
+/** Minimum horizontal whitespace (CSS px) between adjacent labels. */
+const MIN_LABEL_GAP = 8;
+/** Whitespace (CSS px) kept between a label and the plot edge when clamped. */
+const EDGE_PAD = 2;
 
 function evenlySpaced(n: number, count: number): number[] {
   if (count >= n) {
@@ -30,10 +35,10 @@ function evenlySpaced(n: number, count: number): number[] {
   return out;
 }
 
-type Placement = { idx: number; left: number; center: number };
+type Placement = { idx: number; center: number };
 
 function tryPlace(
-  u: uPlot,
+  centers: number[],
   indices: number[],
   widths: number[],
   areaLeft: number,
@@ -44,7 +49,7 @@ function tryPlace(
 
   for (const idx of indices) {
     const half = (widths[idx] ?? 0) / 2;
-    let center = u.valToPos(idx, "x", true);
+    let center = centers[idx] ?? 0;
 
     if (center - half < areaLeft + EDGE_PAD) {
       center = areaLeft + EDGE_PAD + half;
@@ -57,25 +62,22 @@ function tryPlace(
       return null;
     }
     prevRight = center + half;
-    placements.push({ idx, left, center });
+    placements.push({ idx, center });
   }
 
   return placements;
 }
 
-export function createYRangeWithBottomGap(): uPlot.Scale.Range {
-  return (u: uPlot, min: number, max: number) => {
-    const ymax = max ?? 1;
-    const ymin = min ?? 0;
-    const h = u.bbox.height;
-    if (!h) return [ymin, ymax];
-    const span = ymax - ymin || ymax;
-    const pad = (span / h) * BAR_X_AXIS_GAP;
-    return [ymin - pad, ymax];
-  };
+function measureWidths(labels: readonly string[]): number[] {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    return labels.map((label) => label.length * 7);
+  }
+  ctx.font = LABEL_FONT;
+  return labels.map((label) => ctx.measureText(label).width);
 }
 
-/** Vertical padding for compact sparklines so the stroke does not clip. */
 export function createSparklineYRange(paddingRatio = 0.12): uPlot.Scale.Range {
   return (_u: uPlot, min: number, max: number) => {
     const ymax = max ?? 1;
@@ -83,19 +85,6 @@ export function createSparklineYRange(paddingRatio = 0.12): uPlot.Scale.Range {
     const span = ymax - ymin || ymax || 1;
     const pad = span * paddingRatio;
     return [ymin - pad, ymax + pad];
-  };
-}
-
-export function createXAxis(): uPlot.Axis {
-  return {
-    show: true,
-    size: LABEL_AXIS_SIZE + BAR_X_AXIS_GAP - 5,
-    gap: BAR_X_AXIS_GAP,
-    grid: { show: false },
-    ticks: { show: false },
-    border: { show: false },
-    splits: () => [],
-    values: () => [],
   };
 }
 
@@ -111,57 +100,6 @@ export function createHiddenXAxis(): uPlot.Axis {
   };
 }
 
-export function xAxisLabelsPlugin(labels: readonly string[]): uPlot.Plugin {
-  const n = labels.length;
-
-  return {
-    hooks: {
-      drawAxes(u) {
-        if (n === 0) return;
-        const axis = u.axes[0] as AxisLayout | undefined;
-        if (!axis?.show) return;
-
-        const ctx = u.ctx;
-        ctx.save();
-        ctx.font = LABEL_FONT;
-
-        const widths = labels.map((label) => ctx.measureText(label).width);
-        const areaLeft = u.bbox.left;
-        const areaRight = u.bbox.left + u.bbox.width;
-        const available = areaRight - areaLeft;
-
-        const widest = widths.reduce((m, w) => Math.max(m, w), 0);
-        const maxFit = Math.max(
-          1,
-          Math.floor((available + MIN_LABEL_GAP) / (widest + MIN_LABEL_GAP)),
-        );
-
-        let placements: Placement[] | null = null;
-        for (let count = Math.min(n, maxFit); count >= 1; count--) {
-          placements = tryPlace(u, evenlySpaced(n, count), widths, areaLeft, areaRight);
-          if (placements) break;
-        }
-        if (!placements) {
-          ctx.restore();
-          return;
-        }
-
-        const color = getComputedStyle(u.root).getPropertyValue("--chart-label").trim();
-        const y = Math.round((axis._pos ?? u.height) + (axis.gap ?? BAR_X_AXIS_GAP));
-        ctx.fillStyle = color;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "top";
-
-        for (const { idx, center } of placements) {
-          ctx.fillText(labels[idx] ?? "", Math.round(center), y);
-        }
-
-        ctx.restore();
-      },
-    },
-  };
-}
-
 export function createHiddenYAxis(): uPlot.Axis {
   return {
     show: true,
@@ -170,5 +108,90 @@ export function createHiddenYAxis(): uPlot.Axis {
     border: { show: false },
     values: () => [],
     grid: { show: false },
+  };
+}
+
+/**
+ * Renders x-axis labels into a dedicated HTML band under the plot.
+ * Keeps a stable CSS gap regardless of DPR or plot height.
+ */
+export function xAxisLabelsPlugin(
+  labels: readonly string[],
+  labelsEl: HTMLElement,
+  gap: number = X_AXIS_GAP,
+): uPlot.Plugin {
+  const n = labels.length;
+  const widths = measureWidths(labels);
+  const labelGap = Math.max(0, gap);
+
+  labelsEl.replaceChildren();
+  labelsEl.style.boxSizing = "border-box";
+
+  const nodes = labels.map((label) => {
+    const span = document.createElement("span");
+    span.textContent = label;
+    span.setAttribute(
+      "style",
+      [
+        "position:absolute",
+        `top:${labelGap}px`,
+        "left:0",
+        "transform:translateX(-50%)",
+        "font:12px system-ui,sans-serif",
+        "line-height:14px",
+        "white-space:nowrap",
+        "color:var(--chart-label)",
+        "pointer-events:none",
+        "visibility:hidden",
+      ].join(";"),
+    );
+    labelsEl.append(span);
+    return span;
+  });
+
+  function sync(u: uPlot) {
+    if (n === 0) return;
+
+    const plotLeft = u.bbox.left / uPlot.pxRatio;
+    const plotWidth = u.bbox.width / uPlot.pxRatio;
+    const areaLeft = plotLeft;
+    const areaRight = plotLeft + plotWidth;
+    const available = plotWidth;
+
+    const centers = labels.map((_, idx) => plotLeft + u.valToPos(idx, "x", false));
+
+    const widest = widths.reduce((m, w) => Math.max(m, w), 0);
+    const maxFit = Math.max(
+      1,
+      Math.floor((available + MIN_LABEL_GAP) / (Math.max(widest, 1) + MIN_LABEL_GAP)),
+    );
+
+    let placements: Placement[] | null = null;
+    for (let count = Math.min(n, maxFit); count >= 1; count--) {
+      placements = tryPlace(centers, evenlySpaced(n, count), widths, areaLeft, areaRight);
+      if (placements) break;
+    }
+
+    const visible = new Set(placements?.map((p) => p.idx) ?? []);
+    const centerByIdx = new Map(placements?.map((p) => [p.idx, p.center] as const) ?? []);
+
+    for (let idx = 0; idx < n; idx++) {
+      const node = nodes[idx];
+      if (!node) continue;
+      if (!visible.has(idx)) {
+        node.style.visibility = "hidden";
+        continue;
+      }
+      node.style.visibility = "visible";
+      node.style.left = `${centerByIdx.get(idx) ?? centers[idx] ?? 0}px`;
+    }
+  }
+
+  return {
+    hooks: {
+      setSize: [sync],
+      ready: [sync],
+      draw: [sync],
+    },
   };
 }

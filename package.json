@@ -24,9 +24,9 @@
     "@harmony/config": "workspace:*",
     "@types/node": "catalog:",
     "oxfmt": "^0.54.0",
-    "oxlint": "^1.69.0",
+    "oxlint": "^1.75.0",
     "oxlint-tsgolint": "^0.23.0",
-    "turbo": "^2.9.18",
+    "turbo": "^2.10.6",
     "typescript": "catalog:"
   },
   "packageManager": "pnpm@10.7.1"

@@ -11,7 +11,7 @@ type DbStore = {
   conn: AsyncDuckDBConnection | null;
   status: DbStatus;
   error: DuckDBError | null;
-  initialize: (packageId: string) => Promise<void>;
+  initialize: (packageId: string, url: string) => Promise<void>;
 };
 
 let initPromise: Promise<void> | null = null;
@@ -20,7 +20,7 @@ export const useDbStore = create<DbStore>()((set, get) => ({
   conn: null,
   status: "idle",
   error: null,
-  initialize: async (packageId: string) => {
+  initialize: async (packageId: string, url: string) => {
     const { status } = get();
     if (status === "ready" || status === "error") return;
     if (initPromise) return initPromise;
@@ -30,11 +30,7 @@ export const useDbStore = create<DbStore>()((set, get) => ({
 
       try {
         const db = await getDuckDBInstance();
-        const fileName = await registerPackageDatabase(
-          db,
-          packageId,
-          `http://localhost:3000/api/v1/packages/${packageId}/db`,
-        );
+        const fileName = await registerPackageDatabase(db, packageId, url);
         const conn = await db.connect();
 
         await conn.query(`ATTACH '${fileName}' AS pkg (READ_ONLY)`);

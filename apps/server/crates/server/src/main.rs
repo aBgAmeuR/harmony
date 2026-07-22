@@ -18,10 +18,12 @@ mod package_data;
 mod package_upload;
 mod pipeline;
 mod progress;
+mod storage;
 mod upload;
 mod worker;
 
 use package_upload::PackageUpload;
+use storage::S3ObjectStore;
 
 pub type RamStore = Arc<DashMap<i32, PackageUpload>>;
 
@@ -31,6 +33,7 @@ pub struct AppState {
     pub ram_store: RamStore,
     pub jobs: mpsc::Sender<worker::Job>,
     pub progress: Arc<progress::ProgressHub>,
+    pub object_store: Arc<S3ObjectStore>,
 }
 
 async fn health() -> &'static str {
@@ -41,6 +44,11 @@ async fn health() -> &'static str {
 async fn main() {
     let _guard = otel::init_otel();
     let pool = establish_pool();
+    let object_store = Arc::new(
+        S3ObjectStore::from_env()
+            .await
+            .expect("failed to initialize object storage"),
+    );
 
     let (jobs_tx, jobs_rx) = mpsc::channel::<worker::Job>(64);
     let state = AppState {
@@ -48,6 +56,7 @@ async fn main() {
         ram_store: Arc::new(DashMap::new()),
         jobs: jobs_tx,
         progress: Arc::new(progress::ProgressHub::new()),
+        object_store,
     };
 
     tokio::spawn(worker::run(state.clone(), jobs_rx));

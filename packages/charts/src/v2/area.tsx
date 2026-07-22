@@ -1,4 +1,8 @@
+import type { AreaFillPattern } from "./chart-color";
+
 import { defineSeriesChild, type SeriesConfig } from "./chart-child";
+
+export type { AreaFillPattern };
 
 export interface AreaProps {
   /** Key in data to use for y values */
@@ -11,6 +15,11 @@ export interface AreaProps {
   strokeWidth?: number;
   /** Series label for tooltip. Default: dataKey */
   label?: string;
+  /**
+   * Optional pattern drawn on top of the area gradient fill.
+   * Pattern dots use the same vertical gradient (bright near the line → faded at the baseline).
+   */
+  fillPattern?: AreaFillPattern;
 }
 
 function toSeriesConfig(props: AreaProps): SeriesConfig {
@@ -20,6 +29,7 @@ function toSeriesConfig(props: AreaProps): SeriesConfig {
     fill: props.fill,
     stroke: props.stroke ?? props.fill,
     strokeWidth: props.strokeWidth,
+    fillPattern: props.fillPattern,
   };
 }
 

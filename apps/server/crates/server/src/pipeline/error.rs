@@ -59,9 +59,6 @@ pub enum VerifyError {}
 
 #[derive(Debug, thiserror::Error)]
 pub enum PersistError {
-    #[error("env var DUCKDB_DATA_DIR not set")]
-    MissingDataDir,
-
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
 
@@ -70,6 +67,12 @@ pub enum PersistError {
 
     #[error("duckdb error: {0}")]
     DuckDb(#[from] duckdb::Error),
+
+    #[error("object storage error: {0}")]
+    Storage(#[from] crate::storage::StorageError),
+
+    #[error("no tokio runtime available for object storage upload")]
+    RuntimeUnavailable,
 }
 
 #[derive(Debug, thiserror::Error)]

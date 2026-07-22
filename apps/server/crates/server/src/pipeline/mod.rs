@@ -11,9 +11,11 @@ pub use types::{
 };
 
 use std::collections::HashMap;
+use std::sync::Arc;
 use std::time::Instant;
 
 use crate::progress::{ProgressReporter, StepId};
+use crate::storage::S3ObjectStore;
 
 pub struct PipelineStats {
     pub files_taken_count: usize,
@@ -47,6 +49,7 @@ pub struct PipelineContext {
     pub interactions: Vec<Interaction>,
     pub stats: PipelineStats,
     pub reporter: Option<ProgressReporter>,
+    pub object_store: Arc<S3ObjectStore>,
 }
 
 impl PipelineContext {
@@ -56,6 +59,7 @@ impl PipelineContext {
         zip_bytes: Vec<u8>,
         selected_files: Option<Vec<String>>,
         reporter: Option<ProgressReporter>,
+        object_store: Arc<S3ObjectStore>,
     ) -> Self {
         Self {
             package_id,
@@ -87,6 +91,7 @@ impl PipelineContext {
                 verify_interactions_skipped_count: 0,
             },
             reporter,
+            object_store,
         }
     }
 }

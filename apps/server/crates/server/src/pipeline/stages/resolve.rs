@@ -40,13 +40,6 @@ struct DeezerSearchTrack {
     title: String,
 }
 
-fn load_match_threshold() -> f64 {
-    env::var("DEEZER_MATCH_THRESHOLD")
-        .ok()
-        .and_then(|value| value.parse().ok())
-        .unwrap_or(0.8)
-}
-
 fn build_deezer_search_url(artist: &str, track: &str) -> Result<String, ResolveError> {
     let mut url = reqwest::Url::parse(DEEZER_SEARCH).map_err(|err| {
         ResolveError::MissingConfig(format!("invalid Deezer search URL: {err}"))
@@ -170,7 +163,7 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), ResolveError> {
     }
 
     let config = deezer::load_config().map_err(ResolveError::MissingConfig)?;
-    let match_threshold = load_match_threshold();
+    let match_threshold = 0.8;
 
     let client = DeezerClient::new(config).map_err(ResolveError::HttpClient)?;
     let concurrency = client.concurrency();

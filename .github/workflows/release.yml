@@ -5,7 +5,7 @@ on:
     branches: [v3]
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
@@ -16,17 +16,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run lint
-        run: npm run lint
+        run: pnpm check
 
   build:
     name: Build & push · ${{ matrix.app.name }}
@@ -37,12 +40,9 @@ jobs:
       matrix:
         app:
           - name: api
-            dockerfile: docker/api.Dockerfile
-            build_args: ""
+            dockerfile: apps/server/Dockerfile
           - name: web
-            dockerfile: docker/web.Dockerfile
-            build_args: |
-              VITE_API_URL=${{ vars.VITE_API_URL }}
+            dockerfile: apps/web/Dockerfile
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -57,17 +57,41 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Validate web release environment
-        if: matrix.app.name == 'web'
-        run: test -n "${{ vars.VITE_API_URL }}"
-
       - name: Build & push image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ${{ matrix.app.dockerfile }}
           push: true
-          build-args: ${{ matrix.app.build_args }}
           tags: |
             ghcr.io/abgameur/harmony/${{ matrix.app.name }}:latest
             ghcr.io/abgameur/harmony/${{ matrix.app.name }}:${{ github.sha }}
+
+  pin-compose:
+    name: Pin compose image tags
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pin image SHAs in docker-compose.yml
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          sed -i "s|ghcr.io/abgameur/harmony/web:[^[:space:]]*|ghcr.io/abgameur/harmony/web:${SHA}|" docker-compose.yml
+          sed -i "s|ghcr.io/abgameur/harmony/api:[^[:space:]]*|ghcr.io/abgameur/harmony/api:${SHA}|" docker-compose.yml
+
+      - name: Commit and push pinned compose
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docker-compose.yml
+          if git diff --staged --quiet; then
+            echo "Compose already pinned to this SHA"
+            exit 0
+          fi
+          git commit -m "deploy: pin images to ${{ github.sha }} [skip ci]"
+          git push

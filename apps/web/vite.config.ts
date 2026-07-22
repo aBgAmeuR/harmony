@@ -10,9 +10,14 @@ export default defineConfig({
     nitro(),
     tailwindcss(),
     tanstackStart({
-      spa: {
-        enabled: true,
-      },
+      // see issue: https://github.com/TanStack/router/issues/6602
+      // spa: {
+      //   enabled: true,
+      // },
+      // pages: [
+      //   { path: "/", prerender: { enabled: true } },
+      //   { path: "/upload", prerender: { enabled: true } },
+      // ],
     }),
     viteReact(),
     checker({ oxlint: true }),

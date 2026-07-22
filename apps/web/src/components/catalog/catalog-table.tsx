@@ -19,7 +19,7 @@ import { MetricCell } from "../format/metric-cell";
 import { CatalogImage } from "./catalog-image";
 import { CatalogTrendSparkline } from "./catalog-trend-sparkline";
 
-const getRankClassName = (rank: number) => {
+export const getRankClassName = (rank: number) => {
   switch (rank) {
     case 1:
       return "bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/40";

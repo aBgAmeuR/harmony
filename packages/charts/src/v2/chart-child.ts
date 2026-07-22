@@ -1,3 +1,6 @@
+import type { AreaFillPattern } from "./chart-color";
+
+export type { AreaFillPattern };
 export type SeriesKind = "bar" | "line" | "area";
 
 export interface SeriesConfig {
@@ -6,6 +9,8 @@ export interface SeriesConfig {
   fill?: string;
   stroke?: string;
   strokeWidth?: number;
+  /** Optional overlay pattern drawn on top of the area gradient fill */
+  fillPattern?: AreaFillPattern;
 }
 
 export type ChartFeatureRole = "grid" | "xAxis" | "tooltip";
