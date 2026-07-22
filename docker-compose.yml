@@ -1,11 +1,9 @@
-# Image tags are pinned to a commit SHA by .github/workflows/release.yml after each push to v3.
-# Set stack environment variables in Portainer (do not commit secrets).
+version: "3.8"
 
 services:
   web:
     image: ghcr.io/abgameur/harmony/web:c3b15d8dc265dc5eec5c144da28b8a711309df73
-    ports:
-      - "3001:3001"
+    container_name: harmony-web
     environment:
       NODE_ENV: production
       PORT: "3001"
@@ -15,8 +13,7 @@ services:
 
   api:
     image: ghcr.io/abgameur/harmony/api:c3b15d8dc265dc5eec5c144da28b8a711309df73
-    ports:
-      - "3000:3000"
+    container_name: harmony-api
     environment:
       HOST: "0.0.0.0"
       PORT: "3000"
