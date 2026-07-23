@@ -1,4 +1,4 @@
- use std::sync::Arc;
+use std::sync::Arc;
 
 use axum::{
     Router,
@@ -6,22 +6,22 @@ use axum::{
     routing::{get, post},
 };
 use dashmap::DashMap;
+use diesel_async::pooled_connection::deadpool::Object;
+use diesel_async::AsyncPgConnection;
 use harmony_db::establish_pool;
 use tokio::sync::mpsc;
 use tower_http::cors::CorsLayer;
 
-mod db_file;
 mod error;
+mod http;
 mod otel;
-mod package;
-mod package_data;
 mod package_upload;
 mod pipeline;
 mod progress;
 mod storage;
-mod upload;
 mod worker;
 
+use error::ApiError;
 use package_upload::PackageUpload;
 use storage::S3ObjectStore;
 
@@ -34,6 +34,12 @@ pub struct AppState {
     pub jobs: mpsc::Sender<worker::Job>,
     pub progress: Arc<progress::ProgressHub>,
     pub object_store: Arc<S3ObjectStore>,
+}
+
+impl AppState {
+    pub async fn conn(&self) -> Result<Object<AsyncPgConnection>, ApiError> {
+        self.pool.get().await.map_err(ApiError::from)
+    }
 }
 
 async fn health() -> &'static str {
@@ -84,20 +90,12 @@ fn app(state: AppState) -> Router {
         .route("/health", get(health))
         .route(
             "/api/v1/packages",
-            post(upload::upload_package).layer(DefaultBodyLimit::max(50 * 1024 * 1024)),
+            post(http::upload_package).layer(DefaultBodyLimit::max(50 * 1024 * 1024)),
         )
-        .route("/api/v1/packages/{id}", get(package::get_package_handler))
+        .route("/api/v1/packages/{id}", get(http::get_package_handler))
         .route(
             "/api/v1/packages/{id}/stream",
             get(progress::stream_package_progress),
-        )
-        .route(
-            "/api/v1/packages/{id}/data",
-            get(package_data::get_package_data_handler),
-        )
-        .route(
-            "/api/v1/packages/{id}/db",
-            get(db_file::get_db_file),
         )
         .with_state(state)
         .layer(otel::OtelInResponseLayer::default())

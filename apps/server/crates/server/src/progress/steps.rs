@@ -1,4 +1,5 @@
 use super::events::StepId;
+use crate::pipeline::Stage;
 
 pub const STEP_ORDER: [StepId; 7] = [
     StepId::ExtractArchive,
@@ -24,23 +25,7 @@ pub fn step_label(step_id: StepId) -> &'static str {
     }
 }
 
-pub fn sse_step_id(step_id: StepId) -> StepId {
-    match step_id {
-        StepId::AggregateInteractions | StepId::VerifyData | StepId::PersistInteractions => {
-            StepId::PersistInteractions
-        }
-        other => other,
-    }
-}
-
-pub fn stage_to_step_id(stage: &str) -> StepId {
-    match stage {
-        "extract" => StepId::ExtractArchive,
-        "parse" => StepId::ParseInteractions,
-        "normalize" => StepId::NormalizeInteractions,
-        "resolve" => StepId::ResolveTracks,
-        "enrich" => StepId::EnrichTracks,
-        "aggregate" | "verify" | "persist" => StepId::PersistInteractions,
-        _ => StepId::ExtractArchive,
-    }
+/// Maps a domain stage onto the SSE-facing step (save-bundle stages fold into persist).
+pub fn stage_to_step_id(stage: Stage) -> StepId {
+    stage.to_step_id()
 }

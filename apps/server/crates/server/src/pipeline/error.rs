@@ -1,3 +1,45 @@
+use crate::progress::StepId;
+
+/// Pipeline stage identity. Maps 1:1 to [`PipelineError`] variants.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Stage {
+    Extract,
+    Parse,
+    Normalize,
+    Resolve,
+    Enrich,
+    Aggregate,
+    Verify,
+    Persist,
+}
+
+impl Stage {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Extract => "extract",
+            Self::Parse => "parse",
+            Self::Normalize => "normalize",
+            Self::Resolve => "resolve",
+            Self::Enrich => "enrich",
+            Self::Aggregate => "aggregate",
+            Self::Verify => "verify",
+            Self::Persist => "persist",
+        }
+    }
+
+    /// Maps a domain stage onto the SSE-facing step id (aggregate/verify fold into persist).
+    pub fn to_step_id(self) -> StepId {
+        match self {
+            Self::Extract => StepId::ExtractArchive,
+            Self::Parse => StepId::ParseInteractions,
+            Self::Normalize => StepId::NormalizeInteractions,
+            Self::Resolve => StepId::ResolveTracks,
+            Self::Enrich => StepId::EnrichTracks,
+            Self::Aggregate | Self::Verify | Self::Persist => StepId::PersistInteractions,
+        }
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum ExtractError {
     #[error("invalid zip archive")]
@@ -44,9 +86,6 @@ pub enum ResolveError {
 
 #[derive(Debug, thiserror::Error)]
 pub enum EnrichError {
-    #[error("missing required Deezer configuration: {0}")]
-    MissingConfig(String),
-
     #[error("failed to build HTTP client")]
     HttpClient(#[from] reqwest::Error),
 }
@@ -70,9 +109,6 @@ pub enum PersistError {
 
     #[error("object storage error: {0}")]
     Storage(#[from] crate::storage::StorageError),
-
-    #[error("no tokio runtime available for object storage upload")]
-    RuntimeUnavailable,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -100,19 +136,43 @@ pub enum PipelineError {
 
     #[error("persist stage failed")]
     Persist(#[from] PersistError),
+
+    #[error("pipeline task panicked")]
+    Join(#[from] tokio::task::JoinError),
 }
 
 impl PipelineError {
-    pub fn stage(&self) -> &'static str {
+    pub fn stage(&self) -> Stage {
         match self {
-            Self::Extract(_) => "extract",
-            Self::Parse(_) => "parse",
-            Self::Normalize(_) => "normalize",
-            Self::Resolve(_) => "resolve",
-            Self::Enrich(_) => "enrich",
-            Self::Aggregate(_) => "aggregate",
-            Self::Verify(_) => "verify",
-            Self::Persist(_) => "persist",
+            Self::Extract(_) => Stage::Extract,
+            Self::Parse(_) => Stage::Parse,
+            Self::Normalize(_) => Stage::Normalize,
+            Self::Resolve(_) => Stage::Resolve,
+            Self::Enrich(_) => Stage::Enrich,
+            Self::Aggregate(_) => Stage::Aggregate,
+            Self::Verify(_) => Stage::Verify,
+            Self::Persist(_) => Stage::Persist,
+            Self::Join(_) => Stage::Extract,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn stage_to_step_id_folds_save_bundle() {
+        assert_eq!(Stage::Aggregate.to_step_id(), StepId::PersistInteractions);
+        assert_eq!(Stage::Verify.to_step_id(), StepId::PersistInteractions);
+        assert_eq!(Stage::Persist.to_step_id(), StepId::PersistInteractions);
+        assert_eq!(Stage::Resolve.to_step_id(), StepId::ResolveTracks);
+    }
+
+    #[test]
+    fn pipeline_error_maps_to_stage() {
+        let err = PipelineError::Normalize(NormalizeError::NoInteractionsKept);
+        assert_eq!(err.stage(), Stage::Normalize);
+        assert_eq!(err.stage().as_str(), "normalize");
     }
 }

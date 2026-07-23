@@ -6,7 +6,7 @@ use dotenvy::dotenv;
 use rand::Rng;
 use std::env;
 
-use self::models::{NewPackage, NewPackageData, Package, PackageData};
+use self::models::{NewPackage, Package};
 
 pub mod models;
 pub mod schema;
@@ -128,40 +128,5 @@ pub async fn get_package_by_public_id(
         .filter(public_id_col.eq(package_public_id))
         .select(Package::as_select())
         .get_result(conn)
-        .await
-}
-
-pub async fn get_package_data(
-    conn: &mut AsyncPgConnection,
-    public_id: &str,
-) -> QueryResult<PackageData> {
-    use schema::package_data::dsl::{package_data, public_id as public_id_col};
-
-    package_data
-        .filter(public_id_col.eq(public_id))
-        .select(PackageData::as_select())
-        .get_result(conn)
-        .await
-}
-
-pub async fn upsert_package_data(
-    conn: &mut AsyncPgConnection,
-    public_id: &str,
-    payload: serde_json::Value,
-) -> QueryResult<usize> {
-    use diesel::pg::upsert::excluded;
-    use schema::package_data;
-
-    let row = NewPackageData {
-        public_id,
-        value: payload,
-    };
-
-    diesel::insert_into(package_data::table)
-        .values(&row)
-        .on_conflict(package_data::public_id)
-        .do_update()
-        .set(package_data::value.eq(excluded(package_data::value)))
-        .execute(conn)
         .await
 }

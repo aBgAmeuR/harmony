@@ -40,7 +40,7 @@ function formatListeningTime(totalMinutes: number): string {
 }
 
 export function StatsStep({ uploadId, uploadCompleted, onBack, canBack = true }: StatsStepProps) {
-  const { config } = useRouteContext({ from: "/app/$packageId/package" });
+  const { config } = useRouteContext({ from: "__root__" });
 
   const statsQuery = useQuery({
     queryKey: ["upload-stats", uploadId],

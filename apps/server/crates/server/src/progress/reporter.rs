@@ -1,6 +1,6 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
-use super::events::{PipelineEvent, StepId, StepProgress};
+use super::events::{ProgressEvent, StepId, StepProgress};
 use super::hub::{now_iso, ProgressHub};
 use super::steps::step_label;
 
@@ -8,27 +8,19 @@ use super::steps::step_label;
 pub struct ProgressReporter {
     hub: Arc<ProgressHub>,
     public_id: String,
-    active_step: Arc<Mutex<Option<StepId>>>,
 }
 
 impl ProgressReporter {
     pub fn new(hub: Arc<ProgressHub>, public_id: String) -> Self {
-        Self {
-            hub,
-            public_id,
-            active_step: Arc::new(Mutex::new(None)),
-        }
+        Self { hub, public_id }
     }
 
     pub fn step_started(&self, step_id: StepId) {
-        let label = step_label(step_id).to_string();
-        *self.active_step.lock().expect("active step lock poisoned") = Some(step_id);
         self.hub.emit(
             &self.public_id,
-            PipelineEvent::StepStarted {
-                seq: 0,
+            ProgressEvent::StepStarted {
                 step_id,
-                label,
+                label: step_label(step_id).to_string(),
                 at: now_iso(),
             },
         );
@@ -37,11 +29,7 @@ impl ProgressReporter {
     pub fn step_progress(&self, step_id: StepId, progress: StepProgress) {
         self.hub.emit(
             &self.public_id,
-            PipelineEvent::StepProgress {
-                seq: 0,
-                step_id,
-                progress,
-            },
+            ProgressEvent::StepProgress { step_id, progress },
         );
     }
 
@@ -53,8 +41,7 @@ impl ProgressReporter {
     ) {
         self.hub.emit(
             &self.public_id,
-            PipelineEvent::StepCompleted {
-                seq: 0,
+            ProgressEvent::StepCompleted {
                 step_id,
                 at: now_iso(),
                 duration_ms,
@@ -71,8 +58,7 @@ impl ProgressReporter {
 
         self.hub.emit(
             &self.public_id,
-            PipelineEvent::RunCompleted {
-                seq: 0,
+            ProgressEvent::RunCompleted {
                 at: now_iso(),
                 stats,
             },
@@ -80,27 +66,22 @@ impl ProgressReporter {
     }
 
     pub fn run_failed(&self, step_id: StepId, error: &str) {
+        let at = now_iso();
         self.hub.emit(
             &self.public_id,
-            PipelineEvent::StepFailed {
-                seq: 0,
+            ProgressEvent::StepFailed {
                 step_id,
-                at: now_iso(),
+                at: at.clone(),
                 error: error.to_string(),
             },
         );
         self.hub.emit(
             &self.public_id,
-            PipelineEvent::RunFailed {
-                seq: 0,
+            ProgressEvent::RunFailed {
                 step_id,
-                at: now_iso(),
+                at,
                 error: error.to_string(),
             },
         );
-    }
-
-    pub fn active_step(&self) -> Option<StepId> {
-        *self.active_step.lock().expect("active step lock poisoned")
     }
 }

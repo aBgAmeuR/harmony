@@ -61,6 +61,40 @@ pub struct PipelineStep {
     pub output: Option<serde_json::Value>,
 }
 
+/// Un-sequenced event input. The hub assigns `seq` when applying.
+#[derive(Debug, Clone)]
+pub enum ProgressEvent {
+    StepStarted {
+        step_id: StepId,
+        label: String,
+        at: String,
+    },
+    StepProgress {
+        step_id: StepId,
+        progress: StepProgress,
+    },
+    StepCompleted {
+        step_id: StepId,
+        at: String,
+        duration_ms: u64,
+        output: Option<serde_json::Value>,
+    },
+    StepFailed {
+        step_id: StepId,
+        at: String,
+        error: String,
+    },
+    RunCompleted {
+        at: String,
+        stats: serde_json::Value,
+    },
+    RunFailed {
+        step_id: StepId,
+        at: String,
+        error: String,
+    },
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum PipelineEvent {

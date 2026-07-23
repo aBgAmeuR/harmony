@@ -4,7 +4,9 @@ use chrono::Utc;
 use dashmap::DashMap;
 use tokio::sync::broadcast;
 
-use super::events::{PipelineEvent, PipelineRunStatus, PipelineStep, StepId, StepStatus};
+use super::events::{
+    PipelineEvent, PipelineRunStatus, PipelineStep, ProgressEvent, StepId, StepStatus,
+};
 use super::steps::{step_label, STEP_ORDER};
 
 const BROADCAST_CAPACITY: usize = 256;
@@ -64,11 +66,11 @@ impl RunState {
         }
     }
 
-    fn apply_event(&mut self, event: PipelineEvent) -> PipelineEvent {
+    fn apply_event(&mut self, event: ProgressEvent) -> PipelineEvent {
         let seq = self.next_seq();
         match event {
-            PipelineEvent::StepStarted {
-                step_id, label, at, ..
+            ProgressEvent::StepStarted {
+                step_id, label, at,
             } => {
                 let index = Self::step_index(step_id);
                 if self.started_at.is_none() {
@@ -85,7 +87,7 @@ impl RunState {
                     at,
                 }
             }
-            PipelineEvent::StepProgress {
+            ProgressEvent::StepProgress {
                 step_id, progress, ..
             } => {
                 let index = Self::step_index(step_id);
@@ -96,12 +98,11 @@ impl RunState {
                     progress,
                 }
             }
-            PipelineEvent::StepCompleted {
+            ProgressEvent::StepCompleted {
                 step_id,
                 at,
                 duration_ms,
                 output,
-                ..
             } => {
                 let index = Self::step_index(step_id);
                 self.steps[index].status = StepStatus::Done;
@@ -116,8 +117,8 @@ impl RunState {
                     output,
                 }
             }
-            PipelineEvent::StepFailed {
-                step_id, at, error, ..
+            ProgressEvent::StepFailed {
+                step_id, at, error,
             } => {
                 let index = Self::step_index(step_id);
                 self.steps[index].status = StepStatus::Error;
@@ -132,16 +133,15 @@ impl RunState {
                     error,
                 }
             }
-            PipelineEvent::RunCompleted { at, stats, .. } => {
+            ProgressEvent::RunCompleted { at, stats } => {
                 self.run_status = PipelineRunStatus::Done;
                 self.ended_at = Some(at.clone());
                 PipelineEvent::RunCompleted { seq, at, stats }
             }
-            PipelineEvent::RunFailed {
+            ProgressEvent::RunFailed {
                 step_id,
                 at,
                 error,
-                ..
             } => {
                 self.run_status = PipelineRunStatus::Error;
                 self.ended_at = Some(at.clone());
@@ -152,7 +152,6 @@ impl RunState {
                     error,
                 }
             }
-            PipelineEvent::Snapshot { .. } => self.snapshot_event(),
         }
     }
 
@@ -160,8 +159,7 @@ impl RunState {
         let steps: Vec<serde_json::Value> = self
             .steps
             .iter()
-            .enumerate()
-            .map(|(_index, step)| {
+            .map(|step| {
                 let duration_ms = match (&step.started_at, &step.ended_at) {
                     (Some(start), Some(end)) => chrono::DateTime::parse_from_rfc3339(end)
                         .ok()
@@ -242,7 +240,7 @@ impl ProgressHub {
         })
     }
 
-    pub fn emit(&self, public_id: &str, event: PipelineEvent) {
+    pub fn emit(&self, public_id: &str, event: ProgressEvent) {
         let Some(run) = self.runs.get(public_id) else {
             return;
         };

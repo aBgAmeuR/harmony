@@ -1,19 +1,26 @@
 use std::collections::HashMap;
 
 use crate::pipeline::error::VerifyError;
+use crate::pipeline::report::VerifyReport;
 use crate::pipeline::types::{DeezerAlbum, DeezerTrack, Interaction};
-use crate::pipeline::PipelineContext;
 
-struct VerifyCounts {
-    tracks_skipped: usize,
-    interactions_skipped: usize,
+pub struct VerifyInput {
+    pub albums: HashMap<i64, DeezerAlbum>,
+    pub tracks: HashMap<i64, DeezerTrack>,
+    pub interactions: Vec<Interaction>,
+}
+
+pub struct VerifyOutput {
+    pub albums: HashMap<i64, DeezerAlbum>,
+    pub tracks: HashMap<i64, DeezerTrack>,
+    pub interactions: Vec<Interaction>,
 }
 
 fn verify_references(
     albums: &HashMap<i64, DeezerAlbum>,
     tracks: &mut HashMap<i64, DeezerTrack>,
     interactions: &mut Vec<Interaction>,
-) -> VerifyCounts {
+) -> VerifyReport {
     let tracks_before = tracks.len();
     tracks.retain(|_, track| albums.contains_key(&track.album));
     let tracks_skipped = tracks_before - tracks.len();
@@ -22,62 +29,25 @@ fn verify_references(
     interactions.retain(|interaction| tracks.contains_key(&interaction.track_id));
     let interactions_skipped = interactions_before - interactions.len();
 
-    VerifyCounts {
+    VerifyReport {
         tracks_skipped,
         interactions_skipped,
     }
 }
 
-#[tracing::instrument(
-    skip(ctx),
-    name = "pipeline.verify",
-    fields(
-        package_id = ctx.package_id,
-        tracks_before,
-        tracks_skipped,
-        tracks_after,
-        interactions_before,
-        interactions_skipped,
-        interactions_after,
-    ),
-)]
-pub fn run(ctx: &mut PipelineContext) -> Result<(), VerifyError> {
-    let tracks_before = ctx.deezer_tracks.len();
-    let interactions_before = ctx.interactions.len();
+pub fn run(input: VerifyInput) -> Result<(VerifyOutput, VerifyReport), VerifyError> {
+    let mut tracks = input.tracks;
+    let mut interactions = input.interactions;
+    let report = verify_references(&input.albums, &mut tracks, &mut interactions);
 
-    let counts = verify_references(
-        &ctx.deezer_albums,
-        &mut ctx.deezer_tracks,
-        &mut ctx.interactions,
-    );
-
-    let tracks_after = ctx.deezer_tracks.len();
-    let interactions_after = ctx.interactions.len();
-    let tracks_skipped = counts.tracks_skipped;
-    let interactions_skipped = counts.interactions_skipped;
-
-    ctx.stats.verify_tracks_skipped_count = tracks_skipped;
-    ctx.stats.verify_interactions_skipped_count = interactions_skipped;
-
-    let span = tracing::Span::current();
-    span.record("tracks_before", tracks_before as i64);
-    span.record("tracks_skipped", tracks_skipped as i64);
-    span.record("tracks_after", tracks_after as i64);
-    span.record("interactions_before", interactions_before as i64);
-    span.record("interactions_skipped", interactions_skipped as i64);
-    span.record("interactions_after", interactions_after as i64);
-
-    tracing::info!(
-        tracks_before = tracks_before,
-        tracks_skipped = tracks_skipped,
-        tracks_after = tracks_after,
-        interactions_before = interactions_before,
-        interactions_skipped = interactions_skipped,
-        interactions_after = interactions_after,
-        "verify stage finished"
-    );
-
-    Ok(())
+    Ok((
+        VerifyOutput {
+            albums: input.albums,
+            tracks,
+            interactions,
+        },
+        report,
+    ))
 }
 
 #[cfg(test)]
@@ -130,10 +100,7 @@ mod tests {
     #[test]
     fn skips_tracks_with_missing_albums_and_orphan_interactions() {
         let albums = HashMap::from([(10, sample_album(10))]);
-        let mut tracks = HashMap::from([
-            (1, sample_track(1, 10)),
-            (2, sample_track(2, 99)),
-        ]);
+        let mut tracks = HashMap::from([(1, sample_track(1, 10)), (2, sample_track(2, 99))]);
         let mut interactions = vec![
             sample_interaction(1),
             sample_interaction(2),
