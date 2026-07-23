@@ -6,7 +6,13 @@ on:
 
 permissions:
   contents: write
+  issues: write
+  pull-requests: write
   packages: write
+
+concurrency:
+  group: release-v3
+  cancel-in-progress: false
 
 jobs:
   lint:
@@ -31,9 +37,40 @@ jobs:
       - name: Run lint
         run: pnpm check
 
+  release:
+    name: Semantic release
+    needs: lint
+    runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.semantic.outputs.new_release_published }}
+      version: ${{ steps.semantic.outputs.new_release_version }}
+      tag: ${{ steps.semantic.outputs.new_release_git_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v6
+        with:
+          semantic_version: 24
+          extra_plugins: |
+            conventional-changelog-conventionalcommits@8
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build:
     name: Build & push · ${{ matrix.app.name }}
-    needs: lint
+    needs: release
+    if: needs.release.outputs.published == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -65,11 +102,12 @@ jobs:
           push: true
           tags: |
             ghcr.io/abgameur/harmony/${{ matrix.app.name }}:latest
-            ghcr.io/abgameur/harmony/${{ matrix.app.name }}:${{ github.sha }}
+            ghcr.io/abgameur/harmony/${{ matrix.app.name }}:${{ needs.release.outputs.tag }}
 
   pin-compose:
     name: Pin compose image tags
-    needs: build
+    needs: [release, build]
+    if: needs.release.outputs.published == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -77,12 +115,12 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pin image SHAs in docker-compose.yml
+      - name: Pin image versions in docker-compose.yml
         env:
-          SHA: ${{ github.sha }}
+          TAG: ${{ needs.release.outputs.tag }}
         run: |
-          sed -i "s|ghcr.io/abgameur/harmony/web:[^[:space:]]*|ghcr.io/abgameur/harmony/web:${SHA}|" docker-compose.yml
-          sed -i "s|ghcr.io/abgameur/harmony/api:[^[:space:]]*|ghcr.io/abgameur/harmony/api:${SHA}|" docker-compose.yml
+          sed -i "s|ghcr.io/abgameur/harmony/web:[^[:space:]]*|ghcr.io/abgameur/harmony/web:${TAG}|" docker-compose.yml
+          sed -i "s|ghcr.io/abgameur/harmony/api:[^[:space:]]*|ghcr.io/abgameur/harmony/api:${TAG}|" docker-compose.yml
 
       - name: Commit and push pinned compose
         run: |
@@ -90,8 +128,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docker-compose.yml
           if git diff --staged --quiet; then
-            echo "Compose already pinned to this SHA"
+            echo "Compose already pinned to ${{ needs.release.outputs.tag }}"
             exit 0
           fi
-          git commit -m "deploy: pin images to ${{ github.sha }} [skip ci]"
+          git commit -m "deploy: pin images to ${{ needs.release.outputs.tag }} [skip ci]"
           git push
