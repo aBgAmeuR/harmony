@@ -23,11 +23,4 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
-  optimizeDeps: {
-    exclude: ["@duckdb/duckdb-wasm"],
-  },
-  ssr: {
-    // Keep the Node entry out of the SSR bundle; duckdb-wasm is browser-only.
-    external: ["@duckdb/duckdb-wasm"],
-  },
 });
