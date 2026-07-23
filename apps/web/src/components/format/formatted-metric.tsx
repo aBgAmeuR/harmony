@@ -6,7 +6,7 @@ type FormattedMetricProps = {
   value?: number;
   unit?: string;
   className?: string;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
 };
 
 export const FormattedMetric = ({ value, unit, size = "md", className }: FormattedMetricProps) => {
@@ -19,6 +19,7 @@ export const FormattedMetric = ({ value, unit, size = "md", className }: Formatt
       <span
         className={cn(
           "text-md font-semibold",
+          "group-data-[size=xs]/formatted-metric:text-xs group-data-[size=xs]/formatted-metric:font-medium",
           "group-data-[size=sm]/formatted-metric:text-sm group-data-[size=sm]/formatted-metric:font-medium",
           "group-data-[size=md]/formatted-metric:text-md group-data-[size=md]/formatted-metric:font-semibold",
           "group-data-[size=lg]/formatted-metric:text-lg group-data-[size=lg]/formatted-metric:font-semibold",
@@ -30,6 +31,7 @@ export const FormattedMetric = ({ value, unit, size = "md", className }: Formatt
         <span
           className={cn(
             "text-muted-foreground",
+            "group-data-[size=xs]/formatted-metric:text-xs",
             "group-data-[size=sm]/formatted-metric:text-xs",
             "group-data-[size=md]/formatted-metric:text-sm",
             "group-data-[size=lg]/formatted-metric:text-md",

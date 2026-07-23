@@ -49,17 +49,20 @@ function placeTooltip(tip: HTMLDivElement, u: uPlot, left: number, top: number) 
   tip.style.top = `${t}px`;
 }
 
+export interface TooltipSeries {
+  label: string;
+  resolveColor: (u: uPlot) => string;
+}
+
 export interface TooltipPluginOptions {
   labels: readonly string[];
-  seriesLabel: string;
-  resolveColor: (u: uPlot) => string;
+  series: readonly TooltipSeries[];
   suffix?: string;
 }
 
 export function createTooltipPlugin({
   labels,
-  seriesLabel,
-  resolveColor,
+  series,
   suffix,
 }: TooltipPluginOptions): uPlot.Plugin {
   let tip: HTMLDivElement | null = null;
@@ -93,17 +96,17 @@ export function createTooltipPlugin({
         }
 
         const title = labels[idx] ?? "";
-        const value = u.data[1]?.[idx];
-        const color = resolveColor(u);
+        const rows = series.map((entry, seriesIndex) => {
+          const value = u.data[seriesIndex + 1]?.[idx];
+          return {
+            color: entry.resolveColor(u),
+            label: entry.label,
+            value: value ?? "",
+          };
+        });
 
         flushSync(() => {
-          root?.render(
-            <TooltipContent
-              rows={[{ color, label: seriesLabel, value: value ?? "" }]}
-              suffix={suffix}
-              title={title}
-            />,
-          );
+          root?.render(<TooltipContent rows={rows} suffix={suffix} title={title} />);
         });
 
         tip.style.display = "block";

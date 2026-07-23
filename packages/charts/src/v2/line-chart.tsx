@@ -30,11 +30,12 @@ export function LineChart({
   const config = useMemo(() => extractChartConfig(children), [children]);
 
   const buildSeries = useMemo(() => {
-    return (_seriesIndex: number, _colorToken: string) => {
-      if (!config.series) {
+    return (seriesIndex: number, _colorToken: string) => {
+      const series = config.series[seriesIndex - 1];
+      if (!series) {
         return { points: { show: false } };
       }
-      return makeLineSeries(config.series);
+      return makeLineSeries(series);
     };
   }, [config.series]);
 

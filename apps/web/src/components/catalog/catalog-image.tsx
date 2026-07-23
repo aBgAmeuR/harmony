@@ -44,7 +44,7 @@ export const CatalogImage = ({
     return (
       <div className={cn("relative shrink-0 object-cover", sizeClass, className)}>
         <img src={image} alt={alt} loading="lazy" decoding="async" className="z-10 rounded-sm" />
-        <div className="absolute bottom-[3px] left-0 size-full origin-bottom scale-90 opacity-20 blur-lg saturate-200">
+        <div className="absolute bottom-0.75 left-0 size-full origin-bottom scale-90 opacity-20 blur-lg saturate-200">
           <img src={image} alt={alt} className="size-full" />
         </div>
       </div>

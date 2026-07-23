@@ -1,9 +1,11 @@
 import { Button } from "@harmony/ui/components/button";
 import { cn } from "@harmony/ui/lib/utils";
+import { Link } from "@tanstack/react-router";
 
 import { HeroChart } from "./hero-chart";
 import { HeroEntityCard } from "./hero-entity-card";
 import { HERO_ENTITY_CARDS } from "./mock-data";
+import { useStaggerReveal } from "./use-stagger-reveal";
 
 function WaveUnderline() {
   return (
@@ -34,12 +36,14 @@ const CARD_FLOAT = [
 ] as const;
 
 export function LandingHero() {
+  const { ref, isShown } = useStaggerReveal<HTMLDivElement>({ immediate: true });
+
   return (
-    <>
+    <div ref={ref} className={cn("t-stagger", isShown && "is-shown")}>
       <section className="mx-auto mt-10 flex w-full max-w-xl flex-col px-4 sm:mt-14 sm:px-0">
         <div className="flex flex-col items-start gap-6">
           <div className="flex w-full flex-col gap-3">
-            <h1 className="text-[2rem] leading-[1.15] font-bold tracking-tight text-balance text-foreground sm:text-4xl sm:leading-10">
+            <h1 className="t-stagger-line t-stagger-line--1 text-[2rem] leading-[1.15] font-bold tracking-tight text-balance text-foreground sm:text-4xl sm:leading-10">
               Your listening history,
               <br />
               <span className="inline-flex items-end gap-0">
@@ -52,20 +56,22 @@ export function LandingHero() {
                 </span>
               </span>
             </h1>
-            <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+            <p className="t-stagger-line t-stagger-line--2 max-w-md text-sm leading-relaxed text-muted-foreground">
               Upload your Extended Streaming History and dive into years of tracks, artists, and
               albums.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="t-stagger-line t-stagger-line--3 flex items-center gap-2">
             <Button size="lg" variant="gradient">
               Upload my package
             </Button>
             <Button
+              nativeButton={false}
               size="lg"
               variant="link"
               className="text-muted-foreground hover:text-foreground"
+              render={<Link to="/app/$packageId" params={{ packageId: "demo" }} />}
             >
               Get a demo
             </Button>
@@ -74,7 +80,7 @@ export function LandingHero() {
       </section>
 
       <section className="mx-auto mt-12 w-full max-w-5xl overflow-visible sm:mt-16">
-        <div className="relative h-64 w-full overflow-visible">
+        <div className="t-stagger-line t-stagger-line--4 relative h-64 w-full overflow-visible">
           <HeroChart />
 
           <div className="absolute inset-0 z-20 mx-auto block max-w-2xl">
@@ -93,6 +99,6 @@ export function LandingHero() {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }
