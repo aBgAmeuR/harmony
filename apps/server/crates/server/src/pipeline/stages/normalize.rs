@@ -1,10 +1,11 @@
+use std::collections::HashMap;
 use std::sync::LazyLock;
 
 use regex::Regex;
 
 use crate::pipeline::error::NormalizeError;
-use crate::pipeline::types::{NormalizedInteraction, TrackKey};
-use crate::pipeline::PipelineContext;
+use crate::pipeline::report::NormalizeReport;
+use crate::pipeline::types::{NormalizedInteraction, RawInteraction, TrackKey};
 
 const MIN_MS_PLAYED: i64 = 30_000;
 
@@ -83,22 +84,22 @@ fn normalize_platform(raw: &str) -> &'static str {
     "other"
 }
 
-#[tracing::instrument(
-    skip(ctx),
-    name = "pipeline.normalize",
-    fields(
-        package_id = ctx.package_id,
-        input_interactions_count = ctx.raw.len(),
-        kept,
-        rejected,
-        catalogue_size,
-    ),
-)]
-pub fn run(ctx: &mut PipelineContext) -> Result<(), NormalizeError> {
+pub struct NormalizeInput {
+    pub raw: Vec<RawInteraction>,
+}
+
+pub struct NormalizeOutput {
+    pub normalized: Vec<NormalizedInteraction>,
+    pub catalogue: HashMap<String, TrackKey>,
+}
+
+pub fn run(input: NormalizeInput) -> Result<(NormalizeOutput, NormalizeReport), NormalizeError> {
     let mut kept = 0usize;
     let mut rejected = 0usize;
+    let mut normalized = Vec::new();
+    let mut catalogue = HashMap::new();
 
-    for raw in ctx.raw.drain(..) {
+    for raw in input.raw {
         let Some(track) = raw
             .master_metadata_track_name
             .as_deref()
@@ -131,7 +132,7 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), NormalizeError> {
         let clean_artist = artist.trim().to_string();
         let track_key = format!("{clean_artist}-{clean_track}");
 
-        ctx.catalogue.insert(
+        catalogue.insert(
             track_key.clone(),
             TrackKey {
                 artist: clean_artist,
@@ -139,7 +140,7 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), NormalizeError> {
             },
         );
 
-        ctx.normalized.push(NormalizedInteraction {
+        normalized.push(NormalizedInteraction {
             track_key,
             ts: raw.ts,
             platform: normalize_platform(&raw.platform).to_string(),
@@ -151,19 +152,15 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), NormalizeError> {
         kept += 1;
     }
 
-    ctx.stats.normalize_kept_count = kept;
-    ctx.stats.normalize_rejected_count = rejected;
-
-    let span = tracing::Span::current();
-    span.record("kept", kept as i64);
-    span.record("rejected", rejected as i64);
-    span.record("catalogue_size", ctx.catalogue.len() as i64);
-
-    tracing::info!(kept = kept, rejected = rejected, "normalize stage finished");
-
-    if ctx.normalized.is_empty() {
+    if normalized.is_empty() {
         return Err(NormalizeError::NoInteractionsKept);
     }
 
-    Ok(())
+    Ok((
+        NormalizeOutput {
+            normalized,
+            catalogue,
+        },
+        NormalizeReport { kept, rejected },
+    ))
 }

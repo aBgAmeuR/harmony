@@ -1,51 +1,57 @@
+use std::collections::HashMap;
 use std::fs::File;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
 use polars::prelude::*;
 use tempfile::TempDir;
 
 use crate::pipeline::error::PersistError;
-use crate::pipeline::types::DeezerAlbumType;
-use crate::pipeline::PipelineContext;
-use crate::storage::ObjectStore;
+use crate::pipeline::report::PersistOutput;
+use crate::pipeline::types::{
+    DeezerAlbum, DeezerAlbumType, DeezerArtist, DeezerTrack, Interaction,
+};
+use crate::storage::{ObjectStore, S3ObjectStore};
 
 const EPOCH: NaiveDate = match NaiveDate::from_ymd_opt(1970, 1, 1) {
     Some(date) => date,
     None => panic!("invalid epoch date"),
 };
 
-#[tracing::instrument(
-    skip(ctx),
-    name = "pipeline.persist",
-    fields(
-        package_id = ctx.package_id,
-        public_id = %ctx.public_id,
-        interactions_count = ctx.interactions.len(),
-        tracks_count = ctx.deezer_tracks.len(),
-        artists_count = ctx.deezer_artists.len(),
-        albums_count = ctx.deezer_albums.len(),
-    ),
-)]
-pub fn run(ctx: &mut PipelineContext) -> Result<(), PersistError> {
+pub struct PersistInput {
+    pub public_id: String,
+    pub interactions: Vec<Interaction>,
+    pub tracks: HashMap<i64, DeezerTrack>,
+    pub artists: HashMap<i64, DeezerArtist>,
+    pub albums: HashMap<i64, DeezerAlbum>,
+}
+
+pub struct PersistArtifact {
+    _temp_dir: TempDir,
+    pub db_path: PathBuf,
+    pub object_key: String,
+}
+
+/// Build parquet + DuckDB artifact on a blocking thread.
+pub fn build(input: PersistInput) -> Result<(PersistArtifact, PersistOutput), PersistError> {
     let temp_dir = TempDir::new()?;
     let temp_path = temp_dir.path();
     let db_path = temp_path.join("package.duckdb");
 
-    let artists_df = build_artists_df(&ctx)?;
-    let albums_df = build_albums_df(&ctx)?;
-    let tracks_df = build_tracks_df(&ctx)?;
-    let interactions_df = build_interactions_df(&ctx)?;
+    let artists_df = build_artists_df(&input.artists)?;
+    let albums_df = build_albums_df(&input.albums)?;
+    let tracks_df = build_tracks_df(&input.tracks)?;
+    let interactions_df = build_interactions_df(&input.interactions)?;
 
     let artists_parquet = temp_path.join("artists.parquet");
     let albums_parquet = temp_path.join("albums.parquet");
     let tracks_parquet = temp_path.join("tracks.parquet");
     let interactions_parquet = temp_path.join("interactions.parquet");
 
-    write_parquet(&artists_df, &artists_parquet)?;
-    write_parquet(&albums_df, &albums_parquet)?;
-    write_parquet(&tracks_df, &tracks_parquet)?;
-    write_parquet(&interactions_df, &interactions_parquet)?;
+    write_parquet(artists_df, &artists_parquet)?;
+    write_parquet(albums_df, &albums_parquet)?;
+    write_parquet(tracks_df, &tracks_parquet)?;
+    write_parquet(interactions_df, &interactions_parquet)?;
 
     {
         let conn = duckdb::Connection::open(&db_path)?;
@@ -57,34 +63,54 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), PersistError> {
         create_views(&conn)?;
     }
 
-    let object_key = format!("harmony/{}.duckdb", ctx.public_id);
-    let handle =
-        tokio::runtime::Handle::try_current().map_err(|_| PersistError::RuntimeUnavailable)?;
-    handle.block_on(ctx.object_store.put_file(&object_key, &db_path))?;
+    let output = PersistOutput {
+        interactions: input.interactions.len(),
+        tracks: input.tracks.len(),
+        albums: input.albums.len(),
+        artists: input.artists.len(),
+    };
 
+    let object_key = format!("harmony/{}.duckdb", input.public_id);
+    Ok((
+        PersistArtifact {
+            _temp_dir: temp_dir,
+            db_path,
+            object_key,
+        },
+        output,
+    ))
+}
+
+/// Upload a built DuckDB artifact to object storage.
+pub async fn upload(
+    object_store: &S3ObjectStore,
+    artifact: &PersistArtifact,
+) -> Result<(), PersistError> {
+    object_store
+        .put_file(&artifact.object_key, &artifact.db_path)
+        .await?;
     tracing::info!(
-        object_key = %object_key,
+        object_key = %artifact.object_key,
         "persisted package data to object storage"
     );
-
     Ok(())
 }
 
-fn build_artists_df(ctx: &PipelineContext) -> Result<DataFrame, PersistError> {
-    if ctx.deezer_artists.is_empty() {
+fn build_artists_df(artists: &HashMap<i64, DeezerArtist>) -> Result<DataFrame, PersistError> {
+    if artists.is_empty() {
         return Ok(empty_artists_df());
     }
 
-    let mut ids = Vec::with_capacity(ctx.deezer_artists.len());
-    let mut names = Vec::with_capacity(ctx.deezer_artists.len());
-    let mut images = Vec::with_capacity(ctx.deezer_artists.len());
-    let mut image_uris = Vec::with_capacity(ctx.deezer_artists.len());
+    let mut ids = Vec::with_capacity(artists.len());
+    let mut names = Vec::with_capacity(artists.len());
+    let mut images = Vec::with_capacity(artists.len());
+    let mut image_uris = Vec::with_capacity(artists.len());
 
-    for (id, artist) in &ctx.deezer_artists {
+    for (id, artist) in artists {
         ids.push(*id as u32);
-        names.push(artist.name.clone());
-        images.push(artist.image.clone());
-        image_uris.push(artist.image_uri.clone());
+        names.push(artist.name.as_str());
+        images.push(artist.image.as_deref());
+        image_uris.push(artist.image_uri.as_str());
     }
 
     DataFrame::new(vec![
@@ -96,32 +122,32 @@ fn build_artists_df(ctx: &PipelineContext) -> Result<DataFrame, PersistError> {
     .map_err(PersistError::from)
 }
 
-fn build_albums_df(ctx: &PipelineContext) -> Result<DataFrame, PersistError> {
-    if ctx.deezer_albums.is_empty() {
+fn build_albums_df(albums: &HashMap<i64, DeezerAlbum>) -> Result<DataFrame, PersistError> {
+    if albums.is_empty() {
         return Ok(empty_albums_df());
     }
 
-    let mut ids = Vec::with_capacity(ctx.deezer_albums.len());
-    let mut titles = Vec::with_capacity(ctx.deezer_albums.len());
-    let mut images = Vec::with_capacity(ctx.deezer_albums.len());
-    let mut image_uris = Vec::with_capacity(ctx.deezer_albums.len());
-    let mut release_dates = Vec::with_capacity(ctx.deezer_albums.len());
-    let mut genres = Vec::with_capacity(ctx.deezer_albums.len());
-    let mut nb_tracks = Vec::with_capacity(ctx.deezer_albums.len());
-    let mut durations = Vec::with_capacity(ctx.deezer_albums.len());
-    let mut album_types = Vec::with_capacity(ctx.deezer_albums.len());
-    let mut artists = Vec::with_capacity(ctx.deezer_albums.len());
+    let mut ids = Vec::with_capacity(albums.len());
+    let mut titles = Vec::with_capacity(albums.len());
+    let mut images = Vec::with_capacity(albums.len());
+    let mut image_uris = Vec::with_capacity(albums.len());
+    let mut release_dates = Vec::with_capacity(albums.len());
+    let mut genres = Vec::with_capacity(albums.len());
+    let mut nb_tracks = Vec::with_capacity(albums.len());
+    let mut durations = Vec::with_capacity(albums.len());
+    let mut album_types = Vec::with_capacity(albums.len());
+    let mut artists = Vec::with_capacity(albums.len());
 
-    for (id, album) in &ctx.deezer_albums {
+    for (id, album) in albums {
         ids.push(*id as u32);
-        titles.push(album.title.clone());
-        images.push(album.image.clone());
-        image_uris.push(album.image_uri.clone());
+        titles.push(album.title.as_str());
+        images.push(album.image.as_deref());
+        image_uris.push(album.image_uri.as_str());
         release_dates.push(parse_date(album.release_date.as_deref()));
         genres.push(album.genres.clone());
         nb_tracks.push(album.nb_tracks as i32);
         durations.push(album.duration as i32);
-        album_types.push(album_type_label(&album.album_type).to_string());
+        album_types.push(album_type_label(&album.album_type));
         artists.push(album.artists.clone());
     }
 
@@ -130,7 +156,7 @@ fn build_albums_df(ctx: &PipelineContext) -> Result<DataFrame, PersistError> {
         Series::new("title".into(), titles).into(),
         Series::new("image".into(), images).into(),
         Series::new("image_uri".into(), image_uris).into(),
-        date_series("release_date", release_dates).into(),
+        date_series("release_date", release_dates)?.into(),
         string_list_series("genres", &genres).into(),
         Series::new("nb_tracks".into(), nb_tracks).into(),
         Series::new("duration".into(), durations).into(),
@@ -140,23 +166,23 @@ fn build_albums_df(ctx: &PipelineContext) -> Result<DataFrame, PersistError> {
     .map_err(PersistError::from)
 }
 
-fn build_tracks_df(ctx: &PipelineContext) -> Result<DataFrame, PersistError> {
-    if ctx.deezer_tracks.is_empty() {
+fn build_tracks_df(tracks: &HashMap<i64, DeezerTrack>) -> Result<DataFrame, PersistError> {
+    if tracks.is_empty() {
         return Ok(empty_tracks_df());
     }
 
-    let mut ids = Vec::with_capacity(ctx.deezer_tracks.len());
-    let mut titles = Vec::with_capacity(ctx.deezer_tracks.len());
-    let mut durations = Vec::with_capacity(ctx.deezer_tracks.len());
-    let mut track_positions = Vec::with_capacity(ctx.deezer_tracks.len());
-    let mut disk_numbers = Vec::with_capacity(ctx.deezer_tracks.len());
-    let mut release_dates = Vec::with_capacity(ctx.deezer_tracks.len());
-    let mut album_ids = Vec::with_capacity(ctx.deezer_tracks.len());
-    let mut artists = Vec::with_capacity(ctx.deezer_tracks.len());
+    let mut ids = Vec::with_capacity(tracks.len());
+    let mut titles = Vec::with_capacity(tracks.len());
+    let mut durations = Vec::with_capacity(tracks.len());
+    let mut track_positions = Vec::with_capacity(tracks.len());
+    let mut disk_numbers = Vec::with_capacity(tracks.len());
+    let mut release_dates = Vec::with_capacity(tracks.len());
+    let mut album_ids = Vec::with_capacity(tracks.len());
+    let mut artists = Vec::with_capacity(tracks.len());
 
-    for (id, track) in &ctx.deezer_tracks {
+    for (id, track) in tracks {
         ids.push(*id as u32);
-        titles.push(track.title.clone());
+        titles.push(track.title.as_str());
         durations.push(track.duration as i32);
         track_positions.push(track.track_position as i32);
         disk_numbers.push(track.disk_number as i32);
@@ -171,29 +197,29 @@ fn build_tracks_df(ctx: &PipelineContext) -> Result<DataFrame, PersistError> {
         Series::new("duration".into(), durations).into(),
         Series::new("track_position".into(), track_positions).into(),
         Series::new("disk_number".into(), disk_numbers).into(),
-        date_series("release_date", release_dates).into(),
+        date_series("release_date", release_dates)?.into(),
         Series::new("album_id".into(), album_ids).into(),
         u32_list_series("artists", &artists).into(),
     ])
     .map_err(PersistError::from)
 }
 
-fn build_interactions_df(ctx: &PipelineContext) -> Result<DataFrame, PersistError> {
-    if ctx.interactions.is_empty() {
+fn build_interactions_df(interactions: &[Interaction]) -> Result<DataFrame, PersistError> {
+    if interactions.is_empty() {
         return Ok(empty_interactions_df());
     }
 
-    let mut timestamps = Vec::with_capacity(ctx.interactions.len());
-    let mut platforms = Vec::with_capacity(ctx.interactions.len());
-    let mut ms_played = Vec::with_capacity(ctx.interactions.len());
-    let mut shuffles = Vec::with_capacity(ctx.interactions.len());
-    let mut skipped = Vec::with_capacity(ctx.interactions.len());
-    let mut offline = Vec::with_capacity(ctx.interactions.len());
-    let mut track_ids = Vec::with_capacity(ctx.interactions.len());
+    let mut timestamps = Vec::with_capacity(interactions.len());
+    let mut platforms = Vec::with_capacity(interactions.len());
+    let mut ms_played = Vec::with_capacity(interactions.len());
+    let mut shuffles = Vec::with_capacity(interactions.len());
+    let mut skipped = Vec::with_capacity(interactions.len());
+    let mut offline = Vec::with_capacity(interactions.len());
+    let mut track_ids = Vec::with_capacity(interactions.len());
 
-    for interaction in &ctx.interactions {
+    for interaction in interactions {
         timestamps.push(parse_timestamp(&interaction.ts));
-        platforms.push(interaction.platform.clone());
+        platforms.push(interaction.platform.as_str());
         ms_played.push(interaction.ms_played as i32);
         shuffles.push(interaction.shuffle);
         skipped.push(interaction.skipped);
@@ -202,7 +228,7 @@ fn build_interactions_df(ctx: &PipelineContext) -> Result<DataFrame, PersistErro
     }
 
     DataFrame::new(vec![
-        datetime_series("ts", timestamps).into(),
+        datetime_series("ts", timestamps)?.into(),
         Series::new("platform".into(), platforms).into(),
         Series::new("ms_played".into(), ms_played).into(),
         Series::new("shuffle".into(), shuffles).into(),
@@ -213,9 +239,8 @@ fn build_interactions_df(ctx: &PipelineContext) -> Result<DataFrame, PersistErro
     .map_err(PersistError::from)
 }
 
-fn write_parquet(df: &DataFrame, path: &Path) -> Result<(), PersistError> {
+fn write_parquet(mut df: DataFrame, path: &Path) -> Result<(), PersistError> {
     let mut file = File::create(path)?;
-    let mut df = df.clone();
     ParquetWriter::new(&mut file).finish(&mut df)?;
     Ok(())
 }
@@ -355,16 +380,16 @@ fn album_type_label(album_type: &DeezerAlbumType) -> &'static str {
     }
 }
 
-fn date_series(name: &str, values: Vec<Option<i32>>) -> Series {
+fn date_series(name: &str, values: Vec<Option<i32>>) -> Result<Series, PersistError> {
     Series::new(name.into(), values)
         .cast(&DataType::Date)
-        .expect("date series should cast")
+        .map_err(PersistError::from)
 }
 
-fn datetime_series(name: &str, values: Vec<Option<i64>>) -> Series {
+fn datetime_series(name: &str, values: Vec<Option<i64>>) -> Result<Series, PersistError> {
     Series::new(name.into(), values)
         .cast(&DataType::Datetime(TimeUnit::Microseconds, None))
-        .expect("datetime series should cast")
+        .map_err(PersistError::from)
 }
 
 fn u32_list_series(name: &str, values: &[Vec<i64>]) -> Series {
@@ -382,7 +407,7 @@ fn u32_list_series(name: &str, values: &[Vec<i64>]) -> Series {
 fn string_list_series(name: &str, values: &[Vec<String>]) -> Series {
     let list_values: Vec<Series> = values
         .iter()
-        .map(|items| Series::new(PlSmallStr::EMPTY, items.clone()))
+        .map(|items| Series::new(PlSmallStr::EMPTY, items.as_slice()))
         .collect();
 
     Series::new(name.into(), list_values)

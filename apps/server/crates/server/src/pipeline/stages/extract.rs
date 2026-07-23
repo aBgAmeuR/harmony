@@ -6,8 +6,8 @@ use regex::Regex;
 use zip::ZipArchive;
 
 use crate::pipeline::error::ExtractError;
+use crate::pipeline::report::ExtractReport;
 use crate::pipeline::types::ArchiveFile;
-use crate::pipeline::PipelineContext;
 
 static STREAMING_FILE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
@@ -20,23 +20,20 @@ fn normalize_zip_path(path: &str) -> String {
     path.replace('\\', "/")
 }
 
-#[tracing::instrument(
-    skip(ctx),
-    name = "pipeline.extract",
-    fields(
-        package_id = ctx.package_id,
-        zip_size_bytes = ctx.zip_bytes.len(),
-        input_files_count,
-        files_taken_count,
-        selected_files_count,
-    ),
-)]
-pub fn run(ctx: &mut PipelineContext) -> Result<(), ExtractError> {
-    let cursor = Cursor::new(&ctx.zip_bytes);
-    let mut archive = ZipArchive::new(cursor)?;
-    let input_files_count = archive.len();
+pub struct ExtractInput {
+    pub zip_bytes: Vec<u8>,
+    pub selected_files: Option<Vec<String>>,
+}
 
-    let selected: Option<HashSet<String>> = ctx.selected_files.as_ref().map(|files| {
+pub struct ExtractOutput {
+    pub files: Vec<ArchiveFile>,
+}
+
+pub fn run(input: ExtractInput) -> Result<(ExtractOutput, ExtractReport), ExtractError> {
+    let cursor = Cursor::new(&input.zip_bytes);
+    let mut archive = ZipArchive::new(cursor)?;
+
+    let selected: Option<HashSet<String>> = input.selected_files.as_ref().map(|files| {
         files
             .iter()
             .map(|path| normalize_zip_path(path))
@@ -58,10 +55,10 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), ExtractError> {
             continue;
         }
 
-        if let Some(selected) = selected.as_ref() {
-            if !selected.contains(&name) {
-                continue;
-            }
+        if let Some(selected) = selected.as_ref()
+            && !selected.contains(&name)
+        {
+            continue;
         }
 
         let mut content_bytes = Vec::new();
@@ -72,7 +69,6 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), ExtractError> {
             })?;
 
         let content = String::from_utf8_lossy(&content_bytes).into_owned();
-
         tracing::info!(file = %name, "matched streaming history file");
         files.push(ArchiveFile { name, content });
     }
@@ -81,16 +77,9 @@ pub fn run(ctx: &mut PipelineContext) -> Result<(), ExtractError> {
         return Err(ExtractError::NoMatchingFiles);
     }
 
-    ctx.stats.files_taken_count = files.len();
-    ctx.files = files;
+    let report = ExtractReport {
+        files_taken_count: files.len(),
+    };
 
-    let span = tracing::Span::current();
-    span.record("input_files_count", input_files_count as u64);
-    span.record("files_taken_count", ctx.stats.files_taken_count as i64);
-    span.record(
-        "selected_files_count",
-        ctx.selected_files.as_ref().map(|f| f.len()).unwrap_or(0) as i64,
-    );
-
-    Ok(())
+    Ok((ExtractOutput { files }, report))
 }

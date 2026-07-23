@@ -1,14 +1,15 @@
 use std::sync::Arc;
 use std::time::Instant;
 
-use crate::pipeline::{self, PipelineContext, PipelineError, PipelineStats};
-use crate::progress::{sse_step_id, stage_to_step_id, ProgressReporter};
+use crate::pipeline::{self, PipelineError, PipelineRequest};
+use crate::progress::{stage_to_step_id, ProgressReporter};
 use harmony_db::{mark_running, set_completed, set_failed_with_data};
 use opentelemetry::Context;
 use tokio::sync::mpsc;
 use tracing::Instrument;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
+use crate::error::ApiError;
 use crate::AppState;
 
 pub struct Job {
@@ -30,9 +31,16 @@ pub enum WorkerError {
 
     #[error("pipeline failed")]
     Pipeline(#[from] PipelineError),
+}
 
-    #[error("pipeline task panicked")]
-    Join(#[from] tokio::task::JoinError),
+impl From<ApiError> for WorkerError {
+    fn from(err: ApiError) -> Self {
+        match err {
+            ApiError::Pool(err) => Self::Pool(err.to_string()),
+            ApiError::Database(err) => Self::Db(err),
+            other => Self::Pool(other.to_string()),
+        }
+    }
 }
 
 pub async fn run(state: AppState, mut jobs: mpsc::Receiver<Job>) {
@@ -42,6 +50,13 @@ pub async fn run(state: AppState, mut jobs: mpsc::Receiver<Job>) {
             tracing::error!(package_id, ?err, "worker failed");
         }
     }
+}
+
+fn empty_progress_json(total_duration_ms: u64) -> serde_json::Value {
+    serde_json::json!({
+        "totalDurationMs": total_duration_ms,
+        "steps": [],
+    })
 }
 
 async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
@@ -71,44 +86,27 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
 
         let started = Instant::now();
         let worker_span = tracing::Span::current();
-        let pipeline_span = worker_span.clone();
 
         let zip_size_bytes = upload.zip_bytes.len();
         worker_span.record("zip_size_bytes", zip_size_bytes as i64);
 
         {
-            let mut conn = state
-                .pool
-                .get()
-                .await
-                .map_err(|e| WorkerError::Pool(e.to_string()))?;
+            let mut conn = state.conn().await?;
             mark_running(&mut conn, package_id).await?;
         }
 
         state.progress.register(&public_id);
         let reporter = ProgressReporter::new(Arc::clone(&state.progress), public_id.clone());
 
-        let public_id_for_pipeline = public_id.clone();
-        let reporter_for_pipeline = reporter.clone();
-        let selected_files = upload.selected_files;
-        let zip_bytes = upload.zip_bytes;
-        let object_store = Arc::clone(&state.object_store);
-        let pipeline_result = tokio::task::spawn_blocking(move || -> Result<PipelineStats, PipelineError> {
-            let _guard = pipeline_span.enter();
-
-            let mut ctx = PipelineContext::new(
-                package_id,
-                public_id_for_pipeline,
-                zip_bytes,
-                selected_files,
-                Some(reporter_for_pipeline),
-                object_store,
-            );
-            pipeline::run(&mut ctx)?;
-            Ok(ctx.stats)
+        let pipeline_result = pipeline::run(PipelineRequest {
+            package_id,
+            public_id: public_id.clone(),
+            zip_bytes: upload.zip_bytes,
+            selected_files: upload.selected_files,
+            reporter: Some(reporter.clone()),
+            object_store: Arc::clone(&state.object_store),
         })
-        .await
-        .map_err(WorkerError::Join)?;
+        .await;
 
         let duration_ms = started.elapsed().as_millis() as u64;
 
@@ -118,55 +116,40 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
                 let data = state
                     .progress
                     .finalize_json(&public_id, duration_ms)
-                    .unwrap_or_else(|| {
-                        serde_json::json!({
-                            "totalDurationMs": duration_ms,
-                            "steps": [],
-                        })
-                    });
+                    .unwrap_or_else(|| empty_progress_json(duration_ms));
 
-                let mut conn = state
-                    .pool
-                    .get()
-                    .await
-                    .map_err(|e| WorkerError::Pool(e.to_string()))?;
+                let mut conn = state.conn().await?;
                 set_completed(&mut conn, package_id, data).await?;
                 worker_span.record("duration_ms", duration_ms);
                 tracing::info!(package_id, duration_ms, "pipeline completed");
             }
             Err(err) => {
-                worker_span.record("failed_stage", err.stage());
+                let stage = err.stage();
+                worker_span.record("failed_stage", stage.as_str());
                 tracing::error!(
                     package_id,
-                    stage = err.stage(),
+                    stage = stage.as_str(),
                     ?err,
                     "pipeline failed - cancelled"
                 );
 
-                let step_id = sse_step_id(
-                    reporter
-                        .active_step()
-                        .unwrap_or_else(|| stage_to_step_id(err.stage())),
-                );
+                let step_id = stage_to_step_id(stage);
                 reporter.run_failed(step_id, &err.to_string());
 
                 let data = state
                     .progress
                     .finalize_json(&public_id, duration_ms)
-                    .unwrap_or_else(|| {
-                        serde_json::json!({
-                            "totalDurationMs": duration_ms,
-                            "steps": [],
-                        })
-                    });
+                    .unwrap_or_else(|| empty_progress_json(duration_ms));
 
-                let mut conn = state
-                    .pool
-                    .get()
-                    .await
-                    .map_err(|e| WorkerError::Pool(e.to_string()))?;
-                set_failed_with_data(&mut conn, package_id, err.stage(), &err.to_string(), data)
-                    .await?;
+                let mut conn = state.conn().await?;
+                set_failed_with_data(
+                    &mut conn,
+                    package_id,
+                    stage.as_str(),
+                    &err.to_string(),
+                    data,
+                )
+                .await?;
                 state.progress.unregister(&public_id);
                 return Err(WorkerError::Pipeline(err));
             }
@@ -181,13 +164,9 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
 }
 
 async fn set_failed_best_effort(state: &AppState, package_id: i32, stage: &str, message: &str) {
-    let stage = stage.to_string();
-    let message = message.to_string();
-
-    match state.pool.get().await {
+    match state.conn().await {
         Ok(mut conn) => {
-            if let Err(err) = harmony_db::set_failed(&mut conn, package_id, &stage, &message).await
-            {
+            if let Err(err) = harmony_db::set_failed(&mut conn, package_id, stage, message).await {
                 tracing::error!(package_id, ?err, "failed to mark package as failed");
             }
         }

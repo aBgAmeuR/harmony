@@ -6,8 +6,8 @@ mod sse;
 mod steps;
 
 pub use aggregator::ProgressAggregator;
-pub use events::{StepId, StepProgress};
+pub use events::StepId;
 pub use hub::ProgressHub;
 pub use reporter::ProgressReporter;
 pub use sse::stream_package_progress;
-pub use steps::{sse_step_id, stage_to_step_id};
+pub use steps::stage_to_step_id;

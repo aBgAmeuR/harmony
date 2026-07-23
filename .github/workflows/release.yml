@@ -103,6 +103,8 @@ jobs:
           tags: |
             ghcr.io/abgameur/harmony/${{ matrix.app.name }}:latest
             ghcr.io/abgameur/harmony/${{ matrix.app.name }}:${{ needs.release.outputs.tag }}
+          cache-from: type=gha,scope=${{ matrix.app.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app.name }}
 
   pin-compose:
     name: Pin compose image tags
