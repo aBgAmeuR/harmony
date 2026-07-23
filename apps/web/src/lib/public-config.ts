@@ -7,6 +7,6 @@ export const getPublicConfig = createServerFn({ method: "GET" }).handler(() => {
   if (!apiUrl || !bucketUrl) {
     throw new Error("API_URL and BUCKET_URL must be set");
   }
-  
+
   return { apiUrl, bucketUrl };
 });
