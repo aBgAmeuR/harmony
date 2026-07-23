@@ -26,6 +26,7 @@ export interface UseUplotChartOptions {
   xRangeMode: XRangeMode;
   layout?: ChartLayout;
   margin?: Partial<Margin>;
+  /** `seriesIndex` is the uPlot series index (1-based y series). */
   buildSeries: (seriesIndex: number, colorToken: string) => uPlot.Series;
 }
 
@@ -53,15 +54,19 @@ export function useUplotChart({
   const { series, showGrid, showXAxis, xAxisGap, showTooltip, tooltipSuffix } = config;
 
   const prepared = useMemo(() => {
-    if (!series || data.length === 0) {
+    if (series.length === 0 || data.length === 0) {
       return null;
     }
-    return toChartData(data, xDataKey, series.dataKey);
+    return toChartData(
+      data,
+      xDataKey,
+      series.map((entry) => entry.dataKey),
+    );
   }, [data, series, xDataKey]);
 
   useEffect(() => {
     const el = plotRef.current;
-    if (!el || !prepared || !series) {
+    if (!el || !prepared || series.length === 0) {
       return;
     }
 
@@ -71,16 +76,16 @@ export function useUplotChart({
     }
 
     const { chartData, labels } = prepared;
-    const colorToken = resolveSeriesColorToken(series);
-    const resolveTooltipColor = (u: uPlot) => resolveColorValue(u, series.stroke ?? series.fill);
 
     const plugins: uPlot.Plugin[] = [];
     if (showTooltip) {
       plugins.push(
         createTooltipPlugin({
           labels,
-          seriesLabel: series.label,
-          resolveColor: resolveTooltipColor,
+          series: series.map((entry) => ({
+            label: entry.label,
+            resolveColor: (u) => resolveColorValue(u, entry.stroke ?? entry.fill),
+          })),
           suffix: tooltipSuffix ?? undefined,
         }),
       );
@@ -101,6 +106,13 @@ export function useUplotChart({
 
     const isSparkline = layout === "sparkline";
     const padding = marginToPadding(resolveMargin(margin));
+    const plotSeries: uPlot.Series[] = [
+      {},
+      ...series.map((entry, index) => {
+        const colorToken = resolveSeriesColorToken(entry);
+        return buildSeries(index + 1, colorToken);
+      }),
+    ];
 
     let chart: uPlot | null = null;
 
@@ -134,7 +146,7 @@ export function useUplotChart({
           },
           // X labels live in a separate HTML band — keep uPlot's axis slot empty.
           axes: [createHiddenXAxis(), createHiddenYAxis()],
-          series: [{}, buildSeries(1, colorToken)],
+          series: plotSeries,
           cursor: isSparkline
             ? { show: false }
             : {
@@ -196,7 +208,7 @@ export function useUplotChart({
     labelsRef,
     showXAxis,
     xAxisGap,
-    hasSeries: series != null,
+    hasSeries: series.length > 0,
     isEmpty: data.length === 0,
   };
 }

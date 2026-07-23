@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Bar, BarChart, ChartTooltip, Grid, XAxis } from "@harmony/charts/v2";
 import { Alert02Icon, Cancel01Icon, Icon, Loading03Icon, Tick02Icon } from "@harmony/icons";
 import { Badge } from "@harmony/ui/components/badge";
+import { Checkbox } from "@harmony/ui/components/checkbox";
 import { cn } from "@harmony/ui/lib/utils";
 
 import { CatalogImage } from "@/components/catalog/catalog-image";
@@ -10,6 +11,7 @@ import { FormattedMetric } from "@/components/format/formatted-metric";
 import { Icons } from "@/components/icons";
 
 import { getRankClassName } from "../catalog/catalog-table";
+import { useStaggerReveal } from "./use-stagger-reveal";
 
 const SPOTIFY_PRIVACY_URL = "https://www.spotify.com/account/privacy/";
 
@@ -38,7 +40,7 @@ const PIPELINE_STAGES: readonly PipelineStage[] = [
   {
     label: "Extract archive",
     status: "done",
-    output: { kind: "files", count: ARCHIVE_FILES.length },
+    output: { kind: "files", count: 3 },
   },
   {
     label: "Parse interactions",
@@ -178,9 +180,7 @@ function PackageCard() {
                 index < ARCHIVE_FILES.length - 1 && "border-b border-border",
               )}
             >
-              <span className="flex size-3.5 shrink-0 items-center justify-center rounded-lg border border-primary bg-primary text-primary-foreground">
-                <Icon icon={Tick02Icon} className="size-2.5" strokeWidth={2} />
-              </span>
+              <Checkbox checked={file.name !== ARCHIVE_FILES[2].name} className="scale-90" />
               <p className="min-w-0 flex-1 truncate text-xs text-foreground">{file.name}</p>
               <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
                 {file.size}
@@ -263,7 +263,7 @@ function PipelineCard() {
         <div className="grid grid-cols-3 divide-x divide-border">
           <div className="flex flex-col px-2.5 py-2">
             <span className="text-[10px] font-medium text-muted-foreground">Files</span>
-            <span className="text-xs font-medium text-foreground">{ARCHIVE_FILES.length} JSON</span>
+            <span className="text-xs font-medium text-foreground">3 JSON</span>
           </div>
           <div className="flex flex-col px-2.5 py-2">
             <span className="text-[10px] font-medium text-muted-foreground">Time</span>
@@ -367,52 +367,64 @@ function InsightCard() {
 }
 
 export function LandingHowItWorks() {
+  const { ref, isShown } = useStaggerReveal<HTMLElement>();
+
   return (
-    <section className="w-full py-32">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-0">
-        <div className="mx-auto flex w-full max-w-xl flex-col items-start gap-1">
-          <h2 className="text-2xl font-bold tracking-tight">How we reads your history</h2>
-          <p className="max-w-lg text-sm leading-relaxed text-muted-foreground">
+    <section ref={ref} className="w-full pt-32 pb-12">
+      <div
+        className={cn(
+          "t-stagger mx-auto flex w-full max-w-6xl flex-col gap-0",
+          isShown && "is-shown",
+        )}
+      >
+        <div className="mx-auto flex w-full max-w-xl flex-col items-start gap-2">
+          <h2 className="t-stagger-line t-stagger-line--1 text-2xl font-bold tracking-tight">
+            How we reads your history
+          </h2>
+          <p className="t-stagger-line t-stagger-line--2 max-w-lg text-sm leading-relaxed text-muted-foreground">
             From your Spotify package to ranked tracks and artists, your history becomes a dense
             analytics dashboard.
           </p>
         </div>
 
-        <div className="group/cards relative mx-auto grid w-full max-w-5xl place-items-center overflow-visible py-8">
-          {/* Left — back layer (green in schema), tucked under right at the bottom cross */}
-          <div
-            className={cn(
-              "col-start-1 row-start-1 h-full w-[min(100%,20.5rem)]",
-              "origin-bottom transition-[translate,rotate,scale] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-              "z-0 -translate-x-[28%] translate-y-5 scale-[0.97] -rotate-10",
-              "group-hover/cards:-translate-x-[calc(100%+0.75rem)] group-hover/cards:translate-y-0 group-hover/cards:scale-100 group-hover/cards:rotate-0",
-              "group-focus-within/cards:-translate-x-[calc(100%+0.75rem)] group-focus-within/cards:translate-y-0 group-focus-within/cards:scale-100 group-focus-within/cards:rotate-0",
-            )}
-          >
-            <PackageCard />
-          </div>
+        {/* Wrapper keeps display:block on the stagger line so the inner grid stays intact. */}
+        <div className="t-stagger-line t-stagger-line--3">
+          <div className="group/cards relative mx-auto grid w-full max-w-5xl place-items-center overflow-visible py-8">
+            {/* Left — back layer (green in schema), tucked under right at the bottom cross */}
+            <div
+              className={cn(
+                "col-start-1 row-start-1 h-full w-[min(100%,20.5rem)]",
+                "origin-bottom transition-[translate,rotate,scale] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+                "z-0 -translate-x-[28%] translate-y-5 scale-[0.97] -rotate-10",
+                "group-hover/cards:-translate-x-[calc(100%+0.75rem)] group-hover/cards:translate-y-0 group-hover/cards:scale-100 group-hover/cards:rotate-0",
+                "group-focus-within/cards:-translate-x-[calc(100%+0.75rem)] group-focus-within/cards:translate-y-0 group-focus-within/cards:scale-100 group-focus-within/cards:rotate-0",
+              )}
+            >
+              <PackageCard />
+            </div>
 
-          {/* Right — middle layer (blue in schema), overlaps left at the bottom */}
-          <div
-            className={cn(
-              "col-start-1 row-start-1 h-full w-[min(100%,20.5rem)]",
-              "origin-bottom transition-[translate,rotate,scale] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-              "z-5 translate-x-[24%] translate-y-3 scale-[0.97] rotate-7",
-              "group-hover/cards:z-0 group-hover/cards:translate-x-[calc(100%+0.75rem)] group-hover/cards:translate-y-0 group-hover/cards:scale-100 group-hover/cards:rotate-0",
-              "group-focus-within/cards:z-0 group-focus-within/cards:translate-x-[calc(100%+0.75rem)] group-focus-within/cards:translate-y-0 group-focus-within/cards:scale-100 group-focus-within/cards:rotate-0",
-            )}
-          >
-            <InsightCard />
-          </div>
+            {/* Right — middle layer (blue in schema), overlaps left at the bottom */}
+            <div
+              className={cn(
+                "col-start-1 row-start-1 h-full w-[min(100%,20.5rem)]",
+                "origin-bottom transition-[translate,rotate,scale] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+                "z-5 translate-x-[24%] translate-y-3 scale-[0.97] rotate-7",
+                "group-hover/cards:z-0 group-hover/cards:translate-x-[calc(100%+0.75rem)] group-hover/cards:translate-y-0 group-hover/cards:scale-100 group-hover/cards:rotate-0",
+                "group-focus-within/cards:z-0 group-focus-within/cards:translate-x-[calc(100%+0.75rem)] group-focus-within/cards:translate-y-0 group-focus-within/cards:scale-100 group-focus-within/cards:rotate-0",
+              )}
+            >
+              <InsightCard />
+            </div>
 
-          {/* Center — front layer (red in schema) */}
-          <div
-            className={cn(
-              "col-start-1 row-start-1 h-full w-[min(100%,20.5rem)]",
-              "z-10 origin-bottom transition-[translate,rotate,scale] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-            )}
-          >
-            <PipelineCard />
+            {/* Center — front layer (red in schema) */}
+            <div
+              className={cn(
+                "col-start-1 row-start-1 h-full w-[min(100%,20.5rem)]",
+                "z-10 origin-bottom transition-[translate,rotate,scale] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+              )}
+            >
+              <PipelineCard />
+            </div>
           </div>
         </div>
       </div>

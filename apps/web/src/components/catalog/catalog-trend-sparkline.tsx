@@ -1,3 +1,4 @@
+import { cn } from "@harmony/ui/lib/utils";
 import { useId } from "react";
 
 export type CatalogTrendPoint = {
@@ -38,14 +39,14 @@ function paths(values: number[]) {
   return { line, area: `${line} L${b.x} ${H} L${a.x} ${H} Z` };
 }
 
-export function CatalogTrendSparkline({ trend }: { trend: CatalogTrendPoint[] }) {
+export function CatalogTrendSparkline({ trend, className }: { trend: CatalogTrendPoint[] | number[], className?: string }) {
   const id = useId();
   if (trend.length === 0) return null;
 
-  const { line, area } = paths(trend.map((p) => p.value));
+  const { line, area } = paths(trend.map((p) => typeof p === "number" ? p : p.value));
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-7 w-full" preserveAspectRatio="none" aria-hidden>
+    <svg viewBox={`0 0 ${W} ${H}`} className={cn("h-7 w-full", className)} preserveAspectRatio="none" aria-hidden>
       <defs>
         <linearGradient id={id} gradientUnits="userSpaceOnUse" x1={0} y1={0} x2={0} y2={H}>
           <stop offset="0%" stopColor="var(--chart-2)" stopOpacity={0.4} />

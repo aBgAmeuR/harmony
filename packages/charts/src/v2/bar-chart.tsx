@@ -24,11 +24,12 @@ export function BarChart({ data, xDataKey = "name", className, margin, children 
   const config = useMemo(() => extractChartConfig(children), [children]);
 
   const buildSeries = useMemo(() => {
-    return (_seriesIndex: number, _colorToken: string) => {
-      if (!config.series) {
+    return (seriesIndex: number, _colorToken: string) => {
+      const series = config.series[seriesIndex - 1];
+      if (!series) {
         return { points: { show: false } };
       }
-      return makeBarSeries(config.series);
+      return makeBarSeries(series);
     };
   }, [config.series]);
 

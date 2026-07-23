@@ -10,16 +10,19 @@ export function formatXLabel(value: unknown): string {
 export function toChartData(
   data: Record<string, unknown>[],
   xDataKey: string,
-  dataKey: string,
+  dataKeys: readonly string[],
 ): { chartData: uPlot.AlignedData; labels: string[] } {
   const labels = data.map((row) => formatXLabel(row[xDataKey]));
-  const values = data.map((row) => {
-    const value = row[dataKey];
-    return typeof value === "number" ? value : null;
-  });
+  const xs = data.map((_, index) => index);
+  const ys = dataKeys.map((dataKey) =>
+    data.map((row) => {
+      const value = row[dataKey];
+      return typeof value === "number" ? value : null;
+    }),
+  );
 
   return {
-    chartData: [data.map((_, index) => index), values],
+    chartData: [xs, ...ys],
     labels,
   };
 }

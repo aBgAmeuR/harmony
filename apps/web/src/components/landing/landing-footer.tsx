@@ -1,14 +1,11 @@
 import { Button } from "@harmony/ui/components/button";
+import { cn } from "@harmony/ui/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { useLayoutEffect, useRef } from "react";
 
 import { LandingLogo } from "@/components/landing/landing-logo";
-import {
-  CHANGELOG_URL,
-  DEMO_PACKAGE_ID,
-  DOCUMENTATION_URL,
-  GITHUB_REPO_URL,
-} from "@/components/landing/mock-data";
+
+import { useStaggerReveal } from "./use-stagger-reveal";
 
 function GhostWordmark() {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -57,10 +54,12 @@ function GhostWordmark() {
 }
 
 export function LandingFooter() {
+  const { ref, isShown } = useStaggerReveal<HTMLElement>();
+
   return (
-    <footer className="mt-16 shrink-0">
-      <div className="mx-auto w-full max-w-xl px-4 sm:px-0">
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-3">
+    <footer ref={ref} className="mt-16 shrink-0">
+      <div className={cn("t-stagger mx-auto w-full max-w-xl px-4 sm:px-0", isShown && "is-shown")}>
+        <div className="t-stagger-line t-stagger-line--1 flex flex-wrap items-center justify-between gap-2 pb-3">
           <Link to="/" className="group/logo flex shrink-0 items-center gap-1 outline-none">
             <LandingLogo className="size-6" />
             <span className="text-lg font-bold tracking-tight text-foreground">Harmony</span>
@@ -68,39 +67,58 @@ export function LandingFooter() {
 
           <nav className="-mr-2 flex items-center gap-0.5">
             <Button
+              nativeButton={false}
               variant="ghost"
-              render={<a href={DOCUMENTATION_URL} target="_blank" rel="noreferrer" />}
+              render={
+                <a
+                  href="https://github.com/aBgAmeuR/Harmony#readme"
+                  target="_blank"
+                  rel="noreferrer"
+                />
+              }
             >
               Docs
             </Button>
             <Button
+              nativeButton={false}
               variant="ghost"
-              render={<a href={CHANGELOG_URL} target="_blank" rel="noreferrer" />}
+              render={
+                <a
+                  href="https://github.com/aBgAmeuR/Harmony/releases"
+                  target="_blank"
+                  rel="noreferrer"
+                />
+              }
             >
               Changelog
             </Button>
             <Button
+              nativeButton={false}
               variant="ghost"
-              render={<a href={GITHUB_REPO_URL} target="_blank" rel="noreferrer" />}
+              render={
+                <a href="https://github.com/aBgAmeuR/Harmony" target="_blank" rel="noreferrer" />
+              }
             >
               GitHub
             </Button>
             <Button
+              nativeButton={false}
               variant="ghost"
-              render={<Link to="/app/$packageId" params={{ packageId: DEMO_PACKAGE_ID }} />}
+              render={<Link to="/app/$packageId" params={{ packageId: "demo" }} />}
             >
               Demo
             </Button>
-            <Button variant="ghost" render={<a href="#" />}>
+            <Button nativeButton={false} variant="ghost" render={<a href="#" />}>
               Privacy
             </Button>
           </nav>
         </div>
 
-        <div className="flex w-full items-center justify-between pb-3 ">
+        <div className="t-stagger-line t-stagger-line--2 flex w-full items-center justify-between pb-3">
           <p className="text-xs text-muted-foreground">
             Built by
             <Button
+              nativeButton={false}
               render={<a href="https://github.com/aBgAmeuR" target="_blank" rel="noreferrer" />}
               variant="link"
               size="xs"
@@ -111,7 +129,9 @@ export function LandingFooter() {
           </p>
           <p className="text-xs text-muted-foreground">v3.0-beta</p>
         </div>
-        <GhostWordmark />
+        <div className="t-stagger-line t-stagger-line--3">
+          <GhostWordmark />
+        </div>
       </div>
     </footer>
   );

@@ -1,148 +1,143 @@
 import type { ReactNode } from "react";
 
-import { Area, AreaChart, Grid } from "@harmony/charts/v2";
-import {
-  Album02Icon,
-  ArrowDown01Icon,
-  Calendar03Icon,
-  ChartLineData01Icon,
-  FilterIcon,
-  GridIcon,
-  Icon,
-  LayoutTable01Icon,
-  RankingIcon,
-  Time04Icon,
-} from "@harmony/icons";
+import { Area, AreaChart, ChartTooltip } from "@harmony/charts/v2";
+import { ArrowLeft01Icon, ArrowRight01Icon, Cancel01Icon, Icon } from "@harmony/icons";
+import { Button } from "@harmony/ui/components/button";
+import { ButtonGroup } from "@harmony/ui/components/button-group";
 import { cn } from "@harmony/ui/lib/utils";
 
 import { CatalogImage } from "@/components/catalog/catalog-image";
-import { FormattedMetric } from "@/components/format/formatted-metric";
 
-import { getRankClassName } from "../catalog/catalog-table";
+import { CatalogTrendSparkline } from "../catalog/catalog-trend-sparkline";
+import { FormattedMetric } from "../format/formatted-metric";
+import { useStaggerReveal } from "./use-stagger-reveal";
 
-type CatalogEntry = {
+const data = [
+  { name: "Jan", "Artist 1": 377, "Artist 2": 205, "Artist 3": 97 },
+  { name: "Feb", "Artist 1": 453, "Artist 2": 222, "Artist 3": 120 },
+  { name: "Mar", "Artist 1": 545, "Artist 2": 266, "Artist 3": 141 },
+  { name: "Apr", "Artist 1": 541, "Artist 2": 230, "Artist 3": 134 },
+  { name: "May", "Artist 1": 662, "Artist 2": 328, "Artist 3": 127 },
+  { name: "Jun", "Artist 1": 703, "Artist 2": 368, "Artist 3": 190 },
+  { name: "Jul", "Artist 1": 829, "Artist 2": 484, "Artist 3": 155 },
+  { name: "Aug", "Artist 1": 796, "Artist 2": 512, "Artist 3": 202 },
+  { name: "Sep", "Artist 1": 910, "Artist 2": 458, "Artist 3": 173 },
+  { name: "Oct", "Artist 1": 980, "Artist 2": 554, "Artist 3": 165 },
+  { name: "Nov", "Artist 1": 1010, "Artist 2": 480, "Artist 3": 211 },
+  { name: "Dec", "Artist 1": 1023, "Artist 2": 661, "Artist 3": 345 },
+];
+
+type PodiumEntry = {
   rank: number;
   name: string;
-  subtitle: string;
-  metric: number;
+  minutes: number;
   image: string;
+  pedestal: string;
 };
 
-const TOP_TRACKS: readonly CatalogEntry[] = [
-  {
-    rank: 1,
-    name: "FE!N",
-    subtitle: "Travis Scott, Playboi Carti",
-    metric: 1190,
-    image:
-      "https://cdn-images.dzcdn.net/images/cover/6c91e64b7157f1332a4f6b0de9e4c714/56x56-000000-80-0-0.jpg",
-  },
+/** Ordered for the podium: silver, gold (center, tallest), bronze. */
+const PODIUM: readonly PodiumEntry[] = [
   {
     rank: 2,
     name: "Whole Lotta Red",
-    subtitle: "Playboi Carti",
-    metric: 964,
+    minutes: 964,
     image:
       "https://cdn-images.dzcdn.net/images/cover/3c5f5f3f5f41ff96f961afd7df7eb4d9/56x56-000000-80-0-0.jpg",
+    pedestal: "h-9",
+  },
+  {
+    rank: 1,
+    name: "Rodeo",
+    minutes: 1190,
+    image:
+      "https://cdn-images.dzcdn.net/images/cover/c6fe182fb0f3485428906c7b21873046/56x56-000000-80-0-0.jpg",
+    pedestal: "h-13",
   },
   {
     rank: 3,
-    name: "Let It Go",
-    subtitle: "Playboi Carti",
-    metric: 939,
+    name: "Playboi Carti",
+    minutes: 939,
     image:
       "https://cdn-images.dzcdn.net/images/cover/0ae8e05f734268cbe5aae06f96f2b1f2/56x56-000000-80-0-0.jpg",
+    pedestal: "h-7",
   },
 ];
 
-const ARTIST_IMAGE =
-  "https://cdn-images.dzcdn.net/images/artist/b90097972a60d9d8598a79a786be1a3a/56x56-000000-80-0-0.jpg";
+const HOURLY_INTENSITY: readonly number[] = [
+  0.03, 0.015, 0.01, 0.0, 0.01, 0.08, 0.09, 0.11, 0.17, 0.18, 0.19, 0.2, 0.22, 0.23, 0.25, 0.28,
+  0.31, 0.34, 0.37, 0.29, 0.23, 0.24, 0.19, 0.12,
+];
 
-const FILTERED_TRACKS: readonly CatalogEntry[] = [
+type GenreSegment = { label: string; pct: number; opacity: number };
+
+const GENRE_SEGMENTS: readonly GenreSegment[] = [
+  { label: "Hip-Hop", pct: 40, opacity: 1 },
+  { label: "Pop", pct: 22, opacity: 0.72 },
+  { label: "Rock", pct: 16, opacity: 0.52 },
+  { label: "Electronic", pct: 12, opacity: 0.36 },
+  { label: "Other", pct: 10, opacity: 0.14 },
+];
+
+type FilterMatch = { name: string; minutes: number; sparkline: number[]; image: string };
+
+const FILTER_ARTIST = {
+  name: "PBC",
+  image:
+    "https://cdn-images.dzcdn.net/images/artist/b90097972a60d9d8598a79a786be1a3a/56x56-000000-80-0-0.jpg",
+  range: "2024-2025",
+} as const;
+
+const FILTER_MATCHES: readonly FilterMatch[] = [
   {
-    rank: 1,
-    name: "Sky",
-    subtitle: "Playboi Carti",
-    metric: 612,
+    name: "New Tank",
+    minutes: 612.3,
+    sparkline: [3, 5, 2, 5, 6],
     image:
       "https://cdn-images.dzcdn.net/images/cover/3c5f5f3f5f41ff96f961afd7df7eb4d9/56x56-000000-80-0-0.jpg",
   },
   {
-    rank: 2,
     name: "Let It Go",
-    subtitle: "Playboi Carti",
-    metric: 428,
+    minutes: 428.7,
+    sparkline: [2, 6, 6, 8, 0],
     image:
       "https://cdn-images.dzcdn.net/images/cover/0ae8e05f734268cbe5aae06f96f2b1f2/56x56-000000-80-0-0.jpg",
   },
 ];
 
-const CATALOG_TABS = ["Tracks", "Artists", "Albums"] as const;
-
-const TREND_DATA: Array<{ name: string; value: number }> = [
-  { name: "2019", value: 92 },
-  { name: "2020", value: 154 },
-  { name: "2021", value: 121 },
-  { name: "2022", value: 188 },
-  { name: "2023", value: 142 },
-  { name: "2024", value: 205 },
-];
-
-/** Weekday x time-of-day intensity tiers (0 = quiet, 4 = peak). */
-const HEATMAP_ROWS: ReadonlyArray<{ label: string; tiers: readonly number[] }> = [
-  { label: "6a", tiers: [1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1] },
-  { label: "9a", tiers: [1, 2, 2, 1, 2, 2, 3, 3, 3, 2, 2, 1] },
-  { label: "12p", tiers: [2, 2, 1, 2, 2, 3, 3, 3, 3, 2, 2, 1] },
-  { label: "3p", tiers: [2, 3, 2, 3, 3, 4, 3, 3, 2, 2, 1, 0] },
-];
-
-const HEATMAP_DAYS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"] as const;
-
-const HEATMAP_TIER_CLASS: Record<number, string> = {
-  0: "bg-muted/40",
-  1: "bg-primary/15",
-  2: "bg-primary/35",
-  3: "bg-primary/60",
-  4: "bg-primary/90",
-};
-
-type GenreSegment = { label: string; pct: number; className: string };
-
-const GENRE_SEGMENTS: readonly GenreSegment[] = [
-  { label: "Hip-Hop", pct: 34, className: "bg-primary" },
-  { label: "Pop", pct: 22, className: "bg-primary/70" },
-  { label: "Rock", pct: 16, className: "bg-primary/50" },
-  { label: "Electronic", pct: 12, className: "bg-primary/35" },
-  { label: "R&B", pct: 9, className: "bg-primary/22" },
-  { label: "Other", pct: 7, className: "bg-muted" },
-];
-
-function CatalogRow({ entry, size = "md" }: { entry: CatalogEntry; size?: "sm" | "md" }) {
+function FeatureCard({
+  title,
+  description,
+  visual,
+  className,
+}: {
+  title: string;
+  description: string;
+  visual: ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="flex items-center gap-2.5 px-2.5 py-1.5">
-      <span
-        className={cn(
-          "inline-flex h-5 min-w-5 items-center justify-center rounded-md text-xs font-medium",
-          getRankClassName(entry.rank),
-        )}
-      >
-        {entry.rank}
-      </span>
-      <CatalogImage image={entry.image} alt={entry.name} size={size} className="rounded-sm" />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <p className="truncate text-xs font-medium text-foreground">{entry.name}</p>
-        <p className="truncate text-[10px] text-muted-foreground">{entry.subtitle}</p>
+    <article
+      className={cn(
+        "flex-items-center justify-center rounded-2xl p-1 shadow-[0_0_0_1px_#ffffff14]",
+        className,
+      )}
+    >
+      <div className="h-full overflow-hidden rounded-xl border border-[#ffffff14] bg-card">
+        {visual}
+        <div className="flex flex-col gap-1 p-4">
+          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+          <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
+        </div>
       </div>
-      <FormattedMetric value={entry.metric} unit="min" size="sm" />
-    </div>
+    </article>
   );
 }
 
-function FeatureVisual({ children, className }: { children: ReactNode; className?: string }) {
+function VisualPanel({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div
       className={cn(
-        "relative flex min-h-40 flex-col justify-center overflow-hidden rounded-lg border border-border bg-background",
+        "relative flex h-38 items-center justify-center overflow-hidden border-b border-[#ffffff14]",
         className,
       )}
     >
@@ -151,222 +146,237 @@ function FeatureVisual({ children, className }: { children: ReactNode; className
   );
 }
 
-function FeatureCard({
-  icon,
-  title,
-  description,
-  visual,
-  className,
-}: {
-  icon: typeof RankingIcon;
-  title: string;
-  description: string;
-  visual: ReactNode;
-  className?: string;
-}) {
+function PodiumVisual() {
   return (
-    <article
-      className={cn("flex flex-col gap-4 rounded-xl border border-border bg-card p-4", className)}
-    >
-      {visual}
-      <div className="flex flex-col gap-1">
-        <h3 className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-          <Icon icon={icon} className="size-3.5 text-primary" />
-          {title}
-        </h3>
-        <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
-      </div>
-    </article>
-  );
-}
-
-function RankedCatalogVisual() {
-  return (
-    <FeatureVisual className="justify-start p-2.5">
-      <div className="mb-2 flex items-center gap-1">
-        {CATALOG_TABS.map((tab, index) => (
-          <span
-            key={tab}
-            className={cn(
-              "rounded-md px-2 py-0.5 text-[10px] font-medium",
-              index === 0 ? "bg-primary/15 text-primary" : "text-muted-foreground",
-            )}
-          >
-            {tab}
-          </span>
-        ))}
-        <span className="ml-auto text-[10px] text-muted-foreground">by minutes</span>
-      </div>
-      <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
-        {TOP_TRACKS.map((entry) => (
-          <CatalogRow key={entry.name} entry={entry} />
+    <VisualPanel className="items-end">
+      <div className="mx-auto flex h-full w-full max-w-xs items-end justify-center gap-3 px-4 pt-2">
+        {PODIUM.map((entry) => (
+          <div key={entry.name} className="flex w-1/3 flex-col items-center gap-0.5">
+            <CatalogImage image={entry.image} alt={entry.name} size="md" />
+            <p className="mt-1 max-w-full truncate text-xs font-medium text-foreground">
+              {entry.name}
+            </p>
+            <FormattedMetric value={entry.minutes} unit="min" size="xs" className="mb-1.5" />
+            <div
+              className={cn(
+                "flex w-full items-start justify-center rounded-t-md border border-b-0 border-[#ffffff14]/50 pt-1",
+                entry.pedestal,
+                entry.rank === 1 && "bg-primary/10",
+                entry.rank === 2 && "bg-primary/5",
+                entry.rank === 3 && "bg-primary/2.5",
+              )}
+            >
+              <span className="text-xs font-bold">{entry.rank}</span>
+            </div>
+          </div>
         ))}
       </div>
-    </FeatureVisual>
+    </VisualPanel>
   );
 }
 
 function TrendsVisual() {
   return (
-    <FeatureVisual className="h-full">
-      <div className="flex items-center justify-between px-2.5 py-2">
-        <span className="text-[10px] text-muted-foreground">Minutes / year</span>
-        <span className="flex items-center gap-1 text-[10px] font-medium text-primary">
-          <span className="size-1.5 rounded-full bg-primary" />
-          +44% vs 2019
-        </span>
-      </div>
-      <div className="size-full">
-        <AreaChart data={TREND_DATA} xDataKey="name" className="aspect-auto! h-full">
-          <Area dataKey="value" fill="var(--chart-3)" fillPattern="dots" />
-          <Grid />
-        </AreaChart>
-      </div>
-    </FeatureVisual>
+    <VisualPanel>
+      <AreaChart className="aspect-auto size-full" data={data} xDataKey="name">
+        <Area dataKey="Artist 1" fill="var(--chart-1)" />
+        <Area dataKey="Artist 2" fill="var(--chart-2)" />
+        <Area dataKey="Artist 3" fill="var(--chart-3)" />
+        <ChartTooltip suffix="min" />
+      </AreaChart>
+    </VisualPanel>
   );
 }
 
-function HeatmapVisual() {
+function ClockDialVisual() {
+  const center = 20;
+  const radius = 15;
   return (
-    <FeatureVisual className="p-3">
-      <div className="flex gap-1.5">
-        <div className="flex-1">
-          <div className="flex flex-col gap-1">
-            {HEATMAP_ROWS.map((row) => (
-              <div key={row.label} className="grid grid-cols-12 gap-1">
-                {row.tiers.map((tier, dayIndex) => (
-                  <span
-                    key={dayIndex}
-                    className={cn("aspect-square rounded-xs", HEATMAP_TIER_CLASS[tier])}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-          <div className="mt-1.5 grid grid-cols-12 gap-1">
-            {HEATMAP_DAYS.map((day, index) => (
-              <span key={index} className="text-center text-[8px] text-muted-foreground">
-                {day}
-              </span>
-            ))}
-          </div>
+    <VisualPanel>
+      <div className="pointer-events-none relative grid place-items-center py-4 select-none">
+        <svg viewBox="0 0 40 40" className="size-36 text-primary" aria-hidden>
+          {HOURLY_INTENSITY.map((intensity, hour) => {
+            const angle = (hour / 24) * Math.PI * 2 - Math.PI / 2;
+            const cx = Math.round((center + radius * Math.cos(angle)) * 100) / 100;
+            const cy = Math.round((center + radius * Math.sin(angle)) * 100) / 100;
+            return (
+              <g key={hour}>
+                <circle
+                  cx={cx}
+                  cy={cy}
+                  r={1.2 + intensity * 1.5}
+                  fill="currentColor"
+                  fillOpacity={0.14 + intensity * 1.2}
+                />
+              </g>
+            );
+          })}
+        </svg>
+        <div className="pointer-events-none absolute flex flex-col items-center">
+          <span className="text-md font-medium text-foreground">Peak</span>
+          <span className="text-xs text-primary">5:00 PM</span>
         </div>
       </div>
-    </FeatureVisual>
+    </VisualPanel>
   );
 }
 
-function GenresVisual() {
+function GenreDonutVisual() {
+  const radius = 15.915;
+  let offset = 0;
   return (
-    <FeatureVisual className="gap-3 p-3">
-      <div className="flex h-3 w-full overflow-hidden rounded-full">
-        {GENRE_SEGMENTS.map((segment) => (
-          <div
-            key={segment.label}
-            className={segment.className}
-            style={{ width: `${segment.pct}%` }}
-          />
-        ))}
-      </div>
-      <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-        {GENRE_SEGMENTS.map((segment) => (
-          <div key={segment.label} className="flex items-center gap-1.5">
-            <span className={cn("size-2 shrink-0 rounded-[3px]", segment.className)} />
-            <span className="flex-1 truncate text-[10px] text-muted-foreground">
-              {segment.label}
-            </span>
-            <span className="text-[10px] font-medium text-foreground tabular-nums">
-              {segment.pct}%
-            </span>
+    <VisualPanel>
+      <div className="flex items-center gap-5 px-6">
+        <div className="relative grid size-28 shrink-0 place-items-center">
+          <svg viewBox="0 0 40 40" className="size-28 -rotate-90 text-primary" aria-hidden>
+            {GENRE_SEGMENTS.map((segment) => {
+              const dash = `${segment.pct} ${100 - segment.pct}`;
+              const node = (
+                <circle
+                  key={segment.label}
+                  cx="20"
+                  cy="20"
+                  r={radius}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeOpacity={segment.opacity}
+                  strokeWidth="6"
+                  strokeDasharray={dash}
+                  strokeDashoffset={-offset}
+                />
+              );
+              offset += segment.pct;
+              return node;
+            })}
+          </svg>
+          <div className="pointer-events-none absolute flex flex-col items-center">
+            <span className="text-sm font-bold text-foreground">40%</span>
+            <span className="text-[9px] text-muted-foreground">Hip-Hop</span>
           </div>
-        ))}
+        </div>
+        <ul className="flex flex-col gap-1.5">
+          {GENRE_SEGMENTS.map((segment) => (
+            <li key={segment.label} className="flex items-center gap-1.5">
+              <span
+                className="size-2 shrink-0 rounded-[3px] bg-primary"
+                style={{ opacity: segment.opacity }}
+              />
+              <span className="text-[10px] text-muted-foreground">{segment.label}</span>
+            </li>
+          ))}
+        </ul>
       </div>
-    </FeatureVisual>
+    </VisualPanel>
   );
 }
 
 function FilterVisual() {
   return (
-    <FeatureVisual className="justify-start gap-2.5 p-2.5">
-      <div className="flex items-center gap-1.5">
-        <div className="flex min-w-0 items-center gap-1.5 rounded-md border border-border bg-card px-1.5 py-1">
+    <VisualPanel className="flex-col items-stretch justify-center gap-3 p-4">
+      <div className="flex items-center justify-between gap-1.5">
+        <Button variant="outline" size="sm" tabIndex={-1} className="max-w-full gap-1.5">
           <CatalogImage
-            image={ARTIST_IMAGE}
-            alt="Playboi Carti"
+            image={FILTER_ARTIST.image}
+            alt={FILTER_ARTIST.name}
             size="sm"
             className="size-4 rounded-full"
           />
-          <span className="truncate text-[10px] font-medium text-foreground">Playboi Carti</span>
-          <Icon icon={ArrowDown01Icon} className="size-3 shrink-0 text-muted-foreground" />
-        </div>
-        <div className="flex items-center gap-1.5 rounded-md border border-border bg-card px-1.5 py-1">
-          <Icon icon={Calendar03Icon} className="size-3 shrink-0 text-muted-foreground" />
-          <span className="text-[10px] font-medium text-foreground">2019 – 2024</span>
-        </div>
-        <div className="ml-auto flex overflow-hidden rounded-md border border-border">
-          <span className="grid size-6 place-items-center bg-primary text-primary-foreground">
-            <Icon icon={LayoutTable01Icon} className="size-3" />
-          </span>
-          <span className="grid size-6 place-items-center border-l border-border text-muted-foreground">
-            <Icon icon={GridIcon} className="size-3" />
-          </span>
-        </div>
+          <span className="truncate">{FILTER_ARTIST.name}</span>
+          <Icon icon={Cancel01Icon} className="size-3 text-muted-foreground" />
+        </Button>
+
+        <ButtonGroup>
+          <Button size="icon-sm" variant="secondary">
+            <Icon icon={ArrowLeft01Icon} />
+          </Button>
+          <Button size="sm" variant="secondary">
+            {FILTER_ARTIST.range}
+          </Button>
+          <Button size="icon-sm" variant="secondary">
+            <Icon icon={ArrowRight01Icon} />
+          </Button>
+        </ButtonGroup>
       </div>
-      <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
-        {FILTERED_TRACKS.map((entry) => (
-          <CatalogRow key={entry.name} entry={entry} size="sm" />
+
+      <ul className="overflow-hidden rounded-lg border border-border">
+        {FILTER_MATCHES.map((track, index) => (
+          <li
+            key={track.name}
+            className={cn(
+              "flex items-center gap-2.5 bg-background/10 px-2.5 py-2",
+              index > 0 && "border-t border-border",
+            )}
+          >
+            <CatalogImage image={track.image} alt={track.name} size="sm" />
+            <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
+              {track.name}
+            </span>
+            <CatalogTrendSparkline trend={track.sparkline} className="me-0.5 h-4 w-10" />
+            <FormattedMetric value={track.minutes} unit="min" size="xs" />
+          </li>
         ))}
-      </div>
-    </FeatureVisual>
+      </ul>
+    </VisualPanel>
   );
 }
 
 export function LandingFeatures() {
+  const { ref, isShown } = useStaggerReveal<HTMLElement>();
+
   return (
-    <section className="w-full py-32">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
-        <div className="mx-auto flex w-full max-w-xl flex-col items-start gap-1">
-          <h2 className="text-2xl font-bold tracking-tight">
+    <section ref={ref} className="w-full pt-24 pb-12">
+      <div
+        className={cn(
+          "t-stagger mx-auto flex w-full max-w-xl flex-col gap-8",
+          isShown && "is-shown",
+        )}
+      >
+        <header className="flex flex-col gap-2">
+          <h2 className="t-stagger-line t-stagger-line--1 text-2xl font-bold tracking-tight text-balance">
             Explore every angle of your listening
           </h2>
-          <p className="max-w-lg text-sm leading-relaxed text-muted-foreground">
-            From ranked catalogs to peak-hour heatmaps, Harmony turns years of streams into dense,
-            interactive analytics.
-          </p>
-        </div>
+          <div className="t-stagger-line t-stagger-line--2 flex max-w-md flex-col gap-3 text-sm leading-relaxed text-muted-foreground">
+            <p>
+              From ranked catalogs to peak-hour dials, Harmony turns years of streams into{" "}
+              <span className="text-foreground italic">playful</span>, interactive analytics.
+            </p>
+          </div>
+        </header>
 
-        <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-4">
           <FeatureCard
-            icon={RankingIcon}
+            className="t-stagger-line t-stagger-line--3"
             title="Ranked catalogs"
             description="Your most-played tracks, artists, and albums, ranked by minutes with covers and rank badges."
-            visual={<RankedCatalogVisual />}
-            className="sm:col-span-2"
+            visual={<PodiumVisual />}
           />
-          <FeatureCard
-            icon={ChartLineData01Icon}
-            title="Trends over time"
-            description="Watch your listening rise and fall across months and years with interactive activity charts."
-            visual={<TrendsVisual />}
-          />
-          <FeatureCard
-            icon={Time04Icon}
-            title="Peak-hour heatmap"
-            description="See exactly when you listen, by hour and weekday, in a calendar-style intensity grid."
-            visual={<HeatmapVisual />}
-          />
-          <FeatureCard
-            icon={Album02Icon}
-            title="Genre breakdown"
-            description="Understand the shape of your taste with a genre split drawn from every stream."
-            visual={<GenresVisual />}
-          />
-          <FeatureCard
-            icon={FilterIcon}
-            title="Filter by artist & date"
-            description="Focus any view on one artist or date range and every chart and ranking updates instantly."
-            visual={<FilterVisual />}
-          />
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FeatureCard
+              className="t-stagger-line t-stagger-line--4"
+              title="Trends over time"
+              description="Watch your listening rise and fall across months and years."
+              visual={<TrendsVisual />}
+            />
+            <FeatureCard
+              className="t-stagger-line t-stagger-line--5"
+              title="Peak-hour dial"
+              description="See exactly when you listen, mapped around a 24-hour clock."
+              visual={<ClockDialVisual />}
+            />
+            <FeatureCard
+              className="t-stagger-line t-stagger-line--6"
+              title="Genre breakdown"
+              description="Understand the shape of your taste, drawn from every stream."
+              visual={<GenreDonutVisual />}
+            />
+            <FeatureCard
+              className="t-stagger-line t-stagger-line--7"
+              title="Filter by artist & date"
+              description="Focus any view on one artist or range and every chart updates instantly."
+              visual={<FilterVisual />}
+            />
+          </div>
         </div>
       </div>
     </section>

@@ -37,7 +37,8 @@ packages/          ui, charts, duckdb, upload, icons, font, config
 - `GET /api/v1/packages/{id}/stream` — SSE pipeline progress
 
 Server modules: `http/` (adapters + `ApiError`), `worker`, `pipeline` (orchestrator
-+ pure stages), `progress`, `storage` (S3 `ObjectStore`).
+
+- pure stages), `progress`, `storage` (S3 `ObjectStore`).
 
 ## Pipeline
 
@@ -52,11 +53,11 @@ Persist key: `harmony/{public_id}.duckdb`.
 
 ## Data
 
-| Store | Role |
-| --- | --- |
-| Postgres `packages` | Status, errors, progress JSON (`data`) |
-| S3/R2 DuckDB | `artists`, `albums`, `tracks`, `interactions`, view `v_tracks_info` |
-| `sessionStorage` | Upload session key `harmony:upload-session:v1` |
+| Store               | Role                                                                |
+| ------------------- | ------------------------------------------------------------------- |
+| Postgres `packages` | Status, errors, progress JSON (`data`)                              |
+| S3/R2 DuckDB        | `artists`, `albums`, `tracks`, `interactions`, view `v_tracks_info` |
+| `sessionStorage`    | Upload session key `harmony:upload-session:v1`                      |
 
 `package_data` remains in schema but is unused.
 
@@ -71,13 +72,13 @@ Persist key: `harmony/{public_id}.duckdb`.
 Production: GHCR images + Portainer GitOps (`DEPLOY.md`). Compose pins image
 tags; no NAS-side builds.
 
-| Var | Used by |
-| --- | --- |
-| `DATABASE_URL` | API |
-| `S3_ENDPOINT`, `S3_BUCKET` | API persist |
-| `DEEZER_PROXY_URLS`, `DEEZER_PROXY_SECRET` | API enrich |
-| `HOST`, `PORT` | API bind (default `127.0.0.1:3000`) |
-| `API_URL`, `BUCKET_URL` | Web |
+| Var                                        | Used by                             |
+| ------------------------------------------ | ----------------------------------- |
+| `DATABASE_URL`                             | API                                 |
+| `S3_ENDPOINT`, `S3_BUCKET`                 | API persist                         |
+| `DEEZER_PROXY_URLS`, `DEEZER_PROXY_SECRET` | API enrich                          |
+| `HOST`, `PORT`                             | API bind (default `127.0.0.1:3000`) |
+| `API_URL`, `BUCKET_URL`                    | Web                                 |
 
 ## Risks
 

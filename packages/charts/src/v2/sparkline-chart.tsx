@@ -31,21 +31,22 @@ export function SparklineChart({
   const config = useMemo(() => extractChartConfig(children), [children]);
 
   const buildSeries = useMemo(() => {
-    return (_seriesIndex: number, colorToken: string) => {
-      if (!config.series) {
+    return (seriesIndex: number, colorToken: string) => {
+      const series = config.series[seriesIndex - 1];
+      if (!series) {
         return { points: { show: false } };
       }
 
-      if (config.seriesKind === "line") {
+      if (series.kind === "line") {
         return makeLineSeries({
-          ...config.series,
-          strokeWidth: config.series.strokeWidth ?? 2,
+          ...series,
+          strokeWidth: series.strokeWidth ?? 2,
         });
       }
 
-      return makeAreaSeries(config.series, chartAreaFill, colorToken);
+      return makeAreaSeries(series, chartAreaFill, colorToken);
     };
-  }, [config.series, config.seriesKind]);
+  }, [config.series]);
 
   const { plotRef, labelsRef, showXAxis, xAxisGap, hasSeries, isEmpty } = useUplotChart({
     data,

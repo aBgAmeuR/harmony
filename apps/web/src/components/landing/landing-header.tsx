@@ -12,16 +12,51 @@ export function LandingHeader() {
       </Link>
 
       <nav className="ml-auto flex items-center gap-0.5">
-        <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+        <Button
+          nativeButton={false}
+          variant="ghost"
+          className="text-muted-foreground hover:text-foreground"
+          render={
+            <a
+              href="https://github.com/aBgAmeuR/Harmony#readme"
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          }
+        >
           Docs
         </Button>
-        <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+        <Button
+          nativeButton={false}
+          variant="ghost"
+          className="text-muted-foreground hover:text-foreground"
+          render={
+            <a
+              href="https://github.com/aBgAmeuR/Harmony/releases"
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          }
+        >
           Changelog
         </Button>
-        <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+        <Button
+          nativeButton={false}
+          variant="ghost"
+          className="text-muted-foreground hover:text-foreground"
+          render={
+            <a
+              href="https://github.com/aBgAmeuR/Harmony"
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          }
+        >
           GitHub
         </Button>
-        <Button variant="gradient">Upload</Button>
+        <Button variant="gradient">
+          Upload
+        </Button>
       </nav>
     </header>
   );

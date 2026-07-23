@@ -1,4 +1,5 @@
-import * as duckdb from "@duckdb/duckdb-wasm";
+import type { AsyncDuckDB, DuckDBBundles } from "@duckdb/duckdb-wasm";
+
 import eh_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url";
 import mvp_worker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url";
 import duckdb_wasm_eh from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
@@ -6,7 +7,7 @@ import duckdb_wasm from "@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url";
 
 import { DuckDBEnvironmentError, DuckDBFetchError, DuckDBPackageNotFoundError } from "./error";
 
-const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
+const MANUAL_BUNDLES: DuckDBBundles = {
   mvp: {
     mainModule: duckdb_wasm,
     mainWorker: mvp_worker,
@@ -17,8 +18,8 @@ const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
   },
 };
 
-let dbInstance: duckdb.AsyncDuckDB | null = null;
-let initPromise: Promise<duckdb.AsyncDuckDB> | null = null;
+let dbInstance: AsyncDuckDB | null = null;
+let initPromise: Promise<AsyncDuckDB> | null = null;
 
 export const getDuckDBInstance = async () => {
   if (typeof window === "undefined") {
@@ -29,6 +30,9 @@ export const getDuckDBInstance = async () => {
   if (initPromise) return initPromise;
 
   initPromise = (async () => {
+    // Dynamic import keeps the Node entry (`duckdb-node.cjs`) out of the SSR
+    // module graph. Vite resolves the browser build for the client bundle.
+    const duckdb = await import("@duckdb/duckdb-wasm");
     const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
 
     const worker = new Worker(bundle.mainWorker!);
@@ -45,7 +49,7 @@ export const getDuckDBInstance = async () => {
 };
 
 export async function registerPackageDatabase(
-  dbInstance: duckdb.AsyncDuckDB,
+  dbInstance: AsyncDuckDB,
   packageId: string,
   url: string,
 ) {
