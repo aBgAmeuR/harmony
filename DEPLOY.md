@@ -30,11 +30,11 @@ That is the valid form of “v3.0 beta 01”: SemVer requires the patch segment
 
 While `v3` is configured as a beta channel:
 
-| Commit type | Effect |
-| --- | --- |
-| `BREAKING CHANGE` / `!` | major → starts next line (use once to leave `2.x` for `3.0.0-beta.1`) |
-| `feat:`, `fix:`, `chore:`, … | patch → increments `beta.N` on the current `3.0.0` line |
-| `deploy:` (compose pin) | no release |
+| Commit type                  | Effect                                                                |
+| ---------------------------- | --------------------------------------------------------------------- |
+| `BREAKING CHANGE` / `!`      | major → starts next line (use once to leave `2.x` for `3.0.0-beta.1`) |
+| `feat:`, `fix:`, `chore:`, … | patch → increments `beta.N` on the current `3.0.0` line               |
+| `deploy:` (compose pin)      | no release                                                            |
 
 After the first `3.0.0-beta.1`, everyday merges only bump `beta.N` (features do
 not become `3.1.0-beta.1` during this phase).
@@ -80,17 +80,17 @@ not required as GitHub Actions variables.
    that has `read:packages`.
 5. **Environment variables** for the stack (required unless noted):
 
-| Variable | Required | Notes |
-| --- | --- | --- |
-| `API_URL` | yes | Public API base URL for the web service |
-| `BUCKET_URL` | yes | Public DuckDB / CDN base URL for the web service |
-| `DATABASE_URL` | yes | Postgres connection string |
-| `S3_ENDPOINT` | yes | R2 / S3-compatible endpoint |
-| `S3_BUCKET` | yes | Bucket name |
-| `AWS_ACCESS_KEY_ID` | yes | Object storage access key |
-| `AWS_SECRET_ACCESS_KEY` | yes | Object storage secret |
-| `DEEZER_PROXY_URLS` | yes | Comma-separated proxy URLs |
-| `DEEZER_PROXY_SECRET` | yes | Proxy shared secret |
+| Variable                | Required | Notes                                            |
+| ----------------------- | -------- | ------------------------------------------------ |
+| `API_URL`               | yes      | Public API base URL for the web service          |
+| `BUCKET_URL`            | yes      | Public DuckDB / CDN base URL for the web service |
+| `DATABASE_URL`          | yes      | Postgres connection string                       |
+| `S3_ENDPOINT`           | yes      | R2 / S3-compatible endpoint                      |
+| `S3_BUCKET`             | yes      | Bucket name                                      |
+| `AWS_ACCESS_KEY_ID`     | yes      | Object storage access key                        |
+| `AWS_SECRET_ACCESS_KEY` | yes      | Object storage secret                            |
+| `DEEZER_PROXY_URLS`     | yes      | Comma-separated proxy URLs                       |
+| `DEEZER_PROXY_SECRET`   | yes      | Proxy shared secret                              |
 
 6. Deploy the stack. After the next successful release, wait one poll interval and
    confirm both services show image tags equal to the latest beta tag (for
