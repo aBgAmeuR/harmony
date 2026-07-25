@@ -54,9 +54,7 @@ export function LandingHeader() {
         >
           GitHub
         </Button>
-        <Button variant="gradient">
-          Upload
-        </Button>
+        <Button variant="gradient">Upload</Button>
       </nav>
     </header>
   );

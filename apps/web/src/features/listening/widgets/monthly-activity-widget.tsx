@@ -1,4 +1,4 @@
-import { Bar, BarChart, ChartTooltip, Grid, XAxis } from "@harmony/charts/v2";
+import { BarChart } from "@harmony/charts/v3";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@harmony/ui/components/card";
 import { useQuery } from "@tanstack/react-query";
 
@@ -14,7 +14,7 @@ export function MonthlyActivityWidget() {
   );
 
   return (
-    <Card size="sm">
+    <Card size="sm" className="pb-0.5">
       <CardHeader>
         <CardTitle>Monthly Activity</CardTitle>
         <CardAction>
@@ -25,11 +25,23 @@ export function MonthlyActivityWidget() {
         </CardAction>
       </CardHeader>
       <CardContent>
-        <BarChart className="aspect-[4/1]" data={data} xDataKey="name">
-          <Bar dataKey="value" fill="var(--chart-2)" />
-          <Grid />
-          <XAxis />
-          <ChartTooltip suffix="min" />
+        <BarChart
+          className="aspect-4/1"
+          data={data}
+          config={{
+            value: {
+              label: "Time",
+              colors: {
+                light: ["#1db954"],
+              },
+            },
+          }}
+          barCategoryGap={2}
+        >
+          <BarChart.Bar enableHoverHighlight  dataKey="value" />
+          <BarChart.XAxis dataKey="name" />
+          <BarChart.Tooltip suffix="min" />
+          <BarChart.Grid />
         </BarChart>
       </CardContent>
     </Card>

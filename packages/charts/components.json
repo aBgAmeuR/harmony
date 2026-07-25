@@ -10,17 +10,18 @@
     "cssVariables": true
   },
   "iconLibrary": "hugeicons",
-  "aliases": {
-    "components": "@harmony/charts/components",
-    "utils": "@harmony/ui/lib/utils",
-    "hooks": "@harmony/ui/hooks",
-    "lib": "@harmony/ui/lib",
-    "ui": "@harmony/charts/components"
-  },
   "rtl": false,
   "menuColor": "default",
   "menuAccent": "subtle",
+  "aliases": {
+    "components": "@harmony/charts/components",
+    "utils": "@harmony/ui/lib/utils",
+    "ui": "@harmony/charts/components",
+    "lib": "@harmony/ui/lib",
+    "hooks": "@harmony/ui/hooks"
+  },
   "registries": {
-    "@bklit": "https://ui.bklit.com/r/{name}.json"
+    "@bklit": "https://ui.bklit.com/r/{name}.json",
+    "@evilcharts": "https://evilcharts.com/r/{name}.json"
   }
 }
