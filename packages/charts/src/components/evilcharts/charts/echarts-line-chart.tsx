@@ -2,46 +2,6 @@
 
 import type { ComposeOption } from "echarts/core";
 
-import {
-  Brush,
-  buildBrushDataZoom,
-  syncBrushOverlay,
-  type BrushGeometry,
-  type BrushOverlayElements,
-  type BrushProps,
-  type BrushRange,
-} from "@harmony/charts/components/evilcharts/ui/echarts-brush";
-import {
-  buildChartCss,
-  flattenColor,
-  getColorsCount,
-  resolveColors,
-  seriesPaint,
-  withAlpha,
-  type ChartConfig,
-  type ResolvedColors,
-} from "@harmony/charts/components/evilcharts/ui/echarts-chart";
-import {
-  dotItemStyle,
-  dotStyle,
-  sampleGradient,
-  type DotItemStyleOption,
-  type DotVariant,
-} from "@harmony/charts/components/evilcharts/ui/echarts-dot";
-import {
-  LegendOverlay,
-  type LegendVariant,
-} from "@harmony/charts/components/evilcharts/ui/echarts-legend";
-import {
-  formatTooltipValue,
-  tooltipBaseOption,
-  tooltipIndicatorHtml,
-  tooltipRow,
-  tooltipShell,
-  type TooltipPosition,
-  type TooltipRoundness,
-  type TooltipVariant,
-} from "@harmony/charts/components/evilcharts/ui/echarts-tooltip";
 import { LineChart, type LineSeriesOption } from "echarts/charts";
 import {
   DataZoomComponent,
@@ -67,6 +27,44 @@ import {
   type FC,
   type ReactNode,
 } from "react";
+
+import {
+  Brush,
+  buildBrushDataZoom,
+  syncBrushOverlay,
+  type BrushGeometry,
+  type BrushOverlayElements,
+  type BrushProps,
+  type BrushRange,
+} from "../ui/echarts-brush";
+import {
+  buildChartCss,
+  flattenColor,
+  getColorsCount,
+  resolveColors,
+  seriesPaint,
+  withAlpha,
+  type ChartConfig,
+  type ResolvedColors,
+} from "../ui/echarts-chart";
+import {
+  dotItemStyle,
+  dotStyle,
+  sampleGradient,
+  type DotItemStyleOption,
+  type DotVariant,
+} from "../ui/echarts-dot";
+import { LegendOverlay, type LegendVariant } from "../ui/echarts-legend";
+import {
+  formatTooltipValue,
+  tooltipBaseOption,
+  tooltipIndicatorHtml,
+  tooltipRow,
+  tooltipShell,
+  type TooltipPosition,
+  type TooltipRoundness,
+  type TooltipVariant,
+} from "../ui/echarts-tooltip";
 
 // Re-export the shared types that were previously declared inline here, so
 // existing consumers/examples keep importing them from the chart module.

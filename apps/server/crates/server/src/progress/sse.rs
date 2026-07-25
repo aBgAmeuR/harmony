@@ -27,36 +27,41 @@ pub async fn stream_package_progress(
         serde_json::to_string(&snapshot).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     let snapshot_seq = snapshot.seq();
 
-    let live_stream = stream::unfold((rx, false, snapshot_seq), |(mut receiver, mut done, snapshot_seq)| async move {
-        if done {
-            return None;
-        }
-
-        match receiver.recv().await {
-            Ok(event) => {
-                if event.seq() <= snapshot_seq {
-                    return Some((None, (receiver, done, snapshot_seq)));
-                }
-
-                let terminal = event.is_terminal();
-                match serde_json::to_string(&event) {
-                    Ok(data) => {
-                        let sse_event = Event::default()
-                            .event("pipeline")
-                            .id(event.seq().to_string())
-                            .data(data);
-                        if terminal {
-                            done = true;
-                        }
-                        Some((Some(Ok(sse_event)), (receiver, done, snapshot_seq)))
-                    }
-                    Err(_) => Some((None, (receiver, done, snapshot_seq))),
-                }
+    let live_stream = stream::unfold(
+        (rx, false, snapshot_seq),
+        |(mut receiver, mut done, snapshot_seq)| async move {
+            if done {
+                return None;
             }
-            Err(broadcast::error::RecvError::Lagged(_)) => Some((None, (receiver, done, snapshot_seq))),
-            Err(broadcast::error::RecvError::Closed) => None,
-        }
-    })
+
+            match receiver.recv().await {
+                Ok(event) => {
+                    if event.seq() <= snapshot_seq {
+                        return Some((None, (receiver, done, snapshot_seq)));
+                    }
+
+                    let terminal = event.is_terminal();
+                    match serde_json::to_string(&event) {
+                        Ok(data) => {
+                            let sse_event = Event::default()
+                                .event("pipeline")
+                                .id(event.seq().to_string())
+                                .data(data);
+                            if terminal {
+                                done = true;
+                            }
+                            Some((Some(Ok(sse_event)), (receiver, done, snapshot_seq)))
+                        }
+                        Err(_) => Some((None, (receiver, done, snapshot_seq))),
+                    }
+                }
+                Err(broadcast::error::RecvError::Lagged(_)) => {
+                    Some((None, (receiver, done, snapshot_seq)))
+                }
+                Err(broadcast::error::RecvError::Closed) => None,
+            }
+        },
+    )
     .filter_map(|item| async move { item });
 
     let initial = stream::once(async move {

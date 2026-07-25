@@ -202,9 +202,9 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
     let enrich_tracks = {
         let started = begin_step(&reporter, StepId::EnrichTracks);
         let total = resolve.deezer_matches.len() as u64;
-        let mut aggregator = reporter.as_ref().map(|reporter| {
-            ProgressAggregator::new(StepId::EnrichTracks, reporter.clone(), total)
-        });
+        let mut aggregator = reporter
+            .as_ref()
+            .map(|reporter| ProgressAggregator::new(StepId::EnrichTracks, reporter.clone(), total));
 
         let (output, report) = stages::enrich::fetch_tracks(
             Arc::clone(&deezer_client),
@@ -232,9 +232,9 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
     let enrich_albums = {
         let started = begin_step(&reporter, StepId::EnrichAlbums);
         let total = enrich_tracks.album_ids.len() as u64;
-        let mut aggregator = reporter.as_ref().map(|reporter| {
-            ProgressAggregator::new(StepId::EnrichAlbums, reporter.clone(), total)
-        });
+        let mut aggregator = reporter
+            .as_ref()
+            .map(|reporter| ProgressAggregator::new(StepId::EnrichAlbums, reporter.clone(), total));
 
         let (output, report) = stages::enrich::fetch_albums(
             Arc::clone(&deezer_client),

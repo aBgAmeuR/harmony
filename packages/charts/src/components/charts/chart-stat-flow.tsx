@@ -43,7 +43,7 @@ function useNumberFlowElementReady(): boolean {
       return;
     }
     let cancelled = false;
-    customElements.whenDefined("number-flow-react").then(() => {
+    void customElements.whenDefined("number-flow-react").then(() => {
       if (!cancelled) {
         setReady(true);
       }

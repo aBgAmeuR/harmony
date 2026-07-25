@@ -2,9 +2,9 @@ use std::env;
 use std::path::Path;
 
 use aws_config::BehaviorVersion;
+use aws_sdk_s3::Client;
 use aws_sdk_s3::config::Region;
 use aws_sdk_s3::primitives::ByteStream;
-use aws_sdk_s3::Client;
 
 use super::ObjectStore;
 
@@ -27,8 +27,8 @@ pub struct S3ObjectStore {
 
 impl S3ObjectStore {
     pub async fn from_env() -> Result<Self, StorageConfigError> {
-        let endpoint = env::var("S3_ENDPOINT")
-            .map_err(|_| StorageConfigError::MissingEnv("S3_ENDPOINT"))?;
+        let endpoint =
+            env::var("S3_ENDPOINT").map_err(|_| StorageConfigError::MissingEnv("S3_ENDPOINT"))?;
         let bucket =
             env::var("S3_BUCKET").map_err(|_| StorageConfigError::MissingEnv("S3_BUCKET"))?;
         let region = "auto".to_string();

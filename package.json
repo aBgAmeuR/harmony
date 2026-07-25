@@ -7,14 +7,21 @@
   ],
   "type": "module",
   "scripts": {
-    "dev": "turbo -F web dev",
-    "build": "turbo build",
-    "check-types": "turbo check-types",
-    "dev:web": "turbo -F web dev",
+    "dev": "turbo run dev --filter=web",
+    "dev:web": "turbo run dev --filter=web",
     "dev:server": "cd apps/server && cargo run --bin server",
+    "build": "turbo run build",
+    "check-types": "turbo run check-types",
+    "lint": "oxlint",
+    "format:check": "oxfmt --check",
+    "format": "oxfmt --write",
+    "check": "turbo run //#lint //#format:check",
     "check:server": "cd apps/server && cargo check",
+    "check:fmt:server": "cd apps/server && cargo fmt --check",
+    "format:server": "cd apps/server && cargo fmt",
+    "lint:server": "cd apps/server && cargo clippy --all-targets -- -D warnings",
     "test:server": "cd apps/server && cargo test",
-    "check": "oxlint && oxfmt --write"
+    "verify": "turbo run //#lint //#format:check check-types && pnpm check:fmt:server && pnpm lint:server"
   },
   "dependencies": {
     "dotenv": "catalog:",

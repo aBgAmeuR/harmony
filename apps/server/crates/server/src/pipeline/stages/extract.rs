@@ -33,12 +33,10 @@ pub fn run(input: ExtractInput) -> Result<(ExtractOutput, ExtractReport), Extrac
     let cursor = Cursor::new(&input.zip_bytes);
     let mut archive = ZipArchive::new(cursor)?;
 
-    let selected: Option<HashSet<String>> = input.selected_files.as_ref().map(|files| {
-        files
-            .iter()
-            .map(|path| normalize_zip_path(path))
-            .collect()
-    });
+    let selected: Option<HashSet<String>> = input
+        .selected_files
+        .as_ref()
+        .map(|files| files.iter().map(|path| normalize_zip_path(path)).collect());
 
     let mut files = Vec::new();
 

@@ -202,7 +202,10 @@ const ChartCore = memo(function ChartCore({
       if (value instanceof Date) {
         return shortDateFmt.format(value);
       }
-      return String(value ?? "");
+      if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+        return String(value);
+      }
+      return value == null ? "" : JSON.stringify(value);
     },
     [xDataKey],
   );

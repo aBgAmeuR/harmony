@@ -2,29 +2,6 @@
 
 import type { ComposeOption } from "echarts/core";
 
-import {
-  buildChartCss,
-  getColorsCount,
-  resolveColors,
-  withAlpha,
-  type ChartConfig,
-  type ResolvedColors,
-} from "@harmony/charts/components/evilcharts/ui/echarts-chart";
-import {
-  LegendOverlay,
-  type LegendVariant,
-} from "@harmony/charts/components/evilcharts/ui/echarts-legend";
-import {
-  formatTooltipValue,
-  resolveTooltipPosition,
-  roundnessClass,
-  tooltipIndicatorHtml,
-  tooltipRow,
-  tooltipVariantClass,
-  type TooltipPosition,
-  type TooltipRoundness,
-  type TooltipVariant,
-} from "@harmony/charts/components/evilcharts/ui/echarts-tooltip";
 import { PieChart, type PieSeriesOption } from "echarts/charts";
 import { TooltipComponent, type TooltipComponentOption } from "echarts/components";
 import * as echarts from "echarts/core";
@@ -43,6 +20,27 @@ import {
   type FC,
   type ReactNode,
 } from "react";
+
+import {
+  buildChartCss,
+  getColorsCount,
+  resolveColors,
+  withAlpha,
+  type ChartConfig,
+  type ResolvedColors,
+} from "../ui/echarts-chart";
+import { LegendOverlay, type LegendVariant } from "../ui/echarts-legend";
+import {
+  formatTooltipValue,
+  resolveTooltipPosition,
+  roundnessClass,
+  tooltipIndicatorHtml,
+  tooltipRow,
+  tooltipVariantClass,
+  type TooltipPosition,
+  type TooltipRoundness,
+  type TooltipVariant,
+} from "../ui/echarts-tooltip";
 
 // Re-export the shared types that were previously declared inline here, so
 // existing consumers/examples keep importing them from the chart module.
@@ -721,12 +719,30 @@ function buildPieSeries(ctx: OptionBuildContext): PieSeriesOption[] {
   // config label — matching the classic ECharts pie-simple outer labels.
   const explicitKey = pie.labelDataKey ? pie.labelDataKey : null;
   const labelFormatter = (labelParams: { dataIndex: number; name?: string; value?: unknown }) => {
-    if (explicitKey) return String(data[labelParams.dataIndex]?.[explicitKey] ?? "");
+    if (explicitKey) {
+      const explicit = data[labelParams.dataIndex]?.[explicitKey];
+      if (
+        typeof explicit === "string" ||
+        typeof explicit === "number" ||
+        typeof explicit === "boolean"
+      ) {
+        return String(explicit);
+      }
+      return explicit == null ? "" : JSON.stringify(explicit);
+    }
     if (isOutside) {
       const item = config[String(labelParams.name ?? "")];
       return typeof item?.label === "string" ? item.label : String(labelParams.name ?? "");
     }
-    return String(data[labelParams.dataIndex]?.[dataKey] ?? labelParams.value ?? "");
+    const fallback = data[labelParams.dataIndex]?.[dataKey] ?? labelParams.value;
+    if (
+      typeof fallback === "string" ||
+      typeof fallback === "number" ||
+      typeof fallback === "boolean"
+    ) {
+      return String(fallback);
+    }
+    return fallback == null ? "" : JSON.stringify(fallback);
   };
 
   const label = {

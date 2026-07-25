@@ -29,7 +29,7 @@ export function RadarGrid({ showLabels = true, className = "" }: RadarGridProps)
 
   // Generate angles for the radial lines (one per metric)
   const degrees = 360;
-  const angles = [...new Array(metrics.length + 1)].map((_, i) => ({
+  const angles = Array.from({ length: metrics.length + 1 }, (_, i) => ({
     angle: i * (degrees / metrics.length) + degrees / metrics.length / 2,
   }));
 
@@ -44,7 +44,7 @@ export function RadarGrid({ showLabels = true, className = "" }: RadarGridProps)
   return (
     <g className={className}>
       {/* Concentric grid circles */}
-      {[...new Array(levels)].map((_, i) => {
+      {Array.from({ length: levels }, (_, i) => {
         const targetRadius = ((i + 1) * radius) / levels;
         return (
           <motion.g
@@ -80,7 +80,7 @@ export function RadarGrid({ showLabels = true, className = "" }: RadarGridProps)
 
       {/* Grid level labels */}
       {showLabels &&
-        [...new Array(levels)].map((_, i) => (
+        Array.from({ length: levels }, (_, i) => (
           <motion.g
             animate={{ opacity: 1 }}
             initial={animate ? { opacity: 0 } : { opacity: 1 }}

@@ -6,8 +6,8 @@ use axum::{
     routing::{get, post},
 };
 use dashmap::DashMap;
-use diesel_async::pooled_connection::deadpool::Object;
 use diesel_async::AsyncPgConnection;
+use diesel_async::pooled_connection::deadpool::Object;
 use harmony_db::establish_pool;
 use tokio::sync::mpsc;
 use tower_http::cors::CorsLayer;
@@ -98,7 +98,7 @@ fn app(state: AppState) -> Router {
             get(progress::stream_package_progress),
         )
         .with_state(state)
-        .layer(otel::OtelInResponseLayer::default())
+        .layer(otel::OtelInResponseLayer)
         .layer(otel::OtelAxumLayer::default())
         .layer(CorsLayer::permissive())
 }

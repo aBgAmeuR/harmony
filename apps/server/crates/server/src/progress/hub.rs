@@ -7,7 +7,7 @@ use tokio::sync::broadcast;
 use super::events::{
     PipelineEvent, PipelineRunStatus, PipelineStep, ProgressEvent, StepId, StepStatus,
 };
-use super::steps::{step_label, STEP_ORDER};
+use super::steps::{STEP_ORDER, step_label};
 
 const BROADCAST_CAPACITY: usize = 256;
 
@@ -69,9 +69,7 @@ impl RunState {
     fn apply_event(&mut self, event: ProgressEvent) -> PipelineEvent {
         let seq = self.next_seq();
         match event {
-            ProgressEvent::StepStarted {
-                step_id, label, at,
-            } => {
+            ProgressEvent::StepStarted { step_id, label, at } => {
                 let index = Self::step_index(step_id);
                 if self.started_at.is_none() {
                     self.started_at = Some(at.clone());
@@ -117,9 +115,7 @@ impl RunState {
                     output,
                 }
             }
-            ProgressEvent::StepFailed {
-                step_id, at, error,
-            } => {
+            ProgressEvent::StepFailed { step_id, at, error } => {
                 let index = Self::step_index(step_id);
                 self.steps[index].status = StepStatus::Error;
                 self.steps[index].ended_at = Some(at.clone());
@@ -138,11 +134,7 @@ impl RunState {
                 self.ended_at = Some(at.clone());
                 PipelineEvent::RunCompleted { seq, at, stats }
             }
-            ProgressEvent::RunFailed {
-                step_id,
-                at,
-                error,
-            } => {
+            ProgressEvent::RunFailed { step_id, at, error } => {
                 self.run_status = PipelineRunStatus::Error;
                 self.ended_at = Some(at.clone());
                 PipelineEvent::RunFailed {

@@ -245,10 +245,11 @@ const TimeSeriesChartCore = memo(function TimeSeriesChartCore({
     [xDataKey],
   );
 
-  const bisectDate = useMemo(
-    () => bisector<Record<string, unknown>, Date>((d) => xAccessor(d)).left,
-    [xAccessor],
-  );
+  const bisectDate = useMemo(() => {
+    const b = bisector<Record<string, unknown>, Date>((d) => xAccessor(d));
+    return (data: ArrayLike<Record<string, unknown>>, x: Date, lo?: number, hi?: number) =>
+      b.left(data, x, lo, hi);
+  }, [xAccessor]);
 
   const visiblePlotData = useMemo(() => {
     if (!xDomain) {

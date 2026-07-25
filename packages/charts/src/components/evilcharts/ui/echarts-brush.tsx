@@ -1,11 +1,9 @@
 import type { DataZoomComponentOption } from "echarts/components";
 import type { FC } from "react";
 
-import {
-  withAlpha,
-  type ResolvedColors,
-} from "@harmony/charts/components/evilcharts/ui/echarts-chart";
 import * as echarts from "echarts/core";
+
+import { withAlpha, type ResolvedColors } from "./echarts-chart";
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 

@@ -351,14 +351,20 @@ function InsightCard() {
             <XAxis gap={2} />
             <ChartTooltip suffix="min" />
           </BarChart> */}
-          <BarChart className="aspect-7/2" data={LISTENING_DATA} xDataKey="name" config={{
-            value: {
-              label: "Month",
-              colors: {
-                light: ["#1db954"],
+          <BarChart
+            className="aspect-7/2"
+            data={LISTENING_DATA}
+            xDataKey="name"
+            config={{
+              value: {
+                label: "Month",
+                colors: {
+                  light: ["#1db954"],
+                },
               },
-            }
-          }} barCategoryGap={2}>
+            }}
+            barCategoryGap={2}
+          >
             <BarChart.Bar dataKey="value" />
             <BarChart.XAxis />
             <BarChart.Tooltip suffix="min" />

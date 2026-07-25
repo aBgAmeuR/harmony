@@ -40,9 +40,8 @@ struct DeezerSearchTrack {
 }
 
 fn build_deezer_search_url(artist: &str, track: &str) -> Result<String, ResolveError> {
-    let mut url = reqwest::Url::parse(DEEZER_SEARCH).map_err(|err| {
-        ResolveError::MissingConfig(format!("invalid Deezer search URL: {err}"))
-    })?;
+    let mut url = reqwest::Url::parse(DEEZER_SEARCH)
+        .map_err(|err| ResolveError::MissingConfig(format!("invalid Deezer search URL: {err}")))?;
 
     let query = format!(r#"artist:"{artist}" track:"{track}""#);
     url.query_pairs_mut()
@@ -59,9 +58,9 @@ fn find_matching_track<'a>(
 ) -> Option<&'a DeezerSearchTrack> {
     let our_lower = our_track.to_lowercase();
 
-    results.iter().find(|result| {
-        jaro_winkler(&result.title.to_lowercase(), &our_lower) >= threshold
-    })
+    results
+        .iter()
+        .find(|result| jaro_winkler(&result.title.to_lowercase(), &our_lower) >= threshold)
 }
 
 #[tracing::instrument(
