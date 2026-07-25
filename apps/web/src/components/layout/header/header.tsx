@@ -1,4 +1,5 @@
 import { ArrowRightIcon, Icon } from "@harmony/icons";
+
 import { ArtistsSelect } from "./artists-select";
 import { DateRangeFilter } from "./date-range-filter";
 
@@ -16,7 +17,7 @@ export function Header({ title, showArtistSelect = true }: HeaderProps) {
         {showArtistSelect && (
           <>
             {/* <span className="pe-1 pb-0.5 text-muted-foreground">/</span> */}
-            <Icon icon={ArrowRightIcon} className="text-muted-foreground size-4 pt-0.5" />
+            <Icon icon={ArrowRightIcon} className="size-4 pt-0.5 text-muted-foreground" />
             <ArtistsSelect />
           </>
         )}

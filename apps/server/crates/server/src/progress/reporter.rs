@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use super::events::{ProgressEvent, StepId, StepProgress};
-use super::hub::{now_iso, ProgressHub};
+use super::hub::{ProgressHub, now_iso};
 use super::steps::step_label;
 
 #[derive(Clone)]

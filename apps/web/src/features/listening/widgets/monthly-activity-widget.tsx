@@ -38,7 +38,7 @@ export function MonthlyActivityWidget() {
           }}
           barCategoryGap={2}
         >
-          <BarChart.Bar enableHoverHighlight  dataKey="value" />
+          <BarChart.Bar enableHoverHighlight dataKey="value" />
           <BarChart.XAxis dataKey="name" />
           <BarChart.Tooltip suffix="min" />
           <BarChart.Grid />

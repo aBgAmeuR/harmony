@@ -2,15 +2,15 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use crate::pipeline::{self, PipelineError, PipelineRequest};
-use crate::progress::{stage_to_step_id, ProgressReporter};
+use crate::progress::{ProgressReporter, stage_to_step_id};
 use harmony_db::{mark_running, set_completed, set_failed_with_data};
 use opentelemetry::Context;
 use tokio::sync::mpsc;
 use tracing::Instrument;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
-use crate::error::ApiError;
 use crate::AppState;
+use crate::error::ApiError;
 
 pub struct Job {
     pub package_id: i32,
@@ -79,8 +79,13 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
 
     async {
         let Some((_, upload)) = state.ram_store.remove(&package_id) else {
-            set_failed_best_effort(state, package_id, "worker", "zip bytes missing from ram store")
-                .await;
+            set_failed_best_effort(
+                state,
+                package_id,
+                "worker",
+                "zip bytes missing from ram store",
+            )
+            .await;
             return Err(WorkerError::BytesMissing { package_id });
         };
 

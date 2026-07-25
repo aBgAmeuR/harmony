@@ -14,11 +14,17 @@ Use `pnpm` from the project root unless noted otherwise.
 - `pnpm install` - install workspace dependencies.
 - `pnpm dev` or `pnpm dev:web` - run the TanStack Start web app through Turbo.
 - `pnpm dev:server` - run the Rust Axum upload API from `apps/server`.
-- `pnpm build` - build workspace packages through Turbo.
-- `pnpm check-types` - run TypeScript type checks through Turbo. Run this after any TypeScript or React implementation change.
-- `pnpm check` - run oxlint and oxfmt. Use this after meaningful TypeScript, React, or formatting-sensitive edits.
+- `pnpm build` - build workspace packages through Turbo (`turbo run build`).
+- `pnpm check-types` - TypeScript checks via Turbo (parallel per package, transit cache graph).
+- `pnpm lint` / `pnpm format:check` - oxlint / oxfmt verify (root Turbo tasks).
+- `pnpm check` - `turbo run //#lint //#format:check`.
+- `pnpm format` - write oxfmt fixes in place.
 - `pnpm check:server` - run `cargo check` for the Rust server.
+- `pnpm check:fmt:server` - run `cargo fmt --check` for the Rust server.
+- `pnpm format:server` - write rustfmt fixes in place.
+- `pnpm lint:server` - run `cargo clippy` with warnings denied.
 - `pnpm test:server` - run Rust tests.
+- `pnpm verify` - JS Turbo gates + Rust fmt/clippy.
 
 ## Project Knowledge
 
@@ -79,11 +85,12 @@ Always read `DESIGN.md` before generating or modifying UI.
 ## Testing And Validation
 
 - After TypeScript or React implementation changes, run `pnpm check-types`.
-- After Rust implementation changes, run `pnpm check:server`.
+- After Rust implementation changes, run `pnpm check:server` and `pnpm lint:server`.
 - Run `pnpm test:server` when changing ingestion, database, pipeline, or API
   behavior covered by Rust tests.
 - Run `pnpm check` after substantial frontend/shared edits to catch linting and
-  formatting issues.
+  formatting issues (verify only; use `pnpm format` to apply oxfmt writes).
+- Prefer `pnpm verify` before opening a PR — it is the same gate as GitHub Actions.
 - If a required command cannot run because of missing services or environment
   variables, report the blocker and what remains unverified.
 

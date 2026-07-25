@@ -2,39 +2,6 @@
 
 import type { ComposeOption, ImagePatternObject } from "echarts/core";
 
-import {
-  Brush,
-  buildBrushDataZoom,
-  syncBrushOverlay,
-  type BrushGeometry,
-  type BrushOverlayElements,
-  type BrushProps,
-  type BrushRange,
-} from "@harmony/charts/components/evilcharts/ui/echarts-brush";
-import {
-  buildChartCss,
-  flattenColor,
-  getColorsCount,
-  resolveColors,
-  withAlpha,
-  type ChartConfig,
-  type ResolvedColors,
-} from "@harmony/charts/components/evilcharts/ui/echarts-chart";
-import { sampleGradient } from "@harmony/charts/components/evilcharts/ui/echarts-dot";
-import {
-  LegendOverlay,
-  type LegendVariant,
-} from "@harmony/charts/components/evilcharts/ui/echarts-legend";
-import {
-  formatTooltipValue,
-  tooltipBaseOption,
-  tooltipIndicatorHtml,
-  tooltipRow,
-  tooltipShell,
-  type TooltipPosition,
-  type TooltipRoundness,
-  type TooltipVariant,
-} from "@harmony/charts/components/evilcharts/ui/echarts-tooltip";
 import { BarChart, type BarSeriesOption } from "echarts/charts";
 import {
   DataZoomComponent,
@@ -60,6 +27,37 @@ import {
   type FC,
   type ReactNode,
 } from "react";
+
+import {
+  Brush,
+  buildBrushDataZoom,
+  syncBrushOverlay,
+  type BrushGeometry,
+  type BrushOverlayElements,
+  type BrushProps,
+  type BrushRange,
+} from "../ui/echarts-brush";
+import {
+  buildChartCss,
+  flattenColor,
+  getColorsCount,
+  resolveColors,
+  withAlpha,
+  type ChartConfig,
+  type ResolvedColors,
+} from "../ui/echarts-chart";
+import { sampleGradient } from "../ui/echarts-dot";
+import { LegendOverlay, type LegendVariant } from "../ui/echarts-legend";
+import {
+  formatTooltipValue,
+  tooltipBaseOption,
+  tooltipIndicatorHtml,
+  tooltipRow,
+  tooltipShell,
+  type TooltipPosition,
+  type TooltipRoundness,
+  type TooltipVariant,
+} from "../ui/echarts-tooltip";
 
 // Re-export the shared types that were previously declared inline here, so
 // existing consumers/examples keep importing them from the chart module.

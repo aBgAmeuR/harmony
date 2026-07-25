@@ -1,6 +1,6 @@
 use diesel::prelude::*;
-use diesel_async::pooled_connection::deadpool::Pool;
 use diesel_async::pooled_connection::AsyncDieselConnectionManager;
+use diesel_async::pooled_connection::deadpool::Pool;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use dotenvy::dotenv;
 use rand::Rng;

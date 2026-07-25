@@ -845,7 +845,7 @@ export function buildHeatmapRowOpacity(
     );
   }
 
-  const opacity = new Array<number>(rowCount).fill(activeOpacity);
+  const opacity = Array.from({ length: rowCount }, () => activeOpacity);
   for (const row of match) {
     if (row >= 0 && row < rowCount) {
       opacity[row] = fadedOpacity;

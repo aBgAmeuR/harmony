@@ -9,10 +9,10 @@ use serde::Serialize;
 use tracing::info;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
+use crate::AppState;
 use crate::error::{ApiError, ApiResult, PackageId};
 use crate::package_upload::PackageUpload;
 use crate::worker::Job;
-use crate::AppState;
 
 #[derive(Serialize)]
 pub struct UploadResponse {
@@ -77,9 +77,10 @@ pub async fn upload_package(
             }
             Some("selected_files") => {
                 let raw = field.text().await?;
-                selected_files = Some(serde_json::from_str::<Vec<String>>(&raw).map_err(|err| {
-                    ApiError::bad_request(format!("invalid selected_files JSON: {err}"))
-                })?);
+                selected_files =
+                    Some(serde_json::from_str::<Vec<String>>(&raw).map_err(|err| {
+                        ApiError::bad_request(format!("invalid selected_files JSON: {err}"))
+                    })?);
             }
             _ => {}
         }
@@ -108,7 +109,8 @@ pub async fn upload_package(
         return Err(ApiError::unprocessable("file is not a valid zip archive"));
     }
 
-    let file_size = i32::try_from(data.len()).map_err(|_| ApiError::bad_request("file too large"))?;
+    let file_size =
+        i32::try_from(data.len()).map_err(|_| ApiError::bad_request("file too large"))?;
 
     let mut conn = state.conn().await?;
     let package = create_package(&mut conn, &file_name, file_size).await?;

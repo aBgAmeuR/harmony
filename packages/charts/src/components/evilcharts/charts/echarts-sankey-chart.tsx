@@ -2,25 +2,6 @@
 
 import type { ComposeOption } from "echarts/core";
 
-import {
-  buildChartCss,
-  getColorsCount,
-  resolveColors,
-  withAlpha,
-  type ChartConfig,
-  type ResolvedColors,
-} from "@harmony/charts/components/evilcharts/ui/echarts-chart";
-import {
-  formatTooltipValue,
-  resolveTooltipPosition,
-  roundnessClass,
-  tooltipIndicatorHtml,
-  tooltipRow,
-  tooltipVariantClass,
-  type TooltipPosition,
-  type TooltipRoundness,
-  type TooltipVariant,
-} from "@harmony/charts/components/evilcharts/ui/echarts-tooltip";
 import { SankeyChart, type SankeySeriesOption } from "echarts/charts";
 import { TooltipComponent, type TooltipComponentOption } from "echarts/components";
 import * as echarts from "echarts/core";
@@ -38,6 +19,26 @@ import {
   type FC,
   type ReactNode,
 } from "react";
+
+import {
+  buildChartCss,
+  getColorsCount,
+  resolveColors,
+  withAlpha,
+  type ChartConfig,
+  type ResolvedColors,
+} from "../ui/echarts-chart";
+import {
+  formatTooltipValue,
+  resolveTooltipPosition,
+  roundnessClass,
+  tooltipIndicatorHtml,
+  tooltipRow,
+  tooltipVariantClass,
+  type TooltipPosition,
+  type TooltipRoundness,
+  type TooltipVariant,
+} from "../ui/echarts-tooltip";
 
 // Re-export the shared types that were previously declared inline here, so
 // existing consumers/examples keep importing them from the chart module.

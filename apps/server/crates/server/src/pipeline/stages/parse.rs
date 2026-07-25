@@ -47,11 +47,5 @@ pub fn run(input: ParseInput) -> Result<(ParseOutput, ParseReport), ParseError> 
         }
     }
 
-    Ok((
-        ParseOutput { raw },
-        ParseReport {
-            validated,
-            invalid,
-        },
-    ))
+    Ok((ParseOutput { raw }, ParseReport { validated, invalid }))
 }

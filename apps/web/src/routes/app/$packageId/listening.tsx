@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { Header } from "@/components/layout/header/header";
 import { ActiveDaysWidget } from "@/features/listening/widgets/active-days-widget";
+import { DaysOfWeekWidget } from "@/features/listening/widgets/days-of-week-widget";
 import { ListeningTimeWidget } from "@/features/listening/widgets/listening-time-widget";
 import { MonthlyActivityWidget } from "@/features/listening/widgets/monthly-activity-widget";
 import { TotalStreamsWidget } from "@/features/listening/widgets/total-streams-widget";
@@ -9,7 +10,6 @@ import { UniqueTracksWidget } from "@/features/listening/widgets/unique-tracks-w
 import { query } from "@/lib/query";
 import { useArtistStore } from "@/lib/stores/artist-store";
 import { buildInstantRangeQuery, useDateRangeStore } from "@/lib/stores/date-range-store";
-import { DaysOfWeekWidget } from "@/features/listening/widgets/days-of-week-widget";
 
 export const Route = createFileRoute("/app/$packageId/listening")({
   ssr: false,

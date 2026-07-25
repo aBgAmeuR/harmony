@@ -10,7 +10,8 @@ export interface TooltipContentProps {
   suffix?: string;
 }
 
-const intFmt = new Intl.NumberFormat("en-US").format;
+const intNumberFormat = new Intl.NumberFormat("en-US");
+const intFmt = (value: number) => intNumberFormat.format(value);
 
 export function TooltipContent({ title, rows, suffix }: TooltipContentProps) {
   return (

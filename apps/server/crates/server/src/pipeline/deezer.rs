@@ -36,9 +36,7 @@ impl DeezerFetchError {
                 err.is_timeout()
                     || err.is_connect()
                     || err.is_request()
-                    || err
-                        .status()
-                        .is_some_and(|status| is_retryable_status(status))
+                    || err.status().is_some_and(is_retryable_status)
             }
             Self::QuotaExceeded => true,
             Self::Api(_) => false,
@@ -55,7 +53,11 @@ pub fn load_config() -> Result<DeezerConfig, String> {
         env::var("DEEZER_PROXY_URLS").map_err(|_| "DEEZER_PROXY_URLS is not set".to_string())?;
 
     let mut proxy_urls = Vec::new();
-    for raw in proxy_urls_raw.split(',').map(str::trim).filter(|url| !url.is_empty()) {
+    for raw in proxy_urls_raw
+        .split(',')
+        .map(str::trim)
+        .filter(|url| !url.is_empty())
+    {
         let url = Url::parse(raw).map_err(|err| format!("invalid proxy URL '{raw}': {err}"))?;
         proxy_urls.push(url);
     }
@@ -64,8 +66,8 @@ pub fn load_config() -> Result<DeezerConfig, String> {
         return Err("DEEZER_PROXY_URLS is empty".to_string());
     }
 
-    let proxy_secret =
-        env::var("DEEZER_PROXY_SECRET").map_err(|_| "DEEZER_PROXY_SECRET is not set".to_string())?;
+    let proxy_secret = env::var("DEEZER_PROXY_SECRET")
+        .map_err(|_| "DEEZER_PROXY_SECRET is not set".to_string())?;
 
     if proxy_secret.trim().is_empty() {
         return Err("DEEZER_PROXY_SECRET is empty".to_string());
@@ -86,9 +88,7 @@ pub struct DeezerClient {
 
 impl DeezerClient {
     pub fn new(config: DeezerConfig) -> Result<Self, reqwest::Error> {
-        let http = Client::builder()
-            .timeout(Duration::from_secs(5))
-            .build()?;
+        let http = Client::builder().timeout(Duration::from_secs(5)).build()?;
 
         Ok(Self {
             http,
@@ -129,10 +129,7 @@ impl DeezerClient {
             ));
         }
 
-        let value: serde_json::Value = response
-            .json()
-            .await
-            .map_err(DeezerFetchError::Network)?;
+        let value: serde_json::Value = response.json().await.map_err(DeezerFetchError::Network)?;
 
         if let Some(err) = value.get("error") {
             if err.get("message").and_then(|message| message.as_str())
@@ -179,8 +176,6 @@ impl DeezerClient {
             }
         }
 
-        Err(last_error.unwrap_or_else(|| {
-            DeezerFetchError::Api("max retries exceeded".to_string())
-        }))
+        Err(last_error.unwrap_or_else(|| DeezerFetchError::Api("max retries exceeded".to_string())))
     }
 }

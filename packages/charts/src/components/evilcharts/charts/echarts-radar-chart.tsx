@@ -1,15 +1,17 @@
 "use client";
 
+import type { ComposeOption } from "echarts/core";
+
+import { RadarChart, type RadarSeriesOption } from "echarts/charts";
 import {
-  resolveTooltipPosition,
-  roundnessClass,
-  tooltipIndicatorHtml,
-  tooltipRow,
-  tooltipVariantClass,
-  type TooltipPosition,
-  type TooltipRoundness,
-  type TooltipVariant,
-} from "@harmony/charts/components/evilcharts/ui/echarts-tooltip";
+  RadarComponent,
+  TooltipComponent,
+  type RadarComponentOption,
+  type TooltipComponentOption,
+} from "echarts/components";
+import * as echarts from "echarts/core";
+import { CanvasRenderer } from "echarts/renderers";
+import { motion, useReducedMotion } from "motion/react";
 import {
   Children,
   isValidElement,
@@ -23,6 +25,7 @@ import {
   type FC,
   type ReactNode,
 } from "react";
+
 import {
   buildChartCss,
   getColorsCount,
@@ -30,20 +33,19 @@ import {
   withAlpha,
   type ChartConfig,
   type ResolvedColors,
-} from "@harmony/charts/components/evilcharts/ui/echarts-chart";
+} from "../ui/echarts-chart";
+import { dotStyle, sampleGradient, type DotVariant } from "../ui/echarts-dot";
+import { LegendOverlay, type LegendVariant } from "../ui/echarts-legend";
 import {
-  RadarComponent,
-  TooltipComponent,
-  type RadarComponentOption,
-  type TooltipComponentOption,
-} from "echarts/components";
-import { dotStyle, sampleGradient, type DotVariant } from "@harmony/charts/components/evilcharts/ui/echarts-dot";
-import { LegendOverlay, type LegendVariant } from "@harmony/charts/components/evilcharts/ui/echarts-legend";
-import { RadarChart, type RadarSeriesOption } from "echarts/charts";
-import { motion, useReducedMotion } from "motion/react";
-import { CanvasRenderer } from "echarts/renderers";
-import type { ComposeOption } from "echarts/core";
-import * as echarts from "echarts/core";
+  resolveTooltipPosition,
+  roundnessClass,
+  tooltipIndicatorHtml,
+  tooltipRow,
+  tooltipVariantClass,
+  type TooltipPosition,
+  type TooltipRoundness,
+  type TooltipVariant,
+} from "../ui/echarts-tooltip";
 
 // Re-export the shared types that were previously declared inline here, so
 // existing consumers/examples keep importing them from the chart module.
@@ -1224,9 +1226,9 @@ export function EChartsRadarChart<TData extends Record<string, unknown>>({
             initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="text-primary bg-background flex items-center justify-center gap-2 rounded-md border px-2 py-0.5 text-sm"
+            className="flex items-center justify-center gap-2 rounded-md border bg-background px-2 py-0.5 text-sm text-primary"
           >
-            <div className="border-border border-t-primary h-3 w-3 animate-spin rounded-full border" />
+            <div className="h-3 w-3 animate-spin rounded-full border border-border border-t-primary" />
             <span>Loading</span>
           </motion.div>
         </div>

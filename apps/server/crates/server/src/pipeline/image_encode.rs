@@ -1,9 +1,9 @@
 use std::time::Duration;
 
-use base64::{engine::general_purpose::STANDARD, Engine as _};
+use base64::{Engine as _, engine::general_purpose::STANDARD};
+use image::ImageReader;
 use image::codecs::jpeg::JpegEncoder;
 use image::imageops::FilterType;
-use image::ImageReader;
 use reqwest::Client;
 
 pub const IMAGE_SIZE: u32 = 56;
@@ -44,9 +44,7 @@ pub async fn build_image_data_url(http: &Client, url: &str) -> Option<String> {
 }
 
 pub fn cdn_http_client() -> Result<Client, reqwest::Error> {
-    Client::builder()
-        .timeout(Duration::from_secs(5))
-        .build()
+    Client::builder().timeout(Duration::from_secs(5)).build()
 }
 
 #[cfg(test)]

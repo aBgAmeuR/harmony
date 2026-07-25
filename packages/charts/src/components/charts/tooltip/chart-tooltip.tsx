@@ -349,10 +349,10 @@ function DatePillTrackerInner({
     animatedX.set(xWithMargin);
   }
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: we need to jump the animatedX when the visible prop changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: jump animatedX when visible changes
   useEffect(() => {
     animatedX.set(xWithMargin);
-  }, [animatedX, visible]);
+  }, [animatedX, visible, xWithMargin]);
 
   return (
     <motion.div

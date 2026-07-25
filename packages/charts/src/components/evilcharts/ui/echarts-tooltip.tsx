@@ -1,9 +1,6 @@
 import type { TooltipComponentOption } from "echarts/components";
 
-import {
-  indicatorBackground,
-  type ResolvedColors,
-} from "@harmony/charts/components/evilcharts/ui/echarts-chart";
+import { indicatorBackground, type ResolvedColors } from "./echarts-chart";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tooltip — the shared HTML shell/row primitives and the chart-agnostic option
@@ -19,7 +16,8 @@ export type TooltipRoundness = "sm" | "md" | "lg" | "xl";
 // the top (fixed Y).
 export type TooltipPosition = "fixed" | "variable";
 
-const intFmt = new Intl.NumberFormat("en-US").format;
+const intNumberFormat = new Intl.NumberFormat("en-US");
+const intFmt = (value: number) => intNumberFormat.format(value);
 
 export function formatTooltipValue(value: number | string | null | undefined): string {
   return typeof value === "number" ? intFmt(value) : String(value ?? "");

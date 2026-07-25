@@ -2,45 +2,6 @@
 
 import type { ComposeOption, ImagePatternObject } from "echarts/core";
 
-import {
-  Brush,
-  buildBrushDataZoom,
-  syncBrushOverlay,
-  type BrushGeometry,
-  type BrushOverlayElements,
-  type BrushProps,
-  type BrushRange,
-} from "@harmony/charts/components/evilcharts/ui/echarts-brush";
-import {
-  buildChartCss,
-  flattenColor,
-  getColorsCount,
-  resolveColors,
-  seriesPaint,
-  withAlpha,
-  type ChartConfig,
-  type ResolvedColors,
-} from "@harmony/charts/components/evilcharts/ui/echarts-chart";
-import {
-  dotItemStyle,
-  dotStyle,
-  sampleGradient,
-  type DotVariant,
-} from "@harmony/charts/components/evilcharts/ui/echarts-dot";
-import {
-  LegendOverlay,
-  type LegendVariant,
-} from "@harmony/charts/components/evilcharts/ui/echarts-legend";
-import {
-  formatTooltipValue,
-  tooltipBaseOption,
-  tooltipIndicatorHtml,
-  tooltipRow,
-  tooltipShell,
-  type TooltipPosition,
-  type TooltipRoundness,
-  type TooltipVariant,
-} from "@harmony/charts/components/evilcharts/ui/echarts-tooltip";
 import { LineChart, type LineSeriesOption } from "echarts/charts";
 import {
   DataZoomComponent,
@@ -66,6 +27,38 @@ import {
   type FC,
   type ReactNode,
 } from "react";
+
+import {
+  Brush,
+  buildBrushDataZoom,
+  syncBrushOverlay,
+  type BrushGeometry,
+  type BrushOverlayElements,
+  type BrushProps,
+  type BrushRange,
+} from "../ui/echarts-brush";
+import {
+  buildChartCss,
+  flattenColor,
+  getColorsCount,
+  resolveColors,
+  seriesPaint,
+  withAlpha,
+  type ChartConfig,
+  type ResolvedColors,
+} from "../ui/echarts-chart";
+import { dotItemStyle, dotStyle, sampleGradient, type DotVariant } from "../ui/echarts-dot";
+import { LegendOverlay, type LegendVariant } from "../ui/echarts-legend";
+import {
+  formatTooltipValue,
+  tooltipBaseOption,
+  tooltipIndicatorHtml,
+  tooltipRow,
+  tooltipShell,
+  type TooltipPosition,
+  type TooltipRoundness,
+  type TooltipVariant,
+} from "../ui/echarts-tooltip";
 
 // Re-export the shared types that were previously declared inline here, so
 // existing consumers/examples keep importing them from the chart module.
@@ -1434,14 +1427,19 @@ function computePlottedTops(ctx: OptionBuildContext): Record<string, number[]> {
   const rowTotals = isExpanded
     ? data.map((row) => seriesKeys.reduce((sum, key) => sum + (Number(row[key]) || 0), 0))
     : [];
-  const running = new Array(data.length).fill(0);
+  const running = Array.from({ length: data.length }, () => 0);
   const tops: Record<string, number[]> = {};
   for (const area of areas) {
     const key = area.dataKey;
     tops[key] = data.map((row, i) => {
       let value = Number(row[key]) || 0;
       if (isExpanded) value = rowTotals[i] ? value / rowTotals[i] : 0;
-      return isStacked ? (running[i] += value) : value;
+      if (!isStacked) {
+        return value;
+      }
+      const next = (running[i] ?? 0) + value;
+      running[i] = next;
+      return next;
     });
   }
   return tops;

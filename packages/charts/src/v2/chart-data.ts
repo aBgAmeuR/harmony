@@ -4,7 +4,10 @@ export function formatXLabel(value: unknown): string {
   if (value instanceof Date) {
     return value.toLocaleString("en-US", { month: "short", year: "numeric" });
   }
-  return String(value ?? "");
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  return value == null ? "" : JSON.stringify(value);
 }
 
 export function toChartData(

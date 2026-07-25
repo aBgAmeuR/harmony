@@ -189,10 +189,7 @@ export function useUplotChart({
   }, [
     buildSeries,
     layout,
-    margin?.bottom,
-    margin?.left,
-    margin?.right,
-    margin?.top,
+    margin,
     prepared,
     series,
     showGrid,

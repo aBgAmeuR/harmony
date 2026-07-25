@@ -143,7 +143,12 @@ fn map_album(api: ApiAlbum, image: Option<String>) -> DeezerAlbum {
         image_uri: api.cover,
         image,
         release_date: normalize_release_date(api.release_date),
-        genres: api.genres.data.into_iter().map(|genre| genre.name).collect(),
+        genres: api
+            .genres
+            .data
+            .into_iter()
+            .map(|genre| genre.name)
+            .collect(),
         nb_tracks: api.nb_tracks,
         duration: api.duration,
         album_type: map_album_type(&api.record_type),
@@ -151,10 +156,7 @@ fn map_album(api: ApiAlbum, image: Option<String>) -> DeezerAlbum {
     }
 }
 
-fn collect_artist_picture_small_urls(
-    artist_urls: &mut HashMap<i64, String>,
-    api_album: &ApiAlbum,
-) {
+fn collect_artist_picture_small_urls(artist_urls: &mut HashMap<i64, String>, api_album: &ApiAlbum) {
     let artists = if api_album.contributors.is_empty() {
         std::slice::from_ref(&api_album.artist)
     } else {
