@@ -1,9 +1,6 @@
-import { FilterIcon, Icon } from "@harmony/icons";
-import { Button } from "@harmony/ui/components/button";
-
+import { ArrowRightIcon, Icon } from "@harmony/icons";
 import { ArtistsSelect } from "./artists-select";
 import { DateRangeFilter } from "./date-range-filter";
-import { ViewModeToggle } from "./view-mode-toggle";
 
 type HeaderProps = {
   title: string;
@@ -18,17 +15,18 @@ export function Header({ title, showArtistSelect = true }: HeaderProps) {
 
         {showArtistSelect && (
           <>
-            <span className="pe-1 pb-0.5 text-muted-foreground">/</span>
+            {/* <span className="pe-1 pb-0.5 text-muted-foreground">/</span> */}
+            <Icon icon={ArrowRightIcon} className="text-muted-foreground size-4 pt-0.5" />
             <ArtistsSelect />
           </>
         )}
       </div>
       <div className="flex items-center gap-1">
-        <Button variant="ghost">
+        {/* <Button variant="ghost">
           <Icon icon={FilterIcon} />
           Filters
-        </Button>
-        <ViewModeToggle size="sm" />
+        </Button> */}
+        {/* <ViewModeToggle size="sm" /> */}
         <DateRangeFilter />
       </div>
     </header>

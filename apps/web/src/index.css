@@ -34,8 +34,8 @@
     opacity: 0.22;
   }
   50% {
-    transform: translate(-50%, -50%) scale(1.05);
-    opacity: 0.3;
+    transform: translate(-50%, -50%) scale(1.02);
+    opacity: 0.24;
   }
 }
 

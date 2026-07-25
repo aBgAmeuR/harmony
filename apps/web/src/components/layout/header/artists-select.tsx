@@ -53,7 +53,7 @@ export function ArtistsSelect() {
     >
       <ComboboxTrigger
         render={
-          <Button variant="ghost" className={cn("-ms-2! gap-1.5 text-sm", artist && "px-1!")} />
+          <Button variant="ghost" className={cn("-ms-2! gap-1 text-sm", artist && "px-1!")} />
         }
       >
         <ComboboxValue>

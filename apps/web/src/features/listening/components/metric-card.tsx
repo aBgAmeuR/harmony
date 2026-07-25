@@ -29,7 +29,7 @@ export const MetricCard = ({ label, unit, query }: MetricCardProps) => {
 
   return (
     <Card size="xs">
-      <CardHeader className="px-3 pt-3">
+      <CardHeader className="gap-0 px-3 pt-3">
         <div className="flex flex-col">
           <CardTitle className="text-muted-foreground">{label}</CardTitle>
           <FormattedMetric size="lg" value={data?.value} unit={unit} />
@@ -40,7 +40,7 @@ export const MetricCard = ({ label, unit, query }: MetricCardProps) => {
           </Button>
         </CardAction>
       </CardHeader>
-      <CardContent style={{ marginBottom: "-5px" }}>
+      <CardContent>
         <MetricSparkline trend={data?.trend} />
       </CardContent>
     </Card>

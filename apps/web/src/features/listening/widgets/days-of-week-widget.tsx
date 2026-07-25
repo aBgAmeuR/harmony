@@ -1,4 +1,4 @@
-import { RadarArea, RadarChart, RadarGrid, RadarLabels } from "@harmony/charts";
+import { RadarChart } from "@harmony/charts/v3";
 import { Card, CardContent, CardHeader, CardTitle } from "@harmony/ui/components/card";
 import { useQuery } from "@tanstack/react-query";
 
@@ -10,24 +10,35 @@ export function DaysOfWeekWidget() {
   const metrics = data?.metrics ?? [];
   const series = data?.data ?? [];
 
+  const newData =
+    metrics.length && series.length
+      ? metrics.map((metric) => ({
+          label: metric.label,
+          value: series[0]?.values[metric.key] ?? 0,
+        }))
+      : [];
+
   return (
-    <Card size="xs" className="h-full">
+    <Card size="xs" className="h-full pb-0">
       <CardHeader className="px-3 pt-3">
         <CardTitle className="text-muted-foreground">Days of the Week</CardTitle>
       </CardHeader>
       <CardContent>
         <RadarChart
-          className="aspect-[4/3]"
-          data={series}
-          enterDurationMs={100}
-          margin={24}
-          metrics={metrics}
+          className="aspect-4/3"
+          data={newData}
+          config={{
+            value: {
+              label: "Time",
+              colors: {
+                light: ["#1db954"],
+              },
+            },
+          }}
         >
-          <RadarGrid showLabels={false} />
-          <RadarLabels fontSize={10} offset={16} />
-          {series.map((_, index) => (
-            <RadarArea index={index} key={index} showPoints={false} />
-          ))}
+          <RadarChart.PolarGrid />
+          <RadarChart.PolarAngleAxis dataKey="label" />
+          <RadarChart.Radar dataKey="value" variant="filled" />
         </RadarChart>
       </CardContent>
     </Card>

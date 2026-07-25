@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { Bar, BarChart, ChartTooltip, Grid, XAxis } from "@harmony/charts/v2";
+import { BarChart } from "@harmony/charts/v3";
 import { Alert02Icon, Cancel01Icon, Icon, Loading03Icon, Tick02Icon } from "@harmony/icons";
 import { Badge } from "@harmony/ui/components/badge";
 import { Checkbox } from "@harmony/ui/components/checkbox";
@@ -344,12 +344,24 @@ function InsightCard() {
 
       <div className="flex flex-col gap-1.5">
         <SectionLabel>Listening</SectionLabel>
-        <div className="rounded-lg border border-border bg-card px-2.5 pt-1.5 pb-1">
-          <BarChart className="aspect-7/2" data={LISTENING_DATA} xDataKey="name">
+        <div className="rounded-lg border border-border bg-card px-2 pt-1.5">
+          {/* <BarChart className="aspect-7/2" data={LISTENING_DATA} xDataKey="name">
             <Bar dataKey="value" fill="var(--chart-2)" />
             <Grid />
             <XAxis gap={2} />
             <ChartTooltip suffix="min" />
+          </BarChart> */}
+          <BarChart className="aspect-7/2" data={LISTENING_DATA} xDataKey="name" config={{
+            value: {
+              label: "Month",
+              colors: {
+                light: ["#1db954"],
+              },
+            }
+          }} barCategoryGap={2}>
+            <BarChart.Bar dataKey="value" />
+            <BarChart.XAxis />
+            <BarChart.Tooltip suffix="min" />
           </BarChart>
         </div>
       </div>
