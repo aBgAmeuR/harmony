@@ -57,7 +57,7 @@ export function usePathStrokeMetrics(
     setMetrics((prev) =>
       prev.pathD === d && prev.pathLength === len ? prev : { pathD: d, pathLength: len },
     );
-  // oxlint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
   return metrics;
