@@ -100,6 +100,8 @@ jobs:
           context: .
           file: ${{ matrix.app.dockerfile }}
           push: true
+          build-args: |
+            VITE_APP_VERSION=${{ needs.release.outputs.tag }}
           tags: |
             ghcr.io/abgameur/harmony/${{ matrix.app.name }}:latest
             ghcr.io/abgameur/harmony/${{ matrix.app.name }}:${{ needs.release.outputs.tag }}
