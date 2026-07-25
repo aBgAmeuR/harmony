@@ -127,7 +127,7 @@ export function LandingFooter() {
               @aBgAmeuR
             </Button>
           </p>
-          <p className="text-xs text-muted-foreground">v3.0-beta</p>
+          <p className="text-xs text-muted-foreground">{import.meta.env.VITE_APP_VERSION}</p>
         </div>
         <div className="t-stagger-line t-stagger-line--3">
           <GhostWordmark />

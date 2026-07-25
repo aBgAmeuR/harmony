@@ -11,6 +11,8 @@ RUN turbo prune web --docker
 
 # ---
 FROM base AS builder
+ARG VITE_APP_VERSION=dev
+ENV VITE_APP_VERSION=$VITE_APP_VERSION
 COPY --from=prepare /app/out/json/ .
 RUN pnpm install --frozen-lockfile
 COPY --from=prepare /app/out/full/ .
