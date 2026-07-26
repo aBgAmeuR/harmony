@@ -6,7 +6,6 @@ import { LineChart, type LineSeriesOption } from "echarts/charts";
 import {
   DataZoomComponent,
   GridComponent,
-  MarkLineComponent,
   TooltipComponent,
   type DataZoomComponentOption,
   type GridComponentOption,
@@ -76,14 +75,7 @@ export type {
 // `DataZoomComponent` bundles both the slider (brush footer) and inside (wheel/drag)
 // zoom. The brush's frame/handles/labels are raw zrender elements, not the
 // graphic component — see syncBrushOverlay.
-echarts.use([
-  LineChart,
-  GridComponent,
-  TooltipComponent,
-  DataZoomComponent,
-  CanvasRenderer,
-  MarkLineComponent,
-]);
+echarts.use([LineChart, GridComponent, TooltipComponent, DataZoomComponent, CanvasRenderer]);
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 
@@ -210,8 +202,6 @@ export interface AreaProps {
   connectNulls?: boolean; // join segments across null/missing values
   isClickable?: boolean; // lets this area be selected by clicking it
   enableBufferLine?: boolean; // renders this area's last segment as a dashed, fill-less buffer
-  /** ECharts series markLine (escape hatch for checkpoints / annotations). */
-  markLine?: LineSeriesOption["markLine"];
   children?: ReactNode; // optional <Dot> and <ActiveDot> config
 }
 
@@ -294,7 +284,6 @@ type AreaSeriesConfig = {
   connectNulls: boolean;
   isClickable: boolean;
   enableBufferLine: boolean;
-  markLine?: LineSeriesOption["markLine"];
   dotVariant: DotVariant; // "none" when no <Dot> child is present
   activeDotVariant: DotVariant; // "none" when no <ActiveDot> child is present
 };
@@ -392,7 +381,6 @@ function collectConfig(children: ReactNode): CollectedConfig {
         connectNulls: props.connectNulls ?? false,
         isClickable: props.isClickable ?? false,
         enableBufferLine: props.enableBufferLine ?? false,
-        markLine: props.markLine,
         dotVariant,
         activeDotVariant,
       });
@@ -1297,7 +1285,6 @@ function buildAreaSeries(ctx: OptionBuildContext): LineSeriesOption[] {
         areaStyle: { opacity: 0.1 },
         itemStyle: { opacity: 0.3 },
       },
-      markLine: area.markLine,
     };
 
     // Hover-reveal: a muted gray BASE layer of the FULL series sits one z below
@@ -2298,8 +2285,8 @@ export function EChartsAreaChart<TData extends Record<string, unknown>>({
   // Insets match the Recharts legend's breathing room inside the plot frame.
   const legendStyle: CSSProperties = {
     position: "absolute",
-    left: 0,
-    right: 0,
+    left: 16,
+    right: 16,
     pointerEvents: "auto",
     ...(legendSlot.verticalAlign === "top"
       ? { top: 12 }
