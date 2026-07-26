@@ -8,28 +8,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  web-install:
-    name: Web · Install
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
   web-lint:
     name: Web · Lint
-    needs: [web-install]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -41,7 +21,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install dependencies
@@ -60,7 +40,6 @@ jobs:
 
   web-format:
     name: Web · Format
-    needs: [web-install]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -72,7 +51,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install dependencies
@@ -91,7 +70,6 @@ jobs:
 
   web-types:
     name: Web · Types
-    needs: [web-install]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -103,7 +81,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install dependencies
@@ -165,24 +143,3 @@ jobs:
 
       - name: cargo clippy
         run: cargo clippy --all-targets -- -D warnings
-
-  server-check:
-    name: Server · Check
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/server
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: apps/server
-
-      - name: cargo check
-        run: cargo check

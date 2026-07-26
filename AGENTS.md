@@ -17,8 +17,9 @@ Use `pnpm` from the project root unless noted otherwise.
 - `pnpm build` - build workspace packages through Turbo (`turbo run build`).
 - `pnpm check-types` - TypeScript checks via Turbo (parallel per package, transit cache graph).
 - `pnpm lint` / `pnpm format:check` - oxlint / oxfmt verify (root Turbo tasks).
+- `pnpm lint:fix` - oxlint with `--fix` (removes unused imports via `safe-fix`).
 - `pnpm check` - `turbo run //#lint //#format:check`.
-- `pnpm format` - write oxfmt fixes in place.
+- `pnpm format` - write oxfmt fixes in place (includes import sorting from `.oxfmtrc.json`).
 - `pnpm check:server` - run `cargo check` for the Rust server.
 - `pnpm check:fmt:server` - run `cargo fmt --check` for the Rust server.
 - `pnpm format:server` - write rustfmt fixes in place.
