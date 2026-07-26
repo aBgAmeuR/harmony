@@ -6,6 +6,7 @@ import { BarChart, type BarSeriesOption } from "echarts/charts";
 import {
   DataZoomComponent,
   GridComponent,
+  MarkLineComponent,
   TooltipComponent,
   type DataZoomComponentOption,
   type GridComponentOption,
@@ -68,7 +69,7 @@ export type { ChartConfig, LegendVariant, TooltipPosition, TooltipRoundness, Too
 // zoom. The brush's frame/handles/labels are raw zrender elements, not the
 // graphic component — see syncBrushOverlay. No LineChart: the main plot, the
 // loading skeleton, and the brush mini chart are ALL bar series.
-echarts.use([BarChart, GridComponent, TooltipComponent, DataZoomComponent, CanvasRenderer]);
+echarts.use([BarChart, GridComponent, TooltipComponent, DataZoomComponent, CanvasRenderer, MarkLineComponent]);
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 
@@ -229,6 +230,7 @@ export interface BarProps {
   enableHoverHighlight?: boolean; // dims the other bars while one is hovered
   glowing?: boolean; // applies a soft outer glow to this bar
   bufferBar?: boolean; // renders the last data point as a hatched "buffer" bar
+  markLine?: BarSeriesOption["markLine"]; // escape hatch for checkpoints / annotations
 }
 
 /**
@@ -304,6 +306,7 @@ type BarSeriesConfig = {
   enableHoverHighlight: boolean;
   glowing: boolean;
   bufferBar: boolean;
+  markLine?: BarSeriesOption["markLine"];
 };
 
 type AxisSlot = {
@@ -380,6 +383,7 @@ function collectConfig(children: ReactNode): CollectedConfig {
         enableHoverHighlight: props.enableHoverHighlight ?? false,
         glowing: props.glowing ?? false,
         bufferBar: props.bufferBar ?? false,
+        markLine: props.markLine,
       });
     } else if (type === XAxis) {
       const props = child.props as XAxisProps;
@@ -1343,6 +1347,7 @@ function buildBarSeries(ctx: OptionBuildContext): BarSeriesOption[] {
       animationDuration: BAR_GROW_DURATION,
       animationEasing: "cubicOut",
       animationDelay: (idx: number) => barStaggerDelay(barAnim, idx, data.length),
+      markLine: bar.markLine,
     };
   });
 
