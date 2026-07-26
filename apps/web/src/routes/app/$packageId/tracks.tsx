@@ -6,6 +6,7 @@ import type { Catalog } from "@/components/catalog/catalog";
 
 import { CatalogTable } from "@/components/catalog/catalog-table";
 import { DateRangeFilter } from "@/components/layout/header/date-range-filter";
+import { Pane } from "@/components/pane";
 import { TrackDetailsPanel } from "@/features/tracks/components/track-details-panel";
 import { query } from "@/lib/query";
 import { useArtistStore } from "@/lib/stores/artist-store";
@@ -14,7 +15,6 @@ import {
   useDateRangeStore,
   useInstantRangeQuery,
 } from "@/lib/stores/date-range-store";
-import { Pane } from "@/components/pane";
 
 export const Route = createFileRoute("/app/$packageId/tracks")({
   ssr: false,
