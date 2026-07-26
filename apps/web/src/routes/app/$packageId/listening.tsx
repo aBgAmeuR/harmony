@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { Header } from "@/components/layout/header/header";
+import { DateRangeFilter } from "@/components/layout/header/date-range-filter";
+import { Pane } from "@/components/pane";
 import { ActiveDaysWidget } from "@/features/listening/widgets/active-days-widget";
 import { DaysOfWeekWidget } from "@/features/listening/widgets/days-of-week-widget";
 import { ListeningTimeWidget } from "@/features/listening/widgets/listening-time-widget";
@@ -32,8 +33,10 @@ export const Route = createFileRoute("/app/$packageId/listening")({
 
 function RouteComponent() {
   return (
-    <div>
-      <Header title="Listening Habits" />
+    <Pane>
+      <Pane.Header title="Listening Habits" artistSelect>
+        <DateRangeFilter />
+      </Pane.Header>
       <main className="mx-auto max-w-7xl space-y-3 p-4 pt-0">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <ListeningTimeWidget />
@@ -65,6 +68,6 @@ function RouteComponent() {
           <GenresWidget />
         </div> */}
       </main>
-    </div>
+    </Pane>
   );
 }
