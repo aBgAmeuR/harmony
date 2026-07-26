@@ -1,8 +1,7 @@
+import { Icons } from "@/components/icons";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@harmony/ui/components/sidebar";
 
-import { Icons } from "@/components/icons";
-
-export function TeamSwitcher() {
+export function NavBrand() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -16,7 +15,6 @@ export function TeamSwitcher() {
               Harmony
             </span>
           </div>
-          {/* <HugeiconsIcon icon={UnfoldMoreIcon} strokeWidth={1.5} className="ml-auto" /> */}
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>

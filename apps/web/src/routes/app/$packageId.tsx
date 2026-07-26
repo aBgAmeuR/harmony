@@ -5,7 +5,7 @@ import { SidebarInset, SidebarProvider } from "@harmony/ui/components/sidebar";
 import { createFileRoute, Link, Outlet, type ErrorComponentProps } from "@tanstack/react-router";
 
 import { Icons } from "@/components/icons";
-import { AppSidebar } from "@/components/layout/sidebar/app-sidebar";
+import { AppNav } from "@/components/nav/app-nav";
 
 function getErrorContent(error: Error | null) {
   if (error instanceof DuckDBPackageNotFoundError) {
@@ -57,21 +57,13 @@ export const Route = createFileRoute("/app/$packageId")({
 });
 
 function RouteComponent() {
-  // const router = useRouter();
-
-  // router.subscribe("onBeforeNavigate", ({ pathChanged }) => pathChanged && BProgress.start());
-  // router.subscribe("onResolved", () => BProgress.done());
-
   return (
-    // <ProgressProvider options={{ showSpinner: false }} color="#1ED760">
     <SidebarProvider>
-      <AppSidebar />
+      <AppNav />
       <SidebarInset>
-        {/* <Progress /> */}
         <Outlet />
       </SidebarInset>
     </SidebarProvider>
-    // </ProgressProvider>
   );
 }
 

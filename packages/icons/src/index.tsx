@@ -3,6 +3,7 @@ import type { HugeiconsIconProps } from "@hugeicons/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 export * from "@hugeicons/core-free-icons";
+export type { IconSvgElement } from "@hugeicons/react";
 
 export function Icon({
   size = 16,
