@@ -19,7 +19,7 @@ import { useState } from "react";
 
 import type { Catalog } from "@/components/catalog/catalog";
 
-import { CatalogImage } from "@/components/catalog/catalog-image";
+import { Cover } from "@/components/cover";
 import { artistsQueries } from "@/features/artists/queries";
 import { useArtistStore } from "@/lib/stores/artist-store";
 
@@ -59,7 +59,7 @@ export function ArtistsSelect() {
         <ComboboxValue>
           {(artist: Artist | null) => (
             <>
-              {artist && <CatalogImage image={artist.image} alt={artist.name} className="size-5" />}
+              {artist && <Cover src={artist.image} alt={artist.name} size="xs" />}
               <span className="font-semibold tracking-tight text-muted-foreground">
                 {artist?.name ?? "All Artists"}
               </span>
@@ -85,7 +85,7 @@ export function ArtistsSelect() {
         <ComboboxList>
           {(item: Artist) => (
             <ComboboxItem key={item.id} value={item}>
-              <CatalogImage image={item.image} alt={item.name} className="size-5" />
+              <Cover src={item.image} alt={item.name} size="xs" />
               <span className="truncate">{item.name}</span>
             </ComboboxItem>
           )}

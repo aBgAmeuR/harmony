@@ -1,11 +1,10 @@
 import { cn } from "@harmony/ui/lib/utils";
 
-import { CatalogImage } from "@/components/catalog/catalog-image";
-
 import type { HeroEntityCard as HeroEntityCardData } from "./mock-data";
 
 import { getRankClassName } from "../catalog/catalog-table";
-import { FormattedMetric } from "../format/formatted-metric";
+import { Cover } from "../cover";
+import { Metric } from "../metric";
 
 type HeroEntityCardProps = {
   card: HeroEntityCardData;
@@ -23,7 +22,7 @@ export function HeroEntityCard({ card, className }: HeroEntityCardProps) {
         className,
       )}
     >
-      <CatalogImage image={card.image} alt={card.name} size="md" className="rounded-sm" />
+      <Cover src={card.image} alt={card.name} size="md" />
       <div className="flex w-full items-center justify-between gap-4">
         <div className="flex min-h-9 min-w-0 flex-col justify-center">
           <p className="truncate text-sm font-medium">{card.name}</p>
@@ -37,7 +36,7 @@ export function HeroEntityCard({ card, className }: HeroEntityCardProps) {
             {card.rank}
           </span>
         ) : (
-          <FormattedMetric value={card.metric} unit="min" size="sm" />
+          <Metric value={card.metric} unit="min" size="sm" />
         )}
       </div>
     </div>

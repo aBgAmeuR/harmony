@@ -15,8 +15,8 @@ import { useState } from "react";
 import type { Catalog } from "./catalog";
 import type { CatalogTrendPoint } from "./catalog-trend-sparkline";
 
-import { MetricCell } from "../format/metric-cell";
-import { CatalogImage } from "./catalog-image";
+import { Cover } from "../cover";
+import { Metric } from "../metric";
 import { CatalogTrendSparkline } from "./catalog-trend-sparkline";
 
 export const getRankClassName = (rank: number) => {
@@ -128,7 +128,7 @@ export const CatalogTable = ({
                   </TableCell>
                   <TableCell className="max-w-0 py-1.5">
                     <div className="flex min-w-0 items-center gap-3">
-                      <CatalogImage image={item.image} alt={item.name} />
+                      <Cover src={item.image} alt={item.name} />
                       <div className="flex min-h-9 min-w-0 flex-col justify-center">
                         <p className="truncate text-sm font-medium">{item.name}</p>
                         <p className="truncate text-xs text-muted-foreground">{item.description}</p>
@@ -143,10 +143,10 @@ export const CatalogTable = ({
                     </TableCell>
                   ) : null}
                   <TableCell className="py-1.5 text-right">
-                    <MetricCell value={item.streams} />
+                    <Metric value={item.streams} />
                   </TableCell>
                   <TableCell className="py-1.5 pr-4">
-                    <MetricCell value={item.playtime} unit="min" />
+                    <Metric value={item.playtime} unit="min" />
                   </TableCell>
                 </TableRow>
               );

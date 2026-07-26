@@ -3,7 +3,7 @@ import { Button } from "@harmony/ui/components/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@harmony/ui/components/card";
 import { useQuery } from "@tanstack/react-query";
 
-import { FormattedMetric } from "@/components/format/formatted-metric";
+import { Metric } from "@/components/metric";
 import { useArtistStore } from "@/lib/stores/artist-store";
 import { useInstantRangeQuery } from "@/lib/stores/date-range-store";
 
@@ -32,7 +32,7 @@ export const MetricCard = ({ label, unit, query }: MetricCardProps) => {
       <CardHeader className="gap-0 px-3 pt-3">
         <div className="flex flex-col">
           <CardTitle className="text-muted-foreground">{label}</CardTitle>
-          <FormattedMetric size="lg" value={data?.value} unit={unit} />
+          <Metric size="lg" value={data?.value} unit={unit} />
         </div>
         <CardAction>
           <Button variant="ghost" size="icon" className="-me-1! -mt-1!">

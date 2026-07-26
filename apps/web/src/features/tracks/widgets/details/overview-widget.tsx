@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { FormattedMetric } from "@/components/format/formatted-metric";
+import { Metric } from "@/components/metric";
 import { query } from "@/lib/query";
 import { useInstantRangeQuery } from "@/lib/stores/date-range-store";
 
@@ -35,7 +35,7 @@ const StatCell = ({ label, value, unit }: StatCellProps) => {
   return (
     <div className="flex flex-col px-2.5 py-1.5">
       <span className="text-[10px] font-medium text-muted-foreground">{label}</span>
-      <FormattedMetric size="md" value={value} unit={unit} />
+      <Metric size="md" value={value} unit={unit} />
     </div>
   );
 };
