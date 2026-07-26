@@ -6,11 +6,11 @@ import { Badge } from "@harmony/ui/components/badge";
 import { Checkbox } from "@harmony/ui/components/checkbox";
 import { cn } from "@harmony/ui/lib/utils";
 
-import { CatalogImage } from "@/components/catalog/catalog-image";
-import { FormattedMetric } from "@/components/format/formatted-metric";
 import { Icons } from "@/components/icons";
 
 import { getRankClassName } from "../catalog/catalog-table";
+import { Cover } from "../cover";
+import { Metric } from "../metric";
 import { useStaggerReveal } from "./use-stagger-reveal";
 
 const SPOTIFY_PRIVACY_URL = "https://www.spotify.com/account/privacy/";
@@ -315,7 +315,7 @@ function InsightCard() {
   return (
     <ShowcaseCard title="Your Insight" className="h-full">
       <div className="flex items-center gap-3">
-        <CatalogImage image={INSIGHT_TRACK.image} alt={INSIGHT_TRACK.name} size="lg" blur />
+        <Cover src={INSIGHT_TRACK.image} alt={INSIGHT_TRACK.name} size="lg" blur />
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-foreground">{INSIGHT_TRACK.name}</p>
           <p className="truncate text-xs text-muted-foreground">{INSIGHT_TRACK.artists}</p>
@@ -336,7 +336,7 @@ function InsightCard() {
           {OVERVIEW_STATS.map((stat) => (
             <div key={stat.label} className="flex flex-col px-2.5 py-1.5">
               <span className="text-[10px] font-medium text-muted-foreground">{stat.label}</span>
-              <FormattedMetric size="md" value={stat.value} unit={stat.unit} />
+              <Metric size="md" value={stat.value} unit={stat.unit} />
             </div>
           ))}
         </div>
