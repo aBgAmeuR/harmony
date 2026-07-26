@@ -1,5 +1,6 @@
-import { Icons } from "@/components/icons";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@harmony/ui/components/sidebar";
+
+import { Icons } from "@/components/icons";
 
 export function NavBrand() {
   return (
