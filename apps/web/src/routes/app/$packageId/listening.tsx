@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { DateRangeFilter } from "@/components/layout/header/date-range-filter";
-import { Pane } from "@/components/pane/pane";
+import { Pane } from "@/components/pane";
 import { ActiveDaysWidget } from "@/features/listening/widgets/active-days-widget";
 import { DaysOfWeekWidget } from "@/features/listening/widgets/days-of-week-widget";
 import { ListeningTimeWidget } from "@/features/listening/widgets/listening-time-widget";

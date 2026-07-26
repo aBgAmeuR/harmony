@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { CatalogTable } from "@/components/catalog/catalog-table";
 import { DateRangeFilter } from "@/components/layout/header/date-range-filter";
-import { Pane } from "@/components/pane/pane";
+import { Pane } from "@/components/pane";
 import { query } from "@/lib/query";
 import { useArtistStore } from "@/lib/stores/artist-store";
 import {
