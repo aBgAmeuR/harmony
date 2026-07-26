@@ -6,6 +6,7 @@ import { LineChart, type LineSeriesOption } from "echarts/charts";
 import {
   DataZoomComponent,
   GridComponent,
+  MarkLineComponent,
   TooltipComponent,
   type DataZoomComponentOption,
   type GridComponentOption,
@@ -81,7 +82,14 @@ export type {
 // `DataZoomComponent` bundles both the slider (brush footer) and inside (wheel/drag)
 // zoom. The brush's frame/handles/labels are raw zrender elements, not the
 // graphic component — see syncBrushOverlay. No GraphicComponent is registered.
-echarts.use([LineChart, GridComponent, TooltipComponent, DataZoomComponent, CanvasRenderer]);
+echarts.use([
+  LineChart,
+  GridComponent,
+  TooltipComponent,
+  DataZoomComponent,
+  CanvasRenderer,
+  MarkLineComponent,
+]);
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 
@@ -221,6 +229,8 @@ export interface LineProps {
   isClickable?: boolean; // lets this line be selected by clicking it
   glowing?: boolean; // applies a soft outer glow to this line
   enableBufferLine?: boolean; // renders this line's last segment as a dashed buffer
+  /** ECharts series markLine (escape hatch for checkpoints / annotations). */
+  markLine?: LineSeriesOption["markLine"];
   children?: ReactNode; // optional <Dot> and <ActiveDot> config
 }
 
@@ -303,6 +313,7 @@ type LineSeriesConfig = {
   isClickable: boolean;
   glowing: boolean;
   enableBufferLine: boolean;
+  markLine?: LineSeriesOption["markLine"];
   dotVariant: DotVariant; // "none" when no <Dot> child is present
   activeDotVariant: DotVariant; // "none" when no <ActiveDot> child is present
 };
@@ -402,6 +413,7 @@ function collectConfig(children: ReactNode): CollectedConfig {
         isClickable: props.isClickable ?? false,
         glowing: props.glowing ?? false,
         enableBufferLine: props.enableBufferLine ?? false,
+        markLine: props.markLine,
         dotVariant,
         activeDotVariant,
       });
@@ -1187,6 +1199,7 @@ function buildLineSeries(ctx: OptionBuildContext): LineSeriesOption[] {
         lineStyle: { opacity: 0.3 },
         itemStyle: { opacity: 0.3 },
       },
+      markLine: line.markLine,
     };
 
     // Hover-reveal: a muted gray BASE line of the FULL series sits one z below the

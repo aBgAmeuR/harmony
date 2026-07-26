@@ -85,8 +85,13 @@ export const navConfig = {
     },
     {
       title: "Discoveries",
-      url: "#",
+      url: "/discoveries",
       icon: <Icon icon={Search01Icon} className="text-muted-foreground" />,
+      badge: (
+        <Badge variant="outline" className="ms-auto">
+          WIP
+        </Badge>
+      ),
     },
     {
       title: "Milestones",
