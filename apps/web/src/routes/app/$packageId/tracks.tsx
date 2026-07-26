@@ -1,10 +1,3 @@
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-  useDefaultLayout,
-} from "@harmony/ui/components/resizable";
-import { ScrollArea } from "@harmony/ui/components/scroll-area";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -12,7 +5,8 @@ import { useEffect, useState } from "react";
 import type { Catalog } from "@/components/catalog/catalog";
 
 import { CatalogTable } from "@/components/catalog/catalog-table";
-import { Header } from "@/components/layout/header/header";
+import { DateRangeFilter } from "@/components/layout/header/date-range-filter";
+import { Pane } from "@/components/pane/pane";
 import { TrackDetailsPanel } from "@/features/tracks/components/track-details-panel";
 import { query } from "@/lib/query";
 import { useArtistStore } from "@/lib/stores/artist-store";
@@ -51,51 +45,35 @@ function RouteComponent() {
 
   const showDetails = selectedId !== null;
 
-  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: "harmony:tracks-layout:v1",
-    panelIds: showDetails ? ["table", "details"] : ["table"],
-    storage: localStorage,
-  });
-
   const handleSelectItem = (item: Catalog) => {
     if (item.id === selectedId) return;
     setSelectedId(item.id);
   };
 
   return (
-    <div className="flex h-svh flex-col overflow-hidden">
-      <Header title="Tracks" />
-      <ResizablePanelGroup
-        className="min-h-0 flex-1"
-        orientation="horizontal"
-        defaultLayout={defaultLayout}
-        onLayoutChanged={onLayoutChanged}
-      >
-        <ResizablePanel id="table" className="min-h-0 min-w-0">
-          <ScrollArea className="h-full overflow-hidden">
-            <CatalogTable
-              catalog={data}
-              loading={isLoading}
-              selectedId={selectedId ?? undefined}
-              onSelectItem={handleSelectItem}
-              stickyHeader
-              trends={trends ?? {}}
-            />
-          </ScrollArea>
-        </ResizablePanel>
-        {showDetails && (
-          <>
-            <ResizableHandle />
-            <ResizablePanel id="details" defaultSize={300} minSize={300} maxSize={500}>
-              <TrackDetailsPanel
-                track={trackDetails ?? undefined}
-                loading={detailsLoading}
-                onClose={() => setSelectedId(null)}
-              />
-            </ResizablePanel>
-          </>
-        )}
-      </ResizablePanelGroup>
-    </div>
+    <Pane layoutId="harmony:tracks-layout:v1">
+      <Pane.Frame id="table">
+        <Pane.Header title="Tracks" artistSelect>
+          <DateRangeFilter />
+        </Pane.Header>
+        <Pane.ScrollArea>
+          <CatalogTable
+            catalog={data}
+            loading={isLoading}
+            selectedId={selectedId ?? undefined}
+            onSelectItem={handleSelectItem}
+            stickyHeader
+            trends={trends ?? {}}
+          />
+        </Pane.ScrollArea>
+      </Pane.Frame>
+      <Pane.Frame id="details" show={showDetails} size={{ default: 300, min: 300, max: 500 }}>
+        <TrackDetailsPanel
+          track={trackDetails ?? undefined}
+          loading={detailsLoading}
+          onClose={() => setSelectedId(null)}
+        />
+      </Pane.Frame>
+    </Pane>
   );
 }

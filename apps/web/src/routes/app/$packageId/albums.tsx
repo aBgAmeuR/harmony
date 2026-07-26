@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { CatalogTable } from "@/components/catalog/catalog-table";
-import { Header } from "@/components/layout/header/header";
+import { DateRangeFilter } from "@/components/layout/header/date-range-filter";
+import { Pane } from "@/components/pane/pane";
 import { query } from "@/lib/query";
 import { useArtistStore } from "@/lib/stores/artist-store";
 import {
@@ -28,9 +29,11 @@ function RouteComponent() {
   const { data, isLoading } = useQuery(query.albums.top.queryOptions({ artistId, from, to }));
 
   return (
-    <div>
-      <Header title="Albums" />
+    <Pane>
+      <Pane.Header title="Albums" artistSelect>
+        <DateRangeFilter />
+      </Pane.Header>
       <CatalogTable catalog={data} loading={isLoading} />
-    </div>
+    </Pane>
   );
 }
