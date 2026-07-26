@@ -1,20 +1,22 @@
 {
   "editor.codeActionsOnSave": {
+    "source.organizeImports": "never",
+    "source.format.oxc": "always",
     "source.fixAll.oxc": "always"
   },
+  "editor.formatOnSave": false,
+  "editor.formatOnSaveMode": "file",
+  "editor.defaultFormatter": "oxc.oxc-vscode",
   "oxc.typeAware": true,
   "oxc.fmt.configPath": ".oxfmtrc.json",
-  "editor.defaultFormatter": "oxc.oxc-vscode",
-  "editor.formatOnSave": true,
   "[javascript]": {
-    "editor.defaultFormatter": "oxc.oxc-vscode",
-    "editor.formatOnSave": true
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[typescript]": {
-    "editor.defaultFormatter": "oxc.oxc-vscode",
-    "editor.formatOnSave": true
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
-  }
+  },
+  "rust-analyzer.linkedProjects": ["apps/server/Cargo.toml"]
 }

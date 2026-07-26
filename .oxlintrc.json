@@ -23,5 +23,6 @@
   "options": {
     "typeAware": true,
     "typeCheck": true
-  }
+  },
+  "ignorePatterns": ["routeTree.gen.ts", ".agents/**"]
 }
