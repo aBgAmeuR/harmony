@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { toSqlDate } from "@/lib/sql/date-range";
+import { Filter } from "@/lib/filter";
 
 import { activeDaysFn } from "./queries/active-days";
 import { daysOfWeekFn } from "./queries/days-of-week";
@@ -16,46 +16,40 @@ import { trackEngagementFn } from "./queries/track-engagement";
 import { uniqueTracksFn } from "./queries/unique-tracks";
 import { whenYouListenFn } from "./queries/when-you-listen";
 
-type ListeningFilterArgs = { artistId?: number; from: Date; to: Date };
-
-function listeningFilterKey({ artistId, from, to }: ListeningFilterArgs) {
-  return { artistId, from: toSqlDate(from), to: toSqlDate(to) };
-}
-
 export const listeningQueries = {
   listeningTime: {
-    queryOptions: (args: ListeningFilterArgs) =>
+    queryOptions: (filter: Filter) =>
       queryOptions({
-        queryKey: ["listening", "listening-time", listeningFilterKey(args)],
-        queryFn: () => listeningTimeFn(args),
+        queryKey: ["listening", "listening-time", filter],
+        queryFn: () => listeningTimeFn(filter),
       }),
   },
   totalStreams: {
-    queryOptions: (args: ListeningFilterArgs) =>
+    queryOptions: (filter: Filter) =>
       queryOptions({
-        queryKey: ["listening", "total-streams", listeningFilterKey(args)],
-        queryFn: () => totalStreamsFn(args),
+        queryKey: ["listening", "total-streams", filter],
+        queryFn: () => totalStreamsFn(filter),
       }),
   },
   activeDays: {
-    queryOptions: (args: ListeningFilterArgs) =>
+    queryOptions: (filter: Filter) =>
       queryOptions({
-        queryKey: ["listening", "active-days", listeningFilterKey(args)],
-        queryFn: () => activeDaysFn(args),
+        queryKey: ["listening", "active-days", filter],
+        queryFn: () => activeDaysFn(filter),
       }),
   },
   uniqueTracks: {
-    queryOptions: (args: ListeningFilterArgs) =>
+    queryOptions: (filter: Filter) =>
       queryOptions({
-        queryKey: ["listening", "unique-tracks", listeningFilterKey(args)],
-        queryFn: () => uniqueTracksFn(args),
+        queryKey: ["listening", "unique-tracks", filter],
+        queryFn: () => uniqueTracksFn(filter),
       }),
   },
   monthlyActivity: {
-    queryOptions: (args: ListeningFilterArgs) =>
+    queryOptions: (filter: Filter) =>
       queryOptions({
-        queryKey: ["listening", "monthly-activity", listeningFilterKey(args)],
-        queryFn: () => monthlyActivityFn(args),
+        queryKey: ["listening", "monthly-activity", filter],
+        queryFn: () => monthlyActivityFn(filter),
       }),
   },
   daysOfWeek: {

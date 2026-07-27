@@ -2,16 +2,12 @@ import { BarChart } from "@harmony/charts/v3";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@harmony/ui/components/card";
 import { useQuery } from "@tanstack/react-query";
 
+import { useFilter } from "@/lib/filter";
 import { query } from "@/lib/query";
-import { useArtistStore } from "@/lib/stores/artist-store";
-import { useInstantRangeQuery } from "@/lib/stores/date-range-store";
 
 export function MonthlyActivityWidget() {
-  const artistId = useArtistStore((s) => s.artist?.id);
-  const { from, to } = useInstantRangeQuery();
-  const { data = [] } = useQuery(
-    query.listeningHabits.monthlyActivity.queryOptions({ artistId, from, to }),
-  );
+  const filter = useFilter();
+  const { data = [] } = useQuery(query.listeningHabits.monthlyActivity.queryOptions(filter));
 
   return (
     <Card size="sm" className="pb-0.5">

@@ -8,36 +8,29 @@ import { CatalogTable } from "@/components/catalog/catalog-table";
 import { DateRangeFilter } from "@/components/layout/header/date-range-filter";
 import { Pane } from "@/components/pane";
 import { TrackDetailsPanel } from "@/features/tracks/components/track-details-panel";
+import { readFilter, useFilter } from "@/lib/filter";
 import { query } from "@/lib/query";
-import { useArtistStore } from "@/lib/stores/artist-store";
-import {
-  buildInstantRangeQuery,
-  useDateRangeStore,
-  useInstantRangeQuery,
-} from "@/lib/stores/date-range-store";
 
 export const Route = createFileRoute("/app/$packageId/tracks")({
   ssr: false,
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
     await parentMatchPromise;
-    const artistId = useArtistStore.getState().artist?.id;
-    const { from, to } = buildInstantRangeQuery(useDateRangeStore.getState());
-    await queryClient.ensureQueryData(query.tracks.top.queryOptions({ artistId, from, to }));
+    const filter = readFilter();
+    await queryClient.ensureQueryData(query.tracks.top.queryOptions(filter));
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const artistId = useArtistStore((s) => s.artist?.id);
-  const { from, to } = useInstantRangeQuery();
-  const { data, isLoading } = useQuery(query.tracks.top.queryOptions({ artistId, from, to }));
+  const filter = useFilter();
+  const { data, isLoading } = useQuery(query.tracks.top.queryOptions(filter));
   const trackIds = data?.map((track) => track.id) ?? [];
-  const { data: trends } = useQuery(query.tracks.trends.queryOptions({ trackIds, from, to }));
+  const { data: trends } = useQuery(query.tracks.trends.queryOptions({ trackIds, ...filter }));
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   useEffect(() => {
     setSelectedId(null);
-  }, [artistId, from, to]);
+  }, [filter]);
 
   const { data: trackDetails, isLoading: detailsLoading } = useQuery(
     query.tracks.get.queryOptions(selectedId),

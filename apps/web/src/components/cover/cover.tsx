@@ -30,7 +30,7 @@ export function Cover({ src, alt, className, size = "md", blur = false }: CoverP
             alt={alt}
             loading="lazy"
             decoding="async"
-            className="relative z-10 size-full rounded-sm object-cover"
+            className="relative z-2 size-full rounded-sm object-cover"
           />
           {blur && <BlurImage src={src} />}
         </>
