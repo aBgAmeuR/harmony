@@ -8,17 +8,14 @@ import { ListeningTimeWidget } from "@/features/listening/widgets/listening-time
 import { MonthlyActivityWidget } from "@/features/listening/widgets/monthly-activity-widget";
 import { TotalStreamsWidget } from "@/features/listening/widgets/total-streams-widget";
 import { UniqueTracksWidget } from "@/features/listening/widgets/unique-tracks-widget";
+import { readFilter } from "@/lib/filter";
 import { query } from "@/lib/query";
-import { useArtistStore } from "@/lib/stores/artist-store";
-import { buildInstantRangeQuery, useDateRangeStore } from "@/lib/stores/date-range-store";
 
 export const Route = createFileRoute("/app/$packageId/listening")({
   ssr: false,
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
     await parentMatchPromise;
-    const artistId = useArtistStore.getState().artist?.id;
-    const { from, to } = buildInstantRangeQuery(useDateRangeStore.getState());
-    const filter = { artistId, from, to };
+    const filter = readFilter();
     await Promise.all([
       queryClient.ensureQueryData(query.listeningHabits.listeningTime.queryOptions(filter)),
       queryClient.ensureQueryData(query.listeningHabits.totalStreams.queryOptions(filter)),

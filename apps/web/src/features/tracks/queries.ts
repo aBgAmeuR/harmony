@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
+import { Filter } from "@/lib/filter";
 import { toSqlDate } from "@/lib/sql/date-range";
 
 import { trackBehavioralFn } from "./queries/behavioral";
@@ -16,10 +17,10 @@ type TrackRangeArgs = { trackId: number; from: Date; to: Date };
 
 export const tracksQueries = {
   top: {
-    queryOptions: ({ artistId, from, to }: { artistId?: number; from: Date; to: Date }) =>
+    queryOptions: (filter: Filter) =>
       queryOptions({
-        queryKey: ["tracks", "top", { artistId, from: toSqlDate(from), to: toSqlDate(to) }],
-        queryFn: () => topTracksFn({ artistId, from, to }),
+        queryKey: ["tracks", "top", filter],
+        queryFn: () => topTracksFn(filter),
       }),
   },
   trends: {
