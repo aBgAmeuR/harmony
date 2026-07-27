@@ -69,7 +69,14 @@ export type { ChartConfig, LegendVariant, TooltipPosition, TooltipRoundness, Too
 // zoom. The brush's frame/handles/labels are raw zrender elements, not the
 // graphic component — see syncBrushOverlay. No LineChart: the main plot, the
 // loading skeleton, and the brush mini chart are ALL bar series.
-echarts.use([BarChart, GridComponent, TooltipComponent, DataZoomComponent, CanvasRenderer, MarkLineComponent]);
+echarts.use([
+  BarChart,
+  GridComponent,
+  TooltipComponent,
+  DataZoomComponent,
+  CanvasRenderer,
+  MarkLineComponent,
+]);
 
 type EChartsInstance = ReturnType<typeof echarts.init>;
 
