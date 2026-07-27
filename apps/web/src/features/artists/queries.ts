@@ -1,16 +1,16 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { toSqlDate } from "@/lib/sql/date-range";
+import { Filter } from "@/lib/filter";
 
 import { searchArtistsFn } from "./queries/search";
 import { topArtistsFn } from "./queries/top";
 
 export const artistsQueries = {
   top: {
-    queryOptions: ({ size = 50, from, to }: { size?: number; from: Date; to: Date }) =>
+    queryOptions: (filter: Filter) =>
       queryOptions({
-        queryKey: ["artists", "top", { size, from: toSqlDate(from), to: toSqlDate(to) }],
-        queryFn: () => topArtistsFn({ size, from, to }),
+        queryKey: ["artists", "top", filter],
+        queryFn: () => topArtistsFn(filter),
       }),
   },
   search: {

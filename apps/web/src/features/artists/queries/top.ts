@@ -4,12 +4,11 @@ import { Catalog } from "@/components/catalog/catalog";
 import { interactionDateConditions, joinWhere } from "@/lib/sql/date-range";
 
 type TopArtistsParams = {
-  size: number;
   from: Date;
   to: Date;
 };
 
-export const topArtistsFn = async ({ size, from, to }: TopArtistsParams) => {
+export const topArtistsFn = async ({ from, to }: TopArtistsParams) => {
   const conditions = interactionDateConditions(from, to);
 
   return await db.query<Catalog>(`
@@ -34,6 +33,6 @@ export const topArtistsFn = async ({ size, from, to }: TopArtistsParams) => {
     JOIN artists a ON a.id = u.artist_id
     GROUP BY a.id
     ORDER BY playtime DESC
-    LIMIT ${size}
+    LIMIT 50
   `);
 };

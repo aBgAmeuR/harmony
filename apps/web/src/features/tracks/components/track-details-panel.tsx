@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 
 import type { TrackDetails } from "@/features/tracks/queries/get";
 
-import { CatalogImage } from "@/components/catalog/catalog-image";
+import { Cover } from "@/components/cover";
 
 import { Interactions } from "./details/interactions";
 import { Overview } from "./details/overview";
@@ -59,7 +59,7 @@ export const TrackDetailsPanel = ({ track, onClose }: TrackDetailsPanelProps) =>
           >
             <div className="flex w-1/2 flex-col overflow-hidden">
               <div className="flex items-center gap-3 px-4">
-                <CatalogImage size="xl" image={track.image} alt={track.name} blur />
+                <Cover size="xl" src={track.image} alt={track.name} blur />
                 <div className="min-w-0">
                   <p className="line-clamp-2 text-sm font-medium">{track.name}</p>
                   {track.description ? (

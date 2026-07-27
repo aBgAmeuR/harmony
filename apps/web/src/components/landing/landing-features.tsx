@@ -6,10 +6,9 @@ import { Button } from "@harmony/ui/components/button";
 import { ButtonGroup } from "@harmony/ui/components/button-group";
 import { cn } from "@harmony/ui/lib/utils";
 
-import { CatalogImage } from "@/components/catalog/catalog-image";
-
 import { CatalogTrendSparkline } from "../catalog/catalog-trend-sparkline";
-import { FormattedMetric } from "../format/formatted-metric";
+import { Cover } from "../cover";
+import { Metric } from "../metric";
 import { useStaggerReveal } from "./use-stagger-reveal";
 
 const data = [
@@ -152,11 +151,11 @@ function PodiumVisual() {
       <div className="mx-auto flex h-full w-full max-w-xs items-end justify-center gap-3 px-4 pt-2">
         {PODIUM.map((entry) => (
           <div key={entry.name} className="flex w-1/3 flex-col items-center gap-0.5">
-            <CatalogImage image={entry.image} alt={entry.name} size="md" />
+            <Cover src={entry.image} alt={entry.name} size="md" />
             <p className="mt-1 max-w-full truncate text-xs font-medium text-foreground">
               {entry.name}
             </p>
-            <FormattedMetric value={entry.minutes} unit="min" size="xs" className="mb-1.5" />
+            <Metric value={entry.minutes} unit="min" size="xs" className="mb-1.5" />
             <div
               className={cn(
                 "flex w-full items-start justify-center rounded-t-md border border-b-0 border-[#ffffff14]/50 pt-1",
@@ -275,8 +274,8 @@ function FilterVisual() {
     <VisualPanel className="flex-col items-stretch justify-center gap-3 p-4">
       <div className="flex items-center justify-between gap-1.5">
         <Button variant="outline" size="sm" tabIndex={-1} className="max-w-full gap-1.5">
-          <CatalogImage
-            image={FILTER_ARTIST.image}
+          <Cover
+            src={FILTER_ARTIST.image}
             alt={FILTER_ARTIST.name}
             size="sm"
             className="size-4 rounded-full"
@@ -307,12 +306,12 @@ function FilterVisual() {
               index > 0 && "border-t border-border",
             )}
           >
-            <CatalogImage image={track.image} alt={track.name} size="sm" />
+            <Cover src={track.image} alt={track.name} size="sm" />
             <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
               {track.name}
             </span>
             <CatalogTrendSparkline trend={track.sparkline} className="me-0.5 h-4 w-10" />
-            <FormattedMetric value={track.minutes} unit="min" size="xs" />
+            <Metric value={track.minutes} unit="min" size="xs" />
           </li>
         ))}
       </ul>

@@ -4,7 +4,7 @@ import { Kbd, KbdGroup } from "@harmony/ui/components/kbd";
 import { SidebarGroup } from "@harmony/ui/components/sidebar";
 import { useIsMac } from "@harmony/ui/hooks/use-is-mac";
 
-export function CommandMenu() {
+export function NavSearch() {
   const isMac = useIsMac();
 
   return (

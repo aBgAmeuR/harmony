@@ -1,31 +1,27 @@
 import { Icon, ArrowUpRight01Icon } from "@harmony/icons";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@harmony/ui/components/sidebar";
-import { Link } from "@tanstack/react-router";
-import * as React from "react";
 
-export function NavSecondary({
-  items,
-  ...props
-}: {
-  items: Array<{
-    title: string;
-    url: string;
-    icon: React.ReactNode;
-    isExternal?: boolean;
-  }>;
-} & React.ComponentPropsWithoutRef<typeof SidebarMenu>) {
+import type { NavLinkAdapter } from "../types/link-adapter";
+import type { NavItem } from "../types/nav-item";
+
+type NavFooterProps = {
+  items: ReadonlyArray<NavItem>;
+  link: NavLinkAdapter;
+};
+
+export function NavFooter({ items, link }: NavFooterProps) {
   return (
-    <SidebarMenu {...props}>
+    <SidebarMenu>
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
-          {item.isExternal ? (
+          {item.external ? (
             <SidebarMenuButton
               tooltip={item.title}
-              render={<a href={item.url} />}
+              render={link.render(item)}
               size="sm"
               className="group/external-link"
             >
-              {item.icon}
+              {item.icon && <Icon icon={item.icon} className="text-muted-foreground" />}
               <span>{item.title}</span>
               <Icon
                 icon={ArrowUpRight01Icon}
@@ -35,16 +31,11 @@ export function NavSecondary({
           ) : (
             <SidebarMenuButton
               tooltip={item.title}
-              render={
-                <Link
-                  from="/app/$packageId"
-                  to={item.url.startsWith("/") ? `.${item.url}` : item.url}
-                  preload="intent"
-                />
-              }
+              render={link.render(item)}
               size="sm"
+              isActive={link.isActive(item)}
             >
-              {item.icon}
+              {item.icon && <Icon icon={item.icon} className="text-muted-foreground" />}
               <span>{item.title}</span>
             </SidebarMenuButton>
           )}
