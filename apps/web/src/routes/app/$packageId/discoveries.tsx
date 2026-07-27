@@ -1,32 +1,21 @@
-/**
- * PROTOTYPE — Discoveries page.
- *
- * Order: weekly vs releases → KPIs → forgotten / new finds → stuck → near release.
- * Run: pnpm dev → /app/<packageId>/prototype-discoveries
- */
 import { createFileRoute } from "@tanstack/react-router";
 
-import { Header } from "@/components/layout/header/header";
-import { DiscoveriesPrototypePage } from "@/features/discoveries/prototype/discoveries-prototype-page";
-import { discoveriesPrototypeQueries } from "@/features/discoveries/prototype/queries";
-import { useArtistStore } from "@/lib/stores/artist-store";
-import { buildInstantRangeQuery, useDateRangeStore } from "@/lib/stores/date-range-store";
+import { DateRangeFilter } from "@/components/layout/header/date-range-filter";
+import { Pane } from "@/components/pane";
+import { WeeklyListeningVsReleasesWidget } from "@/features/discoveries/widgets/weekly-listening-vs-releases-widget";
+import { readFilter } from "@/lib/filter";
+import { query } from "@/lib/query";
 
 export const Route = createFileRoute("/app/$packageId/discoveries")({
   ssr: false,
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
     await parentMatchPromise;
-    const artistId = useArtistStore.getState().artist?.id;
-    const { from, to } = buildInstantRangeQuery(useDateRangeStore.getState());
-    if (artistId == null) return;
-    
+    const filter = readFilter();
+    if (filter.artistId == null) return;
+
     await Promise.all([
-      queryClient.ensureQueryData(
-        discoveriesPrototypeQueries.weeklyActivity.queryOptions({ artistId, from, to }),
-      ),
-      queryClient.ensureQueryData(
-        discoveriesPrototypeQueries.artistReleases.queryOptions({ artistId, from, to }),
-      ),
+      queryClient.ensureQueryData(query.discoveries.weeklyActivity.queryOptions(filter)),
+      queryClient.ensureQueryData(query.discoveries.artistReleases.queryOptions(filter)),
     ]);
   },
   component: RouteComponent,
@@ -34,9 +23,13 @@ export const Route = createFileRoute("/app/$packageId/discoveries")({
 
 function RouteComponent() {
   return (
-    <div>
-      <Header title="Discoveries" />
-      <DiscoveriesPrototypePage />
-    </div>
+    <Pane>
+      <Pane.Header title="Discoveries" artistSelect>
+        <DateRangeFilter />
+      </Pane.Header>
+      <main className="mx-auto max-w-7xl space-y-3 p-4 pt-0">
+        <WeeklyListeningVsReleasesWidget />
+      </main>
+    </Pane>
   );
 }

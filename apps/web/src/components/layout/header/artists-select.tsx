@@ -25,7 +25,12 @@ import { useArtistStore } from "@/lib/stores/artist-store";
 
 type Artist = Pick<Catalog, "id" | "name" | "image">;
 
-export function ArtistsSelect() {
+type ArtistsSelectProps = {
+  placeholder?: string;
+  className?: string;
+};
+
+export function ArtistsSelect({ placeholder = "All Artists", className }: ArtistsSelectProps) {
   const { artist, setArtist } = useArtistStore();
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,7 +58,10 @@ export function ArtistsSelect() {
     >
       <ComboboxTrigger
         render={
-          <Button variant="ghost" className={cn("-ms-2! gap-1 text-sm", artist && "px-1!")} />
+          <Button
+            variant="ghost"
+            className={cn("-ms-2! gap-1 text-sm", artist && "px-1!", className)}
+          />
         }
       >
         <ComboboxValue>
@@ -61,7 +69,7 @@ export function ArtistsSelect() {
             <>
               {artist && <Cover src={artist.image} alt={artist.name} size="xs" />}
               <span className="font-semibold tracking-tight text-muted-foreground">
-                {artist?.name ?? "All Artists"}
+                {artist?.name ?? placeholder}
               </span>
             </>
           )}
