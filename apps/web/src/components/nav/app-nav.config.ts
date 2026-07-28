@@ -8,7 +8,6 @@ import {
   Search01Icon,
   Settings01Icon,
   Share08Icon,
-  SparklesIcon,
   UserIcon,
   UserMultipleIcon,
   Vynil01Icon,
@@ -53,14 +52,14 @@ export const appNav = {
       href: "/listening",
       icon: Chart03Icon,
     },
-    {
-      title: "Personality",
-      href: "#",
-      icon: SparklesIcon,
-    },
+    // {
+    //   title: "Personality",
+    //   href: "#",
+    //   icon: SparklesIcon,
+    // },
     {
       title: "Discoveries",
-      href: "#",
+      href: "/discoveries",
       icon: Search01Icon,
     },
     {
