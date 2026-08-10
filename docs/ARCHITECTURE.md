@@ -1,7 +1,8 @@
 # Architecture Overview
 
 Living map of Harmony v3. Update when routes, data stores, pipeline stages, or
-deployment change. Commands live in `AGENTS.md`; deploy details in `DEPLOY.md`.
+deployment change. Commands live in [`AGENTS.md`](../AGENTS.md); deploy details
+in [`DEPLOY.md`](./DEPLOY.md).
 
 ## System
 
@@ -69,8 +70,8 @@ Persist key: `harmony/{public_id}.duckdb`.
 
 ## Deploy & env
 
-Production: GHCR images + Portainer GitOps (`DEPLOY.md`). Compose pins image
-tags; no NAS-side builds.
+Production: GHCR images + Portainer GitOps ([`DEPLOY.md`](./DEPLOY.md)). Compose
+pins image tags; no NAS-side builds.
 
 | Var                                        | Used by                             |
 | ------------------------------------------ | ----------------------------------- |

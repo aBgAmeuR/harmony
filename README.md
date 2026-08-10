@@ -1,128 +1,87 @@
-[harmony.webm](https://github.com/user-attachments/assets/93851771-a205-47fe-9e49-82a92d8bb246)
+<p align="center">
+  <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/header/graph.svg?title=Harmony&amp;subtitle=Upload+your+history.+Explore+it+locally.&amp;logo=https%3A%2F%2Fharmony-staging.antoinejosset.fr%2Ffavicon.svg&amp;mode=dark&amp;font=geist" /><img alt="header" src="https://shieldcn.dev/header/graph.svg?title=Harmony&amp;subtitle=Upload+your+history.+Explore+it+locally.&amp;logo=https%3A%2F%2Fharmony-staging.antoinejosset.fr%2Ffavicon.svg&amp;mode=light&amp;font=geist" /></picture>
+</p>
 
-## Harmony
+<p align="center">
+  <a href="https://github.com/abgameur/harmony"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/abgameur/harmony/stars.svg?variant=secondary&amp;size=xs&amp;font=geist" /><img alt="badge" src="https://shieldcn.dev/github/abgameur/harmony/stars.svg?variant=secondary&amp;size=xs&amp;mode=light&amp;font=geist" /></picture></a>
+  <a href="https://github.com/abgameur/harmony"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/abgameur/harmony/license.svg?variant=secondary&amp;size=xs&amp;font=geist" /><img alt="license" src="https://shieldcn.dev/github/abgameur/harmony/license.svg?variant=secondary&amp;size=xs&amp;mode=light&amp;font=geist" /></picture></a>
+  <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/flag/fr.svg?size=xs&amp;font=geist" /><img alt="built in" src="https://shieldcn.dev/flag/fr.svg?size=xs&amp;mode=light&amp;font=geist" /></picture>
+</p>
 
-Personal Spotify analytics, rebuilt with a modern stack and a focus on speed, privacy, and great UX. Connect your Spotify account and upload your Spotify data export, then explore rich insights about your listening.
+## Overview
 
-### Highlights
+Personal Spotify analytics: upload your Extended Streaming History export, enrich
+it server-side, then explore listening insights in the browser with DuckDB WASM.
 
-- **Authentication**: Spotify OAuth via NextAuth, plus a safe demo mode
-- **Data import**: Upload Spotify Takeout ZIP
-- **Dashboards**:
-  - Overview, Recently Played, Top Tracks/Artists/Albums
-  - Rankings with historical trends and snapshots
-  - Detailed artist/album/track pages with charts
-  - Listening Habits, Milestones, Forgotten Gems, Comparisons (artists and years)
-  - Shareable profile links with usage limits and expiry
-- **Performance-first**: Next.js 15 App Router, React 19, React Query, Turbopack
-- **UI/UX**: Tailwind CSS v4, Shadcn/ui
-- **Database**: Postgres + Drizzle ORM with fully typed schema
-- **Monorepo**: TurboRepo with shared packages (auth, database, spotify, ui, tests)
+No Spotify account login. Privacy-first - analytics run locally against a
+DuckDB file you download for your package.
 
-### Tech
+## Stack
 
-[![Next JS](https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-000?style=for-the-badge&logo=shadcnui&logoColor=fff)](https://ui.shadcn.com/)
-[![Drizzle](https://img.shields.io/badge/Drizzle-2A2A2A?style=for-the-badge&logo=drizzle&logoColor=white)](https://orm.drizzle.team/)
-[![Postgres](https://img.shields.io/badge/Postgres-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org/)
-[![Hono](https://img.shields.io/badge/Hono-e36002?style=for-the-badge&logo=hono&logoColor=white)](https://hono.dev/)
-[![Turborepo](https://img.shields.io/badge/Turborepo-000?style=for-the-badge&logo=turborepo&logoColor=white)](https://turbo.build/)
-[![Spotify API](https://img.shields.io/badge/Spotify-1ED760?style=for-the-badge&logo=spotify&logoColor=white)](https://developer.spotify.com/documentation/web-api/)
-[![Vercel](https://img.shields.io/badge/Vercel-black?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
+| Layer    | Tech |
+| -------- | ---- |
+| Web      | <div><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/TanStack-ECE8D1.svg?size=xs&amp;font=geist&amp;logo=tanstack" /><img alt="TanStack" src="https://shieldcn.dev/badge/TanStack-ECE8D1.svg?size=xs&amp;mode=light&amp;font=geist&amp;logo=tanstack" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/Typescript-3178C6.svg?size=xs&amp;font=geist&amp;logo=typescript" /><img alt="TypeScript" src="https://shieldcn.dev/badge/Typescript-3178C6.svg?size=xs&amp;mode=light&amp;font=geist&amp;logo=typescript" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/Tailwind CSS-06B6D4.svg?size=xs&amp;logo=tailwindcss" /><img alt="Tailwind CSS" src="https://shieldcn.dev/badge/Tailwind CSS-06B6D4.svg?size=xs&amp;mode=light&amp;logo=tailwindcss" /></picture></div> |
+| Backend  | <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/Rust-000000.svg?size=xs&amp;font=geist&amp;logo=rust" /><img alt="Rust" src="https://shieldcn.dev/badge/Rust-000000.svg?size=xs&amp;mode=light&amp;font=geist&amp;logo=rust" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/DuckDB-FFF000.svg?size=xs&amp;font=geist&amp;logo=duckdb" /><img alt="DuckDB" src="https://shieldcn.dev/badge/DuckDB-FFF000.svg?size=xs&amp;mode=light&amp;font=geist&amp;logo=duckdb" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/Polar-0075FF.svg?size=xs&amp;logo=polars" /><img alt="Polars" src="https://shieldcn.dev/badge/Polar-0075FF.svg?size=xs&amp;mode=light&amp;logo=polars" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/PostgresSQL-4169E1.svg?size=xs&amp;logo=postgresql" /><img alt="PostgreSQL" src="https://shieldcn.dev/badge/PostgresSQL-4169E1.svg?size=xs&amp;mode=light&amp;logo=postgresql" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/OpenTelemetry-000000.svg?size=xs&amp;logo=opentelemetry" /><img alt="OpenTelemetry" src="https://shieldcn.dev/badge/OpenTelemetry-000000.svg?size=xs&amp;mode=light&amp;logo=opentelemetry" /></picture> |
+| Monorepo | <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/PNPM-F69220.svg?size=xs&amp;font=geist&amp;logo=pnpm" /><img alt="pnpm" src="https://shieldcn.dev/badge/PNPM-F69220.svg?size=xs&amp;mode=light&amp;font=geist&amp;logo=pnpm" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/Turborepo-FF1E56.svg?size=xs&amp;font=geist&amp;logo=turborepo" /><img alt="Turborepo" src="https://shieldcn.dev/badge/Turborepo-FF1E56.svg?size=xs&amp;mode=light&amp;font=geist&amp;logo=turborepo" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/oxlint / oxfmt-00F7F1.svg?size=xs&amp;logo=oxc" /><img alt="oxlint / oxfmt" src="https://shieldcn.dev/badge/oxlint / oxfmt-00F7F1.svg?size=xs&amp;mode=light&amp;logo=oxc" /></picture> |
 
 ## Monorepo layout
 
-- `apps/web`: Next.js 15 (App Router) web app
-- `apps/docs`: Fumadocs-powered documentation site
-- `apps/studio`: Drizzle Studio for database browsing
-- `apps/api`: Ancillary API utilities
-- `packages/auth`: NextAuth setup with Drizzle adapter and middleware
-- `packages/database`: Drizzle schema and client (Postgres)
-- `packages/spotify`: Minimal Spotify API client utilities
-- `packages/ui`: Shared UI components (shadcn/ui + Tailwind v4)
-- `packages/web-tests`: Playwright E2E tests
-- `packages/zustand-cookie-storage`: Cookie storage adapter for Zustand
+```text
+apps/web/          TanStack Start app (routes, features, upload UI)
+apps/server/       Axum API, worker, ingestion pipeline
+packages/          ui, charts, duckdb, upload, icons, font, config
+docs/              Architecture, design system, deploy
+```
 
 ## Requirements
 
-- Node.js 20+
+- Node.js 24+ (see `.nvmrc`)
 - pnpm 10+
-- Postgres 14+ (local or managed)
+- Rust toolchain (for `apps/server`)
+- Postgres (for the API)
 
 ## Quick start
 
-1. Install dependencies
+1. Install dependencies:
 
 ```bash
 pnpm install
 ```
 
-2. Create `.env` at repo root
+2. Configure env from the examples:
 
 ```bash
-DATABASE_URL="postgresql://user:password@localhost:5432/harmony"
-AUTH_SECRET="$(openssl rand -hex 32)"
-AUTH_SPOTIFY_ID="your-spotify-client-id"
-AUTH_SPOTIFY_SECRET="your-spotify-client-secret"
-
-# Optional
-APP_MAINTENANCE=false
-DEMO_ID="your-demo-user-id"            # enable demo sign-in
-UPLOADTHING_TOKEN="your-uploadthing-token"
-DOCS_URL="http://localhost:3001"       # if running docs locally
-CRON_SECRET="choose-a-strong-secret"   # for scheduled ranking updates
-NEXTAUTH_URL="http://localhost:3000"   # set in production
+cp apps/web/.env.example apps/web/.env
+cp apps/server/.env.example apps/server/.env
 ```
 
-3. Initialize the database
+Fill database url, S3/R2, and Deezer proxy values in `apps/server/.env`.
+Set API url and bucket url in `apps/web/.env`.
+
+3. Run the API and web app (two terminals):
 
 ```bash
-pnpm db:push
+pnpm dev:server
+pnpm dev:web
 ```
 
-4. Start development (Web on `http://localhost:3000`)
+## Useful commands
 
-```bash
-pnpm dev
-```
+| Command            | Purpose                          |
+| ------------------ | -------------------------------- |
+| `pnpm check-types` | TypeScript across the workspace  |
+| `pnpm check`       | oxlint + oxfmt check             |
+| `pnpm verify`      | Frontend gates + Rust fmt/clippy |
+| `pnpm test:server` | Rust unit tests                  |
+| `pnpm build`       | Production web build             |
 
-5. Optional tools
+## Docs
 
-```bash
-pnpm studio                 # Drizzle Studio
-pnpm typecheck              # TypeScript
-pnpm format-and-lint        # Biome check
-pnpm e2e:test               # Playwright E2E
-```
-
-## Cron and background tasks
-
-- Exposes `POST /api/cron/update-rankings` secured with header `Authorization: Bearer <CRON_SECRET>`.
-- Configure a platform cron (e.g., Vercel Cron) to hit this route on your desired cadence to refresh historical rankings.
-
-## Features
-
-- **Top Tracks**: Get a list of your top tracks.
-- **Top Artists**: Get a list of your top artists.
-- **Recently Played**: Get a list of your recently played tracks.
-- **Overview**: Get an overview of your account.
-- **Rankings**: Get rankings of your tracks, albums, and artists.
-- **Stats**: Get advanced statistics about your account.
-- **Milestones**: Get milestones of your account.
-- **Comparisons**: Compare artists and years.
-- **Settings**: Change settings and get information about the app.
-- **Profile Sharing**: Share your profile with a link.
-
-## Deployment
-
-- Recommended: Vercel
-  - Set all env vars above in the Project Settings
-  - Build command: `pnpm build`
-  - Optionally configure Vercel Cron to call `/api/cron/update-rankings` with your `CRON_SECRET`
+- [Architecture](docs/ARCHITECTURE.md) - upload → pipeline → DuckDB → analytics
+- [Design system](docs/DESIGN.md) - colors, typography, UI rules
+- [Deploy](docs/DEPLOY.md) - GHCR + Portainer GitOps
+- [AGENTS.md](AGENTS.md) - commands and convention
 
 ## License
 
-Distributed under the GNU General Public License v3.0. See `LICENSE` for more information.
+Distributed under the GNU General Public License v3.0. See `LICENSE`.
