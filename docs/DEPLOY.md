@@ -4,7 +4,7 @@ Harmony is currently on a **v3 beta** line. Production images are built when a
 new [SemVer](https://semver.org/) prerelease is created on the `v3` branch (via
 [semantic-release](https://semantic-release.org/) from Conventional Commits).
 Images are published to GHCR with the release tag, then that tag is pinned in
-[`docker-compose.yml`](docker-compose.yml). Portainer CE polls that file from
+[`docker-compose.yml`](../docker-compose.yml). Portainer CE polls that file from
 Git and redeploys when the pin changes.
 
 ```text
@@ -51,7 +51,7 @@ BREAKING CHANGE: start of the Harmony v3 beta line.
 ```
 
 When you leave beta for stable `v3.0.0`, remove the `prerelease`/`channel`
-settings on the `v3` branch in [`.releaserc.json`](.releaserc.json).
+settings on the `v3` branch in [`.releaserc.json`](../.releaserc.json).
 
 The NAS must never rebuild from source; it only pulls pre-built images. Local app
 development uses `pnpm dev` / `pnpm dev:server`, not this compose file.

@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Harmony Agent Guide
 
-You are a senior product engineer for Harmony v3. Your job is to make focused, type-safe changes in this TypeScript/Rust monorepo while preserving the product architecture in `ARCHITECTURE.md` and the interface language in `DESIGN.md`.
+You are a senior product engineer for Harmony v3. Your job is to make focused, type-safe changes in this TypeScript/Rust monorepo while preserving the product architecture in `docs/ARCHITECTURE.md` and the interface language in `docs/DESIGN.md`.
 
 ## Commands
 
@@ -55,9 +55,10 @@ harmony-v3/
 │   ├── icons/                # HugeIcons-backed icon exports
 │   ├── ui/                   # Shared UI primitives, CSS, hooks, utilities
 │   └── upload/               # Upload client, SSE state, React hook
-├── ARCHITECTURE.md           # System map
-├── DESIGN.md                 # Design system tokens and UI rules
-├── DEPLOY.md                 # Portainer GitOps / GHCR production deploy
+├── docs/
+│   ├── ARCHITECTURE.md       # System map
+│   ├── DESIGN.md             # Design system tokens and UI rules
+│   └── DEPLOY.md             # Portainer GitOps / GHCR production deploy
 ├── docker-compose.yml        # Production image-based compose (SHA-pinned)
 ├── pnpm-workspace.yaml       # Workspace packages and catalog versions
 └── turbo.json                # Turborepo task graph
@@ -75,9 +76,9 @@ harmony-v3/
 
 ## Design System Rules
 
-Always read `DESIGN.md` before generating or modifying UI.
+Always read `docs/DESIGN.md` before generating or modifying UI.
 
-- Use only documented colors, typography, spacing, radius, and component tokens from `DESIGN.md`. Do not invent Tailwind defaults or one-off hex values.
+- Use only documented colors, typography, spacing, radius, and component tokens from `docs/DESIGN.md`. Do not invent Tailwind defaults or one-off hex values.
 - Harmony is always dark: black canvas, charcoal surfaces, hairline borders, no decorative shadows for normal panels.
 - Primary interactive emphasis uses Harmony green (`#57B660`) and its documented chart tiers. Do not introduce unrelated accent colors.
 - Keep dashboard UI compact: 28px desktop controls, 32px thumbnails, small Spotify Mix typography, tabular numeric alignment, and dense table layouts.
@@ -115,7 +116,7 @@ Always read `DESIGN.md` before generating or modifying UI.
 - Never edit generated/vendor directories such as `node_modules/`, build output,
   `.turbo/`, `target/`, or generated route artifacts unless the task is
   explicitly about generated output.
-- Do not change `ARCHITECTURE.md` or `DESIGN.md` as a side effect of
+- Do not change `docs/ARCHITECTURE.md` or `docs/DESIGN.md` as a side effect of
   implementation work. Suggest updates when architecture, design tokens,
   commands, or workflows actually change.
 
