@@ -152,7 +152,13 @@ export function UploadPackageStep() {
       <div className="mt-5 flex justify-center text-center">
         <p className="bg-background px-2 text-sm text-muted-foreground">
           <span>Don't have a package? </span>
-          <Button variant="link" className="-ml-1.5 text-foreground" render={<Link to="/app/demo" />}>See a demo</Button>
+          <Button
+            variant="link"
+            className="-ml-1.5 text-foreground"
+            render={<Link to="/app/demo" />}
+          >
+            See a demo
+          </Button>
         </p>
       </div>
     </>

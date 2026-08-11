@@ -161,7 +161,8 @@ export function UploadDeployStep() {
 
   const startMs = getIsoMs(pipelineState.startedAt);
   const endMs = getIsoMs(pipelineState.endedAt) ?? nowTs;
-  const headerElapsed = startMs !== null ? format.duration(Math.max(0, endMs - startMs)) : format.duration(0);
+  const headerElapsed =
+    startMs !== null ? format.duration(Math.max(0, endMs - startMs)) : format.duration(0);
   const headerStatus = isDeploying ? "Uploading…" : formatRunStatus(pipelineState.runStatus);
 
   const handleCancel = () => {
