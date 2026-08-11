@@ -12,7 +12,7 @@ import {
   PipelineItemLabel,
 } from "@/components/pipeline";
 
-type UploadPipelineListProps = {
+type UploadPipelineProps = {
   steps: PipelineStep[];
   nowTs: number;
 };
@@ -41,7 +41,7 @@ function StepProgressBadge({ step }: { step: PipelineStep }) {
   );
 }
 
-export function UploadPipelineList({ steps, nowTs }: UploadPipelineListProps) {
+export function UploadPipeline({ steps, nowTs }: UploadPipelineProps) {
   return (
     <div className="flex flex-col gap-px divide-y divide-border/50 overflow-hidden rounded-lg border">
       {steps.map((step) => {
@@ -55,11 +55,12 @@ export function UploadPipelineList({ steps, nowTs }: UploadPipelineListProps) {
               step.status === "pending" && "opacity-50",
             )}
           >
-            <PipelineItemHeader>
+            <PipelineItemHeader className="w-full">
               <PipelineItemIcon status={step.status} />
               <PipelineItemLabel
                 label={step.label}
                 className={cn(
+                  "me-auto",
                   step.status === "running" && "font-medium",
                   step.status === "pending" && "text-muted-foreground",
                 )}
@@ -73,14 +74,6 @@ export function UploadPipelineList({ steps, nowTs }: UploadPipelineListProps) {
                 />
               ) : null}
             </PipelineItemHeader>
-            {/* {showContent ? (
-              <PipelineItemContent>
-                {step.status === "error" && step.error ? (
-                  <p className="text-destructive">{step.error}</p>
-                ) : null}
-                {detail}
-              </PipelineItemContent>
-            ) : null} */}
           </PipelineItem>
         );
       })}
