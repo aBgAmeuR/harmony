@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TestV2RouteImport } from './routes/test-v2'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as AppPackageIdRouteImport } from './routes/app/$packageId'
 import { Route as AppPackageIdAlbumsRouteImport } from './routes/app/$packageId/albums'
@@ -23,11 +22,6 @@ import { Route as AppPackageIdTracksRouteImport } from './routes/app/$packageId/
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TestV2Route = TestV2RouteImport.update({
-  id: '/test-v2',
-  path: '/test-v2',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UploadRoute = UploadRouteImport.update({
@@ -73,7 +67,6 @@ const AppPackageIdTracksRoute = AppPackageIdTracksRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/test-v2': typeof TestV2Route
   '/upload': typeof UploadRoute
   '/app/$packageId': typeof AppPackageIdRouteWithChildren
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
@@ -85,7 +78,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/test-v2': typeof TestV2Route
   '/upload': typeof UploadRoute
   '/app/$packageId': typeof AppPackageIdRouteWithChildren
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
@@ -98,7 +90,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/test-v2': typeof TestV2Route
   '/upload': typeof UploadRoute
   '/app/$packageId': typeof AppPackageIdRouteWithChildren
   '/app/$packageId/albums': typeof AppPackageIdAlbumsRoute
@@ -112,7 +103,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/test-v2'
     | '/upload'
     | '/app/$packageId'
     | '/app/$packageId/albums'
@@ -124,7 +114,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/test-v2'
     | '/upload'
     | '/app/$packageId'
     | '/app/$packageId/albums'
@@ -136,7 +125,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/test-v2'
     | '/upload'
     | '/app/$packageId'
     | '/app/$packageId/albums'
@@ -149,7 +137,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  TestV2Route: typeof TestV2Route
   UploadRoute: typeof UploadRoute
   AppPackageIdRoute: typeof AppPackageIdRouteWithChildren
 }
@@ -161,13 +148,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/test-v2': {
-      id: '/test-v2'
-      path: '/test-v2'
-      fullPath: '/test-v2'
-      preLoaderRoute: typeof TestV2RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/upload': {
@@ -253,7 +233,6 @@ const AppPackageIdRouteWithChildren = AppPackageIdRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  TestV2Route: TestV2Route,
   UploadRoute: UploadRoute,
   AppPackageIdRoute: AppPackageIdRouteWithChildren,
 }

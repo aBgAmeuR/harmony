@@ -11,15 +11,9 @@ import { Checkbox } from "@harmony/ui/components/checkbox";
 import { ScrollArea } from "@harmony/ui/components/scroll-area";
 import { cn } from "@harmony/ui/lib/utils";
 import { unzipSync } from "fflate";
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 
-interface FilesStepProps {
-  packageFile: File | null;
-  selectedFiles: Array<string>;
-  onSelectionChange: (files: Array<string>) => void;
-  onContinue: () => void;
-  onBack: () => void;
-}
+import { useUpload } from "../context";
 
 interface ArchiveJsonFile {
   path: string;
@@ -42,21 +36,15 @@ function formatBytes(bytes: number): string {
   return `${mb.toFixed(1)} MB`;
 }
 
-export function FilesStep({
-  packageFile,
-  selectedFiles,
-  onSelectionChange,
-  onContinue,
-  onBack,
-}: FilesStepProps) {
+export function UploadFilesStep() {
+  const {
+    state: { file, selection },
+    actions: { setSelection, next, back },
+  } = useUpload();
+
   const [jsonFiles, setJsonFiles] = useState<Array<ArchiveJsonFile>>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const onSelectionChangeRef = useRef(onSelectionChange);
-
-  useEffect(() => {
-    onSelectionChangeRef.current = onSelectionChange;
-  }, [onSelectionChange]);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,15 +53,15 @@ export function FilesStep({
       setJsonFiles([]);
       setError(null);
 
-      if (!packageFile) {
-        onSelectionChangeRef.current([]);
+      if (!file) {
+        // Keep resume selection after refresh (File cannot survive sessionStorage).
         setError("No package selected. Please go back and upload a .zip file.");
         return;
       }
 
       setIsLoading(true);
       try {
-        const bytes = new Uint8Array(await packageFile.arrayBuffer());
+        const bytes = new Uint8Array(await file.arrayBuffer());
         const archiveEntries = unzipSync(bytes);
 
         const extracted = Object.entries(archiveEntries)
@@ -87,16 +75,16 @@ export function FilesStep({
         if (cancelled) return;
 
         if (extracted.length === 0) {
-          onSelectionChangeRef.current([]);
+          setSelection([]);
           setError("No JSON files found in archive.");
           return;
         }
 
         setJsonFiles(extracted);
-        onSelectionChangeRef.current(extracted.map((file) => file.path));
+        setSelection(extracted.map((entry) => entry.path));
       } catch {
         if (!cancelled) {
-          onSelectionChangeRef.current([]);
+          setSelection([]);
           setError("Unable to read archive. Please upload a valid .zip file.");
         }
       } finally {
@@ -111,13 +99,11 @@ export function FilesStep({
     return () => {
       cancelled = true;
     };
-  }, [packageFile]);
+  }, [file, setSelection]);
 
   const toggleFile = (path: string) => {
-    onSelectionChange(
-      selectedFiles.includes(path)
-        ? selectedFiles.filter((f) => f !== path)
-        : [...selectedFiles, path],
+    setSelection(
+      selection.includes(path) ? selection.filter((f) => f !== path) : [...selection, path],
     );
   };
 
@@ -146,54 +132,49 @@ export function FilesStep({
               }
             >
               <div className="flex flex-col divide-x">
-                {jsonFiles.map((file, index) => (
+                {jsonFiles.map((entry, index) => (
                   <div
-                    key={file.path}
-                    onClick={() => toggleFile(file.path)}
+                    key={entry.path}
+                    onClick={() => toggleFile(entry.path)}
                     className={cn(
                       buttonVariants({ variant: "ghost" }),
-                      "cursor-pointer rounded-none active:translate-y-0",
+                      "cursor-pointer rounded-none",
                       index === 0 && "rounded-t-lg",
                       index === jsonFiles.length - 1 && "rounded-b-lg",
                     )}
                   >
                     <Checkbox
-                      checked={selectedFiles.includes(file.path)}
+                      checked={selection.includes(entry.path)}
                       className="pointer-events-none"
                     />
                     <p
                       className={cn(
                         "me-auto",
-                        selectedFiles.includes(file.path)
-                          ? "text-foreground"
-                          : "text-foreground/80",
+                        selection.includes(entry.path) ? "text-foreground" : "text-foreground/80",
                       )}
                     >
-                      {file.name}
+                      {entry.name}
                     </p>
-                    <span className="font-mono text-xs text-muted-foreground">{file.size}</span>
+                    <span className="font-mono text-xs text-muted-foreground">{entry.size}</span>
                   </div>
                 ))}
               </div>
             </ScrollArea>
 
             <p className="text-xs text-muted-foreground">
-              {selectedFiles.length === 0
+              {selection.length === 0
                 ? "No files selected"
-                : `${selectedFiles.length} of ${jsonFiles.length} files selected`}
+                : `${selection.length} of ${jsonFiles.length} files selected`}
             </p>
           </>
         ) : null}
       </CardContent>
 
       <CardFooter className="justify-between">
-        <Button variant="ghost" onClick={onBack}>
+        <Button variant="ghost" onClick={back}>
           Back
         </Button>
-        <Button
-          onClick={onContinue}
-          disabled={selectedFiles.length === 0 || isLoading || Boolean(error)}
-        >
+        <Button onClick={next} disabled={selection.length === 0 || isLoading || Boolean(error)}>
           Continue
         </Button>
       </CardFooter>

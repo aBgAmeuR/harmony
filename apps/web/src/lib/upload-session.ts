@@ -61,3 +61,20 @@ export function clearUploadSession(): void {
     // Ignore storage errors.
   }
 }
+
+let pendingClearTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Schedule clear after leave; cancelled if Provider remounts (Strict Mode / soft nav). */
+export function scheduleSessionClear(delayMs = 100): void {
+  cancelPendingSessionClear();
+  pendingClearTimer = setTimeout(() => {
+    pendingClearTimer = null;
+    clearUploadSession();
+  }, delayMs);
+}
+
+export function cancelPendingSessionClear(): void {
+  if (pendingClearTimer === null) return;
+  clearTimeout(pendingClearTimer);
+  pendingClearTimer = null;
+}

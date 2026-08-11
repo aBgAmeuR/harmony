@@ -30,7 +30,7 @@ function RouteComponent() {
 
   useEffect(() => {
     setSelectedId(null);
-  }, [filter]);
+  }, [filter.artistId, filter.from, filter.to]);
 
   const { data: trackDetails, isLoading: detailsLoading } = useQuery(
     query.tracks.get.queryOptions(selectedId),
