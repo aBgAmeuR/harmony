@@ -88,8 +88,12 @@ jobs:
         app:
           - name: api
             dockerfile: apps/server/Dockerfile
+            title: Harmony API
+            description: Rust Axum upload API and Spotify history ingestion pipeline for Harmony
           - name: web
             dockerfile: apps/web/Dockerfile
+            title: Harmony Web
+            description: TanStack Start frontend for Harmony Spotify analytics
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -104,6 +108,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/abgameur/harmony/${{ matrix.app.name }}
+          tags: |
+            type=raw,value=${{ needs.release.outputs.tag }},priority=900
+            type=raw,value=latest,priority=100
+          labels: |
+            org.opencontainers.image.title=${{ matrix.app.title }}
+            org.opencontainers.image.description=${{ matrix.app.description }}
+
       - name: Build & push image
         uses: docker/build-push-action@v6
         with:
@@ -112,9 +128,8 @@ jobs:
           push: true
           build-args: |
             VITE_APP_VERSION=${{ needs.release.outputs.tag }}
-          tags: |
-            ghcr.io/abgameur/harmony/${{ matrix.app.name }}:latest
-            ghcr.io/abgameur/harmony/${{ matrix.app.name }}:${{ needs.release.outputs.tag }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.app.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.app.name }}
 
