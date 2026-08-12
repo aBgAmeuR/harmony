@@ -22,6 +22,9 @@ RUN mkdir -p /runtime/node_modules && cp -aL apps/web/node_modules/react /runtim
 
 # ---
 FROM node:${NODE_VERSION}-alpine AS runner
+LABEL org.opencontainers.image.title="Harmony Web" \
+      org.opencontainers.image.description="TanStack Start frontend for Harmony analytics"
+
 RUN addgroup --system --gid 1001 app
 RUN adduser --system --uid 1001 app
 USER app

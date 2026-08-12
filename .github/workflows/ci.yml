@@ -3,13 +3,16 @@ name: CI
 on:
   pull_request:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  web-lint:
-    name: Web · Lint
+  web:
+    name: Web
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -31,75 +34,15 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .turbo
-          key: turbo-lint-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json', '.oxlintrc.json') }}
+          key: turbo-web-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json', '.oxlintrc.json', '.oxfmtrc.json') }}
           restore-keys: |
-            turbo-lint-${{ runner.os }}-
+            turbo-web-${{ runner.os }}-
 
-      - name: oxlint
-        run: pnpm exec turbo run //#lint
+      - name: Lint, format, types
+        run: pnpm exec turbo run //#lint //#format:check check-types
 
-  web-format:
-    name: Web · Format
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Cache Turbo
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: turbo-format-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json', '.oxfmtrc.json') }}
-          restore-keys: |
-            turbo-format-${{ runner.os }}-
-
-      - name: oxfmt --check
-        run: pnpm exec turbo run //#format:check
-
-  web-types:
-    name: Web · Types
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Cache Turbo
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: turbo-types-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}
-          restore-keys: |
-            turbo-types-${{ runner.os }}-
-
-      - name: Typecheck
-        run: pnpm exec turbo run check-types
-
-  server-fmt:
-    name: Server · Format
+  server:
+    name: Server
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -111,35 +54,16 @@ jobs:
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: rustfmt
+          components: rustfmt, clippy
 
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: apps/server
+          shared-key: server
 
       - name: cargo fmt --check
         run: cargo fmt --check
-
-  server-clippy:
-    name: Server · Clippy
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/server
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: apps/server
 
       - name: cargo clippy
         run: cargo clippy --all-targets -- -D warnings

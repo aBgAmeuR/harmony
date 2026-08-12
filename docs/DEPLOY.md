@@ -8,11 +8,11 @@ Images are published to GHCR with the release tag, then that tag is pinned in
 Git and redeploys when the pin changes.
 
 ```text
+PR → CI (Web + Server gates)
 merge / push to v3
-  -> lint
   -> semantic-release (GitHub Release + git tag v3.0.0-beta.N)
   -> if new version:
-       build & push
+       build & push (registry buildcache)
          ghcr.io/abgameur/harmony/{web,api}:latest
          ghcr.io/abgameur/harmony/{web,api}:v3.0.0-beta.N
        CI commits pinned tags in docker-compose.yml [skip ci]
@@ -98,9 +98,9 @@ not required as GitHub Actions variables.
 
 ## Manual checks
 
-- Actions → **Release** workflow: lint, semantic release, build matrix, then
+- Actions → **Release** workflow: semantic release, build matrix, then
   **Pin compose image tags**.
 - GitHub → **Releases**: a new `v3.0.0-beta.N` prerelease with notes from commits.
 - Repo: `docker-compose.yml` image lines updated to that tag and a
-  `deploy: pin images to v3.0.0-beta.N [skip ci]` commit.
+  `deploy: pin images to v3.0.0-beta.N` commit (`[skip ci]`, coauthored).
 - Portainer: stack git hash advanced; containers recreated with the new tags.

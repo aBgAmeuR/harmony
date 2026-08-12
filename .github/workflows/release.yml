@@ -15,41 +15,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  lint:
-    name: Verify
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-
-      - name: Install JS dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: apps/server
-
-      - name: Run verify
-        run: pnpm verify
-
   release:
     name: Semantic release
-    needs: lint
     runs-on: ubuntu-latest
     outputs:
       published: ${{ steps.semantic.outputs.new_release_published }}
@@ -88,12 +55,8 @@ jobs:
         app:
           - name: api
             dockerfile: apps/server/Dockerfile
-            title: Harmony API
-            description: Rust Axum upload API and Spotify history ingestion pipeline for Harmony
           - name: web
             dockerfile: apps/web/Dockerfile
-            title: Harmony Web
-            description: TanStack Start frontend for Harmony Spotify analytics
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -116,9 +79,6 @@ jobs:
           tags: |
             type=raw,value=${{ needs.release.outputs.tag }},priority=900
             type=raw,value=latest,priority=100
-          labels: |
-            org.opencontainers.image.title=${{ matrix.app.title }}
-            org.opencontainers.image.description=${{ matrix.app.description }}
 
       - name: Build & push image
         uses: docker/build-push-action@v6
@@ -130,8 +90,8 @@ jobs:
             VITE_APP_VERSION=${{ needs.release.outputs.tag }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.app.name }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.app.name }}
+          cache-from: type=registry,ref=ghcr.io/abgameur/harmony/${{ matrix.app.name }}:buildcache
+          cache-to: type=registry,ref=ghcr.io/abgameur/harmony/${{ matrix.app.name }}:buildcache,mode=max
 
   pin-compose:
     name: Pin compose image tags
@@ -152,13 +112,24 @@ jobs:
           sed -i "s|ghcr.io/abgameur/harmony/api:[^[:space:]]*|ghcr.io/abgameur/harmony/api:${TAG}|" docker-compose.yml
 
       - name: Commit and push pinned compose
+        env:
+          TAG: ${{ needs.release.outputs.tag }}
+          COAUTHOR_NAME: ${{ github.actor }}
+          COAUTHOR_EMAIL: ${{ github.actor }}@users.noreply.github.com
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docker-compose.yml
           if git diff --staged --quiet; then
-            echo "Compose already pinned to ${{ needs.release.outputs.tag }}"
+            echo "Compose already pinned to ${TAG}"
             exit 0
           fi
-          git commit -m "deploy: pin images to ${{ needs.release.outputs.tag }} [skip ci]"
+          git commit -m "$(cat <<EOF
+          deploy: pin images to ${TAG}
+
+          [skip ci]
+
+          Co-authored-by: ${COAUTHOR_NAME} <${COAUTHOR_EMAIL}>
+          EOF
+          )"
           git push

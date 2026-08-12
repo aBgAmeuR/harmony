@@ -23,6 +23,9 @@ RUN cargo build --profile release-ci --bin server
 
 # ---
 FROM docker.io/library/debian:bookworm-slim AS runner
+LABEL org.opencontainers.image.title="Harmony API" \
+      org.opencontainers.image.description="Rust Axum upload API and Spotify history ingestion pipeline for Harmony"
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     libpq5 \
