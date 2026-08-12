@@ -90,8 +90,8 @@ jobs:
             VITE_APP_VERSION=${{ needs.release.outputs.tag }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/abgameur/harmony/${{ matrix.app.name }}:buildcache
-          cache-to: type=registry,ref=ghcr.io/abgameur/harmony/${{ matrix.app.name }}:buildcache,mode=max
+          cache-from: type=gha,scope=${{ matrix.app.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app.name }}
 
   pin-compose:
     name: Pin compose image tags

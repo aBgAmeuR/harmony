@@ -12,7 +12,7 @@ PR → CI (Web + Server gates)
 merge / push to v3
   -> semantic-release (GitHub Release + git tag v3.0.0-beta.N)
   -> if new version:
-       build & push (registry buildcache)
+       build & push (GHA build cache)
          ghcr.io/abgameur/harmony/{web,api}:latest
          ghcr.io/abgameur/harmony/{web,api}:v3.0.0-beta.N
        CI commits pinned tags in docker-compose.yml [skip ci]
