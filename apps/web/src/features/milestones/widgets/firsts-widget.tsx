@@ -35,9 +35,7 @@ export function FirstsWidget() {
                   {formatMilestoneDate(row.date)}
                 </p>
               </div>
-              <p className="shrink-0 text-sm font-medium text-primary">
-                #{row.laterRank}
-              </p>
+              <p className="shrink-0 text-sm font-medium text-primary">#{row.laterRank}</p>
             </li>
           ))}
         </ul>
