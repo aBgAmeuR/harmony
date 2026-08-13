@@ -34,4 +34,4 @@ COPY --from=builder /runtime/node_modules ./node_modules
 
 EXPOSE 3001
 
-CMD node .output/server/index.mjs
+CMD ["node", ".output/server/index.mjs"]

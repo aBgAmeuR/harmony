@@ -64,7 +64,7 @@ export const appNav = {
     },
     {
       title: "Milestones",
-      href: "#",
+      href: "/milestones",
       icon: CheckmarkBadge01Icon,
     },
   ],

@@ -16,6 +16,7 @@ import { Route as AppPackageIdAlbumsRouteImport } from './routes/app/$packageId/
 import { Route as AppPackageIdArtistsRouteImport } from './routes/app/$packageId/artists'
 import { Route as AppPackageIdDiscoveriesRouteImport } from './routes/app/$packageId/discoveries'
 import { Route as AppPackageIdListeningRouteImport } from './routes/app/$packageId/listening'
+import { Route as AppPackageIdMilestonesRouteImport } from './routes/app/$packageId/milestones'
 import { Route as AppPackageIdPackageRouteImport } from './routes/app/$packageId/package'
 import { Route as AppPackageIdTracksRouteImport } from './routes/app/$packageId/tracks'
 
@@ -54,6 +55,11 @@ const AppPackageIdListeningRoute = AppPackageIdListeningRouteImport.update({
   path: '/listening',
   getParentRoute: () => AppPackageIdRoute,
 } as any)
+const AppPackageIdMilestonesRoute = AppPackageIdMilestonesRouteImport.update({
+  id: '/milestones',
+  path: '/milestones',
+  getParentRoute: () => AppPackageIdRoute,
+} as any)
 const AppPackageIdPackageRoute = AppPackageIdPackageRouteImport.update({
   id: '/package',
   path: '/package',
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
   '/app/$packageId/discoveries': typeof AppPackageIdDiscoveriesRoute
   '/app/$packageId/listening': typeof AppPackageIdListeningRoute
+  '/app/$packageId/milestones': typeof AppPackageIdMilestonesRoute
   '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
 }
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
   '/app/$packageId/discoveries': typeof AppPackageIdDiscoveriesRoute
   '/app/$packageId/listening': typeof AppPackageIdListeningRoute
+  '/app/$packageId/milestones': typeof AppPackageIdMilestonesRoute
   '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
 }
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   '/app/$packageId/artists': typeof AppPackageIdArtistsRoute
   '/app/$packageId/discoveries': typeof AppPackageIdDiscoveriesRoute
   '/app/$packageId/listening': typeof AppPackageIdListeningRoute
+  '/app/$packageId/milestones': typeof AppPackageIdMilestonesRoute
   '/app/$packageId/package': typeof AppPackageIdPackageRoute
   '/app/$packageId/tracks': typeof AppPackageIdTracksRoute
 }
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/app/$packageId/artists'
     | '/app/$packageId/discoveries'
     | '/app/$packageId/listening'
+    | '/app/$packageId/milestones'
     | '/app/$packageId/package'
     | '/app/$packageId/tracks'
   fileRoutesByTo: FileRoutesByTo
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/app/$packageId/artists'
     | '/app/$packageId/discoveries'
     | '/app/$packageId/listening'
+    | '/app/$packageId/milestones'
     | '/app/$packageId/package'
     | '/app/$packageId/tracks'
   id:
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/app/$packageId/artists'
     | '/app/$packageId/discoveries'
     | '/app/$packageId/listening'
+    | '/app/$packageId/milestones'
     | '/app/$packageId/package'
     | '/app/$packageId/tracks'
   fileRoutesById: FileRoutesById
@@ -192,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPackageIdListeningRouteImport
       parentRoute: typeof AppPackageIdRoute
     }
+    '/app/$packageId/milestones': {
+      id: '/app/$packageId/milestones'
+      path: '/milestones'
+      fullPath: '/app/$packageId/milestones'
+      preLoaderRoute: typeof AppPackageIdMilestonesRouteImport
+      parentRoute: typeof AppPackageIdRoute
+    }
     '/app/$packageId/package': {
       id: '/app/$packageId/package'
       path: '/package'
@@ -214,6 +233,7 @@ interface AppPackageIdRouteChildren {
   AppPackageIdArtistsRoute: typeof AppPackageIdArtistsRoute
   AppPackageIdDiscoveriesRoute: typeof AppPackageIdDiscoveriesRoute
   AppPackageIdListeningRoute: typeof AppPackageIdListeningRoute
+  AppPackageIdMilestonesRoute: typeof AppPackageIdMilestonesRoute
   AppPackageIdPackageRoute: typeof AppPackageIdPackageRoute
   AppPackageIdTracksRoute: typeof AppPackageIdTracksRoute
 }
@@ -223,6 +243,7 @@ const AppPackageIdRouteChildren: AppPackageIdRouteChildren = {
   AppPackageIdArtistsRoute: AppPackageIdArtistsRoute,
   AppPackageIdDiscoveriesRoute: AppPackageIdDiscoveriesRoute,
   AppPackageIdListeningRoute: AppPackageIdListeningRoute,
+  AppPackageIdMilestonesRoute: AppPackageIdMilestonesRoute,
   AppPackageIdPackageRoute: AppPackageIdPackageRoute,
   AppPackageIdTracksRoute: AppPackageIdTracksRoute,
 }
