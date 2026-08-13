@@ -39,4 +39,4 @@ COPY --from=builder /app/target/release-ci/server ./server
 
 EXPOSE 3000
 
-CMD ./server
+CMD ["./server"]

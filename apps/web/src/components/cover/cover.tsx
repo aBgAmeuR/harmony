@@ -36,7 +36,7 @@ export function Cover({ src, alt, className, size = "md", blur = false }: CoverP
         </>
       ) : (
         <div className="flex size-full items-center justify-center rounded-sm bg-muted">
-          <Icon icon={MusicNote03Icon} className="size-3" />
+          <Icon icon={MusicNote03Icon} className="size-3" aria-hidden="true" />
         </div>
       )}
     </div>

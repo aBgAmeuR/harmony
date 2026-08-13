@@ -3,6 +3,7 @@ import { artistsQueries } from "@/features/artists/queries";
 import { discoveriesQueries } from "@/features/discoveries/queries";
 import { interactionsQueries } from "@/features/interactions/queries";
 import { listeningQueries } from "@/features/listening/queries";
+import { milestonesQueries } from "@/features/milestones/queries";
 import { packagesQueries } from "@/features/packages/queries";
 import { tracksQueries } from "@/features/tracks/queries";
 
@@ -12,6 +13,7 @@ export const query = {
   discoveries: discoveriesQueries,
   interactions: interactionsQueries,
   listeningHabits: listeningQueries,
+  milestones: milestonesQueries,
   packages: packagesQueries,
   tracks: tracksQueries,
 };
