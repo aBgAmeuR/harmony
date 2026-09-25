@@ -3,6 +3,7 @@ import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 
 import type { getPublicConfig } from "@/lib/public-config";
+
 import { queryClient } from "@/lib/query-client";
 
 import appCss from "../index.css?url";

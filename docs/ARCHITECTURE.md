@@ -55,7 +55,7 @@ Persist key: `harmony/{public_id}.duckdb`.
 
 | Store                    | Role                                                                |
 | ------------------------ | ------------------------------------------------------------------- |
-| In-memory `PackageStore` | Status, errors, progress JSON (`data`). Lost on process restart.   |
+| In-memory `PackageStore` | Status, errors, progress JSON (`data`). Lost on process restart.    |
 | S3/R2 DuckDB             | `artists`, `albums`, `tracks`, `interactions`, view `v_tracks_info` |
 | `sessionStorage`         | Upload session key `harmony:upload-session:v1`                      |
 
