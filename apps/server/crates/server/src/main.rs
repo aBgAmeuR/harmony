@@ -50,11 +50,8 @@ async fn health() -> &'static str {
 async fn main() {
     let _guard = otel::init_otel();
     let pool = establish_pool();
-    let object_store = Arc::new(
-        S3ObjectStore::from_env()
-            .await
-            .expect("failed to initialize object storage"),
-    );
+    let object_store =
+        Arc::new(S3ObjectStore::from_env().expect("failed to initialize object storage"));
 
     let (jobs_tx, jobs_rx) = mpsc::channel::<worker::Job>(64);
     let state = AppState {

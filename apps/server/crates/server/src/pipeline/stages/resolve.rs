@@ -34,16 +34,24 @@ struct SearchResponse {
 }
 
 #[derive(Debug, Deserialize)]
+struct DeezerSearchArtist {
+    name: String,
+}
+
+#[derive(Debug, Deserialize)]
 struct DeezerSearchTrack {
     id: i64,
     title: String,
+    artist: DeezerSearchArtist,
 }
 
 fn build_deezer_search_url(artist: &str, track: &str) -> Result<String, ResolveError> {
     let mut url = reqwest::Url::parse(DEEZER_SEARCH)
         .map_err(|err| ResolveError::MissingConfig(format!("invalid Deezer search URL: {err}")))?;
 
-    let query = format!(r#"artist:"{artist}" track:"{track}""#);
+    let artist = artist.replace('"', "");
+    let track = track.replace('"', "");
+    let query = format!(r#""{artist}" "{track}""#);
     url.query_pairs_mut()
         .append_pair("q", &query)
         .append_pair("strict", "on");
@@ -54,13 +62,27 @@ fn build_deezer_search_url(artist: &str, track: &str) -> Result<String, ResolveE
 fn find_matching_track<'a>(
     results: &'a [DeezerSearchTrack],
     our_track: &str,
+    our_artist: &str,
     threshold: f64,
 ) -> Option<&'a DeezerSearchTrack> {
-    let our_lower = our_track.to_lowercase();
-
     results
         .iter()
-        .find(|result| jaro_winkler(&result.title.to_lowercase(), &our_lower) >= threshold)
+        .filter_map(|result| {
+            let title_score = jaro_winkler(&result.title.to_lowercase(), &our_track.to_lowercase());
+            let artist_score = jaro_winkler(
+                &result.artist.name.to_lowercase(),
+                &our_artist.to_lowercase(),
+            );
+            if title_score >= threshold && artist_score >= threshold {
+                Some((title_score + artist_score, result))
+            } else {
+                None
+            }
+        })
+        .max_by(|(left, _), (right, _)| {
+            left.partial_cmp(right).unwrap_or(std::cmp::Ordering::Equal)
+        })
+        .map(|(_, result)| result)
 }
 
 #[tracing::instrument(
@@ -79,7 +101,8 @@ async fn resolve_track(client: &DeezerClient, item: ResolveItem) -> TrackOutcome
 
     match client.get_json::<SearchResponse>(&target_url).await {
         Ok(payload) => {
-            if let Some(matched) = find_matching_track(&payload.data, &item.track, MATCH_THRESHOLD)
+            if let Some(matched) =
+                find_matching_track(&payload.data, &item.track, &item.artist, MATCH_THRESHOLD)
             {
                 tracing::Span::current().record("track_found", true);
                 return TrackOutcome::Matched {
@@ -172,4 +195,56 @@ pub async fn run(
             errors,
         },
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn track(id: i64, title: &str, artist: &str) -> DeezerSearchTrack {
+        DeezerSearchTrack {
+            id,
+            title: title.to_string(),
+            artist: DeezerSearchArtist {
+                name: artist.to_string(),
+            },
+        }
+    }
+
+    #[test]
+    fn search_url_quotes_artist_and_track() {
+        let url = build_deezer_search_url("Ken Carson", "Me N My Kup").unwrap();
+        let parsed = reqwest::Url::parse(&url).unwrap();
+        let query: Vec<_> = parsed.query_pairs().collect();
+
+        assert_eq!(
+            query,
+            vec![
+                ("q".into(), r#""Ken Carson" "Me N My Kup""#.into()),
+                ("strict".into(), "on".into()),
+            ]
+        );
+    }
+
+    #[test]
+    fn matching_prefers_the_artist_over_a_similar_title() {
+        let results = vec![
+            track(2, "me n my kup (808 mix)", "JadonGot556"),
+            track(1, "Me N My Kup", "Ken Carson"),
+            track(3, "Me n my kup", "LuhMaru"),
+        ];
+
+        let matched = find_matching_track(&results, "Me N My Kup", "Ken Carson", MATCH_THRESHOLD);
+
+        assert_eq!(matched.map(|track| track.id), Some(1));
+    }
+
+    #[test]
+    fn matching_rejects_a_title_hit_from_another_artist() {
+        let results = vec![track(3, "Me n my kup", "LuhMaru")];
+
+        let matched = find_matching_track(&results, "Me N My Kup", "Ken Carson", MATCH_THRESHOLD);
+
+        assert!(matched.is_none());
+    }
 }

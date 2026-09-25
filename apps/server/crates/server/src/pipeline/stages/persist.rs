@@ -1,9 +1,8 @@
 use std::collections::HashMap;
-use std::fs::File;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
-use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
-use polars::prelude::*;
+use chrono::{DateTime, NaiveDateTime, Utc};
+use duckdb::params;
 use tempfile::TempDir;
 
 use crate::pipeline::error::PersistError;
@@ -12,11 +11,6 @@ use crate::pipeline::types::{
     DeezerAlbum, DeezerAlbumType, DeezerArtist, DeezerTrack, Interaction,
 };
 use crate::storage::{ObjectStore, S3ObjectStore};
-
-const EPOCH: NaiveDate = match NaiveDate::from_ymd_opt(1970, 1, 1) {
-    Some(date) => date,
-    None => panic!("invalid epoch date"),
-};
 
 pub struct PersistInput {
     pub public_id: String,
@@ -32,34 +26,18 @@ pub struct PersistArtifact {
     pub object_key: String,
 }
 
-/// Build parquet + DuckDB artifact on a blocking thread.
+/// Build a DuckDB artifact on a blocking thread.
 pub fn build(input: PersistInput) -> Result<(PersistArtifact, PersistOutput), PersistError> {
     let temp_dir = TempDir::new()?;
-    let temp_path = temp_dir.path();
-    let db_path = temp_path.join("package.duckdb");
-
-    let artists_df = build_artists_df(&input.artists)?;
-    let albums_df = build_albums_df(&input.albums)?;
-    let tracks_df = build_tracks_df(&input.tracks)?;
-    let interactions_df = build_interactions_df(&input.interactions)?;
-
-    let artists_parquet = temp_path.join("artists.parquet");
-    let albums_parquet = temp_path.join("albums.parquet");
-    let tracks_parquet = temp_path.join("tracks.parquet");
-    let interactions_parquet = temp_path.join("interactions.parquet");
-
-    write_parquet(artists_df, &artists_parquet)?;
-    write_parquet(albums_df, &albums_parquet)?;
-    write_parquet(tracks_df, &tracks_parquet)?;
-    write_parquet(interactions_df, &interactions_parquet)?;
+    let db_path = temp_dir.path().join("package.duckdb");
 
     {
         let conn = duckdb::Connection::open(&db_path)?;
         create_tables(&conn)?;
-        load_parquet(&conn, "artists", &artists_parquet)?;
-        load_parquet(&conn, "albums", &albums_parquet)?;
-        load_parquet(&conn, "tracks", &tracks_parquet)?;
-        load_parquet(&conn, "interactions", &interactions_parquet)?;
+        insert_artists(&conn, &input.artists)?;
+        insert_albums(&conn, &input.albums)?;
+        insert_tracks(&conn, &input.tracks)?;
+        insert_interactions(&conn, &input.interactions)?;
         create_views(&conn)?;
     }
 
@@ -96,153 +74,115 @@ pub async fn upload(
     Ok(())
 }
 
-fn build_artists_df(artists: &HashMap<i64, DeezerArtist>) -> Result<DataFrame, PersistError> {
-    if artists.is_empty() {
-        return Ok(empty_artists_df());
-    }
-
-    let mut ids = Vec::with_capacity(artists.len());
-    let mut names = Vec::with_capacity(artists.len());
-    let mut images = Vec::with_capacity(artists.len());
-    let mut image_uris = Vec::with_capacity(artists.len());
-
+fn insert_artists(
+    conn: &duckdb::Connection,
+    artists: &HashMap<i64, DeezerArtist>,
+) -> Result<(), PersistError> {
+    let mut stmt =
+        conn.prepare("INSERT INTO artists (id, name, image, image_uri) VALUES (?, ?, ?, ?)")?;
     for (id, artist) in artists {
-        ids.push(*id as u32);
-        names.push(artist.name.as_str());
-        images.push(artist.image.as_deref());
-        image_uris.push(artist.image_uri.as_str());
+        stmt.execute(params![
+            *id as u32,
+            artist.name,
+            artist.image,
+            artist.image_uri
+        ])?;
     }
-
-    DataFrame::new(vec![
-        Series::new("id".into(), ids).into(),
-        Series::new("name".into(), names).into(),
-        Series::new("image".into(), images).into(),
-        Series::new("image_uri".into(), image_uris).into(),
-    ])
-    .map_err(PersistError::from)
-}
-
-fn build_albums_df(albums: &HashMap<i64, DeezerAlbum>) -> Result<DataFrame, PersistError> {
-    if albums.is_empty() {
-        return Ok(empty_albums_df());
-    }
-
-    let mut ids = Vec::with_capacity(albums.len());
-    let mut titles = Vec::with_capacity(albums.len());
-    let mut images = Vec::with_capacity(albums.len());
-    let mut image_uris = Vec::with_capacity(albums.len());
-    let mut release_dates = Vec::with_capacity(albums.len());
-    let mut genres = Vec::with_capacity(albums.len());
-    let mut nb_tracks = Vec::with_capacity(albums.len());
-    let mut durations = Vec::with_capacity(albums.len());
-    let mut album_types = Vec::with_capacity(albums.len());
-    let mut artists = Vec::with_capacity(albums.len());
-
-    for (id, album) in albums {
-        ids.push(*id as u32);
-        titles.push(album.title.as_str());
-        images.push(album.image.as_deref());
-        image_uris.push(album.image_uri.as_str());
-        release_dates.push(parse_date(album.release_date.as_deref()));
-        genres.push(album.genres.clone());
-        nb_tracks.push(album.nb_tracks as i32);
-        durations.push(album.duration as i32);
-        album_types.push(album_type_label(&album.album_type));
-        artists.push(album.artists.clone());
-    }
-
-    DataFrame::new(vec![
-        Series::new("id".into(), ids).into(),
-        Series::new("title".into(), titles).into(),
-        Series::new("image".into(), images).into(),
-        Series::new("image_uri".into(), image_uris).into(),
-        date_series("release_date", release_dates)?.into(),
-        string_list_series("genres", &genres).into(),
-        Series::new("nb_tracks".into(), nb_tracks).into(),
-        Series::new("duration".into(), durations).into(),
-        Series::new("album_type".into(), album_types).into(),
-        u32_list_series("artists", &artists).into(),
-    ])
-    .map_err(PersistError::from)
-}
-
-fn build_tracks_df(tracks: &HashMap<i64, DeezerTrack>) -> Result<DataFrame, PersistError> {
-    if tracks.is_empty() {
-        return Ok(empty_tracks_df());
-    }
-
-    let mut ids = Vec::with_capacity(tracks.len());
-    let mut titles = Vec::with_capacity(tracks.len());
-    let mut durations = Vec::with_capacity(tracks.len());
-    let mut track_positions = Vec::with_capacity(tracks.len());
-    let mut disk_numbers = Vec::with_capacity(tracks.len());
-    let mut release_dates = Vec::with_capacity(tracks.len());
-    let mut album_ids = Vec::with_capacity(tracks.len());
-    let mut artists = Vec::with_capacity(tracks.len());
-
-    for (id, track) in tracks {
-        ids.push(*id as u32);
-        titles.push(track.title.as_str());
-        durations.push(track.duration as i32);
-        track_positions.push(track.track_position as i32);
-        disk_numbers.push(track.disk_number as i32);
-        release_dates.push(parse_date(track.release_date.as_deref()));
-        album_ids.push(track.album as u32);
-        artists.push(track.artists.clone());
-    }
-
-    DataFrame::new(vec![
-        Series::new("id".into(), ids).into(),
-        Series::new("title".into(), titles).into(),
-        Series::new("duration".into(), durations).into(),
-        Series::new("track_position".into(), track_positions).into(),
-        Series::new("disk_number".into(), disk_numbers).into(),
-        date_series("release_date", release_dates)?.into(),
-        Series::new("album_id".into(), album_ids).into(),
-        u32_list_series("artists", &artists).into(),
-    ])
-    .map_err(PersistError::from)
-}
-
-fn build_interactions_df(interactions: &[Interaction]) -> Result<DataFrame, PersistError> {
-    if interactions.is_empty() {
-        return Ok(empty_interactions_df());
-    }
-
-    let mut timestamps = Vec::with_capacity(interactions.len());
-    let mut platforms = Vec::with_capacity(interactions.len());
-    let mut ms_played = Vec::with_capacity(interactions.len());
-    let mut shuffles = Vec::with_capacity(interactions.len());
-    let mut skipped = Vec::with_capacity(interactions.len());
-    let mut offline = Vec::with_capacity(interactions.len());
-    let mut track_ids = Vec::with_capacity(interactions.len());
-
-    for interaction in interactions {
-        timestamps.push(parse_timestamp(&interaction.ts));
-        platforms.push(interaction.platform.as_str());
-        ms_played.push(interaction.ms_played as i32);
-        shuffles.push(interaction.shuffle);
-        skipped.push(interaction.skipped);
-        offline.push(interaction.offline);
-        track_ids.push(interaction.track_id as u32);
-    }
-
-    DataFrame::new(vec![
-        datetime_series("ts", timestamps)?.into(),
-        Series::new("platform".into(), platforms).into(),
-        Series::new("ms_played".into(), ms_played).into(),
-        Series::new("shuffle".into(), shuffles).into(),
-        Series::new("skipped".into(), skipped).into(),
-        Series::new("offline".into(), offline).into(),
-        Series::new("track_id".into(), track_ids).into(),
-    ])
-    .map_err(PersistError::from)
-}
-
-fn write_parquet(mut df: DataFrame, path: &Path) -> Result<(), PersistError> {
-    let mut file = File::create(path)?;
-    ParquetWriter::new(&mut file).finish(&mut df)?;
     Ok(())
+}
+
+fn insert_albums(
+    conn: &duckdb::Connection,
+    albums: &HashMap<i64, DeezerAlbum>,
+) -> Result<(), PersistError> {
+    for (id, album) in albums {
+        let sql = format!(
+            "INSERT INTO albums (id, title, image, image_uri, release_date, genres, nb_tracks, duration, album_type, artists)
+             VALUES (?, ?, ?, ?, CAST(? AS DATE), {genres}, ?, ?, ?, {artists})",
+            genres = sql_varchar_list(&album.genres),
+            artists = sql_uinteger_list(&album.artists),
+        );
+        conn.execute(
+            &sql,
+            params![
+                *id as u32,
+                album.title,
+                album.image,
+                album.image_uri,
+                parse_date(album.release_date.as_deref()),
+                album.nb_tracks as i32,
+                album.duration as i32,
+                album_type_label(&album.album_type),
+            ],
+        )?;
+    }
+    Ok(())
+}
+
+fn insert_tracks(
+    conn: &duckdb::Connection,
+    tracks: &HashMap<i64, DeezerTrack>,
+) -> Result<(), PersistError> {
+    for (id, track) in tracks {
+        let artists = sql_uinteger_list(&track.artists);
+        let sql = format!(
+            "INSERT INTO tracks (id, title, duration, track_position, disk_number, release_date, album_id, artists)
+             VALUES (?, ?, ?, ?, ?, CAST(? AS DATE), ?, {artists})"
+        );
+        conn.execute(
+            &sql,
+            params![
+                *id as u32,
+                track.title,
+                track.duration as i32,
+                track.track_position as i32,
+                track.disk_number as i32,
+                parse_date(track.release_date.as_deref()),
+                track.album as u32,
+            ],
+        )?;
+    }
+    Ok(())
+}
+
+fn insert_interactions(
+    conn: &duckdb::Connection,
+    interactions: &[Interaction],
+) -> Result<(), PersistError> {
+    let mut stmt = conn.prepare(
+        "INSERT INTO interactions (ts, platform, ms_played, shuffle, skipped, offline, track_id)
+         VALUES (make_timestamp(?), ?, ?, ?, ?, ?, ?)",
+    )?;
+    for interaction in interactions {
+        stmt.execute(params![
+            parse_timestamp(&interaction.ts),
+            interaction.platform,
+            interaction.ms_played as i32,
+            interaction.shuffle,
+            interaction.skipped,
+            interaction.offline,
+            interaction.track_id as u32,
+        ])?;
+    }
+    Ok(())
+}
+
+fn sql_uinteger_list(ids: &[i64]) -> String {
+    let items = ids
+        .iter()
+        .map(|id| (*id as u32).to_string())
+        .collect::<Vec<_>>()
+        .join(", ");
+    format!("[{items}]::UINTEGER[]")
+}
+
+fn sql_varchar_list(values: &[String]) -> String {
+    let items = values
+        .iter()
+        .map(|value| format!("'{}'", value.replace('\'', "''")))
+        .collect::<Vec<_>>()
+        .join(", ");
+    format!("[{items}]::VARCHAR[]")
 }
 
 fn create_tables(conn: &duckdb::Connection) -> Result<(), PersistError> {
@@ -325,26 +265,15 @@ fn create_views(conn: &duckdb::Connection) -> Result<(), PersistError> {
     Ok(())
 }
 
-fn load_parquet(conn: &duckdb::Connection, table: &str, path: &Path) -> Result<(), PersistError> {
-    let sql = format!(
-        "INSERT INTO {table} SELECT * FROM '{}'",
-        path.to_string_lossy().replace('\'', "''")
-    );
-    conn.execute(&sql, [])?;
-    Ok(())
-}
+fn parse_date(value: Option<&str>) -> Option<String> {
+    let trimmed = value?.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
 
-fn parse_date(value: Option<&str>) -> Option<i32> {
-    value.and_then(|raw| {
-        let trimmed = raw.trim();
-        if trimmed.is_empty() {
-            return None;
-        }
-
-        NaiveDate::parse_from_str(trimmed, "%Y-%m-%d")
-            .ok()
-            .map(|date| date.signed_duration_since(EPOCH).num_days() as i32)
-    })
+    chrono::NaiveDate::parse_from_str(trimmed, "%Y-%m-%d")
+        .ok()
+        .map(|_| trimmed.to_string())
 }
 
 fn parse_timestamp(value: &str) -> Option<i64> {
@@ -380,98 +309,16 @@ fn album_type_label(album_type: &DeezerAlbumType) -> &'static str {
     }
 }
 
-fn date_series(name: &str, values: Vec<Option<i32>>) -> Result<Series, PersistError> {
-    Series::new(name.into(), values)
-        .cast(&DataType::Date)
-        .map_err(PersistError::from)
-}
-
-fn datetime_series(name: &str, values: Vec<Option<i64>>) -> Result<Series, PersistError> {
-    Series::new(name.into(), values)
-        .cast(&DataType::Datetime(TimeUnit::Microseconds, None))
-        .map_err(PersistError::from)
-}
-
-fn u32_list_series(name: &str, values: &[Vec<i64>]) -> Series {
-    let list_values: Vec<Series> = values
-        .iter()
-        .map(|ids| {
-            let uids: Vec<u32> = ids.iter().map(|id| *id as u32).collect();
-            Series::new(PlSmallStr::EMPTY, uids)
-        })
-        .collect();
-
-    Series::new(name.into(), list_values)
-}
-
-fn string_list_series(name: &str, values: &[Vec<String>]) -> Series {
-    let list_values: Vec<Series> = values
-        .iter()
-        .map(|items| Series::new(PlSmallStr::EMPTY, items.as_slice()))
-        .collect();
-
-    Series::new(name.into(), list_values)
-}
-
-fn empty_artists_df() -> DataFrame {
-    DataFrame::empty_with_schema(&Schema::from_iter([
-        Field::new("id".into(), DataType::UInt32),
-        Field::new("name".into(), DataType::String),
-        Field::new("image".into(), DataType::String),
-        Field::new("image_uri".into(), DataType::String),
-    ]))
-}
-
-fn empty_albums_df() -> DataFrame {
-    DataFrame::empty_with_schema(&Schema::from_iter([
-        Field::new("id".into(), DataType::UInt32),
-        Field::new("title".into(), DataType::String),
-        Field::new("image".into(), DataType::String),
-        Field::new("image_uri".into(), DataType::String),
-        Field::new("release_date".into(), DataType::Date),
-        Field::new("genres".into(), DataType::List(Box::new(DataType::String))),
-        Field::new("nb_tracks".into(), DataType::Int32),
-        Field::new("duration".into(), DataType::Int32),
-        Field::new("album_type".into(), DataType::String),
-        Field::new("artists".into(), DataType::List(Box::new(DataType::UInt32))),
-    ]))
-}
-
-fn empty_tracks_df() -> DataFrame {
-    DataFrame::empty_with_schema(&Schema::from_iter([
-        Field::new("id".into(), DataType::UInt32),
-        Field::new("title".into(), DataType::String),
-        Field::new("duration".into(), DataType::Int32),
-        Field::new("track_position".into(), DataType::Int32),
-        Field::new("disk_number".into(), DataType::Int32),
-        Field::new("release_date".into(), DataType::Date),
-        Field::new("album_id".into(), DataType::UInt32),
-        Field::new("artists".into(), DataType::List(Box::new(DataType::UInt32))),
-    ]))
-}
-
-fn empty_interactions_df() -> DataFrame {
-    DataFrame::empty_with_schema(&Schema::from_iter([
-        Field::new(
-            "ts".into(),
-            DataType::Datetime(TimeUnit::Microseconds, None),
-        ),
-        Field::new("platform".into(), DataType::String),
-        Field::new("ms_played".into(), DataType::Int32),
-        Field::new("shuffle".into(), DataType::Boolean),
-        Field::new("skipped".into(), DataType::Boolean),
-        Field::new("offline".into(), DataType::Boolean),
-        Field::new("track_id".into(), DataType::UInt32),
-    ]))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn parse_date_handles_valid_and_invalid_values() {
-        assert_eq!(parse_date(Some("2024-05-01")), Some(19_844));
+        assert_eq!(
+            parse_date(Some("2024-05-01")).as_deref(),
+            Some("2024-05-01")
+        );
         assert_eq!(parse_date(Some("")), None);
         assert_eq!(parse_date(Some("not-a-date")), None);
     }
@@ -533,6 +380,95 @@ mod tests {
             row.7.as_deref(),
             Some("https://api.deezer.com/album/10/image")
         );
+
+        Ok(())
+    }
+
+    #[test]
+    fn build_writes_rows_readable_by_the_view() -> Result<(), PersistError> {
+        let mut artists = HashMap::new();
+        artists.insert(
+            1,
+            DeezerArtist {
+                id: 1,
+                name: "Artist A".to_string(),
+                image_uri: "https://api.deezer.com/artist/1/image".to_string(),
+                image: Some("data:image/jpeg;base64,artist-a".to_string()),
+            },
+        );
+        let mut albums = HashMap::new();
+        albums.insert(
+            10,
+            DeezerAlbum {
+                id: 10,
+                title: "Album".to_string(),
+                image_uri: "https://api.deezer.com/album/10/image".to_string(),
+                image: Some("data:image/jpeg;base64,cover".to_string()),
+                release_date: Some("2024-01-01".to_string()),
+                genres: vec!["Pop".to_string(), "Rock's".to_string()],
+                nb_tracks: 1,
+                duration: 180,
+                album_type: DeezerAlbumType::Album,
+                artists: vec![1],
+            },
+        );
+        let mut tracks = HashMap::new();
+        tracks.insert(
+            100,
+            DeezerTrack {
+                id: 100,
+                title: "Track One".to_string(),
+                duration: 180,
+                track_position: 1,
+                disk_number: 1,
+                release_date: Some("2024-01-01".to_string()),
+                artists: vec![1],
+                album: 10,
+            },
+        );
+
+        let (artifact, output) = build(PersistInput {
+            public_id: "abc".to_string(),
+            interactions: vec![Interaction {
+                ts: "2024-05-01T12:34:56Z".to_string(),
+                platform: "web".to_string(),
+                ms_played: 180_000,
+                shuffle: false,
+                skipped: false,
+                offline: false,
+                track_id: 100,
+            }],
+            tracks,
+            artists,
+            albums,
+        })?;
+
+        assert_eq!(output.tracks, 1);
+        assert_eq!(artifact.object_key, "harmony/abc.duckdb");
+
+        let conn = duckdb::Connection::open(&artifact.db_path)?;
+        let description: String = conn.query_row(
+            "SELECT track_artists_description FROM v_tracks_info WHERE track_id = 100",
+            [],
+            |row| row.get(0),
+        )?;
+        let genre: String =
+            conn.query_row("SELECT genres[2] FROM albums WHERE id = 10", [], |row| {
+                row.get(0)
+            })?;
+        let played: i32 =
+            conn.query_row("SELECT ms_played FROM interactions", [], |row| row.get(0))?;
+
+        assert_eq!(description, "Artist A");
+        assert_eq!(genre, "Rock's");
+        assert_eq!(played, 180_000);
+
+        let copied = std::env::temp_dir().join("harmony-persist-copy.duckdb");
+        std::fs::copy(&artifact.db_path, &copied)?;
+        let copied_conn = duckdb::Connection::open(&copied)?;
+        let copied_count: i64 =
+            copied_conn.query_row("SELECT count(*) FROM interactions", [], |row| row.get(0))?;
+        assert_eq!(copied_count, 1);
 
         Ok(())
     }
