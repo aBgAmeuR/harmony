@@ -10,10 +10,6 @@ RUN cargo chef prepare --recipe-path recipe.json
 
 # ---
 FROM chef AS builder
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
 COPY --from=planner /app/recipe.json recipe.json
 COPY apps/server/.cargo .cargo
 RUN cargo chef cook --profile release-ci --recipe-path recipe.json
@@ -29,7 +25,6 @@ LABEL org.opencontainers.image.title="Harmony API" \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
-    libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN addgroup --system --gid 1001 app

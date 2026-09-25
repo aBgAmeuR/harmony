@@ -84,7 +84,6 @@ not required as GitHub Actions variables.
 | ----------------------- | -------- | ------------------------------------------------ |
 | `API_URL`               | yes      | Public API base URL for the web service          |
 | `BUCKET_URL`            | yes      | Public DuckDB / CDN base URL for the web service |
-| `DATABASE_URL`          | yes      | Postgres connection string                       |
 | `S3_ENDPOINT`           | yes      | R2 / S3-compatible endpoint                      |
 | `S3_BUCKET`             | yes      | Bucket name                                      |
 | `AWS_ACCESS_KEY_ID`     | yes      | Object storage access key                        |

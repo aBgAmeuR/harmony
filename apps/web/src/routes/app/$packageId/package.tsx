@@ -30,8 +30,7 @@ import {
 } from "@harmony/ui/components/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/tooltip";
 import { cn } from "@harmony/ui/lib/utils";
-import { PipelineStep } from "@harmony/upload";
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -39,39 +38,14 @@ import { Pipeline } from "@/features/packages/components/pipeline";
 import { query } from "@/lib/query";
 import { format } from "@/utils/format";
 
-const getPackage = async (apiUrl: string, packageId: string) => {
-  const pkg = await fetch(`${apiUrl}/api/v1/packages/${packageId}`);
-  return (await pkg.json()) as {
-    public_id: string;
-    file_name: string;
-    file_size: number;
-    status: string;
-    started_at: string;
-    updated_at: string;
-    created_at: string;
-    data: {
-      endedAt: string;
-      startedAt: string;
-      totalDurationMs: number;
-      steps: PipelineStep[];
-    };
-  };
-};
-
-const packageQuery = (apiUrl: string, packageId: string) =>
-  queryOptions({
-    queryKey: ["package", packageId],
-    queryFn: () => getPackage(apiUrl, packageId),
-  });
-
 const periodQuery = query.packages.period.queryOptions();
 
 export const Route = createFileRoute("/app/$packageId/package")({
   ssr: false,
-  loader: async ({ context: { queryClient, config }, parentMatchPromise, params }) => {
+  loader: async ({ context: { queryClient }, parentMatchPromise, params }) => {
     await parentMatchPromise;
     await Promise.all([
-      queryClient.ensureQueryData(packageQuery(config.apiUrl, params.packageId)),
+      queryClient.ensureQueryData(query.packages.meta.queryOptions(params.packageId)),
       queryClient.ensureQueryData(periodQuery),
     ]);
   },
@@ -164,16 +138,21 @@ function PackageHeaderSection({ pkg, subtitle }: PackageHeaderProps) {
   );
 }
 
+function missedTrackCount(
+  steps: { id: string; output?: Record<string, unknown> }[],
+): number | undefined {
+  const missed = steps.find((step) => step.id === "resolve_tracks")?.output?.missed;
+  return typeof missed === "number" ? missed : undefined;
+}
+
 function RouteComponent() {
-  const { config } = Route.useRouteContext();
   const { packageId } = Route.useParams();
-  const { data } = useQuery(packageQuery(config.apiUrl, packageId));
+  const { data } = useQuery(query.packages.meta.queryOptions(packageId));
   const { data: period } = useQuery(periodQuery);
 
   if (!data) return null;
 
-  const missedTracks = data.data.steps.find((step) => step.id === "resolve_tracks")?.output
-    ?.missed as number | undefined;
+  const missedTracks = missedTrackCount(data.steps);
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 p-3 pt-12">
@@ -188,9 +167,9 @@ function RouteComponent() {
               <CardTitle className="text-muted-foreground">Total duration</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg font-semibold">{format.duration(data.data.totalDurationMs)}</p>
+              <p className="text-lg font-semibold">{format.duration(data.totalDurationMs)}</p>
               <p className="text-xs text-muted-foreground">
-                Started at {format.date(data.started_at)}
+                Started at {format.date(data.startedAt)}
               </p>
             </CardContent>
           </Card>
@@ -229,7 +208,7 @@ function RouteComponent() {
 
       <section className="space-y-2">
         <h2 className="mb-3 text-xs font-semibold text-muted-foreground">Pipeline</h2>
-        <Pipeline steps={data.data.steps} />
+        <Pipeline steps={data.steps} />
       </section>
 
       {/* {details?.failure ? (
@@ -243,11 +222,11 @@ function RouteComponent() {
 
       <PackageHeaderSection
         pkg={{
-          fileName: data.file_name,
+          fileName: data.fileName,
           status: data.status,
-          id: data.public_id,
+          id: data.publicId,
         }}
-        subtitle={`${format.date(data.created_at)} • ${format.bytes(data.file_size)}`}
+        subtitle={`${format.date(data.createdAt)} • ${format.bytes(data.fileSize)}`}
       />
     </div>
   );

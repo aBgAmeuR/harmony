@@ -50,6 +50,13 @@ impl ProgressReporter {
         );
     }
 
+    /// Steps JSON in the shape persisted for the package page.
+    pub fn steps_json(&self) -> Option<serde_json::Value> {
+        self.hub
+            .finalize_json(&self.public_id, 0)
+            .and_then(|json| json.get("steps").cloned())
+    }
+
     pub fn run_completed(&self, total_duration_ms: u64) {
         let stats = self
             .hub

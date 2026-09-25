@@ -6,9 +6,6 @@ use axum::{
     routing::{get, post},
 };
 use dashmap::DashMap;
-use diesel_async::AsyncPgConnection;
-use diesel_async::pooled_connection::deadpool::Object;
-use harmony_db::establish_pool;
 use tokio::sync::mpsc;
 use tower_http::cors::CorsLayer;
 
@@ -19,9 +16,9 @@ mod package_upload;
 mod pipeline;
 mod progress;
 mod storage;
+mod store;
 mod worker;
 
-use error::ApiError;
 use package_upload::PackageUpload;
 use storage::S3ObjectStore;
 
@@ -29,17 +26,11 @@ pub type RamStore = Arc<DashMap<i32, PackageUpload>>;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub pool: harmony_db::DbPool,
+    pub packages: store::PackageStore,
     pub ram_store: RamStore,
     pub jobs: mpsc::Sender<worker::Job>,
     pub progress: Arc<progress::ProgressHub>,
     pub object_store: Arc<S3ObjectStore>,
-}
-
-impl AppState {
-    pub async fn conn(&self) -> Result<Object<AsyncPgConnection>, ApiError> {
-        self.pool.get().await.map_err(ApiError::from)
-    }
 }
 
 async fn health() -> &'static str {
@@ -49,13 +40,12 @@ async fn health() -> &'static str {
 #[tokio::main]
 async fn main() {
     let _guard = otel::init_otel();
-    let pool = establish_pool();
     let object_store =
         Arc::new(S3ObjectStore::from_env().expect("failed to initialize object storage"));
 
     let (jobs_tx, jobs_rx) = mpsc::channel::<worker::Job>(64);
     let state = AppState {
-        pool,
+        packages: store::PackageStore::new(),
         ram_store: Arc::new(DashMap::new()),
         jobs: jobs_tx,
         progress: Arc::new(progress::ProgressHub::new()),
