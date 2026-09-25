@@ -51,12 +51,11 @@ base64 = "0.22"
 strsim = "0.11"
 futures = "0.3"
 tempfile = "3"
-duckdb = { version = "1.2", features = ["bundled"] }
-polars = { version = "0.46", features = ["parquet", "dtype-date", "dtype-datetime"] }
+duckdb = { version = "1.2", default-features = false }
 
-# Object storage (S3-compatible / Cloudflare R2)
-aws-config = { version = "1", features = ["behavior-version-latest"] }
-aws-sdk-s3 = "1"
+# Object storage (S3-compatible / Cloudflare R2, SigV4 over reqwest)
+hmac = "0.12"
+sha2 = "0.10"
 
 # OpenTelemetry
 opentelemetry = "0.31"

@@ -1,5 +1,6 @@
-ARG RUST_VERSION=1
-FROM lukemathwalker/cargo-chef:latest-rust-${RUST_VERSION}-bookworm AS chef
+ARG RUST_VERSION=1.96.0
+ARG CARGO_CHEF_VERSION=0.1.77
+FROM lukemathwalker/cargo-chef:${CARGO_CHEF_VERSION}-rust-${RUST_VERSION}-bookworm AS chef
 WORKDIR /app
 
 # ---
@@ -10,16 +11,16 @@ RUN cargo chef prepare --recipe-path recipe.json
 # ---
 FROM chef AS builder
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    cmake \
-    clang \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=planner /app/recipe.json recipe.json
+COPY apps/server/.cargo .cargo
 RUN cargo chef cook --profile release-ci --recipe-path recipe.json
 
 COPY apps/server/ .
-RUN cargo build --profile release-ci --bin server
+RUN cargo build --profile release-ci --bin server \
+    && cp target/release-ci/deps/libduckdb.so /tmp/libduckdb.so
 
 # ---
 FROM docker.io/library/debian:bookworm-slim AS runner
@@ -33,9 +34,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN addgroup --system --gid 1001 app
 RUN adduser --system --uid 1001 app
-USER app
 
+COPY --from=builder /tmp/libduckdb.so /usr/local/lib/libduckdb.so
 COPY --from=builder /app/target/release-ci/server ./server
+
+ENV LD_LIBRARY_PATH=/usr/local/lib
+
+USER app
 
 EXPOSE 3000
 

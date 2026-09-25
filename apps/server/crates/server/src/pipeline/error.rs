@@ -101,9 +101,6 @@ pub enum PersistError {
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
 
-    #[error("polars error: {0}")]
-    Polars(#[from] polars::error::PolarsError),
-
     #[error("duckdb error: {0}")]
     DuckDb(#[from] duckdb::Error),
 
