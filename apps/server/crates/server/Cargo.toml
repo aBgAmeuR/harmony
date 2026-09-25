@@ -28,10 +28,6 @@ axum.workspace = true
 tower.workspace = true
 tower-http.workspace = true
 
-# Database
-harmony-db = { path = "../db" }
-diesel.workspace = true
-diesel-async.workspace = true
 chrono.workspace = true
 
 # Pipeline / upload

@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use chrono::{DateTime, NaiveDateTime, Utc};
 use duckdb::params;
@@ -18,6 +18,17 @@ pub struct PersistInput {
     pub tracks: HashMap<i64, DeezerTrack>,
     pub artists: HashMap<i64, DeezerArtist>,
     pub albums: HashMap<i64, DeezerAlbum>,
+}
+
+/// Package page fields stored beside the listening tables.
+pub struct PackageMeta {
+    pub public_id: String,
+    pub file_name: String,
+    pub file_size: i32,
+    pub created_at: NaiveDateTime,
+    pub started_at: NaiveDateTime,
+    pub total_duration_ms: u64,
+    pub steps: serde_json::Value,
 }
 
 pub struct PersistArtifact {
@@ -57,6 +68,30 @@ pub fn build(input: PersistInput) -> Result<(PersistArtifact, PersistOutput), Pe
         },
         output,
     ))
+}
+
+/// Insert the package-page snapshot into a DuckDB file that already has tables.
+pub fn write_package_meta(db_path: &Path, meta: &PackageMeta) -> Result<(), PersistError> {
+    let conn = duckdb::Connection::open(db_path)?;
+    conn.execute(
+        "INSERT INTO package_meta (
+            public_id, file_name, file_size, status, created_at, started_at, total_duration_ms, steps
+         ) VALUES (
+            ?, ?, ?, 'completed',
+            CAST(? AS TIMESTAMP), CAST(? AS TIMESTAMP), ?,
+            json(?)
+         )",
+        params![
+            meta.public_id,
+            meta.file_name,
+            meta.file_size,
+            timestamp_param(meta.created_at),
+            timestamp_param(meta.started_at),
+            meta.total_duration_ms as i64,
+            meta.steps.to_string(),
+        ],
+    )?;
+    Ok(())
 }
 
 /// Upload a built DuckDB artifact to object storage.
@@ -230,6 +265,17 @@ fn create_tables(conn: &duckdb::Connection) -> Result<(), PersistError> {
             track_id UINTEGER,
             CONSTRAINT fk_interaction_track FOREIGN KEY (track_id) REFERENCES tracks(id)
         );
+
+        CREATE TABLE package_meta (
+            public_id VARCHAR,
+            file_name VARCHAR,
+            file_size INTEGER,
+            status VARCHAR,
+            created_at TIMESTAMP,
+            started_at TIMESTAMP,
+            total_duration_ms BIGINT,
+            steps JSON
+        );
         ",
     )?;
     Ok(())
@@ -263,6 +309,10 @@ fn create_views(conn: &duckdb::Connection) -> Result<(), PersistError> {
         ",
     )?;
     Ok(())
+}
+
+fn timestamp_param(value: NaiveDateTime) -> String {
+    value.format("%Y-%m-%d %H:%M:%S%.6f").to_string()
 }
 
 fn parse_date(value: Option<&str>) -> Option<String> {
@@ -469,6 +519,63 @@ mod tests {
         let copied_count: i64 =
             copied_conn.query_row("SELECT count(*) FROM interactions", [], |row| row.get(0))?;
         assert_eq!(copied_count, 1);
+
+        Ok(())
+    }
+
+    #[test]
+    fn write_package_meta_stores_pipeline_steps() -> Result<(), PersistError> {
+        let (artifact, _) = build(PersistInput {
+            public_id: "abc".to_string(),
+            interactions: Vec::new(),
+            tracks: HashMap::new(),
+            artists: HashMap::new(),
+            albums: HashMap::new(),
+        })?;
+
+        let created_at = NaiveDateTime::parse_from_str("2024-05-01 10:00:00", "%Y-%m-%d %H:%M:%S")
+            .expect("created_at");
+        let started_at = NaiveDateTime::parse_from_str("2024-05-01 10:00:02", "%Y-%m-%d %H:%M:%S")
+            .expect("started_at");
+        let steps = serde_json::json!([
+            {
+                "id": "resolve_tracks",
+                "output": { "missed": 3, "resolved": 10, "errors": 1 }
+            }
+        ]);
+
+        write_package_meta(
+            &artifact.db_path,
+            &PackageMeta {
+                public_id: "abc".to_string(),
+                file_name: "history.zip".to_string(),
+                file_size: 42,
+                created_at,
+                started_at,
+                total_duration_ms: 1500,
+                steps,
+            },
+        )?;
+
+        let conn = duckdb::Connection::open(&artifact.db_path)?;
+        let (file_name, file_size, duration_ms, created_at, steps_text): (
+            String,
+            i32,
+            i64,
+            String,
+            String,
+        ) = conn.query_row(
+            "SELECT file_name, file_size::INTEGER, total_duration_ms::INTEGER, strftime(created_at, '%Y-%m-%dT%H:%M:%SZ'), steps::VARCHAR FROM package_meta",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)),
+        )?;
+        let stored: serde_json::Value = serde_json::from_str(&steps_text).expect("steps json");
+
+        assert_eq!(file_name, "history.zip");
+        assert_eq!(file_size, 42);
+        assert_eq!(duration_ms, 1500);
+        assert_eq!(created_at, "2024-05-01T10:00:00Z");
+        assert_eq!(stored[0]["output"]["missed"], 3);
 
         Ok(())
     }

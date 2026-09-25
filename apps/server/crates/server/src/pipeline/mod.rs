@@ -38,6 +38,10 @@ pub struct PipelineStats {
 pub struct PipelineRequest {
     pub package_id: i32,
     pub public_id: String,
+    pub file_name: String,
+    pub file_size: i32,
+    pub created_at: chrono::NaiveDateTime,
+    pub started_at: chrono::NaiveDateTime,
     pub zip_bytes: Vec<u8>,
     pub selected_files: Option<Vec<String>>,
     pub reporter: Option<ProgressReporter>,
@@ -117,12 +121,17 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
     let PipelineRequest {
         package_id: _,
         public_id,
+        file_name,
+        file_size,
+        created_at,
+        started_at,
         zip_bytes,
         selected_files,
         reporter,
         object_store,
     } = request;
 
+    let pipeline_started = Instant::now();
     let mut stats = PipelineStats::default();
 
     let extract = run_cpu_stage(
@@ -314,14 +323,35 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
         .map_err(PipelineError::from)?
     };
 
-    stages::persist::upload(&object_store, &artifact).await?;
-
     complete_step(
         &reporter,
         StepId::PersistInteractions,
         save_started,
         serialize_output(&persist_output),
     );
+
+    // The stored duration stops once the local file is built. Upload happens after
+    // this snapshot so the package page can read it from the same object.
+    let total_duration_ms = pipeline_started.elapsed().as_millis() as u64;
+    let steps = reporter
+        .as_ref()
+        .and_then(ProgressReporter::steps_json)
+        .unwrap_or_else(|| serde_json::json!([]));
+    let db_path = artifact.db_path.clone();
+    let meta = stages::persist::PackageMeta {
+        public_id,
+        file_name,
+        file_size,
+        created_at,
+        started_at,
+        total_duration_ms,
+        steps,
+    };
+    tokio::task::spawn_blocking(move || stages::persist::write_package_meta(&db_path, &meta))
+        .await?
+        .map_err(PipelineError::from)?;
+
+    stages::persist::upload(&object_store, &artifact).await?;
 
     record_stats(&stats, catalogue_size);
     Ok(stats)

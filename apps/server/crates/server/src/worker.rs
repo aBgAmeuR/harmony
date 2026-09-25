@@ -3,14 +3,12 @@ use std::time::Instant;
 
 use crate::pipeline::{self, PipelineError, PipelineRequest};
 use crate::progress::{ProgressReporter, stage_to_step_id};
-use harmony_db::{mark_running, set_completed, set_failed_with_data};
 use opentelemetry::Context;
 use tokio::sync::mpsc;
 use tracing::Instrument;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use crate::AppState;
-use crate::error::ApiError;
 
 pub struct Job {
     pub package_id: i32,
@@ -23,24 +21,11 @@ pub enum WorkerError {
     #[error("zip bytes missing from ram store for package {package_id}")]
     BytesMissing { package_id: i32 },
 
-    #[error("database error")]
-    Db(#[from] diesel::result::Error),
-
-    #[error("database pool error: {0}")]
-    Pool(String),
+    #[error("package {package_id} missing from store")]
+    PackageMissing { package_id: i32 },
 
     #[error("pipeline failed")]
     Pipeline(#[from] PipelineError),
-}
-
-impl From<ApiError> for WorkerError {
-    fn from(err: ApiError) -> Self {
-        match err {
-            ApiError::Pool(err) => Self::Pool(err.to_string()),
-            ApiError::Database(err) => Self::Db(err),
-            other => Self::Pool(other.to_string()),
-        }
-    }
 }
 
 pub async fn run(state: AppState, mut jobs: mpsc::Receiver<Job>) {
@@ -84,8 +69,7 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
                 package_id,
                 "worker",
                 "zip bytes missing from ram store",
-            )
-            .await;
+            );
             return Err(WorkerError::BytesMissing { package_id });
         };
 
@@ -95,10 +79,12 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
         let zip_size_bytes = upload.zip_bytes.len();
         worker_span.record("zip_size_bytes", zip_size_bytes as i64);
 
-        {
-            let mut conn = state.conn().await?;
-            mark_running(&mut conn, package_id).await?;
-        }
+        state.packages.mark_running(package_id);
+        let package = state
+            .packages
+            .get_by_public_id(&public_id)
+            .map_err(|_| WorkerError::PackageMissing { package_id })?;
+        let started_at = package.started_at.unwrap_or(package.created_at);
 
         state.progress.register(&public_id);
         let reporter = ProgressReporter::new(Arc::clone(&state.progress), public_id.clone());
@@ -106,6 +92,10 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
         let pipeline_result = pipeline::run(PipelineRequest {
             package_id,
             public_id: public_id.clone(),
+            file_name: package.file_name,
+            file_size: package.file_size,
+            created_at: package.created_at,
+            started_at,
             zip_bytes: upload.zip_bytes,
             selected_files: upload.selected_files,
             reporter: Some(reporter.clone()),
@@ -123,8 +113,7 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
                     .finalize_json(&public_id, duration_ms)
                     .unwrap_or_else(|| empty_progress_json(duration_ms));
 
-                let mut conn = state.conn().await?;
-                set_completed(&mut conn, package_id, data).await?;
+                state.packages.set_completed(package_id, data);
                 worker_span.record("duration_ms", duration_ms);
                 tracing::info!(package_id, duration_ms, "pipeline completed");
             }
@@ -146,15 +135,12 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
                     .finalize_json(&public_id, duration_ms)
                     .unwrap_or_else(|| empty_progress_json(duration_ms));
 
-                let mut conn = state.conn().await?;
-                set_failed_with_data(
-                    &mut conn,
+                state.packages.set_failed_with_data(
                     package_id,
                     stage.as_str(),
                     &err.to_string(),
                     data,
-                )
-                .await?;
+                );
                 state.progress.unregister(&public_id);
                 return Err(WorkerError::Pipeline(err));
             }
@@ -168,15 +154,6 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
     .await
 }
 
-async fn set_failed_best_effort(state: &AppState, package_id: i32, stage: &str, message: &str) {
-    match state.conn().await {
-        Ok(mut conn) => {
-            if let Err(err) = harmony_db::set_failed(&mut conn, package_id, stage, message).await {
-                tracing::error!(package_id, ?err, "failed to mark package as failed");
-            }
-        }
-        Err(err) => {
-            tracing::error!(package_id, ?err, "failed to mark package as failed");
-        }
-    }
+fn set_failed_best_effort(state: &AppState, package_id: i32, stage: &str, message: &str) {
+    state.packages.set_failed(package_id, stage, message);
 }

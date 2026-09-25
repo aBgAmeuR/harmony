@@ -4,7 +4,6 @@ use axum::{
     http::StatusCode,
 };
 use chrono::NaiveDateTime;
-use harmony_db::{create_package, get_package_by_public_id, models::Package};
 use serde::Serialize;
 use tracing::info;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
@@ -12,6 +11,7 @@ use tracing_opentelemetry::OpenTelemetrySpanExt;
 use crate::AppState;
 use crate::error::{ApiError, ApiResult, PackageId};
 use crate::package_upload::PackageUpload;
+use crate::store::Package;
 use crate::worker::Job;
 
 #[derive(Serialize)]
@@ -112,8 +112,7 @@ pub async fn upload_package(
     let file_size =
         i32::try_from(data.len()).map_err(|_| ApiError::bad_request("file too large"))?;
 
-    let mut conn = state.conn().await?;
-    let package = create_package(&mut conn, &file_name, file_size).await?;
+    let package = state.packages.create_package(&file_name, file_size);
 
     state.ram_store.insert(
         package.id,
@@ -152,8 +151,7 @@ pub async fn get_package_handler(
 ) -> ApiResult<PackageResponse> {
     let package_id: PackageId = id.parse()?;
 
-    let mut conn = state.conn().await?;
-    let package = get_package_by_public_id(&mut conn, package_id.as_str()).await?;
+    let package = state.packages.get_by_public_id(package_id.as_str())?;
 
     Ok(Json(PackageResponse::from_package(package)))
 }

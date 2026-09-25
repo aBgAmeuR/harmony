@@ -19,7 +19,6 @@ services:
       PORT: "3000"
       RUST_LOG: info
       APP_ENV: production
-      DATABASE_URL: ${DATABASE_URL}
       S3_ENDPOINT: ${S3_ENDPOINT}
       S3_BUCKET: ${S3_BUCKET}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}

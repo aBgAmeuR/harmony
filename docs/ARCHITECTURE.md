@@ -7,7 +7,7 @@ in [`DEPLOY.md`](./DEPLOY.md).
 ## System
 
 ```text
-[web] --upload/status/SSE--> [Axum API] --meta--> [Postgres: packages]
+[web] --upload/status/SSE--> [Axum API] --meta--> [in-memory packages]
   |                              |
   |                              +--worker--> [pipeline] --harmony/{id}.duckdb--> [S3/R2]
   |                              ^
@@ -16,17 +16,16 @@ in [`DEPLOY.md`](./DEPLOY.md).
 [DuckDB WASM analytics]
 ```
 
-ZIP upload → Postgres package row + in-memory job → async pipeline (Deezer
-enrich) → DuckDB artifact on S3/R2 → browser downloads via `BUCKET_URL` and
-queries locally.
+ZIP upload → in-memory package record + job → async pipeline (Deezer enrich) →
+DuckDB artifact on S3/R2 → browser downloads via `BUCKET_URL` and queries
+locally. Package metadata disappears when the API process stops.
 
 ## Layout
 
 ```text
 apps/web/          TanStack Start SPA (routes, features, upload UI)
 apps/server/
-  crates/server/   Axum, worker, pipeline, progress SSE, S3
-  crates/db/       Diesel / Postgres
+  crates/server/   Axum, worker, pipeline, progress SSE, in-memory packages, S3
 packages/          ui, charts, duckdb, upload, icons, font, config
 ```
 
@@ -54,13 +53,11 @@ Persist key: `harmony/{public_id}.duckdb`.
 
 ## Data
 
-| Store               | Role                                                                |
-| ------------------- | ------------------------------------------------------------------- |
-| Postgres `packages` | Status, errors, progress JSON (`data`)                              |
-| S3/R2 DuckDB        | `artists`, `albums`, `tracks`, `interactions`, view `v_tracks_info` |
-| `sessionStorage`    | Upload session key `harmony:upload-session:v1`                      |
-
-`package_data` remains in schema but is unused.
+| Store                    | Role                                                                |
+| ------------------------ | ------------------------------------------------------------------- |
+| In-memory `PackageStore` | Status, errors, progress JSON (`data`). Lost on process restart.   |
+| S3/R2 DuckDB             | `artists`, `albums`, `tracks`, `interactions`, view `v_tracks_info` |
+| `sessionStorage`         | Upload session key `harmony:upload-session:v1`                      |
 
 ## Integrations
 
@@ -75,7 +72,6 @@ pins image tags; no NAS-side builds.
 
 | Var                                        | Used by                             |
 | ------------------------------------------ | ----------------------------------- |
-| `DATABASE_URL`                             | API                                 |
 | `S3_ENDPOINT`, `S3_BUCKET`                 | API persist                         |
 | `DEEZER_PROXY_URLS`, `DEEZER_PROXY_SECRET` | API enrich                          |
 | `HOST`, `PORT`                             | API bind (default `127.0.0.1:3000`) |
@@ -85,5 +81,5 @@ pins image tags; no NAS-side builds.
 
 - No auth; public IDs are bearer-like links
 - `CorsLayer::permissive()` on the API
-- Upload ZIPs live in process RAM until the worker finishes (lost on restart)
+- In-memory package status and upload ZIPs are lost on restart. A finished DuckDB file keeps `package_meta`
 - Upload capped at 50 MiB; ZIP magic checked before queueing

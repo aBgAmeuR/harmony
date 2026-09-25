@@ -3,8 +3,8 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
-use diesel::result::Error as DieselError;
-use diesel_async::pooled_connection::deadpool::PoolError;
+
+use crate::store::StoreError;
 
 /// HTTP error surface for Axum handlers.
 #[derive(Debug, thiserror::Error)]
@@ -17,12 +17,6 @@ pub enum ApiError {
 
     #[error("{0}")]
     NotFound(String),
-
-    #[error("database error")]
-    Database(#[from] DieselError),
-
-    #[error("database pool error")]
-    Pool(#[from] PoolError),
 
     #[error("{0}")]
     Internal(String),
@@ -52,20 +46,20 @@ impl IntoResponse for ApiError {
             Self::BadRequest(_) => StatusCode::BAD_REQUEST,
             Self::UnprocessableEntity(_) => StatusCode::UNPROCESSABLE_ENTITY,
             Self::NotFound(_) => StatusCode::NOT_FOUND,
-            Self::Database(DieselError::NotFound) => StatusCode::NOT_FOUND,
-            Self::Database(_) | Self::Pool(_) | Self::Internal(_) => {
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
+            Self::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
         };
 
-        let message = match &self {
-            Self::Database(DieselError::NotFound) => "package not found".to_string(),
-            Self::Database(_) => "database error".to_string(),
-            Self::Pool(_) => "database unavailable".to_string(),
-            other => other.to_string(),
-        };
+        let message = self.to_string();
 
         (status, message).into_response()
+    }
+}
+
+impl From<StoreError> for ApiError {
+    fn from(err: StoreError) -> Self {
+        match err {
+            StoreError::NotFound => Self::not_found("package not found"),
+        }
     }
 }
 

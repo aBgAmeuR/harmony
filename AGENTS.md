@@ -31,8 +31,8 @@ Use `pnpm` from the project root unless noted otherwise.
 
 - **Runtime and package tooling:** Node, pnpm workspaces, Turborepo, TypeScript 7 catalog version, Rust 2024 workspace.
 - **Frontend:** React 19, TanStack Start, TanStack Router, TanStack Query, Vite, Nitro, Tailwind CSS v4, shadcn/Base UI primitives, Zustand, DuckDB WASM.
-- **Server:** Rust Axum API, Tokio, Diesel and diesel-async, Postgres, DuckDB, Polars, reqwest, OpenTelemetry tracing.
-- **Data flow:** Spotify Extended Streaming History ZIP upload -> Rust ingestion pipeline -> Postgres package metadata -> DuckDB artifact in S3/R2 (`harmony/{public_id}.duckdb`) -> browser DuckDB WASM analytics via `BUCKET_URL`.
+- **Server:** Rust Axum API, Tokio, in-memory package registry, DuckDB, Polars, reqwest, OpenTelemetry tracing.
+- **Data flow:** Spotify Extended Streaming History ZIP upload -> Rust ingestion pipeline -> in-memory package metadata -> DuckDB artifact in S3/R2 (`harmony/{public_id}.duckdb`) -> browser DuckDB WASM analytics via `BUCKET_URL`.
 
 ## Project Structure
 
@@ -108,9 +108,8 @@ Always read `docs/DESIGN.md` before generating or modifying UI.
 ## Boundaries
 
 - Always protect secrets: never print, commit, or move `.env` values, API keys,
-  tokens, `DATABASE_URL`, `DEEZER_PROXY_SECRET`, or telemetry credentials.
-- Ask before adding dependencies, changing CI/CD, altering deployment behavior,
-  or modifying database migrations/schema.
+  tokens, `DEEZER_PROXY_SECRET`, or telemetry credentials.
+- Ask before adding dependencies, changing CI/CD, or altering deployment behavior.
 - Ask before changing public API routes, upload status shapes, DuckDB table/view
   schemas, or package file formats unless the user requested that change.
 - Never edit generated/vendor directories such as `node_modules/`, build output,
