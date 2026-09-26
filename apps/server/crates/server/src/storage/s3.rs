@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use hmac::{Hmac, Mac};
@@ -7,7 +7,6 @@ use sha2::{Digest, Sha256};
 
 use super::ObjectStore;
 
-const REGION: &str = "auto";
 const SERVICE: &str = "s3";
 
 type HmacSha256 = Hmac<Sha256>;
@@ -16,12 +15,22 @@ type HmacSha256 = Hmac<Sha256>;
 pub enum StorageError {
     #[error("failed to upload object to S3: {0}")]
     Upload(String),
+
+    #[error("local storage error: {0}")]
+    Local(String),
+
+    #[error(
+        "DATA_DIR '{}' is not writable: {reason}. In Docker, Harmony runs as uid 1001: use a named volume or run chown -R 1001:1001 on the host directory.",
+        path.display()
+    )]
+    DataDir { path: PathBuf, reason: String },
 }
 
 pub struct S3ObjectStore {
     http: Client,
     endpoint: reqwest::Url,
     bucket: String,
+    region: String,
     access_key: String,
     secret_key: String,
 }
@@ -30,6 +39,7 @@ impl S3ObjectStore {
     pub fn new(
         endpoint: reqwest::Url,
         bucket: String,
+        region: String,
         access_key: String,
         secret_key: String,
     ) -> Self {
@@ -42,6 +52,7 @@ impl S3ObjectStore {
             http,
             endpoint,
             bucket,
+            region,
             access_key,
             secret_key,
         }
@@ -74,7 +85,7 @@ impl ObjectStore for S3ObjectStore {
                 ("x-amz-date", &amz_date),
             ],
             payload_hash: &payload_hash,
-            region: REGION,
+            region: &self.region,
             access_key: &self.access_key,
             secret_key: &self.secret_key,
             amz_date: &amz_date,

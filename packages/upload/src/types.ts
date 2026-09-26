@@ -106,3 +106,11 @@ export type UploadResponseBody = {
   public_id: string;
   status: string;
 };
+
+export type ServerConfigBody = {
+  max_upload_bytes: number;
+};
+
+export type ServerConfig = {
+  maxUploadBytes: number;
+};

@@ -3,18 +3,18 @@ use std::time::Duration;
 
 use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
-use tokio::time::sleep;
+use tokio::sync::Mutex;
+use tokio::time::{Instant, sleep, sleep_until};
+
+use crate::config::DeezerMode;
 
 pub const PROXY_SECRET_HEADER: &str = "X-Harmony-Secret";
 
 const REQUEST_GAP_MS: u64 = 50;
 const MAX_RETRIES: u32 = 3;
 const RETRY_DELAY_MS: u64 = 1000;
-
-pub struct DeezerConfig {
-    pub proxy_urls: Vec<Url>,
-    pub proxy_secret: String,
-}
+/// Direct mode: the limiter caps throughput, concurrency only hides latency.
+const DIRECT_CONCURRENCY: usize = 4;
 
 #[derive(Debug, thiserror::Error)]
 pub enum DeezerFetchError {
@@ -47,48 +47,108 @@ fn is_retryable_status(status: reqwest::StatusCode) -> bool {
     status == reqwest::StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
 }
 
+/// Spaces requests evenly so the server stays under a requests-per-second cap.
+struct RateLimiter {
+    interval: Duration,
+    next_slot: Mutex<Instant>,
+}
+
+impl RateLimiter {
+    fn per_second(requests: u32) -> Self {
+        Self {
+            interval: Duration::from_secs(1) / requests.max(1),
+            next_slot: Mutex::new(Instant::now()),
+        }
+    }
+
+    async fn acquire(&self) {
+        let slot = {
+            let mut next = self.next_slot.lock().await;
+            let slot = (*next).max(Instant::now());
+            *next = slot + self.interval;
+            slot
+        };
+        sleep_until(slot).await;
+    }
+}
+
+enum Transport {
+    Direct { limiter: RateLimiter },
+    Proxies { urls: Vec<Url>, secret: String },
+}
+
 pub struct DeezerClient {
     http: Client,
-    proxy_urls: Vec<Url>,
-    proxy_secret: String,
+    transport: Transport,
     proxy_round: AtomicUsize,
 }
 
 impl DeezerClient {
-    pub fn new(config: DeezerConfig) -> Result<Self, reqwest::Error> {
-        let http = Client::builder().timeout(Duration::from_secs(5)).build()?;
+    pub fn new(mode: DeezerMode) -> Result<Self, reqwest::Error> {
+        let http = Client::builder()
+            .timeout(Duration::from_secs(5))
+            .user_agent(concat!("harmony/", env!("CARGO_PKG_VERSION")))
+            .build()?;
+
+        let transport = match mode {
+            DeezerMode::Direct {
+                requests_per_second,
+            } => Transport::Direct {
+                limiter: RateLimiter::per_second(requests_per_second),
+            },
+            DeezerMode::Proxies { urls, secret } => Transport::Proxies { urls, secret },
+        };
 
         Ok(Self {
             http,
-            proxy_urls: config.proxy_urls,
-            proxy_secret: config.proxy_secret,
+            transport,
             proxy_round: AtomicUsize::new(0),
         })
     }
 
     pub fn concurrency(&self) -> usize {
-        self.proxy_urls.len()
+        match &self.transport {
+            Transport::Direct { .. } => DIRECT_CONCURRENCY,
+            Transport::Proxies { urls, .. } => urls.len(),
+        }
     }
 
-    fn next_proxy_url(&self, target_url: &str) -> String {
-        let index = self.proxy_round.fetch_add(1, Ordering::Relaxed) % self.proxy_urls.len();
-        let mut url = self.proxy_urls[index].clone();
-        url.query_pairs_mut().append_pair("target", target_url);
-        url.to_string()
+    fn request_url(&self, target_url: &str) -> String {
+        match &self.transport {
+            Transport::Direct { .. } => target_url.to_string(),
+            Transport::Proxies { urls, .. } => {
+                let index = self.proxy_round.fetch_add(1, Ordering::Relaxed) % urls.len();
+                let mut url = urls[index].clone();
+                url.query_pairs_mut().append_pair("target", target_url);
+                url.to_string()
+            }
+        }
     }
 
     async fn fetch_once(&self, target_url: &str) -> Result<serde_json::Value, DeezerFetchError> {
-        let proxy_url = self.next_proxy_url(target_url);
+        let url = self.request_url(target_url);
 
-        let response = self
-            .http
-            .get(proxy_url)
-            .header(PROXY_SECRET_HEADER, &self.proxy_secret)
-            .send()
-            .await
-            .map_err(DeezerFetchError::Network)?;
-
-        sleep(Duration::from_millis(REQUEST_GAP_MS)).await;
+        let response = match &self.transport {
+            Transport::Direct { limiter } => {
+                limiter.acquire().await;
+                self.http
+                    .get(url)
+                    .send()
+                    .await
+                    .map_err(DeezerFetchError::Network)?
+            }
+            Transport::Proxies { secret, .. } => {
+                let response = self
+                    .http
+                    .get(url)
+                    .header(PROXY_SECRET_HEADER, secret)
+                    .send()
+                    .await
+                    .map_err(DeezerFetchError::Network)?;
+                sleep(Duration::from_millis(REQUEST_GAP_MS)).await;
+                response
+            }
+        };
 
         let status = response.status();
         if !status.is_success() {
@@ -145,5 +205,70 @@ impl DeezerClient {
         }
 
         Err(last_error.unwrap_or_else(|| DeezerFetchError::Api("max retries exceeded".to_string())))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TARGET: &str = "https://api.deezer.com/track/3135556";
+
+    fn direct_client() -> DeezerClient {
+        DeezerClient::new(DeezerMode::Direct {
+            requests_per_second: 8,
+        })
+        .unwrap()
+    }
+
+    fn proxy_client(count: usize) -> DeezerClient {
+        let urls = (0..count)
+            .map(|index| Url::parse(&format!("http://proxy-{index}.example/")).unwrap())
+            .collect();
+        DeezerClient::new(DeezerMode::Proxies {
+            urls,
+            secret: "secret".to_string(),
+        })
+        .unwrap()
+    }
+
+    #[test]
+    fn direct_mode_requests_the_target_itself() {
+        assert_eq!(direct_client().request_url(TARGET), TARGET);
+    }
+
+    #[test]
+    fn proxy_mode_passes_the_target_as_query() {
+        let client = proxy_client(2);
+        let first = client.request_url(TARGET);
+        let second = client.request_url(TARGET);
+
+        assert!(
+            first.starts_with("http://proxy-0.example/?target="),
+            "{first}"
+        );
+        assert!(
+            second.starts_with("http://proxy-1.example/?target="),
+            "{second}"
+        );
+    }
+
+    #[test]
+    fn concurrency_depends_on_transport() {
+        assert_eq!(direct_client().concurrency(), 4);
+        assert_eq!(proxy_client(3).concurrency(), 3);
+    }
+
+    #[tokio::test]
+    async fn rate_limiter_spaces_requests() {
+        let limiter = RateLimiter::per_second(20);
+        let started = std::time::Instant::now();
+        for _ in 0..5 {
+            limiter.acquire().await;
+        }
+        let elapsed = started.elapsed();
+
+        assert!(elapsed >= Duration::from_millis(190), "{elapsed:?}");
+        assert!(elapsed < Duration::from_secs(2), "{elapsed:?}");
     }
 }

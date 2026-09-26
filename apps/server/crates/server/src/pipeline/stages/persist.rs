@@ -10,7 +10,7 @@ use crate::pipeline::report::PersistOutput;
 use crate::pipeline::types::{
     DeezerAlbum, DeezerAlbumType, DeezerArtist, DeezerTrack, Interaction,
 };
-use crate::storage::{ObjectStore, S3ObjectStore};
+use crate::storage::{ObjectStore, Storage, package_object_key};
 
 pub struct PersistInput {
     pub public_id: String,
@@ -59,7 +59,7 @@ pub fn build(input: PersistInput) -> Result<(PersistArtifact, PersistOutput), Pe
         artists: input.artists.len(),
     };
 
-    let object_key = format!("harmony/{}.duckdb", input.public_id);
+    let object_key = package_object_key(&input.public_id);
     Ok((
         PersistArtifact {
             _temp_dir: temp_dir,
@@ -96,7 +96,7 @@ pub fn write_package_meta(db_path: &Path, meta: &PackageMeta) -> Result<(), Pers
 
 /// Upload a built DuckDB artifact to object storage.
 pub async fn upload(
-    object_store: &S3ObjectStore,
+    object_store: &Storage,
     artifact: &PersistArtifact,
 ) -> Result<(), PersistError> {
     object_store
