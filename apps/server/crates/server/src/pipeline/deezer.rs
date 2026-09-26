@@ -1,4 +1,3 @@
-use std::env;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
@@ -46,37 +45,6 @@ impl DeezerFetchError {
 
 fn is_retryable_status(status: reqwest::StatusCode) -> bool {
     status == reqwest::StatusCode::TOO_MANY_REQUESTS || status.is_server_error()
-}
-
-pub fn load_config() -> Result<DeezerConfig, String> {
-    let proxy_urls_raw =
-        env::var("DEEZER_PROXY_URLS").map_err(|_| "DEEZER_PROXY_URLS is not set".to_string())?;
-
-    let mut proxy_urls = Vec::new();
-    for raw in proxy_urls_raw
-        .split(',')
-        .map(str::trim)
-        .filter(|url| !url.is_empty())
-    {
-        let url = Url::parse(raw).map_err(|err| format!("invalid proxy URL '{raw}': {err}"))?;
-        proxy_urls.push(url);
-    }
-
-    if proxy_urls.is_empty() {
-        return Err("DEEZER_PROXY_URLS is empty".to_string());
-    }
-
-    let proxy_secret = env::var("DEEZER_PROXY_SECRET")
-        .map_err(|_| "DEEZER_PROXY_SECRET is not set".to_string())?;
-
-    if proxy_secret.trim().is_empty() {
-        return Err("DEEZER_PROXY_SECRET is empty".to_string());
-    }
-
-    Ok(DeezerConfig {
-        proxy_urls,
-        proxy_secret,
-    })
 }
 
 pub struct DeezerClient {

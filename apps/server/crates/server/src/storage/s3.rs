@@ -1,4 +1,3 @@
-use std::env;
 use std::path::Path;
 use std::time::Duration;
 
@@ -12,18 +11,6 @@ const REGION: &str = "auto";
 const SERVICE: &str = "s3";
 
 type HmacSha256 = Hmac<Sha256>;
-
-#[derive(Debug, thiserror::Error)]
-pub enum StorageConfigError {
-    #[error("env var {0} not set")]
-    MissingEnv(&'static str),
-
-    #[error("invalid S3 endpoint: {0}")]
-    InvalidEndpoint(String),
-
-    #[error("failed to build HTTP client: {0}")]
-    HttpClient(String),
-}
 
 #[derive(Debug, thiserror::Error)]
 pub enum StorageError {
@@ -40,30 +27,24 @@ pub struct S3ObjectStore {
 }
 
 impl S3ObjectStore {
-    pub fn from_env() -> Result<Self, StorageConfigError> {
-        let endpoint =
-            env::var("S3_ENDPOINT").map_err(|_| StorageConfigError::MissingEnv("S3_ENDPOINT"))?;
-        let bucket =
-            env::var("S3_BUCKET").map_err(|_| StorageConfigError::MissingEnv("S3_BUCKET"))?;
-        let access_key = env::var("AWS_ACCESS_KEY_ID")
-            .map_err(|_| StorageConfigError::MissingEnv("AWS_ACCESS_KEY_ID"))?;
-        let secret_key = env::var("AWS_SECRET_ACCESS_KEY")
-            .map_err(|_| StorageConfigError::MissingEnv("AWS_SECRET_ACCESS_KEY"))?;
-
-        let endpoint = reqwest::Url::parse(&endpoint)
-            .map_err(|err| StorageConfigError::InvalidEndpoint(err.to_string()))?;
+    pub fn new(
+        endpoint: reqwest::Url,
+        bucket: String,
+        access_key: String,
+        secret_key: String,
+    ) -> Self {
         let http = Client::builder()
             .timeout(Duration::from_secs(60))
             .build()
-            .map_err(|err| StorageConfigError::HttpClient(err.to_string()))?;
+            .expect("reqwest client");
 
-        Ok(Self {
+        Self {
             http,
             endpoint,
             bucket,
             access_key,
             secret_key,
-        })
+        }
     }
 }
 
@@ -114,7 +95,9 @@ impl ObjectStore for S3ObjectStore {
         if !response.status().is_success() {
             let status = response.status();
             let text = response.text().await.unwrap_or_default();
-            return Err(StorageError::Upload(format!("status {status}: {text}")));
+            let body = truncate_body(&text);
+            tracing::error!(%status, body, "object storage upload failed");
+            return Err(StorageError::Upload(format!("status {status}")));
         }
 
         Ok(())
@@ -199,6 +182,20 @@ fn hmac_sha256(key: &[u8], data: &[u8]) -> Vec<u8> {
     mac.finalize().into_bytes().to_vec()
 }
 
+const BODY_LOG_LIMIT: usize = 512;
+
+fn truncate_body(body: &str) -> String {
+    let mut truncated = String::new();
+    for (index, ch) in body.chars().enumerate() {
+        if index == BODY_LOG_LIMIT {
+            truncated.push('…');
+            break;
+        }
+        truncated.push(ch);
+    }
+    truncated
+}
+
 fn hex_encode(bytes: &[u8]) -> String {
     const HEX: &[u8; 16] = b"0123456789abcdef";
     let mut encoded = String::with_capacity(bytes.len() * 2);
@@ -238,6 +235,20 @@ mod tests {
             authorization,
             "AWS4-HMAC-SHA256 Credential=AKIAIOSFODNN7EXAMPLE/20130524/us-east-1/s3/aws4_request, SignedHeaders=host;range;x-amz-content-sha256;x-amz-date, Signature=f0e8bdb87c964420e857bd35b5d6ed310bd44f0170aba48dd91039c6036bdb41"
         );
+    }
+
+    #[test]
+    fn truncate_body_keeps_short_text() {
+        assert_eq!(truncate_body("ok"), "ok");
+    }
+
+    #[test]
+    fn truncate_body_limits_long_text_on_char_boundaries() {
+        let body = "é".repeat(600);
+        let truncated = truncate_body(&body);
+        assert_eq!(truncated.chars().count(), BODY_LOG_LIMIT + 1);
+        assert!(truncated.ends_with('…'));
+        assert!(truncated.starts_with('é'));
     }
 
     #[test]

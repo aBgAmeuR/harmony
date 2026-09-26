@@ -208,6 +208,16 @@ impl ProgressHub {
         Self::default()
     }
 
+    pub(crate) fn steps(&self, public_id: &str) -> Vec<PipelineStep> {
+        self.runs
+            .get(public_id)
+            .map(|run| {
+                let state = run.state.lock().expect("progress state lock poisoned");
+                state.steps.clone()
+            })
+            .unwrap_or_default()
+    }
+
     pub fn register(&self, public_id: &str) {
         let (tx, _) = broadcast::channel(BROADCAST_CAPACITY);
         let run = Arc::new(ProgressRun {

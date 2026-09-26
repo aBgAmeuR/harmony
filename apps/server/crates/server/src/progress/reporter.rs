@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use super::events::{ProgressEvent, StepId, StepProgress};
 use super::hub::{ProgressHub, now_iso};
-use super::steps::step_label;
+use super::steps::{blame_step, step_label};
 
 #[derive(Clone)]
 pub struct ProgressReporter {
@@ -70,6 +70,11 @@ impl ProgressReporter {
                 stats,
             },
         );
+    }
+
+    pub fn fail_running_step(&self, error: &str) {
+        let steps = self.hub.steps(&self.public_id);
+        self.run_failed(blame_step(&steps), error);
     }
 
     pub fn run_failed(&self, step_id: StepId, error: &str) {
