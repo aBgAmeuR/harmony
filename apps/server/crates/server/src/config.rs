@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use reqwest::Url;
 
@@ -15,6 +15,9 @@ pub const APP_VERSION: &str = match option_env!("HARMONY_VERSION") {
 const DEEZER_RATE_LIMIT_MAX: u32 = 50;
 const MAX_UPLOAD_MB_MAX: u32 = 2000;
 
+/// SPA entry point written by the TanStack Start build.
+pub const SPA_SHELL_FILE: &str = "_shell.html";
+
 pub struct Config {
     pub host: String,
     pub port: u16,
@@ -22,6 +25,7 @@ pub struct Config {
     pub deezer: DeezerMode,
     pub max_upload_bytes: usize,
     pub log_format: LogFormat,
+    pub static_dir: Option<PathBuf>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -101,6 +105,7 @@ struct ConfigInput {
     pub deezer_rate_limit: Option<String>,
     pub max_upload_mb: Option<String>,
     pub log_format: Option<String>,
+    pub static_dir: Option<String>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -124,6 +129,7 @@ impl Config {
             deezer_rate_limit: std::env::var("DEEZER_RATE_LIMIT").ok(),
             max_upload_mb: std::env::var("MAX_UPLOAD_MB").ok(),
             log_format: std::env::var("LOG_FORMAT").ok(),
+            static_dir: std::env::var("STATIC_DIR").ok(),
         })
     }
 
@@ -153,6 +159,7 @@ impl Config {
             &mut problems,
         );
         let log_format = parse_log_format(input.log_format.as_deref(), &mut problems);
+        let static_dir = parse_static_dir(input.static_dir.as_deref(), &mut problems);
 
         let (Some(storage), Some(deezer), Some(max_upload_mb), Some(log_format)) =
             (storage, deezer, max_upload_mb, log_format)
@@ -176,8 +183,21 @@ impl Config {
             deezer,
             max_upload_bytes: max_upload_mb as usize * 1024 * 1024,
             log_format,
+            static_dir,
         })
     }
+}
+
+fn parse_static_dir(value: Option<&str>, problems: &mut Vec<String>) -> Option<PathBuf> {
+    let dir = Path::new(non_blank(value)?.trim());
+    if !dir.join(SPA_SHELL_FILE).is_file() {
+        problems.push(format!(
+            "STATIC_DIR '{}' must be a directory containing {SPA_SHELL_FILE}",
+            dir.display()
+        ));
+        return None;
+    }
+    Some(dir.to_path_buf())
 }
 
 fn parse_log_format(value: Option<&str>, problems: &mut Vec<String>) -> Option<LogFormat> {
@@ -407,6 +427,7 @@ mod tests {
             deezer_rate_limit: None,
             max_upload_mb: None,
             log_format: None,
+            static_dir: None,
         }
     }
 
@@ -688,6 +709,58 @@ mod tests {
             assert!(!description.contains(PROXY_SECRET), "{description}");
             assert!(!description.contains("proxy-a.example"), "{description}");
         }
+    }
+
+    #[test]
+    fn static_dir_is_disabled_by_default() {
+        let config = Config::from_input(empty_input()).unwrap();
+        assert!(config.static_dir.is_none());
+
+        let mut input = empty_input();
+        input.static_dir = Some("  ".to_string());
+        let config = Config::from_input(input).unwrap();
+        assert!(config.static_dir.is_none());
+    }
+
+    #[test]
+    fn static_dir_with_shell_is_accepted() {
+        let dir = tempfile::TempDir::new().unwrap();
+        std::fs::write(dir.path().join(SPA_SHELL_FILE), "<html></html>").unwrap();
+
+        let mut input = empty_input();
+        input.static_dir = Some(dir.path().display().to_string());
+        let config = Config::from_input(input).unwrap();
+        assert_eq!(config.static_dir.as_deref(), Some(dir.path()));
+    }
+
+    #[test]
+    fn static_dir_without_shell_is_rejected() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let path = dir.path().display().to_string();
+
+        let mut input = empty_input();
+        input.static_dir = Some(path.clone());
+        let message = expect_err(Config::from_input(input)).to_string();
+        assert!(
+            message.contains(&format!(
+                "STATIC_DIR '{path}' must be a directory containing _shell.html"
+            )),
+            "{message}"
+        );
+    }
+
+    #[test]
+    fn missing_static_dir_is_rejected() {
+        let dir = tempfile::TempDir::new().unwrap();
+        let path = dir.path().join("missing").display().to_string();
+
+        let mut input = empty_input();
+        input.static_dir = Some(path.clone());
+        let message = expect_err(Config::from_input(input)).to_string();
+        assert!(
+            message.contains(&format!("STATIC_DIR '{path}'")),
+            "{message}"
+        );
     }
 
     #[test]

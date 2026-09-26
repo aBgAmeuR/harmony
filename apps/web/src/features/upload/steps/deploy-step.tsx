@@ -9,9 +9,9 @@ import {
 } from "@harmony/ui/components/card";
 import { UploadError, type Pipeline, type PipelineRunStatus } from "@harmony/upload";
 import { usePipeline } from "@harmony/upload/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { createUploadClient } from "@/lib/upload";
+import { uploadClient } from "@/lib/upload";
 import { format } from "@/utils/format";
 
 import { useUpload } from "../context";
@@ -40,7 +40,6 @@ export function UploadDeployStep() {
   const {
     state: { file, selection, publicId, deployAttempt, error: contextError },
     actions: { next, retry, reset, reportPublicId, reportPhase, reportError },
-    meta: { apiUrl },
   } = useUpload();
 
   const [nowTs, setNowTs] = useState(() => Date.now());
@@ -50,8 +49,6 @@ export function UploadDeployStep() {
   const [isDeploying, setIsDeploying] = useState(false);
   const resumeAppliedRef = useRef(false);
   const lastAttemptRef = useRef(0);
-
-  const upload = useMemo(() => createUploadClient(apiUrl), [apiUrl]);
 
   useEffect(() => {
     setLocalPublicId(publicId);
@@ -63,13 +60,13 @@ export function UploadDeployStep() {
       return;
     }
 
-    const nextPipeline = upload.pipeline(localPublicId).connect();
+    const nextPipeline = uploadClient.pipeline(localPublicId).connect();
     setPipeline(nextPipeline);
 
     return () => {
       nextPipeline.disconnect();
     };
-  }, [localPublicId, upload]);
+  }, [localPublicId]);
 
   const { state: pipelineState, connectionError } = usePipeline(pipeline);
 
@@ -105,7 +102,7 @@ export function UploadDeployStep() {
       setLocalPublicId(null);
 
       try {
-        const result = await upload.deploy({
+        const result = await uploadClient.deploy({
           file,
           selectedFiles: selection,
         });
@@ -135,7 +132,7 @@ export function UploadDeployStep() {
     return () => {
       cancelled = true;
     };
-  }, [deployAttempt, file, selection, upload, reportPublicId, reportPhase, reportError]);
+  }, [deployAttempt, file, selection, reportPublicId, reportPhase, reportError]);
 
   useEffect(() => {
     if (!publicId || resumeAppliedRef.current || deployAttempt > 0) {

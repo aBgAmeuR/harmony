@@ -1,4 +1,3 @@
-import { useRouteContext } from "@tanstack/react-router";
 import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 
 import {
@@ -50,7 +49,6 @@ function createStateFromSession(): UploadState {
 }
 
 export function UploadProvider({ children }: PropsWithChildren) {
-  const { config } = useRouteContext({ from: "/upload" });
   const [state, setState] = useState<UploadState>(() => createStateFromSession());
 
   useEffect(() => {
@@ -201,9 +199,8 @@ export function UploadProvider({ children }: PropsWithChildren) {
     () => ({
       state,
       actions,
-      meta: { apiUrl: config.apiUrl },
     }),
-    [state, actions, config.apiUrl],
+    [state, actions],
   );
 
   return <UploadContext value={value}>{children}</UploadContext>;

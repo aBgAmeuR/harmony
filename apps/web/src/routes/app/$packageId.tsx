@@ -48,8 +48,8 @@ function HarmonyFooter() {
 
 export const Route = createFileRoute("/app/$packageId")({
   ssr: false,
-  loader: async ({ params, context }) => {
-    await db.init(params.packageId, `${context.config.bucketUrl}/${params.packageId}.duckdb`);
+  loader: async ({ params }) => {
+    await db.init(params.packageId, `/files/${params.packageId}.duckdb`);
   },
   component: RouteComponent,
   pendingComponent: PendingComponent,
