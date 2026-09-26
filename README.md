@@ -57,22 +57,31 @@ cp apps/server/.env.example apps/server/.env
 Fill S3/R2 and Deezer proxy values in `apps/server/.env`.
 Set API url and bucket url in `apps/web/.env`.
 
-3. Run the API and web app (two terminals):
+3. Run the web app and API:
 
 ```bash
-pnpm dev:server
-pnpm dev:web
+pnpm dev
+```
+
+One side only:
+
+```bash
+pnpm --filter web dev
+pnpm --filter server dev
 ```
 
 ## Useful commands
 
-| Command            | Purpose                          |
-| ------------------ | -------------------------------- |
-| `pnpm check-types` | TypeScript across the workspace  |
-| `pnpm check`       | oxlint + oxfmt check             |
-| `pnpm verify`      | Frontend gates + Rust fmt/clippy |
-| `pnpm test:server` | Rust unit tests                  |
-| `pnpm build`       | Production web build             |
+| Command                    | Purpose                                     |
+| -------------------------- | ------------------------------------------- |
+| `pnpm dev`                 | Start the web app and API                   |
+| `pnpm --filter web dev`    | Web app only                                |
+| `pnpm --filter server dev` | API only                                    |
+| `pnpm lint`                | oxlint and clippy                           |
+| `pnpm format`              | Write oxfmt and rustfmt fixes               |
+| `pnpm check`               | oxfmt check, TypeScript, and cargo check    |
+| `pnpm test`                | Rust tests                                  |
+| `pnpm build`               | Web production build and server debug build |
 
 ## Docs
 

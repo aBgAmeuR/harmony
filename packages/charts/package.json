@@ -9,7 +9,7 @@
     "./v3": "./src/components/evilcharts/index.tsx"
   },
   "scripts": {
-    "check-types": "tsc --noEmit"
+    "check": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

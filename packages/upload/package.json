@@ -9,7 +9,7 @@
     "./react": "./src/react/index.ts"
   },
   "scripts": {
-    "check-types": "tsc --noEmit"
+    "check": "tsc --noEmit"
   },
   "dependencies": {
     "react": "^19.2.8"

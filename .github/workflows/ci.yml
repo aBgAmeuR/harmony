@@ -38,18 +38,30 @@ jobs:
           restore-keys: |
             turbo-web-${{ runner.os }}-
 
-      - name: Lint, format, types
-        run: pnpm exec turbo run //#lint //#format:check check-types
+      - name: Lint
+        run: pnpm exec oxlint .
+
+      - name: Check
+        run: pnpm exec oxfmt --check && pnpm exec turbo run check --filter=!server
 
   server:
     name: Server
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/server
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@1.96.0
@@ -62,8 +74,11 @@ jobs:
           workspaces: apps/server
           shared-key: server
 
-      - name: cargo fmt --check
-        run: cargo fmt --check
+      - name: Lint
+        run: pnpm --filter server lint
 
-      - name: cargo clippy
-        run: cargo clippy --all-targets -- -D warnings
+      - name: Check
+        run: pnpm --filter server check
+
+      - name: Test
+        run: pnpm --filter server test

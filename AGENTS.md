@@ -12,20 +12,14 @@ You are a senior product engineer for Harmony v3. Your job is to make focused, t
 Use `pnpm` from the project root unless noted otherwise.
 
 - `pnpm install` - install workspace dependencies.
-- `pnpm dev` or `pnpm dev:web` - run the TanStack Start web app through Turbo.
-- `pnpm dev:server` - run the Rust Axum upload API from `apps/server`.
-- `pnpm build` - build workspace packages through Turbo (`turbo run build`).
-- `pnpm check-types` - TypeScript checks via Turbo (parallel per package, transit cache graph).
-- `pnpm lint` / `pnpm format:check` - oxlint / oxfmt verify (root Turbo tasks).
-- `pnpm lint:fix` - oxlint with `--fix` (removes unused imports via `safe-fix`).
-- `pnpm check` - `turbo run //#lint //#format:check`.
-- `pnpm format` - write oxfmt fixes in place (includes import sorting from `.oxfmtrc.json`).
-- `pnpm check:server` - run `cargo check` for the Rust server.
-- `pnpm check:fmt:server` - run `cargo fmt --check` for the Rust server.
-- `pnpm format:server` - write rustfmt fixes in place.
-- `pnpm lint:server` - run `cargo clippy` with warnings denied.
-- `pnpm test:server` - run Rust tests.
-- `pnpm verify` - JS Turbo gates + Rust fmt/clippy.
+- `pnpm dev` - start the web app and the Rust API together.
+- `pnpm --filter web dev` - web app only.
+- `pnpm --filter server dev` - Rust API only.
+- `pnpm build` - production web build and debug server build (`turbo run build`).
+- `pnpm lint` - oxlint, then clippy on `server` (`cargo clippy --all-targets -- -D warnings`).
+- `pnpm format` - write oxfmt and rustfmt fixes.
+- `pnpm check` - `oxfmt --check`, then TypeScript (`tsc --noEmit` on packages with a tsconfig, transit cache graph) and the server `cargo fmt --check` plus `cargo check`.
+- `pnpm test` - Rust tests (`cargo test` on `server`).
 
 ## Project Knowledge
 
@@ -86,13 +80,13 @@ Always read `docs/DESIGN.md` before generating or modifying UI.
 
 ## Testing And Validation
 
-- After TypeScript or React implementation changes, run `pnpm check-types`.
-- After Rust implementation changes, run `pnpm check:server` and `pnpm lint:server`.
-- Run `pnpm test:server` when changing ingestion, database, pipeline, or API
+- After TypeScript or React implementation changes, run `pnpm check`.
+- After Rust implementation changes, run `pnpm --filter server lint` and `pnpm --filter server check`.
+- Run `pnpm test` when changing ingestion, database, pipeline, or API
   behavior covered by Rust tests.
-- Run `pnpm check` after substantial frontend/shared edits to catch linting and
-  formatting issues (verify only; use `pnpm format` to apply oxfmt writes).
-- Prefer `pnpm verify` before opening a PR — it is the same gate as GitHub Actions.
+- Run `pnpm check` after substantial frontend/shared edits to catch type and
+  formatting issues (read-only; use `pnpm format` to write oxfmt and rustfmt fixes).
+- `pnpm check` is the local gate. CI runs `oxlint .` (no Rust toolchain), then `oxfmt --check` and `turbo run check --filter=!server`, on the web job, and `pnpm --filter server lint`, `check`, and `test` on the server job.
 - If a required command cannot run because of missing services or environment
   variables, report the blocker and what remains unverified.
 
