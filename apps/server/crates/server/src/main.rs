@@ -20,7 +20,7 @@ mod storage;
 mod store;
 mod worker;
 
-use config::Config;
+use config::{APP_VERSION, Config, DeezerMode, StorageConfig};
 use package_upload::PackageUpload;
 use pipeline::DeezerClient;
 use storage::Storage;
@@ -57,9 +57,14 @@ async fn main() {
         eprintln!("{err}");
         std::process::exit(1);
     });
-    let _guard = otel::init_otel();
+    let telemetry = otel::init(config.log_format);
 
-    let storage_kind = storage.kind();
+    let storage_description = config.storage.describe();
+    let deezer_description = config.deezer.describe();
+    let deezer_direct = matches!(config.deezer, DeezerMode::Direct { .. });
+    let s3_without_public_url =
+        matches!(&config.storage, StorageConfig::S3(s3) if s3.public_url.is_none());
+
     let (jobs_tx, jobs_rx) = mpsc::channel::<worker::Job>(64);
     let state = AppState {
         packages: store::PackageStore::new(),
@@ -81,8 +86,26 @@ async fn main() {
         .await
         .expect("failed to bind to port");
 
-    tracing::info!(storage = storage_kind, "server is running on http://{addr}");
-    println!("server is running on http://{addr}");
+    tracing::info!(
+        version = APP_VERSION,
+        address = %addr,
+        storage = %storage_description,
+        deezer = %deezer_description,
+        max_upload_mb = config.max_upload_bytes / (1024 * 1024),
+        otel = telemetry.otel_enabled,
+        log_format = config.log_format.as_str(),
+        "harmony listening on http://{addr}"
+    );
+    if deezer_direct {
+        tracing::info!(
+            "Deezer requests go straight from this server; large imports can take 20+ minutes. Set DEEZER_PROXY_URLS to go faster."
+        );
+    }
+    if s3_without_public_url {
+        tracing::warn!(
+            "S3_PUBLIC_URL is not set: /files/{{id}}.duckdb returns 404, so package pages cannot load their data from this server."
+        );
+    }
 
     axum::serve(listener, app.into_make_service())
         .await
@@ -108,6 +131,6 @@ fn app(state: AppState) -> Router {
         .route("/files/{file_name}", get(http::get_package_file))
         .with_state(state)
         .layer(otel::OtelInResponseLayer)
-        .layer(otel::OtelAxumLayer::default())
+        .layer(otel::OtelAxumLayer::default().filter(otel::trace_request_path))
         .layer(CorsLayer::permissive())
 }

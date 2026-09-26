@@ -2,10 +2,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use futures::stream::{self, StreamExt};
-use opentelemetry::trace::Status;
 use serde::Deserialize;
 use strsim::jaro_winkler;
-use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use crate::pipeline::deezer::DeezerClient;
 use crate::pipeline::error::ResolveError;
@@ -86,6 +84,7 @@ fn find_matching_track<'a>(
 }
 
 #[tracing::instrument(
+    level = "debug",
     skip(client, item),
     name = "pipeline.resolve_track",
     fields(
@@ -112,11 +111,10 @@ async fn resolve_track(client: &DeezerClient, item: ResolveItem) -> TrackOutcome
             }
 
             tracing::Span::current().record("track_found", false);
-            tracing::Span::current().set_status(Status::error("Deezer track not found"));
             TrackOutcome::Missed
         }
         Err(err) => {
-            tracing::info!(track_key = %item.track_key, ?err, "Deezer search failed");
+            tracing::debug!(track_key = %item.track_key, ?err, "Deezer search failed");
             TrackOutcome::Error
         }
     }

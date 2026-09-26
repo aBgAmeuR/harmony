@@ -237,7 +237,7 @@ pub async fn fetch_tracks(
             }
             Err(err) => {
                 tracks_failed += 1;
-                tracing::info!(?err, "failed to fetch Deezer track");
+                tracing::debug!(?err, "failed to fetch Deezer track");
             }
         }
         on_item(track_done, tracks_failed);
@@ -308,7 +308,7 @@ pub async fn fetch_albums(
             }
             Err(err) => {
                 albums_failed += 1;
-                tracing::info!(?err, "failed to fetch Deezer album");
+                tracing::debug!(?err, "failed to fetch Deezer album");
             }
         }
         on_item(album_done, albums_failed);
@@ -344,7 +344,7 @@ pub async fn fetch_albums(
                 artist.image = Some(image);
             }
         } else {
-            tracing::info!(artist_id, "failed to build artist image from picture_small");
+            tracing::debug!(artist_id, "failed to build artist image from picture_small");
         }
     }
 

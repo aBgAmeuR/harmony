@@ -4,6 +4,7 @@ use std::time::Instant;
 use crate::pipeline::{self, PipelineError, PipelineRequest, Stage};
 use crate::progress::{ProgressReporter, stage_to_step_id};
 use opentelemetry::Context;
+use opentelemetry::trace::{Status, TraceContextExt};
 use tokio::sync::mpsc;
 use tracing::Instrument;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
@@ -58,8 +59,9 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
         duration_ms = tracing::field::Empty,
         failed_stage = tracing::field::Empty,
     );
-    if let Err(err) = span.set_parent(parent_cx) {
-        tracing::warn!(?err, "failed to attach upload trace as worker span parent");
+    let upload_span = parent_cx.span().span_context().clone();
+    if upload_span.is_valid() {
+        span.add_link(upload_span);
     }
 
     async {
@@ -107,7 +109,7 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
         let duration_ms = started.elapsed().as_millis() as u64;
 
         match pipeline_result {
-            Ok(_stats) => {
+            Ok(stats) => {
                 reporter.run_completed(duration_ms);
                 let data = state
                     .progress
@@ -116,12 +118,34 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
 
                 state.packages.set_completed(package_id, data);
                 worker_span.record("duration_ms", duration_ms);
-                tracing::info!(package_id, duration_ms, "pipeline completed");
+
+                let deezer_failed = stats.deezer_error_count as u64
+                    + stats.deezer_tracks_failed_count
+                    + stats.deezer_albums_failed_count;
+                tracing::info!(
+                    package_id,
+                    duration_ms,
+                    interactions = stats.normalize_kept_count,
+                    tracks_resolved = stats.deezer_resolved_count,
+                    tracks_missed = stats.deezer_missed_count,
+                    deezer_requests = stats.deezer_requests_count,
+                    deezer_failed,
+                    "pipeline completed"
+                );
+                if deezer_failed > 0 {
+                    tracing::warn!(
+                        package_id,
+                        deezer_failed,
+                        deezer_quota_exceeded = stats.deezer_quota_exceeded_count,
+                        "some Deezer lookups failed, so this package is missing metadata; lower DEEZER_RATE_LIMIT or set DEEZER_PROXY_URLS"
+                    );
+                }
             }
             Err(err) => {
                 let stage = err.stage();
                 let message = err.to_string();
                 worker_span.record("failed_stage", stage.as_str());
+                worker_span.set_status(Status::error(message.clone()));
                 tracing::error!(
                     package_id,
                     stage = stage.as_str(),
