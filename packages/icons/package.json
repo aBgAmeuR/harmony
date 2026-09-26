@@ -7,7 +7,7 @@
     ".": "./src/index.tsx"
   },
   "scripts": {
-    "check-types": "tsc --noEmit"
+    "check": "tsc --noEmit"
   },
   "dependencies": {
     "@hugeicons/core-free-icons": "^1.2.1",

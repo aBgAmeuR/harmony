@@ -10,16 +10,20 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**"]
     },
-    "check-types": {
+    "check": {
       "dependsOn": ["transit"]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
-    "//#lint": {},
-    "//#format:check": {},
+    "format": {
+      "cache": false
+    },
     "//#format": {
+      "cache": false
+    },
+    "test": {
       "cache": false
     }
   }
