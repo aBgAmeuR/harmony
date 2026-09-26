@@ -13,17 +13,14 @@ use std::time::Instant;
 
 use serde::Serialize;
 
+use crate::config::DeezerMode;
 use crate::progress::{ProgressAggregator, ProgressReporter, StepId};
-use crate::storage::S3ObjectStore;
+use crate::storage::Storage;
 
 use self::report::ExtractReport;
 
-pub fn build_deezer_client(proxy_urls: Vec<reqwest::Url>, proxy_secret: String) -> DeezerClient {
-    DeezerClient::new(deezer::DeezerConfig {
-        proxy_urls,
-        proxy_secret,
-    })
-    .expect("deezer http client")
+pub fn build_deezer_client(mode: DeezerMode) -> DeezerClient {
+    DeezerClient::new(mode).expect("deezer http client")
 }
 
 #[derive(Debug, Default, Clone)]
@@ -53,7 +50,7 @@ pub struct PipelineRequest {
     pub zip_bytes: Vec<u8>,
     pub selected_files: Option<Vec<String>>,
     pub reporter: Option<ProgressReporter>,
-    pub object_store: Arc<S3ObjectStore>,
+    pub object_store: Arc<Storage>,
     pub deezer: Arc<DeezerClient>,
 }
 

@@ -1,4 +1,11 @@
-import type { DeployInput, DeployResult, UploadConfig, UploadResponseBody } from "./types";
+import type {
+  DeployInput,
+  DeployResult,
+  ServerConfig,
+  ServerConfigBody,
+  UploadConfig,
+  UploadResponseBody,
+} from "./types";
 
 import { UploadError } from "./errors";
 import { Pipeline } from "./pipeline";
@@ -27,6 +34,15 @@ export class UploadClient {
 
     const body = (await response.json()) as UploadResponseBody;
     return { publicId: body.public_id };
+  }
+
+  async serverConfig(): Promise<ServerConfig> {
+    const response = await fetch(this.url("/api/v1/config"));
+    if (!response.ok) {
+      throw new UploadError("Failed to load server config", response.status);
+    }
+    const body = (await response.json()) as ServerConfigBody;
+    return { maxUploadBytes: body.max_upload_bytes };
   }
 
   pipeline(publicId: string): Pipeline {

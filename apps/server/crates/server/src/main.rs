@@ -23,9 +23,12 @@ mod worker;
 use config::Config;
 use package_upload::PackageUpload;
 use pipeline::DeezerClient;
-use storage::S3ObjectStore;
+use storage::Storage;
 
 pub type RamStore = Arc<DashMap<i32, PackageUpload>>;
+
+/// Room for multipart boundaries and the `selected_files` field on top of the ZIP.
+const MULTIPART_OVERHEAD_BYTES: usize = 1024 * 1024;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -33,8 +36,9 @@ pub struct AppState {
     pub ram_store: RamStore,
     pub jobs: mpsc::Sender<worker::Job>,
     pub progress: Arc<progress::ProgressHub>,
-    pub object_store: Arc<S3ObjectStore>,
+    pub object_store: Arc<Storage>,
     pub deezer: Arc<DeezerClient>,
+    pub max_upload_bytes: usize,
 }
 
 async fn health() -> &'static str {
@@ -49,24 +53,22 @@ async fn main() {
         eprintln!("{err}");
         std::process::exit(1);
     });
+    let storage = Storage::from_config(&config.storage).unwrap_or_else(|err| {
+        eprintln!("{err}");
+        std::process::exit(1);
+    });
     let _guard = otel::init_otel();
 
+    let storage_kind = storage.kind();
     let (jobs_tx, jobs_rx) = mpsc::channel::<worker::Job>(64);
     let state = AppState {
         packages: store::PackageStore::new(),
         ram_store: Arc::new(DashMap::new()),
         jobs: jobs_tx,
         progress: Arc::new(progress::ProgressHub::new()),
-        object_store: Arc::new(S3ObjectStore::new(
-            config.s3_endpoint,
-            config.s3_bucket,
-            config.aws_access_key_id,
-            config.aws_secret_access_key,
-        )),
-        deezer: Arc::new(pipeline::build_deezer_client(
-            config.deezer_proxy_urls,
-            config.deezer_proxy_secret,
-        )),
+        object_store: Arc::new(storage),
+        deezer: Arc::new(pipeline::build_deezer_client(config.deezer)),
+        max_upload_bytes: config.max_upload_bytes,
     };
 
     tokio::spawn(worker::run(state.clone(), jobs_rx));
@@ -79,7 +81,7 @@ async fn main() {
         .await
         .expect("failed to bind to port");
 
-    tracing::info!("server is running on http://{addr}");
+    tracing::info!(storage = storage_kind, "server is running on http://{addr}");
     println!("server is running on http://{addr}");
 
     axum::serve(listener, app.into_make_service())
@@ -88,17 +90,22 @@ async fn main() {
 }
 
 fn app(state: AppState) -> Router {
+    let max_upload_bytes = state.max_upload_bytes;
     Router::new()
         .route("/health", get(health))
+        .route("/api/v1/config", get(http::get_server_config))
         .route(
             "/api/v1/packages",
-            post(http::upload_package).layer(DefaultBodyLimit::max(50 * 1024 * 1024)),
+            post(http::upload_package).layer(DefaultBodyLimit::max(
+                max_upload_bytes + MULTIPART_OVERHEAD_BYTES,
+            )),
         )
         .route("/api/v1/packages/{id}", get(http::get_package_handler))
         .route(
             "/api/v1/packages/{id}/stream",
             get(progress::stream_package_progress),
         )
+        .route("/files/{file_name}", get(http::get_package_file))
         .with_state(state)
         .layer(otel::OtelInResponseLayer)
         .layer(otel::OtelAxumLayer::default())

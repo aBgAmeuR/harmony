@@ -9,12 +9,14 @@ import {
   CardTitle,
 } from "@harmony/ui/components/card";
 import { cn } from "@harmony/ui/lib/utils";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 
 import { useUpload } from "../context";
+import { uploadQueries } from "../queries";
 
-const MAX_ZIP_SIZE = 50 * 1024 * 1024;
+const DEFAULT_MAX_ZIP_SIZE = 50 * 1024 * 1024;
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -32,7 +34,10 @@ export function UploadPackageStep() {
   const {
     state: { file },
     actions: { setFile, next },
+    meta: { apiUrl },
   } = useUpload();
+  const { data: serverConfig } = useQuery(uploadQueries.serverConfig.queryOptions(apiUrl));
+  const maxZipSize = serverConfig?.maxUploadBytes ?? DEFAULT_MAX_ZIP_SIZE;
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -44,8 +49,8 @@ export function UploadPackageStep() {
       setError("Please upload a .zip file.");
       return;
     }
-    if (nextFile.size > MAX_ZIP_SIZE) {
-      setError("File is too large. Maximum allowed size is 50 MB.");
+    if (nextFile.size > maxZipSize) {
+      setError(`File is too large. Maximum allowed size is ${formatBytes(maxZipSize)}.`);
       return;
     }
     setError(null);
@@ -118,7 +123,8 @@ export function UploadPackageStep() {
                 </span>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Supports <span className="font-mono">.zip</span> files up to 50 MB
+                Supports <span className="font-mono">.zip</span> files up to{" "}
+                {formatBytes(maxZipSize)}
               </p>
             </div>
           </Button>

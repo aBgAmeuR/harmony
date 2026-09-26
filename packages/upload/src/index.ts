@@ -15,6 +15,8 @@ export type {
   PipelineRunStatus,
   PipelineState,
   PipelineStep,
+  ServerConfig,
+  ServerConfigBody,
   StepId,
   StepProgress,
   StepStatus,
