@@ -9,6 +9,7 @@ use dashmap::DashMap;
 use tokio::sync::mpsc;
 use tower_http::cors::CorsLayer;
 
+mod config;
 mod error;
 mod http;
 mod otel;
@@ -19,7 +20,9 @@ mod storage;
 mod store;
 mod worker;
 
+use config::Config;
 use package_upload::PackageUpload;
+use pipeline::DeezerClient;
 use storage::S3ObjectStore;
 
 pub type RamStore = Arc<DashMap<i32, PackageUpload>>;
@@ -31,6 +34,7 @@ pub struct AppState {
     pub jobs: mpsc::Sender<worker::Job>,
     pub progress: Arc<progress::ProgressHub>,
     pub object_store: Arc<S3ObjectStore>,
+    pub deezer: Arc<DeezerClient>,
 }
 
 async fn health() -> &'static str {
@@ -39,9 +43,13 @@ async fn health() -> &'static str {
 
 #[tokio::main]
 async fn main() {
+    let _ = dotenvy::dotenv();
+
+    let config = Config::from_env().unwrap_or_else(|err| {
+        eprintln!("{err}");
+        std::process::exit(1);
+    });
     let _guard = otel::init_otel();
-    let object_store =
-        Arc::new(S3ObjectStore::from_env().expect("failed to initialize object storage"));
 
     let (jobs_tx, jobs_rx) = mpsc::channel::<worker::Job>(64);
     let state = AppState {
@@ -49,16 +57,23 @@ async fn main() {
         ram_store: Arc::new(DashMap::new()),
         jobs: jobs_tx,
         progress: Arc::new(progress::ProgressHub::new()),
-        object_store,
+        object_store: Arc::new(S3ObjectStore::new(
+            config.s3_endpoint,
+            config.s3_bucket,
+            config.aws_access_key_id,
+            config.aws_secret_access_key,
+        )),
+        deezer: Arc::new(pipeline::build_deezer_client(
+            config.deezer_proxy_urls,
+            config.deezer_proxy_secret,
+        )),
     };
 
     tokio::spawn(worker::run(state.clone(), jobs_rx));
 
     let app = app(state);
 
-    let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
-    let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
-    let addr = format!("{host}:{port}");
+    let addr = format!("{}:{}", config.host, config.port);
 
     let listener = tokio::net::TcpListener::bind(&addr)
         .await

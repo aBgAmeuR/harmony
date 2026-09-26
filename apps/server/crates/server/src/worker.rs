@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::time::Instant;
 
-use crate::pipeline::{self, PipelineError, PipelineRequest};
+use crate::pipeline::{self, PipelineError, PipelineRequest, Stage};
 use crate::progress::{ProgressReporter, stage_to_step_id};
 use opentelemetry::Context;
 use tokio::sync::mpsc;
@@ -24,7 +24,7 @@ pub enum WorkerError {
     #[error("package {package_id} missing from store")]
     PackageMissing { package_id: i32 },
 
-    #[error("pipeline failed")]
+    #[error("pipeline failed: {0}")]
     Pipeline(#[from] PipelineError),
 }
 
@@ -100,6 +100,7 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
             selected_files: upload.selected_files,
             reporter: Some(reporter.clone()),
             object_store: Arc::clone(&state.object_store),
+            deezer: Arc::clone(&state.deezer),
         })
         .await;
 
@@ -119,6 +120,7 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
             }
             Err(err) => {
                 let stage = err.stage();
+                let message = err.to_string();
                 worker_span.record("failed_stage", stage.as_str());
                 tracing::error!(
                     package_id,
@@ -127,20 +129,20 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
                     "pipeline failed - cancelled"
                 );
 
-                let step_id = stage_to_step_id(stage);
-                reporter.run_failed(step_id, &err.to_string());
+                if stage == Stage::Task {
+                    reporter.fail_running_step(&message);
+                } else {
+                    reporter.run_failed(stage_to_step_id(stage), &message);
+                }
 
                 let data = state
                     .progress
                     .finalize_json(&public_id, duration_ms)
                     .unwrap_or_else(|| empty_progress_json(duration_ms));
 
-                state.packages.set_failed_with_data(
-                    package_id,
-                    stage.as_str(),
-                    &err.to_string(),
-                    data,
-                );
+                state
+                    .packages
+                    .set_failed_with_data(package_id, stage.as_str(), &message, data);
                 state.progress.unregister(&public_id);
                 return Err(WorkerError::Pipeline(err));
             }

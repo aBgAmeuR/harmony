@@ -5,6 +5,7 @@ mod report;
 mod stages;
 mod types;
 
+pub use deezer::DeezerClient;
 pub use error::{PipelineError, Stage};
 
 use std::sync::Arc;
@@ -15,8 +16,15 @@ use serde::Serialize;
 use crate::progress::{ProgressAggregator, ProgressReporter, StepId};
 use crate::storage::S3ObjectStore;
 
-use self::deezer::DeezerClient;
 use self::report::ExtractReport;
+
+pub fn build_deezer_client(proxy_urls: Vec<reqwest::Url>, proxy_secret: String) -> DeezerClient {
+    DeezerClient::new(deezer::DeezerConfig {
+        proxy_urls,
+        proxy_secret,
+    })
+    .expect("deezer http client")
+}
 
 #[derive(Debug, Default, Clone)]
 pub struct PipelineStats {
@@ -46,6 +54,7 @@ pub struct PipelineRequest {
     pub selected_files: Option<Vec<String>>,
     pub reporter: Option<ProgressReporter>,
     pub object_store: Arc<S3ObjectStore>,
+    pub deezer: Arc<DeezerClient>,
 }
 
 fn begin_step(reporter: &Option<ProgressReporter>, step_id: StepId) -> Instant {
@@ -129,6 +138,7 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
         selected_files,
         reporter,
         object_store,
+        deezer,
     } = request;
 
     let pipeline_started = Instant::now();
@@ -173,10 +183,6 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
     .await?;
 
     let catalogue_size = normalize.catalogue.len();
-    let deezer_client = {
-        let config = deezer::load_config().map_err(error::ResolveError::MissingConfig)?;
-        Arc::new(DeezerClient::new(config).map_err(error::ResolveError::HttpClient)?)
-    };
 
     let resolve = {
         let started = begin_step(&reporter, StepId::ResolveTracks);
@@ -186,7 +192,7 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
         });
 
         let (output, report) = stages::resolve::run(
-            Arc::clone(&deezer_client),
+            Arc::clone(&deezer),
             stages::resolve::ResolveInput {
                 catalogue: normalize.catalogue,
             },
@@ -216,7 +222,7 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
             .map(|reporter| ProgressAggregator::new(StepId::EnrichTracks, reporter.clone(), total));
 
         let (output, report) = stages::enrich::fetch_tracks(
-            Arc::clone(&deezer_client),
+            Arc::clone(&deezer),
             stages::enrich::EnrichTracksInput {
                 deezer_matches: resolve.deezer_matches.clone(),
             },
@@ -246,7 +252,7 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
             .map(|reporter| ProgressAggregator::new(StepId::EnrichAlbums, reporter.clone(), total));
 
         let (output, report) = stages::enrich::fetch_albums(
-            Arc::clone(&deezer_client),
+            Arc::clone(&deezer),
             stages::enrich::EnrichAlbumsInput {
                 album_ids: enrich_tracks.album_ids,
                 deezer_artists: enrich_tracks.deezer_artists,
