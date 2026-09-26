@@ -7,6 +7,11 @@ pub const DEFAULT_S3_REGION: &str = "auto";
 pub const DEFAULT_DEEZER_RATE_LIMIT: u32 = 8;
 pub const DEFAULT_MAX_UPLOAD_MB: u32 = 50;
 
+pub const APP_VERSION: &str = match option_env!("HARMONY_VERSION") {
+    Some(version) => version,
+    None => "dev",
+};
+
 const DEEZER_RATE_LIMIT_MAX: u32 = 50;
 const MAX_UPLOAD_MB_MAX: u32 = 2000;
 
@@ -16,6 +21,24 @@ pub struct Config {
     pub storage: StorageConfig,
     pub deezer: DeezerMode,
     pub max_upload_bytes: usize,
+    pub log_format: LogFormat,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LogFormat {
+    Compact,
+    Pretty,
+    Json,
+}
+
+impl LogFormat {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Compact => "compact",
+            Self::Pretty => "pretty",
+            Self::Json => "json",
+        }
+    }
 }
 
 pub enum StorageConfig {
@@ -37,6 +60,32 @@ pub enum DeezerMode {
     Proxies { urls: Vec<Url>, secret: String },
 }
 
+impl StorageConfig {
+    /// Human-readable summary without credentials.
+    pub fn describe(&self) -> String {
+        match self {
+            Self::Local { data_dir } => format!("local ({})", data_dir.display()),
+            Self::S3(s3) => format!(
+                "s3 ({}, bucket {})",
+                s3.endpoint.host_str().unwrap_or("unknown host"),
+                s3.bucket
+            ),
+        }
+    }
+}
+
+impl DeezerMode {
+    /// Human-readable summary without proxy URLs or the proxy secret.
+    pub fn describe(&self) -> String {
+        match self {
+            Self::Direct {
+                requests_per_second,
+            } => format!("direct ({requests_per_second} req/s)"),
+            Self::Proxies { urls, .. } => format!("proxies ({})", urls.len()),
+        }
+    }
+}
+
 struct ConfigInput {
     pub host: Option<String>,
     pub port: Option<String>,
@@ -51,6 +100,7 @@ struct ConfigInput {
     pub deezer_proxy_secret: Option<String>,
     pub deezer_rate_limit: Option<String>,
     pub max_upload_mb: Option<String>,
+    pub log_format: Option<String>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -73,6 +123,7 @@ impl Config {
             deezer_proxy_secret: std::env::var("DEEZER_PROXY_SECRET").ok(),
             deezer_rate_limit: std::env::var("DEEZER_RATE_LIMIT").ok(),
             max_upload_mb: std::env::var("MAX_UPLOAD_MB").ok(),
+            log_format: std::env::var("LOG_FORMAT").ok(),
         })
     }
 
@@ -101,8 +152,10 @@ impl Config {
             MAX_UPLOAD_MB_MAX,
             &mut problems,
         );
+        let log_format = parse_log_format(input.log_format.as_deref(), &mut problems);
 
-        let (Some(storage), Some(deezer), Some(max_upload_mb)) = (storage, deezer, max_upload_mb)
+        let (Some(storage), Some(deezer), Some(max_upload_mb), Some(log_format)) =
+            (storage, deezer, max_upload_mb, log_format)
         else {
             return Err(ConfigError(format_problems(&problems)));
         };
@@ -122,7 +175,26 @@ impl Config {
             storage,
             deezer,
             max_upload_bytes: max_upload_mb as usize * 1024 * 1024,
+            log_format,
         })
+    }
+}
+
+fn parse_log_format(value: Option<&str>, problems: &mut Vec<String>) -> Option<LogFormat> {
+    let Some(raw) = non_blank(value) else {
+        return Some(LogFormat::Compact);
+    };
+    let raw = raw.trim();
+    match raw.to_ascii_lowercase().as_str() {
+        "compact" => Some(LogFormat::Compact),
+        "pretty" => Some(LogFormat::Pretty),
+        "json" => Some(LogFormat::Json),
+        _ => {
+            problems.push(format!(
+                "LOG_FORMAT is invalid: {raw} (expected compact, pretty or json)"
+            ));
+            None
+        }
     }
 }
 
@@ -334,6 +406,7 @@ mod tests {
             deezer_proxy_secret: None,
             deezer_rate_limit: None,
             max_upload_mb: None,
+            log_format: None,
         }
     }
 
@@ -571,5 +644,57 @@ mod tests {
         assert!(message.contains("PORT is invalid: nope"), "{message}");
         assert!(!message.contains(ACCESS_KEY), "{message}");
         assert!(!message.contains(PROXY_SECRET), "{message}");
+    }
+
+    #[test]
+    fn log_format_defaults_to_compact_and_ignores_case() {
+        let config = Config::from_input(empty_input()).unwrap();
+        assert_eq!(config.log_format, LogFormat::Compact);
+
+        let mut input = empty_input();
+        input.log_format = Some("JSON".to_string());
+        let config = Config::from_input(input).unwrap();
+        assert_eq!(config.log_format, LogFormat::Json);
+
+        let mut input = empty_input();
+        input.log_format = Some(" pretty ".to_string());
+        let config = Config::from_input(input).unwrap();
+        assert_eq!(config.log_format, LogFormat::Pretty);
+    }
+
+    #[test]
+    fn invalid_log_format_names_the_value() {
+        let mut input = empty_input();
+        input.log_format = Some("nope".to_string());
+
+        let message = expect_err(Config::from_input(input)).to_string();
+        assert!(
+            message.contains("LOG_FORMAT is invalid: nope (expected compact, pretty or json)"),
+            "{message}"
+        );
+    }
+
+    #[test]
+    fn describe_hides_credentials_and_proxy_urls() {
+        let config = Config::from_input(valid_input()).unwrap();
+
+        let storage = config.storage.describe();
+        let deezer = config.deezer.describe();
+        assert_eq!(storage, "s3 (s3.example, bucket harmony)");
+        assert_eq!(deezer, "proxies (1)");
+        for description in [&storage, &deezer] {
+            assert!(!description.contains(ACCESS_KEY), "{description}");
+            assert!(!description.contains(SECRET_KEY), "{description}");
+            assert!(!description.contains(PROXY_SECRET), "{description}");
+            assert!(!description.contains("proxy-a.example"), "{description}");
+        }
+    }
+
+    #[test]
+    fn describe_local_storage_and_direct_deezer() {
+        let config = Config::from_input(empty_input()).unwrap();
+
+        assert_eq!(config.storage.describe(), "local (./data)");
+        assert_eq!(config.deezer.describe(), "direct (8 req/s)");
     }
 }

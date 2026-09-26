@@ -8,10 +8,12 @@ mod types;
 pub use deezer::DeezerClient;
 pub use error::{PipelineError, Stage};
 
+use std::future::Future;
 use std::sync::Arc;
 use std::time::Instant;
 
 use serde::Serialize;
+use tracing::Instrument;
 
 use crate::config::DeezerMode;
 use crate::progress::{ProgressAggregator, ProgressReporter, StepId};
@@ -35,6 +37,11 @@ pub struct PipelineStats {
     pub deezer_error_count: usize,
     pub deezer_tracks_fetched_count: usize,
     pub deezer_albums_fetched_count: usize,
+    pub deezer_tracks_failed_count: u64,
+    pub deezer_albums_failed_count: u64,
+    pub deezer_requests_count: u64,
+    pub deezer_retries_count: u64,
+    pub deezer_quota_exceeded_count: u64,
     pub interactions_skipped_count: usize,
     pub verify_tracks_skipped_count: usize,
     pub verify_interactions_skipped_count: usize,
@@ -76,6 +83,39 @@ fn serialize_output(value: &impl Serialize) -> Option<serde_json::Value> {
     serde_json::to_value(value).ok()
 }
 
+fn stage_span_name(step_id: StepId) -> &'static str {
+    match step_id {
+        StepId::ExtractArchive => "pipeline.extract",
+        StepId::ParseInteractions => "pipeline.parse",
+        StepId::NormalizeInteractions => "pipeline.normalize",
+        StepId::ResolveTracks => "pipeline.resolve",
+        StepId::EnrichTracks => "pipeline.enrich_tracks",
+        StepId::EnrichAlbums => "pipeline.enrich_albums",
+        StepId::AggregateInteractions => "pipeline.aggregate",
+        StepId::VerifyData => "pipeline.verify",
+        StepId::PersistInteractions => "pipeline.persist",
+    }
+}
+
+fn stage_span(step_id: StepId) -> tracing::Span {
+    let name = stage_span_name(step_id);
+    tracing::info_span!("pipeline.stage", otel.name = name, pipeline.stage = name)
+}
+
+/// Runs blocking stage work on the blocking pool inside the stage span.
+fn spawn_blocking_stage<T, F>(
+    step_id: StepId,
+    work: F,
+) -> impl Future<Output = Result<T, tokio::task::JoinError>>
+where
+    T: Send + 'static,
+    F: FnOnce() -> T + Send + 'static,
+{
+    let span = stage_span(step_id);
+    let blocking_span = span.clone();
+    tokio::task::spawn_blocking(move || blocking_span.in_scope(work)).instrument(span)
+}
+
 async fn run_cpu_stage<I, O, R, E, F>(
     reporter: &Option<ProgressReporter>,
     step_id: StepId,
@@ -93,7 +133,7 @@ where
     F: FnOnce(I) -> Result<(O, R), E> + Send + 'static,
 {
     let started = begin_step(reporter, step_id);
-    let (output, report) = tokio::task::spawn_blocking(move || stage(input))
+    let (output, report) = spawn_blocking_stage(step_id, move || stage(input))
         .await?
         .map_err(Into::into)?;
     apply(&report, stats);
@@ -118,6 +158,11 @@ where
         deezer_error_count,
         deezer_tracks_fetched_count,
         deezer_albums_fetched_count,
+        deezer_tracks_failed_count,
+        deezer_albums_failed_count,
+        deezer_requests_count,
+        deezer_retries_count,
+        deezer_quota_exceeded_count,
         interactions_skipped_count,
         verify_tracks_skipped_count,
         verify_interactions_skipped_count,
@@ -180,6 +225,8 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
     .await?;
 
     let catalogue_size = normalize.catalogue.len();
+    // Valid because the worker runs one pipeline at a time.
+    let deezer_counters_before = deezer.counters();
 
     let resolve = {
         let started = begin_step(&reporter, StepId::ResolveTracks);
@@ -199,6 +246,7 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
                 }
             },
         )
+        .instrument(stage_span(StepId::ResolveTracks))
         .await?;
 
         report.apply_to_stats(&mut stats);
@@ -229,6 +277,7 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
                 }
             },
         )
+        .instrument(stage_span(StepId::EnrichTracks))
         .await?;
 
         report.apply_to_stats(&mut stats);
@@ -260,6 +309,7 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
                 }
             },
         )
+        .instrument(stage_span(StepId::EnrichAlbums))
         .await?;
 
         report.apply_to_stats(&mut stats);
@@ -272,10 +322,15 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
         output
     };
 
+    let deezer_counters = deezer.counters().since(deezer_counters_before);
+    stats.deezer_requests_count = deezer_counters.requests;
+    stats.deezer_retries_count = deezer_counters.retries;
+    stats.deezer_quota_exceeded_count = deezer_counters.quota_exceeded;
+
     let save_started = begin_step(&reporter, StepId::PersistInteractions);
 
     let aggregate = {
-        let (output, report) = tokio::task::spawn_blocking({
+        let (output, report) = spawn_blocking_stage(StepId::AggregateInteractions, {
             let normalized = normalize.normalized;
             let deezer_matches = resolve.deezer_matches;
             move || {
@@ -292,7 +347,7 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
     };
 
     let verify = {
-        let (output, report) = tokio::task::spawn_blocking({
+        let (output, report) = spawn_blocking_stage(StepId::VerifyData, {
             let albums = enrich_albums.deezer_albums;
             let tracks = enrich_tracks.deezer_tracks;
             let interactions = aggregate.interactions;
@@ -313,7 +368,7 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
     let (artifact, persist_output) = {
         let public_id = public_id.clone();
         let artists = enrich_albums.deezer_artists;
-        tokio::task::spawn_blocking(move || {
+        spawn_blocking_stage(StepId::PersistInteractions, move || {
             stages::persist::build(stages::persist::PersistInput {
                 public_id,
                 interactions: verify.interactions,
@@ -354,7 +409,9 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
         .await?
         .map_err(PipelineError::from)?;
 
-    stages::persist::upload(&object_store, &artifact).await?;
+    stages::persist::upload(&object_store, &artifact)
+        .instrument(tracing::info_span!("pipeline.upload"))
+        .await?;
 
     record_stats(&stats, catalogue_size);
     Ok(stats)
@@ -383,6 +440,20 @@ fn record_stats(stats: &PipelineStats, catalogue_size: usize) {
         stats.deezer_albums_fetched_count as i64,
     );
     span.record(
+        "deezer_tracks_failed_count",
+        stats.deezer_tracks_failed_count,
+    );
+    span.record(
+        "deezer_albums_failed_count",
+        stats.deezer_albums_failed_count,
+    );
+    span.record("deezer_requests_count", stats.deezer_requests_count);
+    span.record("deezer_retries_count", stats.deezer_retries_count);
+    span.record(
+        "deezer_quota_exceeded_count",
+        stats.deezer_quota_exceeded_count,
+    );
+    span.record(
         "interactions_skipped_count",
         stats.interactions_skipped_count as i64,
     );
@@ -394,4 +465,30 @@ fn record_stats(stats: &PipelineStats, catalogue_size: usize) {
         "verify_interactions_skipped_count",
         stats.verify_interactions_skipped_count as i64,
     );
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use super::*;
+
+    #[test]
+    fn stage_span_names_are_distinct() {
+        let steps = [
+            StepId::ExtractArchive,
+            StepId::ParseInteractions,
+            StepId::NormalizeInteractions,
+            StepId::ResolveTracks,
+            StepId::EnrichTracks,
+            StepId::EnrichAlbums,
+            StepId::AggregateInteractions,
+            StepId::VerifyData,
+            StepId::PersistInteractions,
+        ];
+
+        let names: HashSet<_> = steps.into_iter().map(stage_span_name).collect();
+        assert_eq!(names.len(), steps.len());
+        assert!(names.iter().all(|name| name.starts_with("pipeline.")));
+    }
 }

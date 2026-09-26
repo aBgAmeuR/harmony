@@ -148,6 +148,7 @@ impl EnrichTracksReport {
 
     pub fn apply_to_stats(&self, stats: &mut PipelineStats) {
         stats.deezer_tracks_fetched_count = self.fetched;
+        stats.deezer_tracks_failed_count = self.failed;
     }
 }
 
@@ -171,6 +172,7 @@ impl EnrichAlbumsReport {
 
     pub fn apply_to_stats(&self, stats: &mut PipelineStats) {
         stats.deezer_albums_fetched_count = self.fetched;
+        stats.deezer_albums_failed_count = self.failed;
     }
 }
 

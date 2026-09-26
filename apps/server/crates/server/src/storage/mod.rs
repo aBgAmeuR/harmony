@@ -59,6 +59,11 @@ impl Storage {
 }
 
 impl ObjectStore for Storage {
+    #[tracing::instrument(
+        name = "storage.put_file",
+        skip_all,
+        fields(storage.backend = self.kind(), object.key = key),
+    )]
     async fn put_file(&self, key: &str, path: &Path) -> Result<(), StorageError> {
         match self {
             Self::Local(store) => store.put_file(key, path).await,

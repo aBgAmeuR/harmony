@@ -5,7 +5,7 @@ use axum::{
 };
 use chrono::NaiveDateTime;
 use serde::Serialize;
-use tracing::info;
+use tracing::{debug, info};
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use crate::AppState;
@@ -59,6 +59,16 @@ fn is_zip(data: &[u8]) -> bool {
     data.starts_with(&[0x50, 0x4B, 0x03, 0x04])
 }
 
+#[tracing::instrument(
+    name = "packages.upload",
+    skip_all,
+    fields(
+        upload.size_bytes = tracing::field::Empty,
+        upload.selected_files_count = tracing::field::Empty,
+        package.id = tracing::field::Empty,
+        package.public_id = tracing::field::Empty,
+    ),
+)]
 pub async fn upload_package(
     State(state): State<AppState>,
     mut multipart: Multipart,
@@ -68,7 +78,7 @@ pub async fn upload_package(
     let mut selected_files = None;
 
     while let Some(field) = multipart.next_field().await? {
-        info!(field_name = ?field.name(), "multipart field received");
+        debug!(field_name = ?field.name(), "multipart field received");
 
         match field.name() {
             Some("file") => {
@@ -102,8 +112,11 @@ pub async fn upload_package(
         "package upload received"
     );
 
-    tracing::Span::current().record("upload.file_name", file_name.as_str());
-    tracing::Span::current().record("upload.size_bytes", data.len() as i64);
+    let span = tracing::Span::current();
+    span.record("upload.size_bytes", data.len() as i64);
+    if let Some(files) = selected_files.as_ref() {
+        span.record("upload.selected_files_count", files.len() as i64);
+    }
 
     if !is_zip(&data) {
         return Err(ApiError::unprocessable("file is not a valid zip archive"));
@@ -122,7 +135,6 @@ pub async fn upload_package(
         },
     );
 
-    let span = tracing::Span::current();
     span.record("package.id", package.id);
     span.record("package.public_id", package.public_id.as_str());
 
@@ -131,7 +143,7 @@ pub async fn upload_package(
         .send(Job {
             package_id: package.id,
             public_id: package.public_id.clone(),
-            parent_cx: tracing::Span::current().context(),
+            parent_cx: span.context(),
         })
         .await
         .map_err(|_| ApiError::internal("worker unavailable"))?;

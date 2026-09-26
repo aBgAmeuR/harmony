@@ -1,4 +1,4 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::time::Duration;
 
 use reqwest::{Client, Url};
@@ -77,10 +77,31 @@ enum Transport {
     Proxies { urls: Vec<Url>, secret: String },
 }
 
+/// Snapshot of the client's lifetime request counters.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub struct DeezerCounters {
+    pub requests: u64,
+    pub retries: u64,
+    pub quota_exceeded: u64,
+}
+
+impl DeezerCounters {
+    pub fn since(self, earlier: Self) -> Self {
+        Self {
+            requests: self.requests.saturating_sub(earlier.requests),
+            retries: self.retries.saturating_sub(earlier.retries),
+            quota_exceeded: self.quota_exceeded.saturating_sub(earlier.quota_exceeded),
+        }
+    }
+}
+
 pub struct DeezerClient {
     http: Client,
     transport: Transport,
     proxy_round: AtomicUsize,
+    requests: AtomicU64,
+    retries: AtomicU64,
+    quota_exceeded: AtomicU64,
 }
 
 impl DeezerClient {
@@ -103,7 +124,18 @@ impl DeezerClient {
             http,
             transport,
             proxy_round: AtomicUsize::new(0),
+            requests: AtomicU64::new(0),
+            retries: AtomicU64::new(0),
+            quota_exceeded: AtomicU64::new(0),
         })
+    }
+
+    pub fn counters(&self) -> DeezerCounters {
+        DeezerCounters {
+            requests: self.requests.load(Ordering::Relaxed),
+            retries: self.retries.load(Ordering::Relaxed),
+            quota_exceeded: self.quota_exceeded.load(Ordering::Relaxed),
+        }
     }
 
     pub fn concurrency(&self) -> usize {
@@ -131,6 +163,7 @@ impl DeezerClient {
         let response = match &self.transport {
             Transport::Direct { limiter } => {
                 limiter.acquire().await;
+                self.requests.fetch_add(1, Ordering::Relaxed);
                 self.http
                     .get(url)
                     .send()
@@ -138,6 +171,7 @@ impl DeezerClient {
                     .map_err(DeezerFetchError::Network)?
             }
             Transport::Proxies { secret, .. } => {
+                self.requests.fetch_add(1, Ordering::Relaxed);
                 let response = self
                     .http
                     .get(url)
@@ -185,6 +219,7 @@ impl DeezerClient {
 
         for attempt in 0..MAX_RETRIES {
             if attempt > 0 {
+                self.retries.fetch_add(1, Ordering::Relaxed);
                 sleep(Duration::from_millis(RETRY_DELAY_MS)).await;
             }
 
@@ -195,6 +230,9 @@ impl DeezerClient {
                     });
                 }
                 Err(err) => {
+                    if matches!(err, DeezerFetchError::QuotaExceeded) {
+                        self.quota_exceeded.fetch_add(1, Ordering::Relaxed);
+                    }
                     if err.is_retryable() && attempt + 1 < MAX_RETRIES {
                         last_error = Some(err);
                         continue;
@@ -257,6 +295,38 @@ mod tests {
     fn concurrency_depends_on_transport() {
         assert_eq!(direct_client().concurrency(), 4);
         assert_eq!(proxy_client(3).concurrency(), 3);
+    }
+
+    #[test]
+    fn counters_since_saturates() {
+        let earlier = DeezerCounters {
+            requests: 10,
+            retries: 2,
+            quota_exceeded: 1,
+        };
+        let later = DeezerCounters {
+            requests: 25,
+            retries: 1,
+            quota_exceeded: 1,
+        };
+
+        assert_eq!(
+            later.since(earlier),
+            DeezerCounters {
+                requests: 15,
+                retries: 0,
+                quota_exceeded: 0,
+            }
+        );
+        assert_eq!(
+            DeezerCounters::default().since(later),
+            DeezerCounters::default()
+        );
+    }
+
+    #[test]
+    fn new_client_starts_with_zero_counters() {
+        assert_eq!(direct_client().counters(), DeezerCounters::default());
     }
 
     #[tokio::test]
