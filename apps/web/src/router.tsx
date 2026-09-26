@@ -2,16 +2,14 @@ import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 
 import "./index.css";
 import Loader from "./components/loader";
-import { getPublicConfig } from "./lib/public-config";
 import { queryClient } from "./lib/query-client";
 import { routeTree } from "./routeTree.gen";
 
-export const getRouter = async () => {
-  const config = await getPublicConfig();
+export const getRouter = () => {
   const router = createTanStackRouter({
     routeTree,
     defaultPreloadStaleTime: 1000 * 60 * 60, // 1h
-    context: { queryClient, config },
+    context: { queryClient },
     defaultPendingComponent: () => <Loader />,
     defaultPendingMs: 1000,
     defaultNotFoundComponent: () => <div>Not Found</div>,

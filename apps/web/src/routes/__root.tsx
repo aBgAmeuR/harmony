@@ -2,15 +2,12 @@ import { TooltipProvider } from "@harmony/ui/components/tooltip";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 
-import type { getPublicConfig } from "@/lib/public-config";
-
 import { queryClient } from "@/lib/query-client";
 
 import appCss from "../index.css?url";
 
 export interface RouterAppContext {
   queryClient: QueryClient;
-  config: Awaited<ReturnType<typeof getPublicConfig>>;
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({

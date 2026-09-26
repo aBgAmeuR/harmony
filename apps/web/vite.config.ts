@@ -5,22 +5,23 @@ import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import checker from "vite-plugin-checker";
 
-export default defineConfig({
+export default defineConfig(({ command, isPreview }) => ({
   plugins: [
-    nitro(),
+    nitro({
+      devProxy: {
+        "/api/**": "http://127.0.0.1:3000",
+        "/files/**": "http://127.0.0.1:3000",
+      },
+    }),
     tailwindcss(),
     tanstackStart({
-      // see issue: https://github.com/TanStack/router/issues/6602
-      // spa: {
-      //   enabled: true,
-      // },
-      // pages: [
-      //   { path: "/", prerender: { enabled: true } },
-      //   { path: "/upload", prerender: { enabled: true } },
-      // ],
+      spa: {
+        enabled: true,
+      },
     }),
     viteReact(),
-    checker({ oxlint: true }),
+    // Dev server only: in build and preview (used by the SPA prerender) its workers keep Node alive.
+    command === "serve" && !isPreview ? checker({ oxlint: true }) : null,
   ],
   server: {
     port: 3001,
@@ -28,4 +29,4 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
-});
+}));
