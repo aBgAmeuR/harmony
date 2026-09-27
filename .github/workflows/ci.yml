@@ -74,6 +74,10 @@ jobs:
           workspaces: apps/server
           shared-key: server
 
+      - name: Refresh libduckdb
+        working-directory: apps/server
+        run: rm -rf target/*/.fingerprint/libduckdb-sys-* target/*/build/libduckdb-sys-*
+
       - name: Lint
         run: pnpm --filter server lint
 

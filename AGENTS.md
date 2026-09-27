@@ -52,8 +52,11 @@ harmony-v3/
 ├── docs/
 │   ├── ARCHITECTURE.md       # System map
 │   ├── DESIGN.md             # Design system tokens and UI rules
-│   └── DEPLOY.md             # Portainer GitOps / GHCR production deploy
-├── docker-compose.yml        # Production image-based compose (SHA-pinned)
+│   └── DEPLOY.md             # GHCR image publish and self-host compose
+├── docker/
+│   ├── Dockerfile            # Production image; build context is the repo root
+│   ├── docker-compose.yml    # Self-host compose (image tag via HARMONY_VERSION)
+│   └── .env.example          # Optional runtime settings
 ├── pnpm-workspace.yaml       # Workspace packages and catalog versions
 └── turbo.json                # Turborepo task graph
 ```

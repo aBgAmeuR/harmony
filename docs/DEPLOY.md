@@ -1,24 +1,27 @@
-# Production deployment (Portainer GitOps)
+# Production deployment
 
 Harmony is currently on a **v3 beta** line. Production images are built when a
 new [SemVer](https://semver.org/) prerelease is created on the `v3` branch (via
 [semantic-release](https://semantic-release.org/) from Conventional Commits).
-Images are published to GHCR with the release tag, then that tag is pinned in
-[`docker-compose.yml`](../docker-compose.yml). Portainer CE polls that file from
-Git and redeploys when the pin changes.
+Images are published to GHCR. Self-hosting uses
+[`docker/docker-compose.yml`](../docker/docker-compose.yml), which selects the
+tag with `HARMONY_VERSION` (default `latest`). Each GitHub Release also attaches
+a copy of that compose file with the default set to the release tag.
 
 ```text
-PR → CI (Web + Server gates)
+PR → CI (Web + Server + Image)
 merge / push to v3
   -> semantic-release (GitHub Release + git tag v3.0.0-beta.N)
   -> if new version:
        build & push (GHA build cache)
-         ghcr.io/abgameur/harmony/{web,api}:latest
-         ghcr.io/abgameur/harmony/{web,api}:v3.0.0-beta.N
-       CI commits pinned tags in docker-compose.yml [skip ci]
-  -> Portainer GitOps poll sees new git ref
-  -> pull images & recreate stack
+         ghcr.io/abgameur/harmony:latest
+         ghcr.io/abgameur/harmony:v3
+         ghcr.io/abgameur/harmony:v3.0.0-beta.N
+       attach docker-compose.yml + example.env to the GitHub Release
 ```
+
+The image build context stays the repository root. The Dockerfile lives at
+`docker/Dockerfile`. `.dockerignore` stays at the root of that context.
 
 ## Version format (beta)
 
@@ -34,7 +37,7 @@ While `v3` is configured as a beta channel:
 | ---------------------------- | --------------------------------------------------------------------- |
 | `BREAKING CHANGE` / `!`      | major → starts next line (use once to leave `2.x` for `3.0.0-beta.1`) |
 | `feat:`, `fix:`, `chore:`, … | patch → increments `beta.N` on the current `3.0.0` line               |
-| `deploy:` (compose pin)      | no release                                                            |
+| `deploy:`                    | no release                                                            |
 
 After the first `3.0.0-beta.1`, everyday merges only bump `beta.N` (features do
 not become `3.1.0-beta.1` during this phase).
@@ -53,53 +56,39 @@ BREAKING CHANGE: start of the Harmony v3 beta line.
 When you leave beta for stable `v3.0.0`, remove the `prerelease`/`channel`
 settings on the `v3` branch in [`.releaserc.json`](../.releaserc.json).
 
-The NAS must never rebuild from source; it only pulls pre-built images. Local app
-development uses `pnpm dev` / `pnpm dev:server`, not this compose file.
+The host must never rebuild from source; it only pulls pre-built images. Local
+app development uses `pnpm dev` / `pnpm dev:server`, not the compose file.
 
 ## GitHub prerequisites
 
-Packages: ensure `ghcr.io/abgameur/harmony/web` and `…/api` are pullable by the
-NAS (public packages, or a Portainer registry credential with `read:packages`).
+Packages: ensure `ghcr.io/abgameur/harmony` is pullable by the host (a public
+package, or a registry credential with `read:packages`).
 
-Branch protection: allow `github-actions[bot]` (or the default `GITHUB_TOKEN`) to
-push to `v3` so the pin-compose job can commit `docker-compose.yml`, and to
-create tags / GitHub Releases.
+Branch protection: allow the default `GITHUB_TOKEN` to create tags and GitHub
+Releases on `v3`.
 
-Web `API_URL` and `BUCKET_URL` are runtime-only (Portainer stack env). They are
-not required as GitHub Actions variables.
+## Run a release
 
-## Portainer stack setup
+From the directory that contains the compose file and `.env`:
 
-1. **Stacks → Add stack → Repository**
-2. Repository URL: this GitHub repo  
-   Branch: `v3`  
-   Compose path: `docker-compose.yml`
-3. Enable **GitOps updates** / automatic updates with polling (for example every
-   5 minutes). Enable **pull image** on update/redeploy.
-4. **Registries**: if GHCR packages are private, add `ghcr.io` with a GitHub PAT
-   that has `read:packages`.
-5. **Environment variables** for the stack (required unless noted):
+```text
+curl -fsSLO https://github.com/abgameur/harmony/releases/download/<tag>/docker-compose.yml
+curl -fsSL -o .env https://github.com/abgameur/harmony/releases/download/<tag>/example.env
+docker compose up -d
+```
 
-| Variable                | Required | Notes                                            |
-| ----------------------- | -------- | ------------------------------------------------ |
-| `API_URL`               | yes      | Public API base URL for the web service          |
-| `BUCKET_URL`            | yes      | Public DuckDB / CDN base URL for the web service |
-| `S3_ENDPOINT`           | yes      | R2 / S3-compatible endpoint                      |
-| `S3_BUCKET`             | yes      | Bucket name                                      |
-| `AWS_ACCESS_KEY_ID`     | yes      | Object storage access key                        |
-| `AWS_SECRET_ACCESS_KEY` | yes      | Object storage secret                            |
-| `DEEZER_PROXY_URLS`     | yes      | Comma-separated proxy URLs                       |
-| `DEEZER_PROXY_SECRET`   | yes      | Proxy shared secret                              |
+Beta releases are prereleases, so `releases/latest/download/` does not point at
+them. Use `releases/download/<tag>/`.
 
-6. Deploy the stack. After the next successful release, wait one poll interval and
-   confirm both services show image tags equal to the latest beta tag (for
-   example `v3.0.0-beta.1`).
+To track a moving tag instead of the file attached to one release, use the
+compose file in this repo and set `HARMONY_VERSION` (`latest`, `v3`, or an exact
+tag). Optional settings are listed in
+[`docker/.env.example`](../docker/.env.example).
 
 ## Manual checks
 
-- Actions → **Release** workflow: semantic release, build matrix, then
-  **Pin compose image tags**.
-- GitHub → **Releases**: a new `v3.0.0-beta.N` prerelease with notes from commits.
-- Repo: `docker-compose.yml` image lines updated to that tag and a
-  `deploy: pin images to v3.0.0-beta.N` commit (`[skip ci]`, coauthored).
-- Portainer: stack git hash advanced; containers recreated with the new tags.
+- Actions → **Release** workflow: semantic release, then **Build & push image**
+  and **Attach self-hosting files**.
+- GitHub → **Releases**: a new `v3.0.0-beta.N` prerelease with notes from
+  commits, plus `docker-compose.yml` and `example.env`.
+- GHCR: `ghcr.io/abgameur/harmony` has that tag, the major tag, and `latest`.
