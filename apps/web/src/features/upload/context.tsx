@@ -30,14 +30,9 @@ export type UploadActions = {
   setCardHeight: (height: number) => void;
 };
 
-export type UploadMeta = {
-  apiUrl: string;
-};
-
 export type UploadContextValue = {
   state: UploadState;
   actions: UploadActions;
-  meta: UploadMeta;
 };
 
 export const UploadContext = createContext<UploadContextValue | null>(null);

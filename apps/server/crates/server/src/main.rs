@@ -1,16 +1,20 @@
-use std::sync::Arc;
+use std::{path::Path, sync::Arc};
 
 use axum::{
     Router,
     extract::DefaultBodyLimit,
-    routing::{get, post},
+    routing::{any, get, post},
 };
 use dashmap::DashMap;
 use tokio::sync::mpsc;
-use tower_http::cors::CorsLayer;
+use tower_http::{
+    cors::CorsLayer,
+    services::{ServeDir, ServeFile},
+};
 
 mod config;
 mod error;
+mod healthcheck;
 mod http;
 mod otel;
 mod package_upload;
@@ -20,7 +24,8 @@ mod storage;
 mod store;
 mod worker;
 
-use config::{APP_VERSION, Config, DeezerMode, StorageConfig};
+use config::{APP_VERSION, Config, DeezerMode, SPA_SHELL_FILE, StorageConfig};
+use error::ApiError;
 use package_upload::PackageUpload;
 use pipeline::DeezerClient;
 use storage::Storage;
@@ -45,8 +50,16 @@ async fn health() -> &'static str {
     "OK"
 }
 
+async fn api_not_found() -> ApiError {
+    ApiError::not_found("route not found")
+}
+
 #[tokio::main]
 async fn main() {
+    if std::env::args().nth(1).as_deref() == Some("healthcheck") {
+        std::process::exit(healthcheck::run().await);
+    }
+
     let _ = dotenvy::dotenv();
 
     let config = Config::from_env().unwrap_or_else(|err| {
@@ -61,6 +74,10 @@ async fn main() {
 
     let storage_description = config.storage.describe();
     let deezer_description = config.deezer.describe();
+    let static_description = config
+        .static_dir
+        .as_deref()
+        .map_or_else(|| "disabled".to_string(), |dir| dir.display().to_string());
     let deezer_direct = matches!(config.deezer, DeezerMode::Direct { .. });
     let s3_without_public_url =
         matches!(&config.storage, StorageConfig::S3(s3) if s3.public_url.is_none());
@@ -78,7 +95,7 @@ async fn main() {
 
     tokio::spawn(worker::run(state.clone(), jobs_rx));
 
-    let app = app(state);
+    let app = app(state, config.static_dir.as_deref());
 
     let addr = format!("{}:{}", config.host, config.port);
 
@@ -91,6 +108,7 @@ async fn main() {
         address = %addr,
         storage = %storage_description,
         deezer = %deezer_description,
+        static_dir = %static_description,
         max_upload_mb = config.max_upload_bytes / (1024 * 1024),
         otel = telemetry.otel_enabled,
         log_format = config.log_format.as_str(),
@@ -112,9 +130,9 @@ async fn main() {
         .expect("failed to start server");
 }
 
-fn app(state: AppState) -> Router {
+fn app(state: AppState, static_dir: Option<&Path>) -> Router {
     let max_upload_bytes = state.max_upload_bytes;
-    Router::new()
+    let router = Router::new()
         .route("/health", get(health))
         .route("/api/v1/config", get(http::get_server_config))
         .route(
@@ -128,7 +146,16 @@ fn app(state: AppState) -> Router {
             "/api/v1/packages/{id}/stream",
             get(progress::stream_package_progress),
         )
-        .route("/files/{file_name}", get(http::get_package_file))
+        .route("/files/{file_name}", get(http::get_package_file));
+    let router = match static_dir {
+        Some(dir) => router
+            .route("/api/{*rest}", any(api_not_found))
+            .fallback_service(
+                ServeDir::new(dir).fallback(ServeFile::new(dir.join(SPA_SHELL_FILE))),
+            ),
+        None => router,
+    };
+    router
         .with_state(state)
         .layer(otel::OtelInResponseLayer)
         .layer(otel::OtelAxumLayer::default().filter(otel::trace_request_path))

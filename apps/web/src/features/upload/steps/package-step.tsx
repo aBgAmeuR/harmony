@@ -34,9 +34,8 @@ export function UploadPackageStep() {
   const {
     state: { file },
     actions: { setFile, next },
-    meta: { apiUrl },
   } = useUpload();
-  const { data: serverConfig } = useQuery(uploadQueries.serverConfig.queryOptions(apiUrl));
+  const { data: serverConfig } = useQuery(uploadQueries.serverConfig);
   const maxZipSize = serverConfig?.maxUploadBytes ?? DEFAULT_MAX_ZIP_SIZE;
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -161,7 +160,7 @@ export function UploadPackageStep() {
           <Button
             variant="link"
             className="-ml-1.5 text-foreground"
-            render={<Link to="/app/demo" />}
+            render={<Link to="/app/$packageId" params={{ packageId: "demo" }} />}
           >
             See a demo
           </Button>

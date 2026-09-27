@@ -40,9 +40,11 @@ export function UploadStatsStep() {
         <Button variant="ghost" onClick={back}>
           Back
         </Button>
-        <Button render={<Link to="/app/$packageId" params={{ packageId: publicId }} />}>
-          View dashboard
-        </Button>
+        {publicId ? (
+          <Button render={<Link to="/app/$packageId" params={{ packageId: publicId }} />}>
+            View dashboard
+          </Button>
+        ) : null}
       </CardFooter>
     </Card>
   );
