@@ -87,7 +87,7 @@ pnpm --filter server dev
 
 - [Architecture](docs/ARCHITECTURE.md) - upload → pipeline → DuckDB → analytics
 - [Design system](docs/DESIGN.md) - colors, typography, UI rules
-- [Deploy](docs/DEPLOY.md) - GHCR + Portainer GitOps
+- [Deploy](docs/DEPLOY.md) - GHCR image and self-host compose
 - [AGENTS.md](AGENTS.md) - commands and convention
 
 ## License

@@ -1,0 +1,16 @@
+name: harmony
+
+services:
+  harmony:
+    image: ghcr.io/abgameur/harmony:${HARMONY_VERSION:-latest}
+    ports:
+      - "${HARMONY_PORT:-3000}:3000"
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - harmony-data:/data
+    restart: unless-stopped
+
+volumes:
+  harmony-data:

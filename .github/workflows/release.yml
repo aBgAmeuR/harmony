@@ -45,18 +45,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build:
-    name: Build & push · ${{ matrix.app.name }}
+    name: Build & push image
     needs: release
     if: needs.release.outputs.published == 'true'
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        app:
-          - name: api
-            dockerfile: apps/server/Dockerfile
-          - name: web
-            dockerfile: apps/web/Dockerfile
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -71,65 +63,51 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Compute major tag
+        id: major
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+        run: echo "tag=v${VERSION%%.*}" >> "$GITHUB_OUTPUT"
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v6
         with:
-          images: ghcr.io/abgameur/harmony/${{ matrix.app.name }}
+          images: ghcr.io/abgameur/harmony
           tags: |
             type=raw,value=${{ needs.release.outputs.tag }},priority=900
+            type=raw,value=${{ steps.major.outputs.tag }},priority=200
             type=raw,value=latest,priority=100
 
       - name: Build & push image
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: ${{ matrix.app.dockerfile }}
+          file: docker/Dockerfile
           push: true
           build-args: |
-            VITE_APP_VERSION=${{ needs.release.outputs.tag }}
+            HARMONY_VERSION=${{ needs.release.outputs.tag }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/abgameur/harmony/${{ matrix.app.name }}:buildcache
-          cache-to: type=registry,ref=ghcr.io/abgameur/harmony/${{ matrix.app.name }}:buildcache,mode=max
+          cache-from: type=registry,ref=ghcr.io/abgameur/harmony:buildcache
+          cache-to: type=registry,ref=ghcr.io/abgameur/harmony:buildcache,mode=max
 
-  pin-compose:
-    name: Pin compose image tags
+  release-assets:
+    name: Attach self-hosting files
     needs: [release, build]
     if: needs.release.outputs.published == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pin image versions in docker-compose.yml
+      - name: Pin default image version
         env:
           TAG: ${{ needs.release.outputs.tag }}
-        run: |
-          sed -i "s|ghcr.io/abgameur/harmony/web:[^[:space:]]*|ghcr.io/abgameur/harmony/web:${TAG}|" docker-compose.yml
-          sed -i "s|ghcr.io/abgameur/harmony/api:[^[:space:]]*|ghcr.io/abgameur/harmony/api:${TAG}|" docker-compose.yml
+        run: sed -i "s|\${HARMONY_VERSION:-latest}|\${HARMONY_VERSION:-${TAG}}|" docker/docker-compose.yml
 
-      - name: Commit and push pinned compose
+      - name: Upload release assets
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.release.outputs.tag }}
-          COAUTHOR_NAME: ${{ github.actor }}
-          COAUTHOR_EMAIL: ${{ github.actor }}@users.noreply.github.com
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docker-compose.yml
-          if git diff --staged --quiet; then
-            echo "Compose already pinned to ${TAG}"
-            exit 0
-          fi
-          git commit -m "$(cat <<EOF
-          deploy: pin images to ${TAG}
-
-          [skip ci]
-
-          Co-authored-by: ${COAUTHOR_NAME} <${COAUTHOR_EMAIL}>
-          EOF
-          )"
-          git push
+        run: gh release upload "$TAG" docker/docker-compose.yml docker/example.env --clobber
