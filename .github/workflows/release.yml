@@ -1,16 +1,15 @@
 name: Release
-
 on:
   push:
     branches: [v3]
 
-concurrency:
-  group: release-v3
-  cancel-in-progress: false
+env:
+  IMAGE: ghcr.io/abgameur/harmony
+
+concurrency: release
 
 jobs:
   version:
-    name: Publish version
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -18,16 +17,14 @@ jobs:
       pull-requests: write
     outputs:
       published: ${{ steps.semantic.outputs.new_release_published }}
-      version: ${{ steps.semantic.outputs.new_release_version }}
       tag: ${{ steps.semantic.outputs.new_release_git_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
@@ -36,18 +33,14 @@ jobs:
         id: semantic
         uses: cycjimmy/semantic-release-action@v6
         with:
-          semantic_version: 24
-          extra_plugins: |
-            conventional-changelog-conventionalcommits@8
+          extra_plugins: conventional-changelog-conventionalcommits@8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   image:
-    name: Build ${{ matrix.platform }}
     needs: version
     if: needs.version.outputs.published == 'true'
     strategy:
-      fail-fast: true
       matrix:
         include:
           - platform: linux/amd64
@@ -65,7 +58,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Set up Docker Buildx
+      - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v4
 
       - name: Log in to GHCR
@@ -79,19 +72,21 @@ jobs:
         id: meta
         uses: docker/metadata-action@v6
         with:
-          images: ghcr.io/abgameur/harmony
+          images: ${{ env.IMAGE }}
+          flavor: latest=true
+          tags: |
+            type=semver,pattern={{raw}},value=${{ needs.version.outputs.tag }}
+            type=ref,event=branch
 
       - name: Build and push by digest
         id: build
         uses: docker/build-push-action@v7
         with:
-          context: .
           file: docker/Dockerfile
           platforms: ${{ matrix.platform }}
-          build-args: |
-            HARMONY_VERSION=${{ needs.version.outputs.tag }}
+          build-args: HARMONY_VERSION=${{ needs.version.outputs.tag }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,name=ghcr.io/abgameur/harmony,push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
           sbom: true
           provenance: mode=max
           cache-from: type=gha,scope=${{ matrix.arch }}
@@ -113,11 +108,9 @@ jobs:
           retention-days: 1
 
   manifest:
-    name: Publish multi-arch tags
     needs: [version, image]
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       packages: write
     steps:
       - name: Download digests
@@ -127,7 +120,7 @@ jobs:
           pattern: digests-*
           merge-multiple: true
 
-      - name: Set up Docker Buildx
+      - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v4
 
       - name: Log in to GHCR
@@ -137,35 +130,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Compute major tag
-        id: major
-        env:
-          VERSION: ${{ needs.version.outputs.version }}
-        run: echo "tag=v${VERSION%%.*}" >> "$GITHUB_OUTPUT"
-
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v6
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: index
         with:
-          images: ghcr.io/abgameur/harmony
+          images: ${{ env.IMAGE }}
+          flavor: latest=true
           tags: |
-            type=raw,value=${{ needs.version.outputs.tag }},priority=900
-            type=raw,value=${{ steps.major.outputs.tag }},priority=200
-            type=raw,value=latest,priority=100
+            type=semver,pattern={{raw}},value=${{ needs.version.outputs.tag }}
+            type=ref,event=branch
 
       - name: Create and push the manifest list
         working-directory: ${{ runner.temp }}/digests
-        run: |
-          mapfile -t args < <(jq -r '(.tags[] | "--tag=" + .), (.annotations[] | "--annotation=" + .)' <<< "$DOCKER_METADATA_OUTPUT_JSON")
-          sources=()
-          for digest in *; do
-            sources+=("ghcr.io/abgameur/harmony@sha256:${digest}")
-          done
-          docker buildx imagetools create "${args[@]}" "${sources[@]}"
-
-      - name: Inspect image
         env:
           TAG: ${{ needs.version.outputs.tag }}
-        run: docker buildx imagetools inspect "ghcr.io/abgameur/harmony:${TAG}"
+        run: |
+          mapfile -t annotations < <(jq -r '.annotations[] | "--annotation=" + .' <<< "$DOCKER_METADATA_OUTPUT_JSON")
+          docker buildx imagetools create \
+            -t "${IMAGE}:${TAG}" \
+            -t "${IMAGE}:v3" \
+            -t "${IMAGE}:latest" \
+            "${annotations[@]}" \
+            $(printf "${IMAGE}@sha256:%s " *)
