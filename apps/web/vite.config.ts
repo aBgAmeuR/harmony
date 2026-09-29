@@ -23,6 +23,9 @@ export default defineConfig(({ command, isPreview }) => ({
     // Dev server only: in build and preview (used by the SPA prerender) its workers keep Node alive.
     command === "serve" && !isPreview ? checker({ oxlint: true }) : null,
   ],
+  preview: {
+    host: "127.0.0.1",
+  },
   server: {
     port: 3001,
   },

@@ -4,20 +4,18 @@ on:
   push:
     branches: [v3]
 
-permissions:
-  contents: write
-  issues: write
-  pull-requests: write
-  packages: write
-
 concurrency:
   group: release-v3
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Semantic release
+  version:
+    name: Publish version
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     outputs:
       published: ${{ steps.semantic.outputs.new_release_published }}
       version: ${{ steps.semantic.outputs.new_release_version }}
@@ -44,11 +42,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build:
-    name: Build & push image
-    needs: release
-    if: needs.release.outputs.published == 'true'
-    runs-on: ubuntu-latest
+  image:
+    name: Build ${{ matrix.platform }}
+    needs: version
+    if: needs.version.outputs.published == 'true'
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - platform: linux/amd64
+            arch: amd64
+            runner: ubuntu-24.04
+          - platform: linux/arm64
+            arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+      actions: write
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -63,51 +75,97 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Compute major tag
-        id: major
-        env:
-          VERSION: ${{ needs.release.outputs.version }}
-        run: echo "tag=v${VERSION%%.*}" >> "$GITHUB_OUTPUT"
-
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v6
         with:
           images: ghcr.io/abgameur/harmony
-          tags: |
-            type=raw,value=${{ needs.release.outputs.tag }},priority=900
-            type=raw,value=${{ steps.major.outputs.tag }},priority=200
-            type=raw,value=latest,priority=100
 
-      - name: Build & push image
+      - name: Build and push by digest
+        id: build
         uses: docker/build-push-action@v7
         with:
           context: .
           file: docker/Dockerfile
-          push: true
+          platforms: ${{ matrix.platform }}
           build-args: |
-            HARMONY_VERSION=${{ needs.release.outputs.tag }}
-          tags: ${{ steps.meta.outputs.tags }}
+            HARMONY_VERSION=${{ needs.version.outputs.tag }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/abgameur/harmony:buildcache
-          cache-to: type=registry,ref=ghcr.io/abgameur/harmony:buildcache,mode=max
+          outputs: type=image,name=ghcr.io/abgameur/harmony,push-by-digest=true,name-canonical=true,push=true
+          sbom: true
+          provenance: mode=max
+          cache-from: type=gha,scope=${{ matrix.arch }}
+          cache-to: type=gha,scope=${{ matrix.arch }},mode=max
 
-  release-assets:
-    name: Attach self-hosting files
-    needs: [release, build]
-    if: needs.release.outputs.published == 'true'
+      - name: Export digest
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/digests"
+          touch "$RUNNER_TEMP/digests/${DIGEST#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  manifest:
+    name: Publish multi-arch tags
+    needs: [version, image]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-*
+          merge-multiple: true
 
-      - name: Pin default image version
-        env:
-          TAG: ${{ needs.release.outputs.tag }}
-        run: sed -i "s|\${HARMONY_VERSION:-latest}|\${HARMONY_VERSION:-${TAG}}|" docker/docker-compose.yml
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
 
-      - name: Upload release assets
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute major tag
+        id: major
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ needs.release.outputs.tag }}
-        run: gh release upload "$TAG" docker/docker-compose.yml docker/example.env --clobber
+          VERSION: ${{ needs.version.outputs.version }}
+        run: echo "tag=v${VERSION%%.*}" >> "$GITHUB_OUTPUT"
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v6
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: index
+        with:
+          images: ghcr.io/abgameur/harmony
+          tags: |
+            type=raw,value=${{ needs.version.outputs.tag }},priority=900
+            type=raw,value=${{ steps.major.outputs.tag }},priority=200
+            type=raw,value=latest,priority=100
+
+      - name: Create and push the manifest list
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          mapfile -t args < <(jq -r '(.tags[] | "--tag=" + .), (.annotations[] | "--annotation=" + .)' <<< "$DOCKER_METADATA_OUTPUT_JSON")
+          sources=()
+          for digest in *; do
+            sources+=("ghcr.io/abgameur/harmony@sha256:${digest}")
+          done
+          docker buildx imagetools create "${args[@]}" "${sources[@]}"
+
+      - name: Inspect image
+        env:
+          TAG: ${{ needs.version.outputs.tag }}
+        run: docker buildx imagetools inspect "ghcr.io/abgameur/harmony:${TAG}"

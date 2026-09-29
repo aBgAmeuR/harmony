@@ -10,6 +10,11 @@ services:
         required: false
     volumes:
       - harmony-data:/data
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
 
 volumes:

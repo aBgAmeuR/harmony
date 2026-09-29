@@ -6,11 +6,8 @@ use axum::{
     routing::{any, get, post},
 };
 use dashmap::DashMap;
-use tokio::sync::mpsc;
-use tower_http::{
-    cors::CorsLayer,
-    services::{ServeDir, ServeFile},
-};
+use tokio::sync::{mpsc, watch};
+use tower_http::services::{ServeDir, ServeFile};
 
 mod config;
 mod error;
@@ -20,6 +17,7 @@ mod otel;
 mod package_upload;
 mod pipeline;
 mod progress;
+mod shutdown;
 mod storage;
 mod store;
 mod worker;
@@ -44,6 +42,8 @@ pub struct AppState {
     pub object_store: Arc<Storage>,
     pub deezer: Arc<DeezerClient>,
     pub max_upload_bytes: usize,
+    pub temp_dir: Arc<Path>,
+    pub shutdown: watch::Receiver<bool>,
 }
 
 async fn health() -> &'static str {
@@ -70,6 +70,10 @@ async fn main() {
         eprintln!("{err}");
         std::process::exit(1);
     });
+    storage::reset_temp_dir(&config.temp_dir).unwrap_or_else(|err| {
+        eprintln!("{err}");
+        std::process::exit(1);
+    });
     let telemetry = otel::init(config.log_format);
 
     let storage_description = config.storage.describe();
@@ -83,6 +87,7 @@ async fn main() {
         matches!(&config.storage, StorageConfig::S3(s3) if s3.public_url.is_none());
 
     let (jobs_tx, jobs_rx) = mpsc::channel::<worker::Job>(64);
+    let (shutdown_tx, shutdown_rx) = watch::channel(false);
     let state = AppState {
         packages: store::PackageStore::new(),
         ram_store: Arc::new(DashMap::new()),
@@ -91,7 +96,10 @@ async fn main() {
         object_store: Arc::new(storage),
         deezer: Arc::new(pipeline::build_deezer_client(config.deezer)),
         max_upload_bytes: config.max_upload_bytes,
+        temp_dir: Arc::from(config.temp_dir.as_path()),
+        shutdown: shutdown_rx.clone(),
     };
+    let packages = state.packages.clone();
 
     tokio::spawn(worker::run(state.clone(), jobs_rx));
 
@@ -125,9 +133,39 @@ async fn main() {
         );
     }
 
-    axum::serve(listener, app.into_make_service())
-        .await
-        .expect("failed to start server");
+    tokio::spawn(async move {
+        shutdown::signal().await;
+        tracing::info!("shutdown signal received, closing connections");
+        let _ = shutdown_tx.send(true);
+    });
+
+    let server = axum::serve(listener, app.into_make_service())
+        .with_graceful_shutdown(shutdown::requested(shutdown_rx.clone()));
+    let deadline = async {
+        shutdown::requested(shutdown_rx).await;
+        tokio::time::sleep(shutdown::GRACE_PERIOD).await;
+    };
+    tokio::select! {
+        result = server => result.expect("failed to start server"),
+        () = deadline => tracing::warn!(
+            grace_period_s = shutdown::GRACE_PERIOD.as_secs(),
+            "connections still open after the grace period, closing them"
+        ),
+    }
+
+    let dropped_imports = packages.unfinished_count();
+    if dropped_imports > 0 {
+        tracing::warn!(
+            dropped_imports,
+            "stopping with unfinished imports; they are lost and must be uploaded again"
+        );
+    }
+    tracing::info!("harmony stopped");
+
+    // Exit without waiting for blocking pipeline work, which the runtime would
+    // otherwise wait for without a time limit.
+    drop(telemetry);
+    std::process::exit(0);
 }
 
 fn app(state: AppState, static_dir: Option<&Path>) -> Router {
@@ -159,5 +197,4 @@ fn app(state: AppState, static_dir: Option<&Path>) -> Router {
         .with_state(state)
         .layer(otel::OtelInResponseLayer)
         .layer(otel::OtelAxumLayer::default().filter(otel::trace_request_path))
-        .layer(CorsLayer::permissive())
 }

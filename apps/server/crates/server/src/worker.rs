@@ -103,6 +103,7 @@ async fn process(state: &AppState, job: Job) -> Result<(), WorkerError> {
             reporter: Some(reporter.clone()),
             object_store: Arc::clone(&state.object_store),
             deezer: Arc::clone(&state.deezer),
+            temp_dir: state.temp_dir.to_path_buf(),
         })
         .await;
 

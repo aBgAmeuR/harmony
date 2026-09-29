@@ -22,6 +22,21 @@ pub fn package_object_key(public_id: &str) -> String {
     format!("harmony/{public_id}.duckdb")
 }
 
+/// Recreate the artifact scratch directory empty. Anything left in it belongs
+/// to an import that a previous process never finished.
+pub fn reset_temp_dir(dir: &Path) -> Result<(), StorageError> {
+    let data_dir_error = |err: std::io::Error| StorageError::DataDir {
+        path: dir.to_path_buf(),
+        reason: err.to_string(),
+    };
+    match std::fs::remove_dir_all(dir) {
+        Ok(()) => {}
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
+        Err(err) => return Err(data_dir_error(err)),
+    }
+    std::fs::create_dir_all(dir).map_err(data_dir_error)
+}
+
 /// Storage backend selected by the configuration.
 pub enum Storage {
     Local(LocalObjectStore),
@@ -69,5 +84,34 @@ impl ObjectStore for Storage {
             Self::Local(store) => store.put_file(key, path).await,
             Self::S3 { store, .. } => store.put_file(key, path).await,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    #[test]
+    fn reset_temp_dir_creates_a_missing_directory() {
+        let root = TempDir::new().unwrap();
+        let dir = root.path().join(".tmp");
+
+        reset_temp_dir(&dir).unwrap();
+
+        assert!(dir.is_dir());
+    }
+
+    #[test]
+    fn reset_temp_dir_removes_leftovers() {
+        let root = TempDir::new().unwrap();
+        let dir = root.path().join(".tmp");
+        std::fs::create_dir_all(dir.join(".tmpabc")).unwrap();
+        std::fs::write(dir.join(".tmpabc").join("package.duckdb"), b"stale").unwrap();
+
+        reset_temp_dir(&dir).unwrap();
+
+        assert!(dir.is_dir());
+        assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 0);
     }
 }

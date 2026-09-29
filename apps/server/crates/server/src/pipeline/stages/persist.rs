@@ -14,6 +14,7 @@ use crate::storage::{ObjectStore, Storage, package_object_key};
 
 pub struct PersistInput {
     pub public_id: String,
+    pub temp_dir: PathBuf,
     pub interactions: Vec<Interaction>,
     pub tracks: HashMap<i64, DeezerTrack>,
     pub artists: HashMap<i64, DeezerArtist>,
@@ -39,7 +40,7 @@ pub struct PersistArtifact {
 
 /// Build a DuckDB artifact on a blocking thread.
 pub fn build(input: PersistInput) -> Result<(PersistArtifact, PersistOutput), PersistError> {
-    let temp_dir = TempDir::new()?;
+    let temp_dir = TempDir::new_in(&input.temp_dir)?;
     let db_path = temp_dir.path().join("package.duckdb");
 
     {
@@ -479,6 +480,7 @@ mod tests {
 
         let (artifact, output) = build(PersistInput {
             public_id: "abc".to_string(),
+            temp_dir: std::env::temp_dir(),
             interactions: vec![Interaction {
                 ts: "2024-05-01T12:34:56Z".to_string(),
                 platform: "web".to_string(),
@@ -527,6 +529,7 @@ mod tests {
     fn write_package_meta_stores_pipeline_steps() -> Result<(), PersistError> {
         let (artifact, _) = build(PersistInput {
             public_id: "abc".to_string(),
+            temp_dir: std::env::temp_dir(),
             interactions: Vec::new(),
             tracks: HashMap::new(),
             artists: HashMap::new(),
