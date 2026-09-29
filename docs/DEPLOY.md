@@ -23,7 +23,8 @@ merge / push to v3
 version, then builds and pushes the image. Each architecture builds natively on
 its own runner (no QEMU) with its own GitHub Actions cache scope, and attaches
 an SBOM and a provenance attestation. The image build context stays the
-repository root. The Dockerfile lives at `docker/Dockerfile`. `.dockerignore`
+repository root. The Dockerfile lives at
+`docker/Dockerfile`. `.dockerignore`
 stays at the root of that context.
 
 Base images are pinned by digest in `docker/Dockerfile`. Dependabot opens a
