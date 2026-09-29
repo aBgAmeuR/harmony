@@ -1,4 +1,4 @@
-node_modules/
+**/node_modules/
 vendor/
 __pycache__/
 *.pyc
@@ -12,18 +12,20 @@ apps/benchmark/
 
 .git/
 .gitignore
+apps/server/rust-toolchain.toml
 .vscode/
 .idea/
 *.swp
 
-dist/
+**/dist/
 build/
 *.log
 
-.env
-.env.local
-*.pem
-*.key
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem
+**/*.key
 secrets/
 .npmrc
 .pypirc

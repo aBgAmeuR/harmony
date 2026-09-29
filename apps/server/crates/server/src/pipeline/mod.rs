@@ -9,6 +9,7 @@ pub use deezer::DeezerClient;
 pub use error::{PipelineError, Stage};
 
 use std::future::Future;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -59,6 +60,7 @@ pub struct PipelineRequest {
     pub reporter: Option<ProgressReporter>,
     pub object_store: Arc<Storage>,
     pub deezer: Arc<DeezerClient>,
+    pub temp_dir: PathBuf,
 }
 
 fn begin_step(reporter: &Option<ProgressReporter>, step_id: StepId) -> Instant {
@@ -181,6 +183,7 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
         reporter,
         object_store,
         deezer,
+        temp_dir,
     } = request;
 
     let pipeline_started = Instant::now();
@@ -371,6 +374,7 @@ pub async fn run(request: PipelineRequest) -> Result<PipelineStats, PipelineErro
         spawn_blocking_stage(StepId::PersistInteractions, move || {
             stages::persist::build(stages::persist::PersistInput {
                 public_id,
+                temp_dir,
                 interactions: verify.interactions,
                 tracks: verify.tracks,
                 artists,

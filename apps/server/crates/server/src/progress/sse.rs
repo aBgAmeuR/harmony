@@ -9,7 +9,7 @@ use axum::{
 use futures::stream::{self, Stream, StreamExt};
 use tokio::sync::broadcast;
 
-use crate::AppState;
+use crate::{AppState, shutdown};
 
 pub async fn stream_package_progress(
     State(state): State<AppState>,
@@ -71,7 +71,10 @@ pub async fn stream_package_progress(
             .data(snapshot_data))
     });
 
-    let combined = initial.chain(live_stream);
+    // An open stream would otherwise hold graceful shutdown until the deadline.
+    let combined = initial
+        .chain(live_stream)
+        .take_until(shutdown::requested(state.shutdown.clone()));
 
     Ok(Sse::new(combined).keep_alive(
         KeepAlive::new()

@@ -5,23 +5,36 @@ new [SemVer](https://semver.org/) prerelease is created on the `v3` branch (via
 [semantic-release](https://semantic-release.org/) from Conventional Commits).
 Images are published to GHCR. Self-hosting uses
 [`docker/docker-compose.yml`](../docker/docker-compose.yml), which selects the
-tag with `HARMONY_VERSION` (default `latest`). Each GitHub Release also attaches
-a copy of that compose file with the default set to the release tag.
+tag with `HARMONY_VERSION` (default `latest`).
 
 ```text
-PR → CI (Web + Server + Image)
+PR → CI (Web + Server)
 merge / push to v3
   -> semantic-release (GitHub Release + git tag v3.0.0-beta.N)
   -> if new version:
-       build & push (GHA build cache)
+       build linux/amd64 on ubuntu-24.04, linux/arm64 on ubuntu-24.04-arm
+       push each by digest, then one multi-arch manifest:
          ghcr.io/abgameur/harmony:latest
          ghcr.io/abgameur/harmony:v3
          ghcr.io/abgameur/harmony:v3.0.0-beta.N
-       attach docker-compose.yml + example.env to the GitHub Release
 ```
 
-The image build context stays the repository root. The Dockerfile lives at
-`docker/Dockerfile`. `.dockerignore` stays at the root of that context.
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) publishes the
+version, then builds and pushes the image. Each architecture builds natively on
+its own runner (no QEMU) with its own GitHub Actions cache scope, and attaches
+an SBOM and a provenance attestation. The image build context stays the
+repository root. The Dockerfile lives at `docker/Dockerfile`. `.dockerignore`
+stays at the root of that context.
+
+Base images are pinned by digest in `docker/Dockerfile`. Dependabot opens a
+weekly pull request to bump them ([`.github/dependabot.yml`](../.github/dependabot.yml)).
+
+To build and run the image locally:
+
+```text
+docker build -f docker/Dockerfile -t harmony:local .
+docker run --rm -p 3000:3000 -v harmony-data:/data harmony:local
+```
 
 ## Version format (beta)
 
@@ -59,6 +72,39 @@ settings on the `v3` branch in [`.releaserc.json`](../.releaserc.json).
 The host must never rebuild from source; it only pulls pre-built images. Local
 app development uses `pnpm dev` / `pnpm dev:server`, not the compose file.
 
+## Image
+
+One image, no required environment variables. `docker pull` selects `linux/amd64`
+or `linux/arm64`. Pull requests do not build it.
+
+```text
+docker run -d --name harmony -p 3000:3000 -v harmony-data:/data --restart unless-stopped ghcr.io/abgameur/harmony:latest
+```
+
+What the image contains:
+
+- `gcr.io/distroless/cc-debian12`: no shell and no package manager. It runs as
+  uid/gid `1001`.
+- `/app/server` serves the API and the SPA from `/app/public` on port 3000.
+  `/app/server healthcheck` backs the image `HEALTHCHECK`.
+- `/usr/lib/libduckdb.so` is the official prebuilt DuckDB library, at the
+  version that `libduckdb-sys` in `apps/server/Cargo.lock` expects.
+- `/data` is the only path the server writes to: `harmony/` for package
+  files, and `.staging/` and `.tmp/` for work in progress. `.tmp/` is emptied
+  at startup.
+
+The compose file runs the container with a read-only root filesystem, no Linux
+capabilities and `no-new-privileges`. A named volume gets the right owner
+automatically. A bind mount needs it set on the host first:
+
+```text
+sudo chown -R 1001:1001 /path/to/harmony-data
+```
+
+On `SIGTERM` the server stops accepting connections, closes progress streams
+and exits within 5 seconds. Imports still running are lost and must be
+uploaded again.
+
 ## GitHub prerequisites
 
 Packages: ensure `ghcr.io/abgameur/harmony` is pullable by the host (a public
@@ -69,26 +115,19 @@ Releases on `v3`.
 
 ## Run a release
 
-From the directory that contains the compose file and `.env`:
+From a directory that contains [`docker/docker-compose.yml`](../docker/docker-compose.yml):
 
 ```text
-curl -fsSLO https://github.com/abgameur/harmony/releases/download/<tag>/docker-compose.yml
-curl -fsSL -o .env https://github.com/abgameur/harmony/releases/download/<tag>/example.env
 docker compose up -d
 ```
 
-Beta releases are prereleases, so `releases/latest/download/` does not point at
-them. Use `releases/download/<tag>/`.
-
-To track a moving tag instead of the file attached to one release, use the
-compose file in this repo and set `HARMONY_VERSION` (`latest`, `v3`, or an exact
-tag). Optional settings are listed in
+Set `HARMONY_VERSION` to `latest`, `v3`, or an exact tag such as
+`v3.0.0-beta.1`. Optional settings are listed in
 [`docker/.env.example`](../docker/.env.example).
 
 ## Manual checks
 
-- Actions → **Release** workflow: semantic release, then **Build & push image**
-  and **Attach self-hosting files**.
+- Actions → **Release** workflow: publish the version, then build and push the image.
 - GitHub → **Releases**: a new `v3.0.0-beta.N` prerelease with notes from
-  commits, plus `docker-compose.yml` and `example.env`.
+  commits.
 - GHCR: `ghcr.io/abgameur/harmony` has that tag, the major tag, and `latest`.

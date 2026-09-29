@@ -3,6 +3,8 @@ use std::path::{Path, PathBuf};
 use reqwest::Url;
 
 pub const DEFAULT_DATA_DIR: &str = "./data";
+/// Scratch space for DuckDB artifacts under `DATA_DIR`, emptied at startup.
+const TEMP_DIR_NAME: &str = ".tmp";
 pub const DEFAULT_S3_REGION: &str = "auto";
 pub const DEFAULT_DEEZER_RATE_LIMIT: u32 = 8;
 pub const DEFAULT_MAX_UPLOAD_MB: u32 = 50;
@@ -26,6 +28,7 @@ pub struct Config {
     pub max_upload_bytes: usize,
     pub log_format: LogFormat,
     pub static_dir: Option<PathBuf>,
+    pub temp_dir: PathBuf,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -184,8 +187,16 @@ impl Config {
             max_upload_bytes: max_upload_mb as usize * 1024 * 1024,
             log_format,
             static_dir,
+            temp_dir: data_dir(&input).join(TEMP_DIR_NAME),
         })
     }
+}
+
+fn data_dir(input: &ConfigInput) -> PathBuf {
+    let dir = non_blank(input.data_dir.as_deref())
+        .map(str::trim)
+        .unwrap_or(DEFAULT_DATA_DIR);
+    PathBuf::from(dir)
 }
 
 fn parse_static_dir(value: Option<&str>, problems: &mut Vec<String>) -> Option<PathBuf> {
@@ -237,11 +248,8 @@ fn parse_storage(input: &ConfigInput, problems: &mut Vec<String>) -> Option<Stor
             return None;
         }
 
-        let data_dir = non_blank(input.data_dir.as_deref())
-            .map(str::trim)
-            .unwrap_or(DEFAULT_DATA_DIR);
         return Some(StorageConfig::Local {
-            data_dir: PathBuf::from(data_dir),
+            data_dir: data_dir(input),
         });
     };
 
@@ -460,6 +468,18 @@ mod tests {
         assert_eq!(config.max_upload_bytes, 50 * 1024 * 1024);
         assert_eq!(config.host, "127.0.0.1");
         assert_eq!(config.port, 3000);
+        assert_eq!(config.temp_dir, PathBuf::from("./data/.tmp"));
+    }
+
+    #[test]
+    fn temp_dir_lives_under_data_dir_with_s3_storage() {
+        let mut input = valid_input();
+        input.data_dir = Some(" /data ".to_string());
+
+        let config = Config::from_input(input).unwrap();
+
+        assert!(matches!(config.storage, StorageConfig::S3(_)));
+        assert_eq!(config.temp_dir, PathBuf::from("/data/.tmp"));
     }
 
     #[test]

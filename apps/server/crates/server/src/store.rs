@@ -92,6 +92,15 @@ impl PackageStore {
         guard.by_id.get(&id).cloned().ok_or(StoreError::NotFound)
     }
 
+    /// Packages still waiting for or going through the pipeline.
+    pub fn unfinished_count(&self) -> usize {
+        lock(&self.inner)
+            .by_id
+            .values()
+            .filter(|package| matches!(package.status.as_str(), "pending" | "running"))
+            .count()
+    }
+
     pub fn mark_running(&self, package_id: i32) {
         let mut guard = lock(&self.inner);
         let Some(package) = guard.by_id.get_mut(&package_id) else {
@@ -203,6 +212,21 @@ mod tests {
         assert_eq!(again.status, "running");
         assert_eq!(again.started_at, started_at);
         assert!(started_at.is_some());
+    }
+
+    #[test]
+    fn unfinished_count_skips_completed_and_failed_packages() {
+        let store = PackageStore::new();
+        store.create_package("pending.zip", 1);
+        let running = store.create_package("running.zip", 1);
+        let completed = store.create_package("completed.zip", 1);
+        let failed = store.create_package("failed.zip", 1);
+
+        store.mark_running(running.id);
+        store.set_completed(completed.id, serde_json::json!({}));
+        store.set_failed(failed.id, "parse", "bad zip");
+
+        assert_eq!(store.unfinished_count(), 2);
     }
 
     #[test]
