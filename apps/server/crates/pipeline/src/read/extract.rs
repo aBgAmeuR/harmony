@@ -10,7 +10,7 @@ use zip::ZipArchive;
 use super::ReadError;
 
 const HISTORY_PATH: &str =
-    r"Spotify Extended Streaming History/Streaming_History_Audio_(\d{4}(-\d{4})?)_(\d+)\.json";
+    r"Spotify Extended Streaming History/Streaming_History_Audio_(\d{4}(-\d{4})?)(?:_(\d+))?\.json";
 
 pub struct Entry {
     pub bytes: Vec<u8>,
