@@ -11,6 +11,8 @@ use zip::write::SimpleFileOptions;
 
 const AUDIO: &str = "Spotify Extended Streaming History/Streaming_History_Audio_2020_1.json";
 const RANGE: &str = "Spotify Extended Streaming History/Streaming_History_Audio_2019-2020_2.json";
+const BARE_2025: &str = "Spotify Extended Streaming History/Streaming_History_Audio_2025.json";
+const BARE_2026: &str = "Spotify Extended Streaming History/Streaming_History_Audio_2026.json";
 
 fn archive(files: &[(&str, &str)]) -> Result<Vec<u8>, zip::result::ZipError> {
     let mut cursor = Cursor::new(Vec::new());
@@ -75,6 +77,25 @@ fn run_keeps_a_cleaned_play_and_drops_a_short_one() -> Result<(), zip::result::Z
         play,
         Some(play) if play.title() == "Song" && play.artist() == "Artist" && play.ms() == 45_000 && play.shuffle()
     ));
+    Ok(())
+}
+
+#[test]
+fn run_keeps_audio_history_without_a_part_index() -> Result<(), zip::result::ZipError> {
+    let bytes = archive(&[
+        (BARE_2025, &format!("[{}]", play("Twenty Five", 45_000))),
+        (BARE_2026, &format!("[{}]", play("Twenty Six", 45_000))),
+        (AUDIO, &format!("[{}]", play("Indexed", 45_000))),
+    ])?;
+    let Ok(source) = source(bytes, Selection::All) else {
+        return Err(zip::result::ZipError::FileNotFound);
+    };
+    let history = drive(source);
+
+    let Ok(history) = history else {
+        return Err(zip::result::ZipError::FileNotFound);
+    };
+    assert_eq!(history.len(), 3);
     Ok(())
 }
 

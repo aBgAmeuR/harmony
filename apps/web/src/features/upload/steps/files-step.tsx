@@ -22,7 +22,7 @@ interface ArchiveJsonFile {
 }
 
 const archiveJsonPattern =
-  /Spotify Extended Streaming History\/Streaming_History_Audio_(\d{4}(-\d{4})?)_(\d+)\.json/;
+  /Spotify Extended Streaming History\/Streaming_History_Audio_(\d{4}(-\d{4})?)(?:_(\d+))?\.json/;
 
 function normalizeArchivePath(path: string): string {
   return path.replace(/\\/g, "/");
