@@ -10,10 +10,15 @@ export type StepId =
   | "persist_interactions";
 
 export type StepProgress = {
-  phase?: string;
   current: number;
   total: number;
-  failed?: number;
+  failed: number;
+};
+
+export type StepOutput = {
+  read: number;
+  keep: number;
+  drop: number;
 };
 
 export type PipelineStep = {
@@ -24,10 +29,17 @@ export type PipelineStep = {
   endedAt?: string;
   error?: string;
   progress?: StepProgress;
-  output?: Record<string, unknown>;
+  output?: StepOutput;
 };
 
 export type PipelineRunStatus = "idle" | "running" | "done" | "error";
+
+export type PipelineStats = {
+  calls: number;
+  retries: number;
+  misses: number;
+  ms: number;
+};
 
 export type PipelineState = {
   runStatus: PipelineRunStatus;
@@ -36,58 +48,19 @@ export type PipelineState = {
   startedAt?: string;
   endedAt?: string;
   error?: string;
+  stats?: PipelineStats;
 };
 
-export type PipelineEvent =
-  | {
-      type: "snapshot";
-      seq: number;
-      steps: PipelineStep[];
-      runStatus: PipelineRunStatus;
-      startedAt?: string;
-      endedAt?: string;
-    }
-  | {
-      type: "step.started";
-      seq: number;
-      stepId: StepId;
-      label: string;
-      at: string;
-    }
-  | {
-      type: "step.progress";
-      seq: number;
-      stepId: StepId;
-      progress: StepProgress;
-    }
-  | {
-      type: "step.completed";
-      seq: number;
-      stepId: StepId;
-      at: string;
-      durationMs: number;
-      output?: Record<string, unknown>;
-    }
-  | {
-      type: "step.failed";
-      seq: number;
-      stepId: StepId;
-      at: string;
-      error: string;
-    }
-  | {
-      type: "run.completed";
-      seq: number;
-      at: string;
-      stats: Record<string, unknown>;
-    }
-  | {
-      type: "run.failed";
-      seq: number;
-      stepId: StepId;
-      at: string;
-      error: string;
-    };
+/** One SSE payload. The server sends the whole snapshot, at most once a second. */
+export type PipelineEvent = {
+  type: "snapshot";
+  seq: number;
+  steps: PipelineStep[];
+  runStatus: PipelineRunStatus;
+  startedAt?: string;
+  endedAt?: string;
+  stats?: PipelineStats;
+};
 
 export type UploadConfig = {
   baseUrl: string;

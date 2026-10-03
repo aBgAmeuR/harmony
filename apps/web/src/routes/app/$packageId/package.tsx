@@ -1,3 +1,5 @@
+import type { PipelineStep } from "@harmony/upload";
+
 import {
   Icon,
   Alert02FreeIcons,
@@ -138,11 +140,8 @@ function PackageHeaderSection({ pkg, subtitle }: PackageHeaderProps) {
   );
 }
 
-function missedTrackCount(
-  steps: { id: string; output?: Record<string, unknown> }[],
-): number | undefined {
-  const missed = steps.find((step) => step.id === "resolve_tracks")?.output?.missed;
-  return typeof missed === "number" ? missed : undefined;
+function missedTrackCount(steps: PipelineStep[]): number | undefined {
+  return steps.find((step) => step.id === "resolve_tracks")?.output?.drop;
 }
 
 function RouteComponent() {

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/server"]
+members = ["crates/adapters", "crates/domain", "crates/http", "crates/pipeline", "crates/server"]
 
 [workspace.package]
 version = "0.1.0"
@@ -63,6 +63,18 @@ init-tracing-opentelemetry = { version = "0.37.0", features = [
   "metrics",
   "logs",
 ] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+unused_must_use = "deny"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+indexing_slicing = "deny"
+wildcard_enum_match_arm = "deny"
 
 [profile.dev]
 opt-level = 0

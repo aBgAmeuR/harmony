@@ -10,6 +10,7 @@ import {
   PipelineItemHeader,
   PipelineItemIcon,
   PipelineItemLabel,
+  PipelineItemOutput,
 } from "@/components/pipeline";
 
 type UploadPipelineProps = {
@@ -34,7 +35,7 @@ function StepProgressBadge({ step }: { step: PipelineStep }) {
       <TooltipContent>
         <p>
           {current.toLocaleString()} of {total.toLocaleString()} requests
-          {failed !== undefined ? ` • ${failed.toLocaleString()} failed` : ""}
+          {failed > 0 ? ` • ${failed.toLocaleString()} failed` : ""}
         </p>
       </TooltipContent>
     </Tooltip>
@@ -66,6 +67,7 @@ export function UploadPipeline({ steps, nowTs }: UploadPipelineProps) {
                 )}
               />
               <StepProgressBadge step={step} />
+              <PipelineItemOutput output={step.output} stepId={step.id} />
               {step.startedAt ? (
                 <PipelineItemDuration
                   startAt={step.startedAt}
