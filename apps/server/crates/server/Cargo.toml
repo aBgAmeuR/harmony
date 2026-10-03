@@ -15,7 +15,7 @@ chrono.workspace = true
 domain = { path = "../domain" }
 dotenvy.workspace = true
 futures.workspace = true
-http = { path = "../http" }
+http = { package = "harmony-http", path = "../http" }
 init-tracing-opentelemetry.workspace = true
 pipeline = { path = "../pipeline" }
 reqwest.workspace = true
