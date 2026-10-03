@@ -1,6 +1,10 @@
-//! Environment. A bad value refuses to start. `STATIC_DIR` is not read.
+//! Environment. A bad value refuses to start.
+//! `STATIC_DIR`, when set, must contain the built SPA shell.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+
+/// SPA entry point written by the `TanStack` Start build.
+pub(crate) const SPA_SHELL_FILE: &str = "_shell.html";
 
 /// How the process logs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -41,6 +45,7 @@ pub(crate) struct Config {
     deezer: Lookup,
     max_upload_bytes: u64,
     log_format: LogFormat,
+    static_dir: Option<PathBuf>,
 }
 
 impl Config {
@@ -66,6 +71,10 @@ impl Config {
 
     pub(crate) const fn log_format(&self) -> LogFormat {
         self.log_format
+    }
+
+    pub(crate) fn static_dir(&self) -> Option<&Path> {
+        self.static_dir.as_deref()
     }
 
     pub(crate) fn public_url(&self) -> Option<&str> {
@@ -94,6 +103,7 @@ impl Config {
             deezer_rate_limit: std::env::var("DEEZER_RATE_LIMIT").ok(),
             max_upload_mb: std::env::var("MAX_UPLOAD_MB").ok(),
             log_format: std::env::var("LOG_FORMAT").ok(),
+            static_dir: std::env::var("STATIC_DIR").ok(),
         })
     }
 
@@ -115,6 +125,7 @@ impl Config {
             &mut problems,
         );
         let log_format = parse_log_format(input.log_format.as_deref(), &mut problems);
+        let static_dir = parse_static_dir(input.static_dir.as_deref(), &mut problems);
         if !problems.is_empty() {
             return Err(ConfigError(join(&problems)));
         }
@@ -130,8 +141,22 @@ impl Config {
             deezer,
             max_upload_bytes: u64::from(max_upload_mb) * 1024 * 1024,
             log_format,
+            static_dir,
         })
     }
+}
+
+fn parse_static_dir(value: Option<&str>, problems: &mut Vec<String>) -> Option<PathBuf> {
+    let raw = non_blank(value)?;
+    let dir = Path::new(raw.trim());
+    if !dir.join(SPA_SHELL_FILE).is_file() {
+        problems.push(format!(
+            "STATIC_DIR '{}' must be a directory containing {SPA_SHELL_FILE}",
+            dir.display()
+        ));
+        return None;
+    }
+    Some(dir.to_path_buf())
 }
 
 /// Values already read from the environment, so tests can skip the process env.
@@ -151,6 +176,7 @@ pub(crate) struct Input {
     pub(crate) deezer_rate_limit: Option<String>,
     pub(crate) max_upload_mb: Option<String>,
     pub(crate) log_format: Option<String>,
+    pub(crate) static_dir: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
@@ -428,6 +454,40 @@ mod tests {
             ..Input::default()
         };
         assert!(Config::from_input(&bad).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn static_dir_is_off_until_set() -> Result<(), super::ConfigError> {
+        let config = Config::from_input(&Input::default())?;
+        assert!(config.static_dir().is_none());
+
+        let blank = Input {
+            static_dir: Some("  ".to_owned()),
+            ..Input::default()
+        };
+        assert!(Config::from_input(&blank)?.static_dir().is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn static_dir_requires_the_shell() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
+        let missing = Input {
+            static_dir: Some(dir.path().display().to_string()),
+            ..Input::default()
+        };
+        let Err(err) = Config::from_input(&missing) else {
+            return Err("expected a missing shell to be rejected".into());
+        };
+        assert!(err.to_string().contains("_shell.html"), "{err}");
+
+        std::fs::write(dir.path().join(super::SPA_SHELL_FILE), "<html></html>")?;
+        let present = Input {
+            static_dir: Some(dir.path().display().to_string()),
+            ..Input::default()
+        };
+        assert_eq!(Config::from_input(&present)?.static_dir(), Some(dir.path()));
         Ok(())
     }
 }
