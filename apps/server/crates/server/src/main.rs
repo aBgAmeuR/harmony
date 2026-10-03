@@ -12,7 +12,7 @@ use axum::extract::{DefaultBodyLimit, Multipart, Path, State};
 use axum::http::{HeaderValue, StatusCode, header};
 use axum::response::sse::{Event, Sse};
 use axum::response::{IntoResponse, Redirect, Response};
-use axum::routing::{get, post};
+use axum::routing::{any, get, post};
 use axum::{Json, Router};
 use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use domain::observe::Progress;
@@ -21,8 +21,9 @@ use domain::ports::Store;
 use http::HttpError;
 use serde::Serialize;
 use tokio::sync::{Notify, watch};
+use tower_http::services::{ServeDir, ServeFile};
 
-use crate::config::{Config, Files, LogFormat, Lookup};
+use crate::config::{Config, Files, LogFormat, Lookup, SPA_SHELL_FILE};
 use crate::worker::{App, Shelf};
 
 fn main() {
@@ -80,10 +81,14 @@ async fn serve(config: Config, blob: Arc<Shelf>, deezer: Arc<Deezer>) -> anyhow:
     let (stop_tx, stop_rx) = watch::channel(false);
     let worker = tokio::spawn(worker::listen(app.clone(), stop_rx));
     let cap = usize::try_from(http::body_limit(config.max_upload_bytes())).unwrap_or(usize::MAX);
-    let router = routes(app.clone()).layer(DefaultBodyLimit::max(cap));
+    let router = routes(app.clone(), config.static_dir()).layer(DefaultBodyLimit::max(cap));
     let address = format!("{}:{}", config.host(), config.port());
     let listener = tokio::net::TcpListener::bind(&address).await?;
-    tracing::info!(%address, "listening");
+    tracing::info!(
+        %address,
+        static_dir = config.static_dir().map(|dir| dir.display().to_string()),
+        "listening"
+    );
 
     tokio::select! {
         result = axum::serve(listener, router) => {
@@ -159,16 +164,30 @@ fn otel_export_enabled() -> bool {
     std::env::var("OTEL_EXPORTER_OTLP_ENDPOINT").is_ok_and(|value| !value.trim().is_empty())
 }
 
-fn routes(app: App) -> Router {
-    Router::new()
+fn routes(app: App, static_dir: Option<&std::path::Path>) -> Router {
+    let router = Router::new()
         .route("/api/v1/config", get(limits))
         .route("/api/v1/packages", post(upload))
         .route("/api/v1/packages/{id}/stream", get(stream))
         .route("/files/{name}", get(download))
         .layer(OtelInResponseLayer)
         .layer(OtelAxumLayer::default())
-        .route("/health", get(health))
-        .with_state(app)
+        .route("/health", get(health));
+    let router = match static_dir {
+        Some(dir) => router
+            .route("/api/{*rest}", any(api_not_found))
+            .fallback_service(spa(dir)),
+        None => router,
+    };
+    router.with_state(app)
+}
+
+fn spa(dir: &std::path::Path) -> ServeDir<ServeFile> {
+    ServeDir::new(dir).fallback(ServeFile::new(dir.join(SPA_SHELL_FILE)))
+}
+
+async fn api_not_found() -> Response {
+    text(StatusCode::NOT_FOUND, "not found".to_owned())
 }
 
 async fn health() -> &'static str {
@@ -383,4 +402,85 @@ fn health_url(port: Option<&str>) -> Result<String, String> {
         return Err("PORT is invalid: 0".to_owned());
     }
     Ok(format!("http://127.0.0.1:{port}/health"))
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use adapters::deezer::{Deezer, Mode};
+    use adapters::fs::Fs;
+    use axum::body::Body;
+    use axum::http::{Request, StatusCode};
+    use domain::observe::Progress;
+    use domain::ports::Store;
+    use tokio::sync::Notify;
+    use tower::ServiceExt;
+
+    use super::routes;
+    use crate::config::SPA_SHELL_FILE;
+    use crate::worker::{App, Shelf};
+
+    fn app(dir: &std::path::Path) -> Result<App, Box<dyn std::error::Error>> {
+        Ok(App {
+            store: Arc::new(Store::new()),
+            progress: Arc::new(Progress::new()),
+            wake: Arc::new(Notify::new()),
+            blob: Arc::new(Shelf::Dir(Fs::open(dir)?)),
+            deezer: Arc::new(Deezer::open(Mode::Direct { per_second: 1 })?),
+            max_upload_bytes: 1024,
+            public_url: None,
+        })
+    }
+
+    async fn call(
+        router: &axum::Router,
+        path: &str,
+    ) -> Result<(StatusCode, String), Box<dyn std::error::Error>> {
+        let request = Request::builder().uri(path).body(Body::empty())?;
+        let response = router.clone().oneshot(request).await?;
+        let status = response.status();
+        let bytes = axum::body::to_bytes(response.into_body(), 64 * 1024).await?;
+        Ok((status, String::from_utf8(bytes.to_vec())?))
+    }
+
+    #[test]
+    fn static_dir_serves_the_shell_and_keeps_api_routes() -> Result<(), Box<dyn std::error::Error>>
+    {
+        let root = tempfile::tempdir()?;
+        let public = root.path().join("public");
+        std::fs::create_dir_all(public.join("assets"))?;
+        std::fs::write(public.join(SPA_SHELL_FILE), "shell")?;
+        std::fs::write(public.join("assets").join("app.js"), "js")?;
+
+        // `Deezer` owns a blocking runtime. Drop it only after this runtime ends.
+        let router = routes(app(&root.path().join("data"))?, Some(&public));
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()?;
+        let result = runtime.block_on(async {
+            let page = call(&router, "/").await?;
+            assert_eq!(page, (StatusCode::OK, "shell".to_owned()));
+
+            let nested = call(&router, "/app/pkg").await?;
+            assert_eq!(nested, (StatusCode::OK, "shell".to_owned()));
+
+            let asset = call(&router, "/assets/app.js").await?;
+            assert_eq!(asset, (StatusCode::OK, "js".to_owned()));
+
+            let health = call(&router, "/health").await?;
+            assert_eq!(health, (StatusCode::OK, "ok".to_owned()));
+
+            let config = call(&router, "/api/v1/config").await?;
+            assert_eq!(config.0, StatusCode::OK);
+            assert!(config.1.contains("max_upload_bytes"), "{}", config.1);
+
+            let missing = call(&router, "/api/v1/missing").await?;
+            assert_eq!(missing, (StatusCode::NOT_FOUND, "not found".to_owned()));
+            Ok(())
+        });
+        drop(runtime);
+        drop(router);
+        result
+    }
 }
