@@ -1,6 +1,5 @@
-import type { PipelineStep } from "@harmony/upload";
-
 import { db } from "@harmony/duckdb";
+import { parsePipelineSteps, type PipelineStep } from "@harmony/upload";
 
 export type PackageOverview = {
   publicId: string;
@@ -57,13 +56,10 @@ export const metaFn = async (): Promise<PackageOverview> => {
 };
 
 function readSteps(value: unknown): PipelineStep[] {
-  const parsed: unknown = typeof value === "string" ? parseJson(value) : value;
-  if (!Array.isArray(parsed)) {
-    throw new Error("package metadata steps are missing");
-  }
-  return parsed as PipelineStep[];
+  const parsed = typeof value === "string" ? readJson(value) : value;
+  return parsePipelineSteps(parsed);
 }
 
-function parseJson(value: string): unknown {
+function readJson(value: string): unknown {
   return JSON.parse(value) as unknown;
 }

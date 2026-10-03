@@ -196,6 +196,13 @@ export function UploadDeployStep() {
         </div>
 
         <UploadPipeline steps={pipelineState.steps} nowTs={nowTs} />
+        {pipelineState.stats ? (
+          <p className="text-xs text-muted-foreground">
+            {pipelineState.stats.calls.toLocaleString()} lookups •{" "}
+            {pipelineState.stats.retries.toLocaleString()} retries •{" "}
+            {pipelineState.stats.misses.toLocaleString()} missed
+          </p>
+        ) : null}
       </CardContent>
 
       <CardFooter className="justify-between">

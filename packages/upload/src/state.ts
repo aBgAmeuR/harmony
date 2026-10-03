@@ -23,7 +23,7 @@ export const STEP_LABELS: Record<StepId, string> = {
 export function createInitialPipelineState(): PipelineState {
   return {
     runStatus: "idle",
-    seq: 0,
+    seq: -1,
     steps: STEP_ORDER.map((id) => ({
       id,
       label: STEP_LABELS[id],
@@ -34,98 +34,29 @@ export function createInitialPipelineState(): PipelineState {
 
 export const INITIAL_PIPELINE_STATE: PipelineState = createInitialPipelineState();
 
-function updateStep(
-  steps: PipelineStep[],
-  stepId: StepId,
-  patch: Partial<PipelineStep>,
-): PipelineStep[] {
-  return steps.map((step) => (step.id === stepId ? { ...step, ...patch } : step));
-}
-
 export function reducePipelineEvent(state: PipelineState, event: PipelineEvent): PipelineState {
   if (event.seq <= state.seq) {
     return state;
   }
 
-  switch (event.type) {
-    case "snapshot":
-      return {
-        ...state,
-        seq: event.seq,
-        steps: event.steps,
-        runStatus: event.runStatus,
-        startedAt: event.startedAt ?? state.startedAt,
-        endedAt: event.endedAt ?? state.endedAt,
-      };
+  return {
+    runStatus: event.runStatus,
+    seq: event.seq,
+    steps: event.steps,
+    startedAt: event.startedAt,
+    endedAt: event.endedAt,
+    stats: event.stats,
+    error: runError(event),
+  };
+}
 
-    case "step.started":
-      return {
-        ...state,
-        seq: event.seq,
-        runStatus: "running",
-        startedAt: state.startedAt ?? event.at,
-        steps: updateStep(state.steps, event.stepId, {
-          status: "running",
-          label: event.label,
-          startedAt: event.at,
-        }),
-      };
-
-    case "step.progress":
-      return {
-        ...state,
-        seq: event.seq,
-        steps: updateStep(state.steps, event.stepId, {
-          progress: event.progress,
-        }),
-      };
-
-    case "step.completed":
-      return {
-        ...state,
-        seq: event.seq,
-        steps: updateStep(state.steps, event.stepId, {
-          status: "done",
-          endedAt: event.at,
-          output: event.output,
-          progress: undefined,
-        }),
-      };
-
-    case "step.failed":
-      return {
-        ...state,
-        seq: event.seq,
-        runStatus: "error",
-        error: event.error,
-        endedAt: event.at,
-        steps: updateStep(state.steps, event.stepId, {
-          status: "error",
-          endedAt: event.at,
-          error: event.error,
-        }),
-      };
-
-    case "run.completed":
-      return {
-        ...state,
-        seq: event.seq,
-        runStatus: "done",
-        endedAt: event.at,
-      };
-
-    case "run.failed":
-      return {
-        ...state,
-        seq: event.seq,
-        runStatus: "error",
-        error: event.error,
-        endedAt: event.at,
-      };
-
-    default: {
-      const _exhaustive: never = event;
-      return _exhaustive;
-    }
+function runError(event: PipelineEvent): string | undefined {
+  if (event.runStatus !== "error") {
+    return undefined;
   }
+  return failedStepMessage(event.steps) ?? "Pipeline failed";
+}
+
+function failedStepMessage(steps: PipelineStep[]): string | undefined {
+  return steps.find((step) => step.status === "error")?.error;
 }

@@ -56,12 +56,11 @@ export class Pipeline {
 
   private handleEvent(event: PipelineEvent): void {
     const nextState = reducePipelineEvent(this.state, event);
-    if (nextState === this.state) {
-      return;
+    if (nextState !== this.state) {
+      this.state = nextState;
+      this.connectionError = null;
+      this.emit();
     }
-
-    this.state = nextState;
-    this.emit();
 
     if (nextState.runStatus === "done" || nextState.runStatus === "error") {
       this.disconnect();
@@ -69,7 +68,11 @@ export class Pipeline {
   }
 
   private handleConnectionError(message: string): void {
-    if (this.connectionError === message) {
+    if (
+      this.state.runStatus === "done" ||
+      this.state.runStatus === "error" ||
+      this.connectionError === message
+    ) {
       return;
     }
     this.connectionError = message;

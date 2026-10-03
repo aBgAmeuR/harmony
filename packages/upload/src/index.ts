@@ -1,5 +1,6 @@
 export { UploadClient } from "./client";
 export { UploadError } from "./errors";
+export { parsePipelineSnapshot, parsePipelineSteps } from "./parse";
 export { Pipeline } from "./pipeline";
 export {
   createInitialPipelineState,
@@ -14,10 +15,12 @@ export type {
   PipelineEvent,
   PipelineRunStatus,
   PipelineState,
+  PipelineStats,
   PipelineStep,
   ServerConfig,
   ServerConfigBody,
   StepId,
+  StepOutput,
   StepProgress,
   StepStatus,
   UploadConfig,

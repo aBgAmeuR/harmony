@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { BarChart } from "@harmony/charts/v3";
-import { Alert02Icon, Cancel01Icon, Icon, Loading03Icon, Tick02Icon } from "@harmony/icons";
+import { Cancel01Icon, Icon, Loading03Icon, Tick02Icon } from "@harmony/icons";
 import { Badge } from "@harmony/ui/components/badge";
 import { Checkbox } from "@harmony/ui/components/checkbox";
 import { cn } from "@harmony/ui/lib/utils";
@@ -27,7 +27,6 @@ type PipelineStageStatus = "done" | "running" | "pending";
 type PipelineOutput =
   | { kind: "files"; count: number }
   | { kind: "pair"; ok: number; bad: number }
-  | { kind: "resolve"; resolved: number; missed: number; errors: number }
   | { kind: "progress"; current: number; total: number };
 
 type PipelineStage = {
@@ -55,7 +54,7 @@ const PIPELINE_STAGES: readonly PipelineStage[] = [
   {
     label: "Resolve tracks",
     status: "done",
-    output: { kind: "resolve", resolved: 4812, missed: 86, errors: 3 },
+    output: { kind: "pair", ok: 4812, bad: 86 },
   },
   {
     label: "Enrich tracks",
@@ -227,23 +226,6 @@ function PipelineStageOutput({ output }: { output: PipelineOutput }) {
           <span className="flex items-center gap-0.5 text-destructive">
             <Icon icon={Cancel01Icon} className="size-2.5" />
             {output.bad.toLocaleString()}
-          </span>
-        </span>
-      );
-    case "resolve":
-      return (
-        <span className="flex items-center gap-1.5 text-[10px]">
-          <span className="flex items-center gap-0.5 text-primary">
-            <Icon icon={Tick02Icon} className="size-2.5" />
-            {output.resolved.toLocaleString()}
-          </span>
-          <span className="flex items-center gap-0.5 text-yellow-600">
-            <Icon icon={Alert02Icon} className="size-2.5" />
-            {output.missed.toLocaleString()}
-          </span>
-          <span className="flex items-center gap-0.5 text-destructive">
-            <Icon icon={Cancel01Icon} className="size-2.5" />
-            {output.errors.toLocaleString()}
           </span>
         </span>
       );
