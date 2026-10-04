@@ -13,15 +13,26 @@ pub enum Body {
     Redirect(String),
 }
 
+/// Reserved public package. It is shorter than a generated id, and the file lives on the bucket.
+const DEMO: &str = "demo";
+
 /// Sends the stored file, or redirects to `{public_url}/{id}.duckdb` when that URL is set.
+///
+/// `demo.duckdb` is the same redirect. Generated ids stay six alphanumeric characters.
 ///
 /// # Errors
 ///
-/// [`HttpError::Missing`] when the name is not `{id}.duckdb`, or the file is absent.
+/// [`HttpError::Missing`] when the name is not `{id}.duckdb` or `demo.duckdb`, or the file is absent.
 pub fn file(blob: &impl Blob, name: &str, public_url: Option<&str>) -> Result<Body, HttpError> {
     let Some(stem) = name.strip_suffix(".duckdb") else {
         return Err(HttpError::Missing);
     };
+    if stem == DEMO {
+        let Some(root) = public_root(public_url) else {
+            return Err(HttpError::Missing);
+        };
+        return Ok(Body::Redirect(format!("{root}/{DEMO}.duckdb")));
+    }
     let id = match domain::package::Id::parse(stem) {
         Ok(id) => id,
         Err(IdError::Length | IdError::Alphabet) => return Err(HttpError::Missing),
@@ -70,6 +81,36 @@ mod tests {
             }
             Ok(Artifact::new(self.path.clone()))
         }
+    }
+
+    #[test]
+    fn file_redirects_the_demo_package() {
+        let shelf = Shelf {
+            path: PathBuf::from("unused"),
+            miss: true,
+        };
+
+        let body = file(&shelf, "demo.duckdb", Some("https://cdn.example/harmony/"));
+
+        assert_eq!(
+            body,
+            Ok(Body::Redirect(
+                "https://cdn.example/harmony/demo.duckdb".to_owned()
+            ))
+        );
+    }
+
+    #[test]
+    fn file_misses_the_demo_package_without_a_public_url() {
+        let shelf = Shelf {
+            path: PathBuf::from("unused"),
+            miss: false,
+        };
+
+        assert!(matches!(
+            file(&shelf, "demo.duckdb", None),
+            Err(HttpError::Missing)
+        ));
     }
 
     #[test]
