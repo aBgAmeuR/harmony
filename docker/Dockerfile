@@ -39,7 +39,7 @@ RUN HARMONY_VERSION="$HARMONY_VERSION" cargo build --release --locked --bin serv
  && cp target/release/server /out/server
 
 # --- Web: static SPA
-FROM docker.io/library/node:24.13.1-slim@sha256:a81a03dd965b4052269a57fac857004022b522a4bf06e7a739e25e18bce45af2 AS web-builder
+FROM docker.io/library/node:26.9.0-slim@sha256:3a771f83944bb763050c23c0225c260638c4b7899e7a72485ef75e5e570499e5 AS web-builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN corepack enable
 WORKDIR /app
