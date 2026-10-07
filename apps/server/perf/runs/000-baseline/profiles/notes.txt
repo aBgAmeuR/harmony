@@ -1,0 +1,7 @@
+samply: recording 400 iterations
+samply: perf/runs/000-baseline/profiles/samply.json.gz
+heaptrack: recording 40 iterations
+heaptrack: perf/runs/000-baseline/profiles/heaptrack.zst
+heaptrack: perf/runs/000-baseline/profiles/heap-peaks.txt
+cachegrind: recording 8 iterations
+cachegrind: perf/runs/000-baseline/profiles/cachegrind.txt

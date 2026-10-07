@@ -1,0 +1,119 @@
+{
+  "cpu": "QEMU Virtual CPU version 2.5+",
+  "label": "baseline",
+  "optimized": true,
+  "plays": 732,
+  "read": {
+    "max_ns": 1758319,
+    "mean_ns": 1490571,
+    "median_ns": 1456787,
+    "min_ns": 1435086,
+    "p95_ns": 1748583,
+    "samples_ns": [
+      1634436,
+      1473753,
+      1748583,
+      1440298,
+      1457309,
+      1758319,
+      1454439,
+      1474989,
+      1728287,
+      1452741,
+      1502507,
+      1457047,
+      1436531,
+      1455541,
+      1448988,
+      1435086,
+      1437814,
+      1444714,
+      1479168,
+      1470247,
+      1438915,
+      1460885,
+      1446310,
+      1443420,
+      1435955,
+      1478693,
+      1458728,
+      1460387,
+      1456528,
+      1446518
+    ],
+    "unit": "ns"
+  },
+  "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+  "samples": 30,
+  "schema": 1,
+  "scope": "read",
+  "scope_note": "read::run only. Zip copy, Source::open, and Live setup are outside the clock. Resolve, enrich, and persist are not measured.",
+  "spans": {
+    "note": "Second pass. A tracing subscriber times the spans inside read. Do not compare these medians to read.median_ns.",
+    "rows": [
+      {
+        "max_ns": 609984,
+        "median_ns": 433498,
+        "min_ns": 422205,
+        "name": "extract_archive",
+        "p95_ns": 555428
+      },
+      {
+        "max_ns": 1049897,
+        "median_ns": 648112,
+        "min_ns": 630890,
+        "name": "parse_interactions",
+        "p95_ns": 1044553
+      },
+      {
+        "max_ns": 652892,
+        "median_ns": 373225,
+        "min_ns": 359842,
+        "name": "normalize_interactions",
+        "p95_ns": 638345
+      }
+    ]
+  },
+  "stage_timer": "Live::end stores whole milliseconds. On this archive every step is under 1 ms, so those medians are 0. spans is a second pass and is not the baseline clock.",
+  "stages": [
+    {
+      "counts_stable": true,
+      "dropped": 3,
+      "id": "extract_archive",
+      "keep": 1,
+      "label": "Extract archive",
+      "max_ms": 0,
+      "median_ms": 0,
+      "min_ms": 0,
+      "read": 4,
+      "unit": "ms"
+    },
+    {
+      "counts_stable": true,
+      "dropped": 0,
+      "id": "parse_interactions",
+      "keep": 800,
+      "label": "Parse interactions",
+      "max_ms": 0,
+      "median_ms": 0,
+      "min_ms": 0,
+      "read": 1,
+      "unit": "ms"
+    },
+    {
+      "counts_stable": true,
+      "dropped": 68,
+      "id": "normalize_interactions",
+      "keep": 732,
+      "label": "Normalize interactions",
+      "max_ms": 0,
+      "median_ms": 0,
+      "min_ms": 0,
+      "read": 800,
+      "unit": "ms"
+    }
+  ],
+  "warmup": 3,
+  "zip": "crates/pipeline/benches/data_test.zip",
+  "zip_bytes": 1528547
+}
