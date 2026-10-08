@@ -1,5 +1,7 @@
 //! A play that passed artist, title, and duration checks.
 
+use std::borrow::Cow;
+
 use chrono::{DateTime, NaiveDateTime, Utc};
 
 use super::platform::Platform;
@@ -75,10 +77,10 @@ impl Play {
     }
 }
 
-impl TryFrom<RawPlay> for Play {
+impl TryFrom<RawPlay<'_>> for Play {
     type Error = PlayError;
 
-    fn try_from(raw: RawPlay) -> Result<Self, Self::Error> {
+    fn try_from(raw: RawPlay<'_>) -> Result<Self, Self::Error> {
         let artist = required(raw.artist, PlayError::Artist)?;
         let title = required(raw.title, PlayError::Title)?;
         if raw.ms <= MIN_MS {
@@ -87,11 +89,11 @@ impl TryFrom<RawPlay> for Play {
         let Ok(ms) = u32::try_from(raw.ms) else {
             return Err(PlayError::Duration);
         };
-        let at = clock(&raw.at)?;
+        let at = clock(raw.at.as_ref())?;
 
         Ok(Self {
             at,
-            platform: Platform::from(raw.platform.as_str()),
+            platform: Platform::from(raw.platform.as_ref()),
             ms,
             artist,
             title,
@@ -102,7 +104,7 @@ impl TryFrom<RawPlay> for Play {
     }
 }
 
-fn required(value: Option<String>, error: PlayError) -> Result<String, PlayError> {
+fn required(value: Option<Cow<'_, str>>, error: PlayError) -> Result<String, PlayError> {
     let Some(text) = value else {
         return Err(error);
     };
@@ -111,7 +113,7 @@ fn required(value: Option<String>, error: PlayError) -> Result<String, PlayError
         return Err(error);
     }
     if trimmed.len() == text.len() {
-        return Ok(text);
+        return Ok(text.into_owned());
     }
     Ok(trimmed.to_owned())
 }
@@ -139,17 +141,19 @@ fn clock(value: &str) -> Result<DateTime<Utc>, PlayError> {
 
 #[cfg(test)]
 mod tests {
+    use std::borrow::Cow;
+
     use super::{Play, PlayError};
     use crate::play::Platform;
     use crate::play::raw::RawPlay;
 
-    fn raw() -> RawPlay {
+    fn raw() -> RawPlay<'static> {
         RawPlay {
-            at: "2020-01-02T03:04:05Z".to_owned(),
-            platform: "windows".to_owned(),
+            at: Cow::Borrowed("2020-01-02T03:04:05Z"),
+            platform: Cow::Borrowed("windows"),
             ms: 30_001,
-            artist: Some("Artist".to_owned()),
-            title: Some(" Song ".to_owned()),
+            artist: Some(Cow::Borrowed("Artist")),
+            title: Some(Cow::Borrowed(" Song ")),
             shuffle: false,
             skip: true,
             offline: false,
@@ -200,7 +204,7 @@ mod tests {
     #[test]
     fn try_from_rejects_a_bad_clock() {
         let mut value = raw();
-        value.at = "yesterday".to_owned();
+        value.at = Cow::Borrowed("yesterday");
 
         assert_eq!(Play::try_from(value), Err(PlayError::Clock));
     }

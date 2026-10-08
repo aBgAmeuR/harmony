@@ -4,7 +4,7 @@ use domain::play::{Play, RawPlay};
 
 use super::clean;
 
-pub fn plays(raws: Vec<RawPlay>) -> Vec<Play> {
+pub fn plays(raws: Vec<RawPlay<'_>>) -> Vec<Play> {
     let mut kept = Vec::new();
     for raw in raws {
         let cleaned = match raw.title() {

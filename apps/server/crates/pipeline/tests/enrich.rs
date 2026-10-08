@@ -31,7 +31,7 @@ impl From<PlayError> for Fixture {
 }
 
 fn play() -> Result<Play, Fixture> {
-    let raw = serde_json::from_str::<RawPlay>(
+    let raw = serde_json::from_str::<RawPlay<'_>>(
         r#"{
             "ts": "2020-01-02T03:04:05Z",
             "platform": "android",

@@ -39,7 +39,7 @@ impl From<Empty> for Fixture {
 }
 
 fn play(artist: &str, title: &str) -> Result<Play, Fixture> {
-    let raw = serde_json::from_str::<RawPlay>(&format!(
+    let json = format!(
         r#"{{
             "ts": "2020-01-02T03:04:05Z",
             "platform": "android",
@@ -47,7 +47,8 @@ fn play(artist: &str, title: &str) -> Result<Play, Fixture> {
             "master_metadata_track_name": "{title}",
             "master_metadata_album_artist_name": "{artist}"
         }}"#
-    ))?;
+    );
+    let raw = serde_json::from_str::<RawPlay<'_>>(&json)?;
     Ok(Play::try_from(raw)?)
 }
 

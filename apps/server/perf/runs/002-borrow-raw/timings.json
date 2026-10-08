@@ -1,0 +1,128 @@
+{
+  "comparison": {
+    "baseline_median_ns": 1456787,
+    "current_median_ns": 1362011,
+    "evidence": "heaptrack: 2372 allocations de moins par appel sur 40 tours (426599 de 001, 331719 ici)",
+    "lever": "read: RawPlay emprunte ts, platform, artiste et titre",
+    "rule": "1000 milli-units means unchanged. speedup_millis is 1000 * baseline / current (10000 = ten times faster). The number is not the explanation: lever says what moved, evidence names the profile that shows it.",
+    "speedup_millis": 1069,
+    "time_ratio_millis": 934
+  },
+  "cpu": "QEMU Virtual CPU version 2.5+",
+  "label": "borrow-raw",
+  "optimized": true,
+  "plays": 732,
+  "read": {
+    "max_ns": 1469068,
+    "mean_ns": 1366762,
+    "median_ns": 1362011,
+    "min_ns": 1331931,
+    "p95_ns": 1402166,
+    "samples_ns": [
+      1370167,
+      1391855,
+      1394924,
+      1357044,
+      1331931,
+      1397556,
+      1334046,
+      1383641,
+      1363644,
+      1364678,
+      1342021,
+      1374724,
+      1354516,
+      1343102,
+      1353794,
+      1345241,
+      1346063,
+      1382445,
+      1336554,
+      1383786,
+      1360379,
+      1344115,
+      1360038,
+      1368011,
+      1338331,
+      1402166,
+      1469068,
+      1353512,
+      1379514,
+      1376019
+    ],
+    "unit": "ns"
+  },
+  "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+  "samples": 30,
+  "schema": 1,
+  "scope": "read",
+  "scope_note": "read::run only. Zip copy, Source::open, and Live setup are outside the clock. Resolve, enrich, and persist are not measured.",
+  "spans": {
+    "note": "Second pass. A tracing subscriber times the spans inside read. Do not compare these medians to read.median_ns.",
+    "rows": [
+      {
+        "max_ns": 465152,
+        "median_ns": 405822,
+        "min_ns": 399651,
+        "name": "extract_archive",
+        "p95_ns": 464234
+      },
+      {
+        "max_ns": 617751,
+        "median_ns": 568025,
+        "min_ns": 546722,
+        "name": "parse_interactions",
+        "p95_ns": 595271
+      },
+      {
+        "max_ns": 447161,
+        "median_ns": 381749,
+        "min_ns": 371226,
+        "name": "normalize_interactions",
+        "p95_ns": 399629
+      }
+    ]
+  },
+  "stage_timer": "Live::end stores whole milliseconds. On this archive every step is under 1 ms, so those medians are 0. spans is a second pass and is not the baseline clock.",
+  "stages": [
+    {
+      "counts_stable": true,
+      "dropped": 3,
+      "id": "extract_archive",
+      "keep": 1,
+      "label": "Extract archive",
+      "max_ms": 0,
+      "median_ms": 0,
+      "min_ms": 0,
+      "read": 4,
+      "unit": "ms"
+    },
+    {
+      "counts_stable": true,
+      "dropped": 0,
+      "id": "parse_interactions",
+      "keep": 800,
+      "label": "Parse interactions",
+      "max_ms": 0,
+      "median_ms": 0,
+      "min_ms": 0,
+      "read": 1,
+      "unit": "ms"
+    },
+    {
+      "counts_stable": true,
+      "dropped": 68,
+      "id": "normalize_interactions",
+      "keep": 732,
+      "label": "Normalize interactions",
+      "max_ms": 0,
+      "median_ms": 0,
+      "min_ms": 0,
+      "read": 800,
+      "unit": "ms"
+    }
+  ],
+  "warmup": 3,
+  "zip": "crates/pipeline/benches/data_test.zip",
+  "zip_bytes": 1528547
+}
