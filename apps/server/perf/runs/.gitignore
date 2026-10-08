@@ -1,6 +1,1 @@
-# Raw captures are large and tied to one machine. notes.txt stays.
-*/profiles/samply.json.gz
-*/profiles/cachegrind.out
-*/profiles/cachegrind.txt
-*/profiles/heaptrack*
-*/profiles/heap-peaks.txt
+profiles/

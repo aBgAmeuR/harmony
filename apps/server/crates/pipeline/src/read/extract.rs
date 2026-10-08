@@ -33,6 +33,9 @@ pub fn files(bytes: &[u8], selection: &Selection) -> Result<(Vec<Entry>, u64), R
         }
 
         let mut body = Vec::new();
+        if let Ok(declared) = usize::try_from(file.size()) {
+            let _ = body.try_reserve(declared.min(bytes.len()));
+        }
         file.read_to_end(&mut body)
             .map_err(zip::result::ZipError::from)?;
         kept.push(Entry { bytes: body });
