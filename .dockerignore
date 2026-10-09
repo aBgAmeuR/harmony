@@ -1,14 +1,8 @@
 **/node_modules/
-vendor/
-__pycache__/
-*.pyc
 
 **/target/
 **/.output/
 **/.turbo/
-.agents/
-apps/tests/
-apps/benchmark/
 
 .git/
 .gitignore
@@ -28,5 +22,3 @@ build/
 **/*.key
 secrets/
 .npmrc
-.pypirc
-kubeconfig

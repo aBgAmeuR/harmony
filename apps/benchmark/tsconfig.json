@@ -1,5 +1,5 @@
 {
-  "extends": "@harmony/config/tsconfig.react.json",
+  "extends": "@harmony/tsconfig/react.json",
   "include": ["**/*.ts", "**/*.tsx"],
   "compilerOptions": {
     "noEmit": true,

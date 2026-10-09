@@ -43,8 +43,16 @@ Run everything from the repository root.
 | `pnpm build`               | Production web build and debug server build                                         |
 | `pnpm lint`                | oxlint, then clippy on `server` with warnings as errors                             |
 | `pnpm format`              | Write oxfmt and rustfmt fixes                                                       |
+| `pnpm format:check`        | oxfmt check only                                                                    |
 | `pnpm check`               | `oxfmt --check`, `tsc --noEmit` on each package, `cargo fmt --check`, `cargo check` |
 | `pnpm test`                | Rust tests (`cargo test` on `server`)                                               |
+
+Shared tool configuration lives in `tooling/`: `typescript` (tsconfig bases), `oxlint`,
+`oxfmt` and `tailwind` (the theme imported by `@harmony/ui`). Edit it there, not in each package.
+
+Dependency versions are declared once, in the named catalogs of `pnpm-workspace.yaml`
+(`react`, `tanstack`, `tailwind`, `ui`, `icons`, `charts`, `duckdb`, `app`, `build`, `lint`,
+`test`). Packages reference them as `catalog:<group>`, for example `"react": "catalog:react"`.
 
 ## Before you open a pull request
 

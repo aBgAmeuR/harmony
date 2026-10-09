@@ -154,7 +154,7 @@ function RouteComponent() {
   const missedTracks = missedTrackCount(data.steps);
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6 p-3 pt-12">
+    <div className="rise-in mx-auto w-full max-w-3xl space-y-6 p-3 pt-12">
       <section className="space-y-2">
         <h2 className="mb-3 text-xs font-semibold text-muted-foreground">Overview</h2>
         <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
