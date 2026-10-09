@@ -1,95 +1,67 @@
-<p align="center">
-  <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/header/graph.svg?title=Harmony&amp;subtitle=Upload+your+history.+Explore+it+locally.&amp;logo=https%3A%2F%2Fharmony-staging.antoinejosset.fr%2Ffavicon.svg&amp;mode=dark&amp;font=geist" /><img alt="header" src="https://shieldcn.dev/header/graph.svg?title=Harmony&amp;subtitle=Upload+your+history.+Explore+it+locally.&amp;logo=https%3A%2F%2Fharmony-staging.antoinejosset.fr%2Ffavicon.svg&amp;mode=light&amp;font=geist" /></picture>
-</p>
+# Harmony
 
-<p align="center">
+<p>
   <a href="https://github.com/abgameur/harmony"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/abgameur/harmony/stars.svg?variant=secondary&amp;size=xs&amp;font=geist" /><img alt="badge" src="https://shieldcn.dev/github/abgameur/harmony/stars.svg?variant=secondary&amp;size=xs&amp;mode=light&amp;font=geist" /></picture></a>
   <a href="https://github.com/abgameur/harmony"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/abgameur/harmony/license.svg?variant=secondary&amp;size=xs&amp;font=geist" /><img alt="license" src="https://shieldcn.dev/github/abgameur/harmony/license.svg?variant=secondary&amp;size=xs&amp;mode=light&amp;font=geist" /></picture></a>
   <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/flag/fr.svg?size=xs&amp;font=geist" /><img alt="built in" src="https://shieldcn.dev/flag/fr.svg?size=xs&amp;mode=light&amp;font=geist" /></picture>
 </p>
 
-## Overview
+Harmony turns your Spotify Extended Streaming History into listening analytics.
+You upload the export ZIP, the server enriches it with Deezer metadata, and you
+explore the result in your browser. Queries run locally with DuckDB WASM against
+a single DuckDB file built for your upload.
 
-Personal Spotify analytics: upload your Extended Streaming History export, enrich
-it server-side, then explore listening insights in the browser with DuckDB WASM.
+There is no Spotify login. Harmony only reads the export you give it.
 
-No Spotify account login. Privacy-first - analytics run locally against a
-DuckDB file you download for your package.
+> Harmony v3 is in beta. Releases are tagged `v3.0.0-beta.N`.
 
-## Stack
+## Get your data
 
-| Layer    | Tech                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Web      | <div><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/TanStack-ECE8D1.svg?size=xs&amp;font=geist&amp;logo=tanstack" /><img alt="TanStack" src="https://shieldcn.dev/badge/TanStack-ECE8D1.svg?size=xs&amp;mode=light&amp;font=geist&amp;logo=tanstack" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/Typescript-3178C6.svg?size=xs&amp;font=geist&amp;logo=typescript" /><img alt="TypeScript" src="https://shieldcn.dev/badge/Typescript-3178C6.svg?size=xs&amp;mode=light&amp;font=geist&amp;logo=typescript" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/Tailwind CSS-06B6D4.svg?size=xs&amp;logo=tailwindcss" /><img alt="Tailwind CSS" src="https://shieldcn.dev/badge/Tailwind CSS-06B6D4.svg?size=xs&amp;mode=light&amp;logo=tailwindcss" /></picture></div> |
-| Backend  | <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/Rust-000000.svg?size=xs&amp;font=geist&amp;logo=rust" /><img alt="Rust" src="https://shieldcn.dev/badge/Rust-000000.svg?size=xs&amp;mode=light&amp;font=geist&amp;logo=rust" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/DuckDB-FFF000.svg?size=xs&amp;font=geist&amp;logo=duckdb" /><img alt="DuckDB" src="https://shieldcn.dev/badge/DuckDB-FFF000.svg?size=xs&amp;mode=light&amp;font=geist&amp;logo=duckdb" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/OpenTelemetry-000000.svg?size=xs&amp;logo=opentelemetry" /><img alt="OpenTelemetry" src="https://shieldcn.dev/badge/OpenTelemetry-000000.svg?size=xs&amp;mode=light&amp;logo=opentelemetry" /></picture>                                             |
-| Monorepo | <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/PNPM-F69220.svg?size=xs&amp;font=geist&amp;logo=pnpm" /><img alt="pnpm" src="https://shieldcn.dev/badge/PNPM-F69220.svg?size=xs&amp;mode=light&amp;font=geist&amp;logo=pnpm" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/Turborepo-FF1E56.svg?size=xs&amp;font=geist&amp;logo=turborepo" /><img alt="Turborepo" src="https://shieldcn.dev/badge/Turborepo-FF1E56.svg?size=xs&amp;mode=light&amp;font=geist&amp;logo=turborepo" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/badge/oxlint / oxfmt-00F7F1.svg?size=xs&amp;logo=oxc" /><img alt="oxlint / oxfmt" src="https://shieldcn.dev/badge/oxlint / oxfmt-00F7F1.svg?size=xs&amp;mode=light&amp;logo=oxc" /></picture>                                               |
+Request your **Extended streaming history** from the
+[Spotify privacy page](https://www.spotify.com/account/privacy/). Spotify emails a
+download link once the export is ready. Upload the ZIP as it is.
 
-## Monorepo layout
+## Self-hosting
 
-```text
-apps/web/          TanStack Start app (routes, features, upload UI)
-apps/server/       Axum API, worker, ingestion pipeline
-packages/          ui, charts, duckdb, upload, icons, font, config
-docs/              Architecture, design system, deploy
+Run the published image. It serves the API and the web app on port 3000, and it
+needs no configuration:
+
+```bash
+docker run -d -p 3000:3000 -v harmony-data:/data ghcr.io/abgameur/harmony
 ```
 
-## Requirements
+Then open `http://localhost:3000`. Package files are kept in the `harmony-data`
+volume. See [`docs/DEPLOY.md`](docs/DEPLOY.md) for Docker Compose, S3-compatible
+storage, Deezer proxies and image tags.
 
-- Node.js 24+ (see `.nvmrc`)
-- pnpm 10+
-- Rust toolchain (for `apps/server`)
+## Development
 
-## Quick start
-
-1. Install dependencies:
+You need Node.js 24+, pnpm 10 and a Rust toolchain.
 
 ```bash
 pnpm install
-```
-
-2. Configure env from the examples:
-
-```bash
-cp apps/web/.env.example apps/web/.env
-cp apps/server/.env.example apps/server/.env
-```
-
-Fill S3/R2 and Deezer proxy values in `apps/server/.env`.
-Set API url and bucket url in `apps/web/.env`.
-
-3. Run the web app and API:
-
-```bash
 pnpm dev
 ```
 
-One side only:
+The web app runs on `http://localhost:3001` and the API on `http://127.0.0.1:3000`.
+[`CONTRIBUTING.md`](CONTRIBUTING.md) lists every command and the checks to run before a
+pull request.
 
-```bash
-pnpm --filter web dev
-pnpm --filter server dev
-```
+## Built with
 
-## Useful commands
+React 19, TanStack Start, Tailwind CSS v4 and DuckDB WASM on the web side. An Axum
+API written in Rust, with DuckDB and OpenTelemetry, on the server side. pnpm
+workspaces, Turborepo, oxlint and oxfmt for the monorepo.
 
-| Command                    | Purpose                                     |
-| -------------------------- | ------------------------------------------- |
-| `pnpm dev`                 | Start the web app and API                   |
-| `pnpm --filter web dev`    | Web app only                                |
-| `pnpm --filter server dev` | API only                                    |
-| `pnpm lint`                | oxlint and clippy                           |
-| `pnpm format`              | Write oxfmt and rustfmt fixes               |
-| `pnpm check`               | oxfmt check, TypeScript, and cargo check    |
-| `pnpm test`                | Rust tests                                  |
-| `pnpm build`               | Web production build and server debug build |
+## Documentation
 
-## Docs
-
-- [Architecture](docs/ARCHITECTURE.md) - upload → pipeline → DuckDB → analytics
-- [Design system](docs/DESIGN.md) - colors, typography, UI rules
-- [Deploy](docs/DEPLOY.md) - GHCR image and self-host compose
-- [AGENTS.md](AGENTS.md) - commands and convention
+- [Architecture](docs/ARCHITECTURE.md): data flow, API, pipeline and storage
+- [Deployment](docs/DEPLOY.md): self-hosting and releases
+- [Design system](docs/DESIGN.md): colors, typography and UI rules
+- [Contributing](CONTRIBUTING.md), [Security](SECURITY.md) and
+  [Code of Conduct](CODE_OF_CONDUCT.md)
+- [`AGENTS.md`](AGENTS.md): instructions for coding agents
 
 ## License
 
-Distributed under the GNU General Public License v3.0. See `LICENSE`.
+Harmony is distributed under the GNU General Public License v3.0. See [`LICENSE`](LICENSE).

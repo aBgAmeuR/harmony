@@ -9,18 +9,22 @@ description: A nocturnal, data-forward music analytics dashboard where a
   without decorative shadows.
 colors:
   primary: "#57B660"
-  primary-bright: "#72E97D"
-  primary-mid: "#5DC267"
   primary-dim: "#37783D"
   primary-deep: "#25562A"
+  chart-1: "#1DB954"
+  chart-2: "#269849"
+  chart-3: "#28783E"
+  chart-4: "#275A32"
+  chart-5: "#223D27"
   background: "#000000"
   chart-background: "#0A0A0A"
-  surface-sidebar: "#121212"
-  surface-card: "#121212"
+  surface-sidebar: "#0A0A0A"
+  surface-card: "#0A0A0A"
   surface-popover: "#171717"
   surface-muted: "#1F1F1F"
   surface-secondary: "#2A2A2A"
   surface-accent: "#404040"
+  sidebar-active: "#262626"
   foreground: "#FFFFFF"
   foreground-soft: "#FAFAFA"
   body: "#D9D9D9"
@@ -30,6 +34,7 @@ colors:
   input-fill: "#FFFFFF26"
   focus-ring: "#737373"
   destructive: "#FF6467"
+  destructive-fill: "#FF646433"
   rank-gold-fill: "#F59E0B33"
   rank-gold-text: "#FCD34D"
   rank-silver-fill: "#94A3B833"
@@ -131,7 +136,7 @@ components:
     height: 28px
     padding: "{spacing.none} {spacing.sm}"
   button-destructive:
-    backgroundColor: "{colors.destructive}"
+    backgroundColor: "{colors.destructive-fill}"
     textColor: "{colors.destructive}"
     typography: "{typography.button}"
     rounded: "{rounded.md}"
@@ -160,7 +165,7 @@ components:
     collapsedWidth: "{spacing.sidebar-collapsed}"
   sidebar-item:
     backgroundColor: "transparent"
-    activeBackgroundColor: "{colors.surface-accent}"
+    activeBackgroundColor: "{colors.sidebar-active}"
     textColor: "{colors.body}"
     activeTextColor: "{colors.foreground-soft}"
     typography: "{typography.body-sm}"
@@ -255,14 +260,14 @@ components:
 
 Harmony reads as a premium, always-dark music intelligence product: part streaming companion, part analyst workstation. It uses the confidence of music-platform interfaces - green pulse, album thumbnails, ranked tracks, compressed navigation - but its posture is more technical than entertainment-first. Screens feel built for repeat inspection: a user can scan years of listening history, table rankings, upload pipeline steps, and chart panels without leaving the black analytical shell.
 
-The visual system is compact but not cramped. The page floor is {colors.background} (#000000), the sidebar and cards sit one step above it at {colors.surface-sidebar} (#121212), and structure is drawn with {colors.hairline} (#FFFFFF1A) rather than with heavy depth. The brand color is {colors.primary} (#57B660), a softened streaming green used for active controls and key data marks; brighter chart tiers such as {colors.primary-bright} (#72E97D) appear when visualization needs more light.
+The visual system is compact but not cramped. The page floor is {colors.background} (#000000), the sidebar and cards sit one step above it at {colors.surface-sidebar} (#0A0A0A), and structure is drawn with {colors.hairline} (#FFFFFF1A) rather than with heavy depth. The brand color is {colors.primary} (#57B660), a softened streaming green used for active controls and key data marks; the chart scale runs from {colors.chart-1} (#1DB954) down to {colors.chart-5} (#223D27).
 
 Typography does quiet work. Spotify Mix gives the product a music-native voice, while small sizes, medium weights, and tabular numeric alignment keep the dashboard dense. The result should feel focused, nocturnal, and personal: a listening archive presented as a polished analytics report rather than a raw export.
 
 **Key Characteristics:**
 
 - Always-dark canvas: {colors.background} holds every authenticated screen and makes charts, album art, and green accents carry the energy.
-- Single green accent family: {colors.primary} anchors controls; {colors.primary-bright}, {colors.primary-mid}, {colors.primary-dim}, and {colors.primary-deep} extend that hue for charts.
+- Single green accent family: {colors.primary} anchors controls; {colors.chart-1} to {colors.chart-5} extend that hue for charts.
 - Flat depth model: surfaces separate through charcoal steps and {colors.hairline} borders, not drop shadows.
 - Compact analytics density: 28px controls, 32px thumbnails, small typography, right-aligned metrics, and persistent navigation.
 - Music-native artifacts: album covers, artist avatars, track rankings, stream counts, minutes listened, and Spotify package language define the product vocabulary.
@@ -272,19 +277,21 @@ Typography does quiet work. Spotify Mix gives the product a music-native voice, 
 ### Brand & Accent
 
 - **Harmony Green** ({colors.primary} - #57B660): The primary interactive and brand color. Use for primary buttons, active toggle sliders, upload progress, selected controls, link accents, logo bars, and moments that should feel "live."
-- **Chart Glow Green** ({colors.primary-bright} - #72E97D): The brightest visualization green. Use for foreground chart series, tall active bars, line peaks, and heatmap cells that represent the highest listening intensity.
-- **Chart Mid Green** ({colors.primary-mid} - #5DC267): The middle chart tier. Use for secondary bars, ring segments, and intermediate activity levels.
-- **Chart Deep Green** ({colors.primary-dim} - #37783D) and **Chart Forest Green** ({colors.primary-deep} - #25562A): The low-intensity end of the data scale. Use behind brighter marks to keep charts tonal rather than rainbow-coded.
+- **Chart Green 1** ({colors.chart-1} - #1DB954): The brightest chart tier and the default series color (`var(--chart-1)`). Use for foreground series, tall active bars, line peaks, and the highest listening intensity.
+- **Chart Green 2 and 3** ({colors.chart-2} - #269849, {colors.chart-3} - #28783E): Middle tiers for secondary series, ring segments, and intermediate activity.
+- **Chart Green 4 and 5** ({colors.chart-4} - #275A32, {colors.chart-5} - #223D27): The low-intensity end of the scale. Use behind brighter marks to keep charts tonal rather than rainbow-coded.
+- **Button Gradient Greens** ({colors.primary-dim} - #37783D, {colors.primary-deep} - #25562A): The end stop and border of the gradient button variant. Not part of the chart scale.
 
 ### Surface
 
 - **Absolute Black** ({colors.background} - #000000): The app canvas and primary page floor. It should remain dominant; most screens are black first, green second.
-- **Chart Black** ({colors.chart-background} - #0A0A0A): A barely lifted black for plot interiors and visualization backplates when a chart needs separation from the page.
-- **Sidebar Charcoal** ({colors.surface-sidebar} - #121212): The fixed navigation surface and the default card plate. It is close enough to black to feel integrated but visible enough to frame controls.
+- **Chart Black** ({colors.chart-background} - #0A0A0A): Plot interiors and visualization backplates. It has the same value as the card surface.
+- **Sidebar Black** ({colors.surface-sidebar} - #0A0A0A): The fixed navigation surface and the default card plate. It is close enough to black to feel integrated but visible enough to frame controls.
 - **Popover Charcoal** ({colors.surface-popover} - #171717): Floating menus, combobox content, tooltips in dark mode, and elevated overlays.
 - **Muted Graphite** ({colors.surface-muted} - #1F1F1F): Table header bands, subtle row hover fills, recessed controls, card footers, and low-contrast panel divisions.
 - **Secondary Graphite** ({colors.surface-secondary} - #2A2A2A): Secondary buttons and badges that need more presence than muted surfaces without becoming primary.
-- **Active Slate** ({colors.surface-accent} - #404040): Active sidebar rows, expanded trigger states, and stronger hover states.
+- **Active Slate** ({colors.surface-accent} - #404040): Accent fills, expanded trigger states, and stronger hover states.
+- **Sidebar Active** ({colors.sidebar-active} - #262626): Hover and active rows in the sidebar.
 
 ### Text
 
@@ -378,7 +385,7 @@ Use no drop shadow for ordinary dashboard panels, cards, tables, or widgets. Sub
 
 **`button-ghost`** - The quiet action button used for header filters and sidebar utilities. Transparent background, `{colors.body}` text, `{typography.button}`, rounded `{rounded.md}`, 28px height. Hover fills with `{colors.surface-muted}` and promotes text to `{colors.foreground}`.
 
-**`button-destructive`** - The delete/error action. Use `{colors.destructive}` as text and a low-opacity destructive fill, not a solid red block unless the action is the only focal point. Keeps `{typography.button}`, `{rounded.md}`, and the 28px control height.
+**`button-destructive`** - The delete/error action. Use `{colors.destructive}` as text on a 20% destructive fill (`{colors.destructive-fill}`), not a solid red block unless the action is the only focal point. Keeps `{typography.button}`, `{rounded.md}`, and the 28px control height.
 
 **`icon-button`** - Square toolbar and sidebar trigger. Transparent by default, `{colors.body}` icon, `{rounded.md}`, 28px by 28px. Icon strokes should be thin and consistent, usually 2px.
 
@@ -386,7 +393,7 @@ Use no drop shadow for ordinary dashboard panels, cards, tables, or widgets. Sub
 
 **`app-sidebar`** - Persistent navigation rail. Background `{colors.surface-sidebar}`, text `{colors.body}`, right border `{colors.hairline}`, width `{spacing.sidebar-expanded}` and collapsed width `{spacing.sidebar-collapsed}`. It is visually continuous from top to bottom and holds brand, search, nav groups, and footer links.
 
-**`sidebar-item`** - Navigation row inside the sidebar. Default state is transparent with `{colors.body}` text and thin icons. Active state uses `{colors.surface-accent}` and `{colors.foreground-soft}`; AI/status pills may use `{colors.primary}`. Rows stay 28px tall with `{rounded.md}` corners.
+**`sidebar-item`** - Navigation row inside the sidebar. Default state is transparent with `{colors.body}` text and thin icons. Hover and active states use `{colors.sidebar-active}`, and the active label uses `{colors.foreground-soft}` with medium weight; AI/status pills may use `{colors.primary}`. Rows stay 28px tall with `{rounded.md}` corners.
 
 **`app-header`** - Package route header. Background `{colors.background}`, text `{colors.foreground}`, bottom border `{colors.hairline}`, type `{typography.page-title}`, and compact `{spacing.sm}` vertical by `{spacing.base}` horizontal padding. It should read like a control strip, not a marketing header.
 

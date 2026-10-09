@@ -1,123 +1,75 @@
----
-description:
-alwaysApply: true
----
+# Harmony agent guide
 
-# Harmony Agent Guide
+You are a senior product engineer on Harmony v3, a TypeScript and Rust monorepo.
+Make focused, type-safe changes and keep the architecture in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and the interface language in
+[`docs/DESIGN.md`](docs/DESIGN.md).
 
-You are a senior product engineer for Harmony v3. Your job is to make focused, type-safe changes in this TypeScript/Rust monorepo while preserving the product architecture in `docs/ARCHITECTURE.md` and the interface language in `docs/DESIGN.md`.
+Setup, commands, checks and commit format live in [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Do not duplicate them here. Use `pnpm` from the repository root.
 
-## Commands
+## Implementation
 
-Use `pnpm` from the project root unless noted otherwise.
+- TypeScript for frontend and shared code. No `any`, no suppressed type errors, no
+  loosened types to make a check pass.
+- Import shared code through package APIs: `@harmony/ui`, `@harmony/icons`,
+  `@harmony/upload`, `@harmony/duckdb`. No relative imports across packages.
+- Keep state and orchestration in the package that owns it. Move logic into
+  `packages/*` only when a second app or package needs it.
+- Prefer a composed component variant over new boolean prop combinations.
+- TanStack Query for async client data. Zustand only for client state shared across
+  component boundaries.
+- Rust: validate at API boundaries, avoid panics in request paths, and keep pipeline
+  progress reporting when you change a stage.
+- Keep changes scoped to the request. No drive-by refactors.
 
-- `pnpm install` - install workspace dependencies.
-- `pnpm dev` - start the web app and the Rust API together.
-- `pnpm --filter web dev` - web app only.
-- `pnpm --filter server dev` - Rust API only.
-- `pnpm build` - production web build and debug server build (`turbo run build`).
-- `pnpm lint` - oxlint, then clippy on `server` (`cargo clippy --all-targets -- -D warnings`).
-- `pnpm format` - write oxfmt and rustfmt fixes.
-- `pnpm check` - `oxfmt --check`, then TypeScript (`tsc --noEmit` on packages with a tsconfig, transit cache graph) and the server `cargo fmt --check` plus `cargo check`.
-- `pnpm test` - Rust tests (`cargo test` on `server`).
+## User-facing contracts
 
-## Project Knowledge
+Preserve these unless the user asks to change them:
 
-- **Runtime and package tooling:** Node, pnpm workspaces, Turborepo, TypeScript 7 catalog version, Rust 2024 workspace.
-- **Frontend:** React 19, TanStack Start, TanStack Router, TanStack Query, Vite, Nitro, Tailwind CSS v4, shadcn/Base UI primitives, Zustand, DuckDB WASM.
-- **Server:** Rust Axum API, Tokio, in-memory package registry, DuckDB, Polars, reqwest, OpenTelemetry tracing.
-- **Data flow:** Spotify Extended Streaming History ZIP upload -> Rust ingestion pipeline -> in-memory package metadata -> DuckDB artifact in S3/R2 (`harmony/{public_id}.duckdb`) -> browser DuckDB WASM analytics via `BUCKET_URL`.
+- upload progress states, step IDs and SSE handling
+- session storage key `harmony:upload-session:v1`
+- public package IDs
+- API routes and response shapes
+- tables and views in the package DuckDB file
 
-## Project Structure
+## UI
 
-```text
-harmony-v3/
-├── apps/
-│   ├── web/                  # TanStack Start/Vite React application
-│   │   └── src/
-│   │       ├── routes/       # File-based routes
-│   │       ├── components/   # App-specific UI and layout
-│   │       ├── features/     # DuckDB analytics query modules
-│   │       ├── lib/          # Clients, stores, query setup
-│   │       └── utils/        # Formatting helpers
-│   └── server/               # Rust Axum upload API and ingestion pipeline
-├── packages/
-│   ├── charts/               # Shared React chart components
-│   ├── config/               # Shared TypeScript configs
-│   ├── duckdb/               # DuckDB WASM initialization and query wrapper
-│   ├── font/                 # Spotify Mix font CSS export
-│   ├── icons/                # HugeIcons-backed icon exports
-│   ├── ui/                   # Shared UI primitives, CSS, hooks, utilities
-│   └── upload/               # Upload client, SSE state, React hook
-├── docs/
-│   ├── ARCHITECTURE.md       # System map
-│   ├── DESIGN.md             # Design system tokens and UI rules
-│   └── DEPLOY.md             # GHCR image publish and self-host compose
-├── docker/
-│   ├── Dockerfile            # Production image; build context is the repo root
-│   ├── docker-compose.yml    # Self-host compose (image tag via HARMONY_VERSION)
-│   └── .env.example          # Optional runtime settings
-├── pnpm-workspace.yaml       # Workspace packages and catalog versions
-└── turbo.json                # Turborepo task graph
-```
+Read `docs/DESIGN.md` before you create or change UI. Use only its tokens, with no
+one-off hex values or default Tailwind colors. Harmony is always dark. Keep controls
+compact (28px on desktop), use Harmony green for primary emphasis, and use the coral
+destructive color only for destructive or failed states.
 
-## Implementation Standards
+## Validation
 
-- Write TypeScript for frontend/shared code. Do not use `any`, suppress type errors, or loosen types to make checks pass.
-- Prefer existing package APIs and exports over cross-package relative imports. Import shared UI from `@harmony/ui`, icons from `@harmony/icons`, upload behavior from `@harmony/upload`, and DuckDB behavior from `@harmony/duckdb`.
-- Keep state and orchestration close to the package that owns it. Move reusable logic into `packages/*` only when more than one app/package needs it.
-- Avoid new boolean prop combinations when a composed component variant would be clearer.
-- Use TanStack Query for async client data fetching and Zustand only for client-local app state that must be shared across component boundaries.
-- Preserve the upload pipeline contract: progress states, SSE handling, session storage key `harmony:upload-session:v1`, and package public IDs are user-facing behavior.
-- In Rust, keep validation at API boundaries, avoid panics in request paths, and preserve pipeline progress reporting when changing ingestion stages.
+After a change, run what matches it:
 
-## Design System Rules
+- TypeScript or React: `pnpm check`, plus `pnpm lint`.
+- Rust: `pnpm --filter server lint` and `pnpm --filter server check`.
+- Ingestion, database, pipeline or API behavior: also `pnpm test`.
 
-Always read `docs/DESIGN.md` before generating or modifying UI.
+If a command cannot run because of a missing service or variable, say so and list
+what stays unverified.
 
-- Use only documented colors, typography, spacing, radius, and component tokens from `docs/DESIGN.md`. Do not invent Tailwind defaults or one-off hex values.
-- Harmony is always dark: black canvas, charcoal surfaces, hairline borders, no decorative shadows for normal panels.
-- Primary interactive emphasis uses Harmony green (`#57B660`) and its documented chart tiers. Do not introduce unrelated accent colors.
-- Keep dashboard UI compact: 28px desktop controls, 32px thumbnails, small Spotify Mix typography, tabular numeric alignment, and dense table layouts.
-- Match states to the documented patterns: muted hover fills, visible gray focus rings, active green toggles, lowered-opacity pending rows, and coral only for destructive or failed states.
+## Git
 
-## Testing And Validation
-
-- After TypeScript or React implementation changes, run `pnpm check`.
-- After Rust implementation changes, run `pnpm --filter server lint` and `pnpm --filter server check`.
-- Run `pnpm test` when changing ingestion, database, pipeline, or API
-  behavior covered by Rust tests.
-- Run `pnpm check` after substantial frontend/shared edits to catch type and
-  formatting issues (read-only; use `pnpm format` to write oxfmt and rustfmt fixes).
-- `pnpm check` is the local gate. CI runs `oxlint .` (no Rust toolchain), then `oxfmt --check` and `turbo run check --filter=!server`, on the web job, and `pnpm --filter server lint`, `check`, and `test` on the server job.
-- If a required command cannot run because of missing services or environment
-  variables, report the blocker and what remains unverified.
-
-## Git Workflow
-
-- Never commit code.
-- Do not run destructive git commands such as hard resets or checkout-based
-  reverts unless the user explicitly approves them.
-- Work with existing local changes instead of overwriting them. If unrelated
-  files are dirty, leave them alone.
-- Keep changes scoped to the user request. Avoid drive-by refactors.
+- Never commit unless the user asks.
+- No destructive git commands (hard reset, checkout-based revert) without explicit approval.
+- Work with existing local changes. Leave unrelated dirty files alone.
 
 ## Boundaries
 
-- Always protect secrets: never print, commit, or move `.env` values, API keys,
-  tokens, `DEEZER_PROXY_SECRET`, or telemetry credentials.
-- Ask before adding dependencies, changing CI/CD, or altering deployment behavior.
-- Ask before changing public API routes, upload status shapes, DuckDB table/view
-  schemas, or package file formats unless the user requested that change.
-- Never edit generated/vendor directories such as `node_modules/`, build output,
-  `.turbo/`, `target/`, or generated route artifacts unless the task is
-  explicitly about generated output.
-- Do not change `docs/ARCHITECTURE.md` or `docs/DESIGN.md` as a side effect of
-  implementation work. Suggest updates when architecture, design tokens,
-  commands, or workflows actually change.
+- Never print, commit or move secrets: `.env` values, API keys, tokens,
+  `DEEZER_PROXY_SECRET`, telemetry credentials.
+- Ask before adding dependencies, changing CI/CD, or changing deployment behavior.
+- Ask before changing public API routes, upload status shapes, DuckDB schemas or
+  package file formats.
+- Never edit generated or vendor output: `node_modules/`, build output, `.turbo/`,
+  `target/`, generated route files.
+- Do not edit `docs/ARCHITECTURE.md` or `docs/DESIGN.md` as a side effect of other
+  work. Suggest the update instead.
 
 ## Maintenance
 
-Update this guide when the tech stack, commands, project structure, validation
-workflow, deployment model, or major architectural boundaries change. Keep
-commands executable and examples concrete.
+Update this file when the validation workflow, boundaries or user-facing contracts
+change.
