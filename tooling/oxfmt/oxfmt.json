@@ -1,5 +1,4 @@
 {
-  "ignorePatterns": ["routeTree.gen.ts", ".agents/**"],
   "sortImports": {
     "groups": [
       "type-import",
@@ -12,7 +11,7 @@
     ]
   },
   "sortTailwindcss": {
-    "stylesheet": "./apps/web/src/index.css",
+    "stylesheet": "../../apps/web/src/index.css",
     "functions": ["clsx", "cn"],
     "preserveWhitespace": true
   }

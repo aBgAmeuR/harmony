@@ -35,7 +35,8 @@ apps/server/     Cargo workspace for the Rust API
   crates/adapters/  Deezer client, local disk store, S3 store
   crates/http/      Request handlers that do not read the environment
   crates/server/    Axum routes, environment config, worker, entry point
-packages/        charts, config, duckdb, font, icons, ui, upload
+packages/        charts, duckdb, font, icons, ui, upload
+tooling/         Shared config: tsconfig, oxlint, oxfmt, Tailwind theme
 ```
 
 ## API

@@ -1,31 +1,22 @@
 {
   "name": "harmony",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "type": "module",
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "lint": "oxlint . && pnpm --filter server lint",
-    "format": "oxfmt --write && pnpm --filter server format",
-    "check": "oxfmt --check && turbo run check",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "check": "turbo run check",
     "test": "turbo run test"
   },
-  "dependencies": {
-    "dotenv": "catalog:",
-    "zod": "catalog:"
-  },
   "devDependencies": {
-    "@harmony/config": "workspace:*",
-    "@types/node": "catalog:",
-    "oxfmt": "^0.54.0",
-    "oxlint": "^1.75.0",
-    "oxlint-tsgolint": "^0.23.0",
-    "turbo": "^2.10.6",
-    "typescript": "catalog:"
+    "@types/node": "catalog:build",
+    "oxfmt": "catalog:lint",
+    "oxlint": "catalog:lint",
+    "oxlint-tsgolint": "catalog:lint",
+    "turbo": "catalog:build",
+    "typescript": "catalog:build"
   },
   "engines": {
     "node": ">=24"

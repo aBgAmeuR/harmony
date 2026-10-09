@@ -10,16 +10,15 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@hugeicons/core-free-icons": "^1.2.1",
-    "@hugeicons/react": "^1.1.9",
-    "@hugeicons/react-native": "^1.0.15",
-    "react": "^19.2.8"
+    "@hugeicons/core-free-icons": "catalog:icons",
+    "@hugeicons/react": "catalog:icons",
+    "@hugeicons/react-native": "catalog:icons",
+    "react": "catalog:react"
   },
   "devDependencies": {
-    "@harmony/config": "workspace:*",
-    "@hugeicons/mcp-server": "^0.2.1",
-    "@types/node": "catalog:",
-    "@types/react": "^19.2.17",
-    "typescript": "catalog:"
+    "@harmony/tsconfig": "workspace:*",
+    "@types/node": "catalog:build",
+    "@types/react": "catalog:react",
+    "typescript": "catalog:build"
   }
 }

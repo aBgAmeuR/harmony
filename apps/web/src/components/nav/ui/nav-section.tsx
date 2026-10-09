@@ -6,6 +6,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@harmony/ui/components/sidebar";
+import { cn } from "@harmony/ui/lib/utils";
 
 import type { NavLinkAdapter } from "../types/link-adapter";
 import type { NavItem } from "../types/nav-item";
@@ -28,10 +29,13 @@ export function NavSection({ items, title, link }: NavSectionProps) {
               size="sm"
               tooltip={item.title}
               isActive={link.isActive(item)}
-              className="text-sm"
+              className={cn(
+                "text-sm",
+                link.isActive(item) ? "text-sidebar-accent-foreground" : "text-sidebar-foreground",
+              )}
             >
-              {item.icon && <Icon icon={item.icon} className="text-muted-foreground" />}
-              <span className="line-clamp-1 text-foreground">{item.title}</span>
+              {item.icon && <Icon icon={item.icon} />}
+              <span className="line-clamp-1">{item.title}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}

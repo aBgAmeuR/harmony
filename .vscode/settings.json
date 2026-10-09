@@ -8,7 +8,8 @@
   "editor.formatOnSaveMode": "file",
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "oxc.typeAware": true,
-  "oxc.fmt.configPath": ".oxfmtrc.json",
+  "oxc.fmt.configPath": "tooling/oxfmt/oxfmt.json",
+  "oxc.configPath": "tooling/oxlint/oxlint.json",
   "[javascript]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },

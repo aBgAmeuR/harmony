@@ -1,5 +1,5 @@
 {
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "unicorn", "oxc", "react", "import"],
   "categories": {
     "correctness": "error"
@@ -24,5 +24,5 @@
     "typeAware": true,
     "typeCheck": true
   },
-  "ignorePatterns": ["routeTree.gen.ts", ".agents/**"]
+  "ignorePatterns": ["**/routeTree.gen.ts"]
 }
