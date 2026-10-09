@@ -4,5 +4,9 @@
   "private": true,
   "exports": {
     "./oxfmt.json": "./oxfmt.json"
+  },
+  "scripts": {
+    "format": "cd ../.. && oxfmt -c tooling/oxfmt/oxfmt.json --ignore-path=.gitignore --ignore-path=tooling/oxfmt/ignore --write",
+    "check": "cd ../.. && oxfmt -c tooling/oxfmt/oxfmt.json --ignore-path=.gitignore --ignore-path=tooling/oxfmt/ignore --check"
   }
 }

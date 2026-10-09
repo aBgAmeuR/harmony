@@ -5,11 +5,9 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "lint:js": "oxlint -c tooling/oxlint/oxlint.json --ignore-pattern=\"**/routeTree.gen.ts\" .",
-    "lint": "pnpm lint:js && pnpm --filter server lint",
-    "format:check": "oxfmt -c tooling/oxfmt/oxfmt.json --ignore-path=.gitignore --ignore-path=tooling/oxfmt/ignore --check",
-    "format": "oxfmt -c tooling/oxfmt/oxfmt.json --ignore-path=.gitignore --ignore-path=tooling/oxfmt/ignore --write && pnpm --filter server format",
-    "check": "pnpm format:check && turbo run check",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "check": "turbo run check",
     "test": "turbo run test"
   },
   "devDependencies": {

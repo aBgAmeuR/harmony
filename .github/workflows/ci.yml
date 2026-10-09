@@ -39,10 +39,10 @@ jobs:
             turbo-web-${{ runner.os }}-
 
       - name: Lint
-        run: pnpm lint:js
+        run: pnpm exec turbo run lint --filter=!server
 
       - name: Check
-        run: pnpm format:check && pnpm exec turbo run check --filter=!server
+        run: pnpm exec turbo run check --filter=!server
 
   server:
     name: Server
