@@ -29,6 +29,7 @@ impl<'a> Live<'a> {
         self.id
     }
 
+    #[must_use = "read the live snapshot"]
     pub const fn progress(&self) -> &'a Progress {
         self.progress
     }
