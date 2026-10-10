@@ -1,4 +1,5 @@
 export const format = {
+  count: (value: number): string => Math.round(value).toLocaleString("en-US"),
   bytes: (value: number | null | undefined): string => {
     if (!value && value !== 0) return "-";
     if (value < 1024) return `${value} B`;

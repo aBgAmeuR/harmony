@@ -1,10 +1,10 @@
 import { CARD_TOP_PX } from "./types";
 
-interface DecorativeFrameProps {
+type DecorativeFrameProps = {
   cardHeight: number;
-}
+};
 
-export function DecorativeFrame({ cardHeight }: DecorativeFrameProps) {
+export const DecorativeFrame = ({ cardHeight }: DecorativeFrameProps) => {
   const bottomY = CARD_TOP_PX + cardHeight;
 
   return (
@@ -39,4 +39,4 @@ export function DecorativeFrame({ cardHeight }: DecorativeFrameProps) {
       </div>
     </>
   );
-}
+};

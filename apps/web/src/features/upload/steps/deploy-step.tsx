@@ -11,19 +11,19 @@ import { UploadError, type Pipeline, type PipelineRunStatus } from "@harmony/upl
 import { usePipeline } from "@harmony/upload/react";
 import { useEffect, useRef, useState } from "react";
 
-import { uploadClient } from "@/lib/upload";
 import { format } from "@/utils/format";
 
 import { useUpload } from "../context";
+import { uploadClient } from "../lib/client";
 import { UploadPipeline } from "../pipeline";
 
-function getIsoMs(iso?: string): number | null {
+const getIsoMs = (iso?: string): number | null => {
   if (!iso) return null;
   const ms = new Date(iso).getTime();
   return Number.isNaN(ms) ? null : ms;
-}
+};
 
-function formatRunStatus(status: PipelineRunStatus): string {
+const formatRunStatus = (status: PipelineRunStatus): string => {
   switch (status) {
     case "done":
       return "Completed";
@@ -34,9 +34,9 @@ function formatRunStatus(status: PipelineRunStatus): string {
     default:
       return "Waiting";
   }
-}
+};
 
-export function UploadDeployStep() {
+export const UploadDeployStep = () => {
   const {
     state: { file, selection, publicId, deployAttempt, error: contextError },
     actions: { next, retry, reset, reportPublicId, reportPhase, reportError },
@@ -221,4 +221,4 @@ export function UploadDeployStep() {
       </CardFooter>
     </Card>
   );
-}
+};

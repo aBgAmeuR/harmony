@@ -4,7 +4,7 @@ import { cn } from "@harmony/ui/lib/utils";
 import { useUpload } from "./context";
 import { STEP_CONFIG, STEP_ORDER, stepIndex, type Step } from "./types";
 
-export function UploadNav() {
+export const UploadNav = () => {
   const {
     state: { step, locked },
     actions: { goTo },
@@ -48,4 +48,4 @@ export function UploadNav() {
       </div>
     </div>
   );
-}
+};

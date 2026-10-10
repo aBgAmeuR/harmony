@@ -2,12 +2,12 @@ import type { PropsWithChildren } from "react";
 
 import { Link } from "@tanstack/react-router";
 
-import { Icons } from "@/components/icons";
+import { Icons } from "@/shared/primitives/icons";
 
 import { useUpload } from "./context";
 import { DecorativeFrame } from "./decorative-frame";
 
-export function UploadFrame({ children }: PropsWithChildren) {
+export const UploadFrame = ({ children }: PropsWithChildren) => {
   const { state } = useUpload();
 
   return (
@@ -35,4 +35,4 @@ export function UploadFrame({ children }: PropsWithChildren) {
       </Link>
     </div>
   );
-}
+};

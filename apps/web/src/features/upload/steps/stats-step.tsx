@@ -11,7 +11,7 @@ import { Link } from "@tanstack/react-router";
 
 import { useUpload } from "../context";
 
-export function UploadStatsStep() {
+export const UploadStatsStep = () => {
   const {
     state: { publicId },
     actions: { back },
@@ -48,4 +48,4 @@ export function UploadStatsStep() {
       </CardFooter>
     </Card>
   );
-}
+};

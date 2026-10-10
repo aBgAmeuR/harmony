@@ -1,0 +1,220 @@
+import type { PipelineStep } from "@harmony/upload";
+
+import {
+  Icon,
+  Alert02FreeIcons,
+  Calendar02Icon,
+  Clock01Icon,
+  Copy01Icon,
+  Delete02Icon,
+  Tick02Icon,
+} from "@harmony/icons";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@harmony/ui/components/alert-dialog";
+import { Button } from "@harmony/ui/components/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@harmony/ui/components/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/tooltip";
+import { cn } from "@harmony/ui/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "@tanstack/react-router";
+import { useState } from "react";
+
+import { Pipeline } from "@/entities/package";
+import { packageQueries } from "@/entities/package";
+import { format } from "@/utils/format";
+
+const periodQuery = packageQueries.period.queryOptions();
+
+type PackageHeaderProps = {
+  pkg: { fileName: string; status: string; id: string };
+  subtitle: string;
+};
+
+const PackageHeaderSection = ({ pkg, subtitle }: PackageHeaderProps) => {
+  const [copied, setCopied] = useState<boolean>(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(pkg.id);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+  };
+
+  return (
+    <section className="space-y-2">
+      <Card size="sm">
+        <CardHeader>
+          <CardTitle className="truncate">{pkg.fileName}</CardTitle>
+          <CardDescription className="text-xs">{subtitle}</CardDescription>
+          <CardAction className="flex flex-wrap items-center gap-2">
+            <AlertDialog>
+              <AlertDialogTrigger render={<Button variant="destructive" />}>
+                <Icon icon={Delete02Icon} />
+                Delete
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your account from our
+                    servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction variant="destructive">Continue</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="space-x-1 py-1! text-xs text-muted-foreground">
+          <span className="font-mono text-foreground/80">{pkg.id}</span>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="disabled:opacity-100"
+                  onClick={handleCopy}
+                  aria-label={copied ? "Copied" : "Copy to clipboard"}
+                  disabled={copied}
+                />
+              }
+            >
+              <div
+                className={cn(
+                  "transition-all",
+                  copied ? "scale-100 opacity-100" : "scale-0 opacity-0",
+                )}
+              >
+                <Icon icon={Tick02Icon} className="size-4 text-emerald-500" />
+              </div>
+              <div
+                className={cn(
+                  "absolute transition-all",
+                  copied ? "scale-0 opacity-0" : "scale-100 opacity-100",
+                )}
+              >
+                <Icon icon={Copy01Icon} className="size-4" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="px-2 py-1 text-xs">Click to copy</TooltipContent>
+          </Tooltip>
+        </CardFooter>
+      </Card>
+    </section>
+  );
+};
+
+const missedTrackCount = (steps: PipelineStep[]): number | undefined => {
+  return steps.find((step) => step.id === "resolve_tracks")?.output?.drop;
+};
+
+export const PackagePage = () => {
+  const { packageId } = useParams({ from: "/app/$packageId/package" });
+  const { data } = useQuery(packageQueries.meta.queryOptions(packageId));
+  const { data: period } = useQuery(periodQuery);
+
+  if (!data) return null;
+
+  const missedTracks = missedTrackCount(data.steps);
+
+  return (
+    <div className="rise-in mx-auto w-full max-w-3xl space-y-6 p-3 pt-12">
+      <section className="space-y-2">
+        <h2 className="mb-3 text-xs font-semibold text-muted-foreground">Overview</h2>
+        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+          <Card size="sm" className="gap-0!">
+            <CardHeader>
+              <CardAction>
+                <Icon icon={Clock01Icon} className="size-4 text-muted-foreground" />
+              </CardAction>
+              <CardTitle className="text-muted-foreground">Total duration</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg font-semibold">{format.duration(data.totalDurationMs)}</p>
+              <p className="text-xs text-muted-foreground">
+                Started at {format.date(data.startedAt)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card size="sm" className="gap-0!">
+            <CardHeader>
+              <CardAction>
+                <Icon icon={Calendar02Icon} className="size-4 text-muted-foreground" />
+              </CardAction>
+              <CardTitle className="text-muted-foreground">Period</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg font-semibold">
+                {period ? `${period.days.toLocaleString()} days` : "-"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {period
+                  ? `From ${format.date(period.startDate)} to ${format.date(period.endDate)}`
+                  : "No listening history"}
+              </p>
+            </CardContent>
+          </Card>
+          <Card size="sm" className="gap-0!">
+            <CardHeader>
+              <CardAction>
+                <Icon icon={Alert02FreeIcons} className="size-4 text-muted-foreground" />
+              </CardAction>
+              <CardTitle className="text-muted-foreground">Missed tracks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg font-semibold">{missedTracks?.toLocaleString() ?? "-"}</p>
+              <p className="text-xs text-muted-foreground">During track resolution</p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="mb-3 text-xs font-semibold text-muted-foreground">Pipeline</h2>
+        <Pipeline steps={data.steps} />
+      </section>
+
+      {/* {details?.failure ? (
+        <section className="space-y-2">
+          <h2 className="mb-3 text-xs font-semibold text-destructive">Failure</h2>
+          <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
+            {details.failure.message}
+          </div>
+        </section>
+      ) : null} */}
+
+      <PackageHeaderSection
+        pkg={{
+          fileName: data.fileName,
+          status: data.status,
+          id: data.publicId,
+        }}
+        subtitle={`${format.date(data.createdAt)} • ${format.bytes(data.fileSize)}`}
+      />
+    </div>
+  );
+};

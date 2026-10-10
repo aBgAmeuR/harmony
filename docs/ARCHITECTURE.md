@@ -27,7 +27,7 @@ change. Commands live in [`CONTRIBUTING.md`](../CONTRIBUTING.md), deployment in
 ## Layout
 
 ```text
-apps/web/        TanStack Start SPA: routes, features (DuckDB queries), upload UI
+apps/web/        TanStack Start SPA, organized in layers (see Web app)
 apps/benchmark/  Vite app used to benchmark DuckDB WASM queries
 apps/server/     Cargo workspace for the Rust API
   crates/domain/    Types and ports: package, job, play, catalog, matching, progress
@@ -38,6 +38,95 @@ apps/server/     Cargo workspace for the Rust API
 packages/        charts, duckdb, font, icons, ui, upload
 tooling/         Shared config: tsconfig, oxlint, oxfmt, Tailwind theme
 ```
+
+## Web app
+
+`apps/web/src` follows [Feature-Sliced Design](https://fsd.how/docs/get-started/overview/),
+with one extra layer, `data/`, that owns every DuckDB query. A layer imports only
+from the layers below it.
+
+```text
+routes/      TanStack file routes: head, loader, component → a page
+   ↓
+app/         providers, query client
+   ↓
+pages/       one folder per route: page.tsx (composition) + load.ts (prefetch)
+   ↓
+widgets/     self-contained blocks of a page (listening, milestones, track-details, app-nav…)
+   ↓
+features/    user actions with their own state: filter-period, pick-artist, upload
+   ↓
+entities/    business nouns: artist, track, album, package, interaction
+   ↓
+data/        SQL on DuckDB WASM, no React, no TanStack Query
+   ↓
+shared/      primitives (design system blocks) and scope (global filter state)
+```
+
+### Data layer
+
+Only `data/` imports `@harmony/duckdb`.
+
+```text
+widget / page      useQuery(trackQueries.top.queryOptions(scope))
+      ↓
+entities/*/api.ts  queryOptions: query key + queryFn         (TanStack Query)
+widgets/*/api.ts   same, for aggregates that belong to a widget
+      ↓
+data/**/*Fn.ts     (params) => Promise<Row[]>, SQL string    (DuckDB WASM)
+      ↓
+@harmony/duckdb    package file loaded from /files/{id}.duckdb
+```
+
+- Every function in `data/` that runs a query ends with `Fn` (`rankFn`, `periodFn`).
+- `data/rank.ts` serves the artist, track and album rankings: `rankFn({ by, scope, sort, limit })`.
+- Query keys stay stable. They include the `Scope` they were built from.
+
+### Global scope
+
+`shared/scope` holds the state every query depends on:
+
+```text
+Scope = { from: Date, to: Date, artistId?: number }
+
+features/filter-period ──writes──▶ period store   (localStorage "harmony:date-range")
+features/pick-artist   ──writes──▶ artist store   (localStorage "harmony-selected-artist")
+                                        │
+                  useScope() / readScope() ◀── widgets, pages, loaders
+```
+
+The period is a global filter kept in `localStorage`, not in the URL.
+`readScope()` is for loaders, `useScope()` for components.
+
+### Primitives
+
+`shared/primitives` holds composable blocks that know the product look but not the
+business: they never fetch and never import an entity.
+
+| Primitive | Parts                                                                  |
+| --------- | ---------------------------------------------------------------------- |
+| `Metric`  | `Metric.Value`, `Metric.Unit`                                          |
+| `Stat`    | value + unit, built on `Metric`                                        |
+| `Catalog` | `Head`, `Body`, `Col`, `Row`, `Cell`, `Pos`, `Item` (+ `CatalogTable`) |
+| `Pane`    | `Frame`, `Header`, `Title`, `Sep`, `Actions`, `Scroll`                 |
+| `Cover`   | image with fallback and optional blur                                  |
+| `Rank`    | position badge                                                         |
+| `Trend`   | sparkline                                                              |
+
+Others: `Icons`, `Loader`, `Pipeline`, `ViewModeToggle`. Entities map their data to
+primitives (an `ArtistRow` composes `Catalog.Item`), not the other way round.
+
+### Conventions
+
+- One `index.ts` per entity, feature and primitive is its public API. Import widgets
+  by file path, not through a barrel: barrels of widgets break the production
+  prerender (a chunk cycle between tslib and `@harmony/charts`).
+- Inside a slice, import siblings with relative paths. Across slices, use `@/`.
+- Routes stay thin. A new page is `pages/{name}/page.tsx` and `load.ts`, plus a route
+  file that wires `loader` and `component`.
+- Code style: `type` instead of `interface` (except `declare module` augmentation),
+  `const name = () =>` instead of `function`, named exports only, Tailwind classes
+  from `DESIGN.md` only.
 
 ## API
 
@@ -89,6 +178,7 @@ it matches the web table.
 | `DATA_DIR/harmony/{id}.duckdb`  | Finished package, default storage                | Persists on the volume          |
 | S3-compatible bucket            | Same file, used when `S3_ENDPOINT` is set        | Persists in the bucket          |
 | `sessionStorage` in the browser | Upload session under `harmony:upload-session:v1` | Browser session                 |
+| `localStorage` in the browser   | Period, selected artist, pane layouts            | Until the user clears it        |
 
 Every DuckDB file holds the tables `artists`, `albums`, `tracks`, `interactions`
 and `package_meta`, plus the view `v_tracks_info`. The DDL is in
