@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.tsx",
     "./v2": "./src/v2/index.ts",
-    "./v3": "./src/components/evilcharts/index.tsx"
+    "./v3": "./src/components/evilcharts/index.tsx",
+    "./v4": "./src/v4/index.ts"
   },
   "scripts": {
     "check": "tsc --noEmit"
@@ -14,6 +15,7 @@
   "dependencies": {
     "@base-ui/react": "catalog:ui",
     "@number-flow/react": "catalog:ui",
+    "@tanstack/charts": "catalog:tanstack",
     "@visx/curve": "catalog:charts",
     "@visx/event": "catalog:charts",
     "@visx/gradient": "catalog:charts",

@@ -2,7 +2,7 @@ import { db } from "@harmony/duckdb";
 
 import type { PlatformPoint } from "./types";
 
-const PLATFORM_LABELS: Record<string, string> = {
+export const PLATFORM_LABELS: Record<string, string> = {
   android: "Android",
   ios: "iOS",
   linux: "Linux",

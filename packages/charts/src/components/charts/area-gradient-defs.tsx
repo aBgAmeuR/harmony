@@ -1,8 +1,8 @@
 import {
-  type FadeEdges,
   fadeGradientStops,
   resolveFadeSides,
   viewportFadeGradientAttrs,
+  type FadeEdges,
 } from "./fade-edges";
 
 interface AreaGradientDefsProps {
@@ -13,7 +13,7 @@ interface AreaGradientDefsProps {
   fill: string;
   fillOpacity: number;
   gradientToOpacity: number;
-  /** 0–1: where the bottom stop sits (1 = full-height gradient). */
+  /** 0-1: where the bottom stop sits (1 = full-height gradient). */
   gradientSpan?: number;
   resolvedStroke: string;
   isPatternFill: boolean;
