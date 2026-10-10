@@ -39,8 +39,8 @@ catalogs:
       specifier: ^3.2.2
       version: 3.2.2
     '@types/d3-shape':
-      specifier: ^3.1.8
-      version: 3.1.8
+      specifier: ^3.2.0
+      version: 3.2.0
     '@visx/curve':
       specifier: 4.0.1-alpha.0
       version: 4.0.1-alpha.0
@@ -547,7 +547,7 @@ importers:
         version: 3.2.2
       '@types/d3-shape':
         specifier: catalog:charts
-        version: 3.1.8
+        version: 3.2.0
       '@types/node':
         specifier: catalog:build
         version: 24.19.2
@@ -2184,8 +2184,8 @@ packages:
   '@types/d3-shape@3.1.7':
     resolution: {integrity: sha512-VLvUQ33C+3J+8p+Daf+nYSOsjB4GXp19/S/aGo60m9h1v6XaxjiT82lKVWJCfzhtuZ3yD7i/TPeC/fuKLLOSmg==}
 
-  '@types/d3-shape@3.1.8':
-    resolution: {integrity: sha512-lae0iWfcDeR7qt7rA88BNiqdvPS5pFVPpo5OfjElwNaT2yyekbM0C9vK+yqBqEmHr6lDkRnYNoTBYlAgJa7a4w==}
+  '@types/d3-shape@3.2.0':
+    resolution: {integrity: sha512-kVd74ta9eof3eJOvbNd1vGKS/XERRyQbT26Og63hIsvDO84cjD5gEOhsXf26w3FSoNlPVz84DOFcKv/oou+fMw==}
 
   '@types/d3-time-format@2.1.0':
     resolution: {integrity: sha512-/myT3I7EwlukNOX2xVdMzb8FRgNzRMpsZddwst9Ld/VFe6LyJyRp0s32l/V9XoUzk+Gqu56F/oGk6507+8BxrA==}
@@ -6077,7 +6077,7 @@ snapshots:
       '@types/d3-geo': 3.1.0
       '@types/d3-hierarchy': 3.1.7
       '@types/d3-sankey': 0.12.5
-      '@types/d3-shape': 3.1.8
+      '@types/d3-shape': 3.2.0
       d3-array: 3.2.4
       d3-brush: 3.0.0
       d3-contour: 4.0.2
@@ -6477,7 +6477,7 @@ snapshots:
     dependencies:
       '@types/d3-path': 3.1.1
 
-  '@types/d3-shape@3.1.8':
+  '@types/d3-shape@3.2.0':
     dependencies:
       '@types/d3-path': 3.1.1
 
