@@ -1,19 +1,18 @@
 import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 
+import { UploadContext, type UploadActions, type UploadState } from "./context";
 import {
   cancelPendingSessionClear,
   clearUploadSession,
   loadUploadSession,
   saveUploadSession,
   scheduleSessionClear,
-} from "@/lib/upload-session";
-
-import { UploadContext, type UploadActions, type UploadState } from "./context";
+} from "./lib/session";
 import { stepAt, stepIndex, type Step, type UploadPhase } from "./types";
 
 const DEFAULT_CARD_HEIGHT = 360;
 
-function createIdleState(): UploadState {
+const createIdleState = (): UploadState => {
   return {
     step: "package",
     file: null,
@@ -26,9 +25,9 @@ function createIdleState(): UploadState {
     locked: false,
     cardHeight: DEFAULT_CARD_HEIGHT,
   };
-}
+};
 
-function createStateFromSession(): UploadState {
+const createStateFromSession = (): UploadState => {
   const session = loadUploadSession();
   if (!session) {
     return createIdleState();
@@ -46,9 +45,9 @@ function createStateFromSession(): UploadState {
     locked: true,
     cardHeight: DEFAULT_CARD_HEIGHT,
   };
-}
+};
 
-export function UploadProvider({ children }: PropsWithChildren) {
+export const UploadProvider = ({ children }: PropsWithChildren) => {
   const [state, setState] = useState<UploadState>(() => createStateFromSession());
 
   useEffect(() => {
@@ -204,4 +203,4 @@ export function UploadProvider({ children }: PropsWithChildren) {
   );
 
   return <UploadContext value={value}>{children}</UploadContext>;
-}
+};

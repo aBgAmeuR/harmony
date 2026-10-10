@@ -18,19 +18,19 @@ import { uploadQueries } from "../queries";
 
 const DEFAULT_MAX_ZIP_SIZE = 50 * 1024 * 1024;
 
-function formatBytes(bytes: number): string {
+const formatBytes = (bytes: number): string => {
   if (bytes < 1024) return `${bytes} B`;
   const kb = bytes / 1024;
   if (kb < 1024) return `${kb.toFixed(1)} KB`;
   const mb = kb / 1024;
   return `${mb.toFixed(1)} MB`;
-}
+};
 
-function isZipFile(file: File): boolean {
+const isZipFile = (file: File): boolean => {
   return file.name.toLowerCase().endsWith(".zip");
-}
+};
 
-export function UploadPackageStep() {
+export const UploadPackageStep = () => {
   const {
     state: { file },
     actions: { setFile, next },
@@ -168,4 +168,4 @@ export function UploadPackageStep() {
       </div>
     </>
   );
-}
+};
