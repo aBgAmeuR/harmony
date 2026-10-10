@@ -1,3 +1,5 @@
+<img alt="Harmony overview page" src="https://github.com/user-attachments/assets/982c9842-9586-4964-ba5c-53c979da5c03" />
+
 # Harmony
 
 <p>
