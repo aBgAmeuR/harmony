@@ -1,10 +1,11 @@
 import { queryOptions } from "@tanstack/react-query";
 
+import type { Range } from "@/data/overview/range";
+
 import { behaviorFn } from "@/data/overview/behavior";
 import { habitsFn } from "@/data/overview/habits";
 import { highlightsFn } from "@/data/overview/highlights";
 import { overviewFn } from "@/data/overview/kpis";
-import type { Range } from "@/data/overview/range";
 import { rankFn } from "@/data/rank";
 import { toSqlDate } from "@/data/sql/date-range";
 

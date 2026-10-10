@@ -1,7 +1,7 @@
 import type { ChartDefinition } from "@tanstack/charts/react";
-import { Chart } from "@tanstack/charts/react";
 
 import { cn } from "@harmony/ui/lib/utils";
+import { Chart } from "@tanstack/charts/react";
 
 import { tooltipStyle } from "./theme";
 

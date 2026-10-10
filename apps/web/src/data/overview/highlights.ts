@@ -1,7 +1,7 @@
 import { db } from "@harmony/duckdb";
 
-import { rankFn } from "@/data/rank";
 import { streakFn } from "@/data/milestones/streak";
+import { rankFn } from "@/data/rank";
 import { interactionDateConditions, joinWhere, toSqlDate } from "@/data/sql/date-range";
 
 import type { Range } from "./range";
