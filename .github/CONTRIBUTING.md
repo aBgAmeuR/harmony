@@ -24,7 +24,7 @@ pnpm dev
 - Rust API at `http://127.0.0.1:3000`. Vite proxies `/api` and `/files` to it.
 
 No `.env` file is needed. Without one, the API stores packages in `apps/server/data`
-and calls Deezer directly. Copy [`apps/server/.env.example`](./apps/server/.env.example)
+and calls Deezer directly. Copy [`apps/server/.env.example`](../apps/server/.env.example)
 to `apps/server/.env` to change a setting, for example to use an S3 bucket or Deezer
 proxies.
 
@@ -67,11 +67,11 @@ CI runs the same checks. Run the ones that match your change:
 Also:
 
 - Keep the pull request to one change. Avoid unrelated refactors.
-- Read [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) before you touch the upload
+- Read [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) before you touch the upload
   pipeline, the API, or the DuckDB schema. Those are user-facing contracts: the
   progress step IDs, the `harmony:upload-session:v1` storage key, public package
   IDs and the tables in each package file. Open an issue first if you want to change one.
-- Read [`docs/DESIGN.md`](./docs/DESIGN.md) before you change UI, and use only its
+- Read [`docs/DESIGN.md`](../docs/DESIGN.md) before you change UI, and use only its
   tokens.
 - Update the docs that your change makes wrong.
 
@@ -90,10 +90,10 @@ Also:
 Commits follow [Conventional Commits](https://www.conventionalcommits.org/), for
 example `fix: serve the demo package file`. Every push to `v3` runs
 semantic-release, and every type except `deploy` publishes a new beta release,
-`docs` and `chore` included. Details are in [`docs/DEPLOY.md`](./docs/DEPLOY.md#versioning).
+`docs` and `chore` included. Details are in [`docs/DEPLOY.md`](../docs/DEPLOY.md#versioning).
 Add `!` after the type or a `BREAKING CHANGE:` footer for breaking changes.
 
 ## Working with AI agents
 
-[`AGENTS.md`](./AGENTS.md) holds the instructions for coding agents. It points back to
+[`AGENTS.md`](../AGENTS.md) holds the instructions for coding agents. It points back to
 this page for commands and checks.

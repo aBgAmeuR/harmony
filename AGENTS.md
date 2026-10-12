@@ -5,7 +5,7 @@ Make focused, type-safe changes and keep the architecture in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and the interface language in
 [`docs/DESIGN.md`](docs/DESIGN.md).
 
-Setup, commands, checks and commit format live in [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Setup, commands, checks and commit format live in [`CONTRIBUTING.md`](.github/CONTRIBUTING.md).
 Do not duplicate them here. Use `pnpm` from the repository root.
 
 ## Implementation

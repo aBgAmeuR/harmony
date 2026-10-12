@@ -1,7 +1,7 @@
 # Architecture
 
 Map of Harmony v3. Update it when routes, data stores, pipeline stages or crates
-change. Commands live in [`CONTRIBUTING.md`](../CONTRIBUTING.md), deployment in
+change. Commands live in [`CONTRIBUTING.md`](../.github/CONTRIBUTING.md), deployment in
 [`DEPLOY.md`](./DEPLOY.md), UI rules in [`DESIGN.md`](./DESIGN.md).
 
 ## Data flow

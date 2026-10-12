@@ -21,7 +21,7 @@ In scope: the Rust API (`apps/server`), the web app (`apps/web`), the upload pip
 and the published Docker image.
 
 Known limits that are not vulnerabilities on their own, because they are documented
-design choices (see [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md#known-limits)):
+design choices (see [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md#known-limits)):
 
 - The API has no authentication. Anyone who knows a package's six character ID can
   open it.

@@ -46,7 +46,7 @@ pnpm dev
 ```
 
 The web app runs on `http://localhost:3001` and the API on `http://127.0.0.1:3000`.
-[`CONTRIBUTING.md`](CONTRIBUTING.md) lists every command and the checks to run before a
+[`CONTRIBUTING.md`](.github/CONTRIBUTING.md) lists every command and the checks to run before a
 pull request.
 
 ## Built with
@@ -60,8 +60,8 @@ workspaces, Turborepo, oxlint and oxfmt for the monorepo.
 - [Architecture](docs/ARCHITECTURE.md): data flow, API, pipeline and storage
 - [Deployment](docs/DEPLOY.md): self-hosting and releases
 - [Design system](docs/DESIGN.md): colors, typography and UI rules
-- [Contributing](CONTRIBUTING.md), [Security](SECURITY.md) and
-  [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Contributing](.github/CONTRIBUTING.md), [Security](.github/SECURITY.md) and
+  [Code of Conduct](.github/CODE_OF_CONDUCT.md)
 - [`AGENTS.md`](AGENTS.md): instructions for coding agents
 
 ## License

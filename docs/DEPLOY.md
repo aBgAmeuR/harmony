@@ -86,7 +86,7 @@ The build context is the repository root. Base images are pinned by digest in
 `libduckdb-sys` in `apps/server/Cargo.lock` expects.
 
 For local development, use `pnpm dev` and not the image. See
-[`CONTRIBUTING.md`](../CONTRIBUTING.md).
+[`CONTRIBUTING.md`](../.github/CONTRIBUTING.md).
 
 ## Releases
 
