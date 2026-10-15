@@ -28,7 +28,6 @@ change. Commands live in [`CONTRIBUTING.md`](../.github/CONTRIBUTING.md), deploy
 
 ```text
 apps/web/        TanStack Start SPA, organized in layers (see Web app)
-apps/benchmark/  Vite app used to benchmark DuckDB WASM queries
 apps/server/     Cargo workspace for the Rust API
   crates/domain/    Types and ports: package, job, play, catalog, matching, progress
   crates/pipeline/  read, matching, enrich and write steps
