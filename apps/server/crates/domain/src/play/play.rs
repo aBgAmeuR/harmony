@@ -188,7 +188,7 @@ mod tests {
 
     #[test]
     fn try_from_rejects_a_blank_title() {
-        let value = raw().with_title("  ".to_owned());
+        let value = raw().with_title(Cow::Borrowed("  "));
 
         assert_eq!(Play::try_from(value), Err(PlayError::Title));
     }

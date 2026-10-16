@@ -6,7 +6,7 @@ use std::borrow::Cow;
 ///
 /// Unknown keys stay ignored: Spotify adds fields, and this struct does not own that schema.
 /// String fields borrow the input. `Cow` owns a string only when JSON escapes force a copy,
-/// or when [`Self::with_title`] replaces the title.
+/// or when [`Self::with_title`] gets a cleaned title that differs from the input.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize)]
 pub struct RawPlay<'a> {
     #[serde(rename = "ts", borrow)]
@@ -35,12 +35,17 @@ pub struct RawPlay<'a> {
     pub(in crate::play) offline: bool,
 }
 
-impl RawPlay<'_> {
-    /// Replaces the title after `read` has cleaned it.
+impl<'a> RawPlay<'a> {
+    /// Replaces the title after `read` has cleaned it. A borrowed title stays borrowed.
     #[must_use]
-    pub fn with_title(mut self, title: String) -> Self {
-        self.title = Some(Cow::Owned(title));
+    pub fn with_title(mut self, title: Cow<'a, str>) -> Self {
+        self.title = Some(title);
         self
+    }
+
+    /// Moves the title out, so `read` can clean it without copying a borrowed one.
+    pub fn take_title(&mut self) -> Option<Cow<'a, str>> {
+        self.title.take()
     }
 
     #[must_use]

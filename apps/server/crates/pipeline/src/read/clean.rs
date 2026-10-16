@@ -1,5 +1,6 @@
 //! Strip audio extensions and edition notes from a Spotify title.
 
+use std::borrow::Cow;
 use std::sync::LazyLock;
 
 use regex::Regex;
@@ -12,23 +13,43 @@ struct Cleaners {
     edges: Regex,
 }
 
-pub fn title(raw: &str) -> String {
+/// Borrows `raw` when no cleaner matches. A pass that matches owns a new string.
+pub fn title(raw: &str) -> Cow<'_, str> {
     let trimmed = raw.trim();
     if trimmed.is_empty() {
-        return String::new();
+        return Cow::Borrowed("");
     }
     let Some(cleaners) = cleaners() else {
-        return trimmed.to_owned();
+        return Cow::Borrowed(trimmed);
     };
 
-    let mut cleaned = cleaners.ext.replace(trimmed, "").into_owned();
+    let mut cleaned = cleaners.ext.replace(trimmed, "");
     for pattern in &cleaners.junk {
-        cleaned = pattern.replace_all(&cleaned, "").into_owned();
+        cleaned = strip(pattern, cleaned, "");
     }
-    cleaned = cleaners.brackets.replace_all(&cleaned, "").into_owned();
-    cleaned = cleaners.spaces.replace_all(&cleaned, " ").into_owned();
-    let cleaned = cleaned.trim();
-    cleaners.edges.replace_all(cleaned, "").into_owned()
+    cleaned = strip(&cleaners.brackets, cleaned, "");
+    cleaned = strip(&cleaners.spaces, cleaned, " ");
+    let cleaned = match cleaned {
+        Cow::Borrowed(text) => Cow::Borrowed(text.trim()),
+        Cow::Owned(text) => {
+            let trimmed = text.trim();
+            if trimmed.len() == text.len() {
+                Cow::Owned(text)
+            } else {
+                Cow::Owned(trimmed.to_owned())
+            }
+        }
+    };
+    strip(&cleaners.edges, cleaned, "")
+}
+
+/// `replace_all` that hands back the same `Cow` when nothing matched.
+fn strip<'a>(pattern: &Regex, text: Cow<'a, str>, with: &str) -> Cow<'a, str> {
+    let changed = match pattern.replace_all(&text, with) {
+        Cow::Owned(changed) => Some(changed),
+        Cow::Borrowed(_) => None,
+    };
+    changed.map_or(text, Cow::Owned)
 }
 
 fn cleaners() -> Option<&'static Cleaners> {
@@ -58,6 +79,8 @@ fn compile() -> Option<Cleaners> {
 
 #[cfg(test)]
 mod tests {
+    use std::borrow::Cow;
+
     use super::title;
 
     #[test]
@@ -66,6 +89,11 @@ mod tests {
         assert_eq!(title("Song (Remastered)"), "Song");
         assert_eq!(title("Song (French Version)"), "Song");
         assert_eq!(title("Song [Official Video]"), "Song");
+    }
+
+    #[test]
+    fn a_clean_title_is_borrowed() {
+        assert!(matches!(title(" Song "), Cow::Borrowed("Song")));
     }
 
     #[test]

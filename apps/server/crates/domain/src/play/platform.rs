@@ -34,28 +34,41 @@ impl From<&str> for Platform {
         if trimmed.is_empty() {
             return Self::Other;
         }
+        // Spotify sends ASCII. Folding in place avoids one `String` per play.
+        // Unicode lowercase can turn a non-ASCII letter into an ASCII one, so that input keeps the copy.
+        if !trimmed.is_ascii() {
+            return Self::folded(&trimmed.to_lowercase());
+        }
+        Self::folded(trimmed)
+    }
+}
 
-        let lower = trimmed.to_lowercase();
-        if lower.contains("web_player") {
+impl Platform {
+    fn folded(text: &str) -> Self {
+        let has = |needle: &str| {
+            text.as_bytes()
+                .windows(needle.len())
+                .any(|window| window.eq_ignore_ascii_case(needle.as_bytes()))
+        };
+        if has("web_player") {
             return Self::Web;
         }
-        if lower.contains("android") {
+        if has("android") {
             return Self::Android;
         }
-        if lower.contains("ios")
-            || lower.contains("iphone")
-            || lower.contains("os x")
-            || lower.contains("macos")
-        {
+        if has("ios") || has("iphone") || has("os x") || has("macos") {
             return Self::Ios;
         }
-        if lower.contains("linux") {
+        if has("linux") {
             return Self::Linux;
         }
-        if lower.contains("windows") {
+        if has("windows") {
             return Self::Windows;
         }
-        if lower.contains("partner") || lower == "not_applicable" || lower == "not applicable" {
+        if has("partner")
+            || text.eq_ignore_ascii_case("not_applicable")
+            || text.eq_ignore_ascii_case("not applicable")
+        {
             return Self::Na;
         }
         Self::Other
@@ -79,5 +92,11 @@ mod tests {
         assert_eq!(Platform::from("partner").as_str(), "not_applicable");
         assert_eq!(Platform::from("fridge").as_str(), "other");
         assert_eq!(Platform::from("  ").as_str(), "other");
+        assert_eq!(
+            Platform::from("Windows 10 (10.0.19045; x64)").as_str(),
+            "windows"
+        );
+        assert_eq!(Platform::from("NOT APPLICABLE").as_str(), "not_applicable");
+        assert_eq!(Platform::from("Ändroid").as_str(), "other");
     }
 }
