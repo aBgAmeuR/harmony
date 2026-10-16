@@ -4,6 +4,7 @@ mod clean;
 mod extract;
 mod normalize;
 mod parse;
+mod pool;
 
 use std::time::Instant;
 
@@ -82,7 +83,7 @@ pub fn run(source: Source, live: &mut Live<'_>) -> Result<History, ReadError> {
             Err(err) => return Err(refuse(live, err)),
         }
     };
-    let parsed = live::count(raw.len());
+    let parsed = live::count(raw.iter().map(Vec::len).sum());
     live.end(Stage::Parse, started, found, parsed, 0);
 
     live.begin(Stage::Normalize);

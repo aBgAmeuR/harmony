@@ -7,7 +7,7 @@ use domain::source::Selection;
 use regex::Regex;
 use zip::ZipArchive;
 
-use super::ReadError;
+use super::{ReadError, pool};
 
 const HISTORY_PATH: &str =
     r"Spotify Extended Streaming History/Streaming_History_Audio_(\d{4}(-\d{4})?)(?:_(\d+))?\.json";
@@ -20,39 +20,45 @@ pub struct Entry {
     pub bytes: Vec<u8>,
 }
 
+/// Keeps the history entries and inflates them on the read pool, one entry per task.
 pub fn files(bytes: &[u8], selection: &Selection) -> Result<(Vec<Entry>, u64), ReadError> {
     let Some(pattern) = history_pattern() else {
         return Err(ReadError::NoFiles);
     };
 
     let mut archive = ZipArchive::new(Cursor::new(bytes))?;
-    let mut kept = Vec::new();
     let total = archive.len();
-
+    // Headers only, in archive order. A broken header still fails here, as before.
+    let mut wanted = Vec::new();
     for index in 0..total {
-        let mut file = archive.by_index(index)?;
+        let file = archive.by_index(index)?;
         let name = zip_path(file.name());
-        if !pattern.is_match(&name) || !chosen(selection, &name) {
-            continue;
+        if pattern.is_match(&name) && chosen(selection, &name) {
+            wanted.push(index);
         }
-
-        let mut body = Vec::new();
-        if let Ok(declared) = usize::try_from(file.size()) {
-            let _ = body.try_reserve_exact(declared.min(TRUSTED_ENTRY));
-        }
-        file.read_to_end(&mut body)
-            .map_err(zip::result::ZipError::from)?;
-        // A header that declared more than the entry holds leaves capacity behind. Give it back.
-        if body.capacity() > body.len() {
-            body.shrink_to_fit();
-        }
-        kept.push(Entry { bytes: body });
     }
-
-    if kept.is_empty() {
+    if wanted.is_empty() {
         return Err(ReadError::NoFiles);
     }
+
+    // `ZipArchive` clones share the parsed central directory. Each worker gets its own cursor.
+    let kept = pool::map(wanted, |index| inflate(&mut archive.clone(), index))?;
     Ok((kept, crate::live::count(total)))
+}
+
+fn inflate(archive: &mut ZipArchive<Cursor<&[u8]>>, index: usize) -> Result<Entry, ReadError> {
+    let mut file = archive.by_index(index)?;
+    let mut body = Vec::new();
+    if let Ok(declared) = usize::try_from(file.size()) {
+        let _ = body.try_reserve_exact(declared.min(TRUSTED_ENTRY));
+    }
+    file.read_to_end(&mut body)
+        .map_err(zip::result::ZipError::from)?;
+    // A header that declared more than the entry holds leaves capacity behind. Give it back.
+    if body.capacity() > body.len() {
+        body.shrink_to_fit();
+    }
+    Ok(Entry { bytes: body })
 }
 
 fn history_pattern() -> Option<&'static Regex> {
