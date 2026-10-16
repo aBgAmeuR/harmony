@@ -34,15 +34,15 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .turbo
-          key: turbo-web-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json', '.oxlintrc.json', '.oxfmtrc.json') }}
+          key: turbo-web-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json', 'tooling/**') }}
           restore-keys: |
             turbo-web-${{ runner.os }}-
 
       - name: Lint
-        run: pnpm exec oxlint .
+        run: pnpm exec turbo run lint --filter=!server
 
       - name: Check
-        run: pnpm exec oxfmt --check && pnpm exec turbo run check --filter=!server
+        run: pnpm exec turbo run check --filter=!server
 
   server:
     name: Server

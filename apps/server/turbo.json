@@ -8,9 +8,6 @@
     "lint": {
       "cache": false
     },
-    "format": {
-      "extends": false
-    },
     "check": {
       "cache": false
     },

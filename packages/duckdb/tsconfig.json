@@ -1,5 +1,5 @@
 {
-  "extends": "@harmony/config/tsconfig.base.json",
+  "extends": "@harmony/tsconfig/base.json",
   "compilerOptions": {
     "noEmit": true,
     "lib": ["DOM", "DOM.Iterable"],

@@ -6,34 +6,34 @@ import { CARD_TOP_PX, stepIndex } from "./types";
 
 const PEEK_BOTTOM_PX = 75;
 
-function parkTransform(cardHeight: number): string {
+const parkTransform = (cardHeight: number): string => {
   const ty = Math.round(PEEK_BOTTOM_PX - CARD_TOP_PX - cardHeight * 0.925);
   return `translateY(${ty}px) scale(0.85)`;
-}
+};
 
-function cardTransform(i: number, current: number, heights: Record<number, number>): string {
+const cardTransform = (i: number, current: number, heights: Record<number, number>): string => {
   if (i < current - 1) return "translateY(-210%)";
   if (i === current - 1) return parkTransform(heights[i] ?? 360);
   if (i === current) return "translateY(0px)";
   return "translateY(210%)";
-}
+};
 
-function cardOpacity(i: number, current: number): number {
+const cardOpacity = (i: number, current: number): number => {
   if (i < current - 1) return 0;
   if (i === current - 1) return 0.5;
   if (i === current) return 1;
   return 0;
-}
+};
 
-function cardZIndex(i: number, current: number): number {
+const cardZIndex = (i: number, current: number): number => {
   return i === current ? 30 : 0;
-}
+};
 
 type UploadStackProps = {
   children: ReactNode;
 };
 
-export function UploadStack({ children }: UploadStackProps) {
+export const UploadStack = ({ children }: UploadStackProps) => {
   const {
     state: { step, locked, cardHeight },
     actions: { back, setCardHeight },
@@ -101,4 +101,4 @@ export function UploadStack({ children }: UploadStackProps) {
       </div>
     </div>
   );
-}
+};

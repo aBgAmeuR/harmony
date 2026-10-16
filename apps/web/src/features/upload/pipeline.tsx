@@ -11,14 +11,14 @@ import {
   PipelineItemIcon,
   PipelineItemLabel,
   PipelineItemOutput,
-} from "@/components/pipeline";
+} from "@/shared/primitives/pipeline";
 
 type UploadPipelineProps = {
   steps: PipelineStep[];
   nowTs: number;
 };
 
-function StepProgressBadge({ step }: { step: PipelineStep }) {
+const StepProgressBadge = ({ step }: { step: PipelineStep }) => {
   if (!step.progress) {
     return null;
   }
@@ -40,9 +40,9 @@ function StepProgressBadge({ step }: { step: PipelineStep }) {
       </TooltipContent>
     </Tooltip>
   );
-}
+};
 
-export function UploadPipeline({ steps, nowTs }: UploadPipelineProps) {
+export const UploadPipeline = ({ steps, nowTs }: UploadPipelineProps) => {
   return (
     <div className="flex flex-col gap-px divide-y divide-border/50 overflow-hidden rounded-lg border">
       {steps.map((step) => {
@@ -81,4 +81,4 @@ export function UploadPipeline({ steps, nowTs }: UploadPipelineProps) {
       })}
     </div>
   );
-}
+};

@@ -25,10 +25,10 @@ export const STEP_CONFIG: Record<Step, { label: string; description: string }> =
   },
 };
 
-export function stepIndex(step: Step): number {
+export const stepIndex = (step: Step): number => {
   return STEP_ORDER.indexOf(step);
-}
+};
 
-export function stepAt(index: number): Step | null {
+export const stepAt = (index: number): Step | null => {
   return STEP_ORDER[index] ?? null;
-}
+};

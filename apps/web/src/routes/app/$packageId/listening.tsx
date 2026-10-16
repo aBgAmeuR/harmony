@@ -1,70 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { DateRangeFilter } from "@/components/layout/header/date-range-filter";
-import { Pane } from "@/components/pane";
-import { ActiveDaysWidget } from "@/features/listening/widgets/active-days-widget";
-import { DaysOfWeekWidget } from "@/features/listening/widgets/days-of-week-widget";
-import { ListeningTimeWidget } from "@/features/listening/widgets/listening-time-widget";
-import { MonthlyActivityWidget } from "@/features/listening/widgets/monthly-activity-widget";
-import { TotalStreamsWidget } from "@/features/listening/widgets/total-streams-widget";
-import { UniqueTracksWidget } from "@/features/listening/widgets/unique-tracks-widget";
-import { readFilter } from "@/lib/filter";
-import { query } from "@/lib/query";
+import { loadListening } from "@/pages/listening/load";
+import { ListeningPage } from "@/pages/listening/page";
 
 export const Route = createFileRoute("/app/$packageId/listening")({
   ssr: false,
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
     await parentMatchPromise;
-    const filter = readFilter();
-    await Promise.all([
-      queryClient.ensureQueryData(query.listeningHabits.listeningTime.queryOptions(filter)),
-      queryClient.ensureQueryData(query.listeningHabits.totalStreams.queryOptions(filter)),
-      queryClient.ensureQueryData(query.listeningHabits.activeDays.queryOptions(filter)),
-      queryClient.ensureQueryData(query.listeningHabits.uniqueTracks.queryOptions(filter)),
-      queryClient.ensureQueryData(query.listeningHabits.monthlyActivity.queryOptions(filter)),
-      queryClient.ensureQueryData(query.listeningHabits.daysOfWeek.queryOptions()),
-    ]);
+    await loadListening(queryClient);
   },
-  component: RouteComponent,
+  component: ListeningPage,
 });
-
-function RouteComponent() {
-  return (
-    <Pane>
-      <Pane.Header title="Listening Habits" artistSelect>
-        <DateRangeFilter />
-      </Pane.Header>
-      <main className="mx-auto max-w-7xl space-y-3 p-4 pt-0">
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <ListeningTimeWidget />
-          <TotalStreamsWidget />
-          <ActiveDaysWidget />
-          <UniqueTracksWidget />
-          <div className="col-span-2 lg:col-span-3 lg:row-start-2">
-            <MonthlyActivityWidget />
-          </div>
-          <div className="col-span-2 h-full self-start lg:col-span-1 lg:col-start-4 lg:row-start-2">
-            <DaysOfWeekWidget />
-          </div>
-        </div>
-
-        {/* <WhenYouListenWidget /> */}
-
-        {/* <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <PeakHoursWidget />
-          <PlatformsWidget />
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_2fr]">
-          <ListeningStyleWidget />
-          <TrackEngagementWidget />
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <ReleaseYearWidget />
-          <GenresWidget />
-        </div> */}
-      </main>
-    </Pane>
-  );
-}

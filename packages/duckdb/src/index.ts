@@ -11,7 +11,7 @@ export {
   DuckDBPackageNotFoundError,
 } from "./error";
 
-export type BenchmarkQueryResult<T> = {
+type TimedQueryResult<T> = {
   rows: T[];
   queryMs: number;
   toArrayMs: number;
@@ -20,7 +20,7 @@ export type BenchmarkQueryResult<T> = {
 async function executeTimedQuery<T>(
   conn: AsyncDuckDBConnection,
   query: string,
-): Promise<BenchmarkQueryResult<T>> {
+): Promise<TimedQueryResult<T>> {
   const start = performance.now();
   const result = await conn.query(query);
   const queryMs = performance.now() - start;
@@ -52,9 +52,6 @@ export const db = {
       query,
     });
     return rows;
-  },
-  async queryBenchmark<T>(query: string): Promise<BenchmarkQueryResult<T>> {
-    return executeTimedQuery<T>(getConnection(), query);
   },
   status: () => useDbStore.getState().status,
   error: () => useDbStore.getState().error,

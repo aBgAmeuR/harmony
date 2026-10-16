@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { uploadClient } from "@/lib/upload";
+import { uploadClient } from "./lib/client";
 
 export const uploadQueries = {
   serverConfig: queryOptions({

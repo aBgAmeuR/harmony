@@ -10,14 +10,14 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@duckdb/duckdb-wasm": "1.33.1-dev57.0",
-    "apache-arrow": "^21.2.0",
-    "zustand": "^5.0.14"
+    "@duckdb/duckdb-wasm": "catalog:duckdb",
+    "apache-arrow": "catalog:duckdb",
+    "zustand": "catalog:app"
   },
   "devDependencies": {
-    "@harmony/config": "workspace:*",
-    "@types/node": "catalog:",
-    "typescript": "catalog:",
-    "vite": "^8.1.5"
+    "@harmony/tsconfig": "workspace:*",
+    "@types/node": "catalog:build",
+    "typescript": "catalog:build",
+    "vite": "catalog:build"
   }
 }

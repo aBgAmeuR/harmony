@@ -15,28 +15,28 @@ import { type CSSProperties, useEffect, useState } from "react";
 
 import { useUpload } from "../context";
 
-interface ArchiveJsonFile {
+type ArchiveJsonFile = {
   path: string;
   name: string;
   size: string;
-}
+};
 
 const archiveJsonPattern =
   /Spotify Extended Streaming History\/Streaming_History_Audio_(\d{4}(-\d{4})?)(?:_(\d+))?\.json/;
 
-function normalizeArchivePath(path: string): string {
+const normalizeArchivePath = (path: string): string => {
   return path.replace(/\\/g, "/");
-}
+};
 
-function formatBytes(bytes: number): string {
+const formatBytes = (bytes: number): string => {
   if (bytes < 1024) return `${bytes} B`;
   const kb = bytes / 1024;
   if (kb < 1024) return `${kb.toFixed(1)} KB`;
   const mb = kb / 1024;
   return `${mb.toFixed(1)} MB`;
-}
+};
 
-export function UploadFilesStep() {
+export const UploadFilesStep = () => {
   const {
     state: { file, selection },
     actions: { setSelection, next, back },
@@ -180,4 +180,4 @@ export function UploadFilesStep() {
       </CardFooter>
     </Card>
   );
-}
+};

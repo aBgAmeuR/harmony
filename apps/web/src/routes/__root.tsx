@@ -1,14 +1,30 @@
-import { TooltipProvider } from "@harmony/ui/components/tooltip";
-import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
+import type { QueryClient } from "@tanstack/react-query";
+
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 
-import { queryClient } from "@/lib/query-client";
+import { Providers } from "@/app/providers";
 
 import appCss from "../index.css?url";
 
-export interface RouterAppContext {
+export type RouterAppContext = {
   queryClient: QueryClient;
-}
+};
+
+const RootDocument = () => (
+  <html lang="en" className="dark scheme-only-dark">
+    <head>
+      <HeadContent />
+    </head>
+    <body className="grid h-svh grid-rows-[auto_1fr] antialiased">
+      <Providers>
+        <Outlet />
+
+        {/* <TanStackRouterDevtools position="bottom-left" /> */}
+        <Scripts />
+      </Providers>
+    </body>
+  </html>
+);
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
   head: () => ({
@@ -35,23 +51,3 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 
   component: RootDocument,
 });
-
-function RootDocument() {
-  return (
-    <html lang="en" className="dark scheme-only-dark">
-      <head>
-        <HeadContent />
-      </head>
-      <body className="grid h-svh grid-rows-[auto_1fr] antialiased">
-        <TooltipProvider>
-          <QueryClientProvider client={queryClient}>
-            <Outlet />
-
-            {/* <TanStackRouterDevtools position="bottom-left" /> */}
-            <Scripts />
-          </QueryClientProvider>
-        </TooltipProvider>
-      </body>
-    </html>
-  );
-}
