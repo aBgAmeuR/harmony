@@ -23,12 +23,23 @@ pub fn title(raw: &str) -> Cow<'_, str> {
         return Cow::Borrowed(trimmed);
     };
 
-    let mut cleaned = cleaners.ext.replace(trimmed, "");
-    for pattern in &cleaners.junk {
-        cleaned = strip(pattern, cleaned, "");
+    // Every pass needs one trigger byte to match. Most titles hold none and never enter the regex engine.
+    let mut cleaned = Cow::Borrowed(trimmed);
+    if cleaned.contains('.') {
+        cleaned = strip(&cleaners.ext, cleaned, "");
     }
-    cleaned = strip(&cleaners.brackets, cleaned, "");
-    cleaned = strip(&cleaners.spaces, cleaned, " ");
+    if cleaned
+        .bytes()
+        .any(|byte| matches!(byte, b'(' | b'[' | b'{'))
+    {
+        for pattern in &cleaners.junk {
+            cleaned = strip(pattern, cleaned, "");
+        }
+        cleaned = strip(&cleaners.brackets, cleaned, "");
+    }
+    if double_space(&cleaned) {
+        cleaned = strip(&cleaners.spaces, cleaned, " ");
+    }
     let cleaned = match cleaned {
         Cow::Borrowed(text) => Cow::Borrowed(text.trim()),
         Cow::Owned(text) => {
@@ -40,7 +51,23 @@ pub fn title(raw: &str) -> Cow<'_, str> {
             }
         }
     };
-    strip(&cleaners.edges, cleaned, "")
+    if cleaned.starts_with(['-', '_']) || cleaned.ends_with(['-', '_']) {
+        return strip(&cleaners.edges, cleaned, "");
+    }
+    cleaned
+}
+
+/// Trigger of `\s{2,}`: regex `\s` and `char::is_whitespace` are both Unicode `White_Space`.
+fn double_space(text: &str) -> bool {
+    let mut previous = false;
+    for character in text.chars() {
+        let space = character.is_whitespace();
+        if space && previous {
+            return true;
+        }
+        previous = space;
+    }
+    false
 }
 
 /// `replace_all` that hands back the same `Cow` when nothing matched.
@@ -89,6 +116,15 @@ mod tests {
         assert_eq!(title("Song (Remastered)"), "Song");
         assert_eq!(title("Song (French Version)"), "Song");
         assert_eq!(title("Song [Official Video]"), "Song");
+    }
+
+    #[test]
+    fn passes_still_run_when_their_trigger_appears() {
+        assert_eq!(title("Song.FLAC"), "Song");
+        assert_eq!(title("F.I.C.O."), "F.I.C.O.");
+        assert_eq!(title("Song  (Live)  Take"), "Song Take");
+        assert_eq!(title("- Song _"), "Song");
+        assert_eq!(title("Song\u{3000}\u{3000}Two"), "Song Two");
     }
 
     #[test]
