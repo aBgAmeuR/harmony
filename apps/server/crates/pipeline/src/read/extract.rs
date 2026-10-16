@@ -12,6 +12,10 @@ use super::ReadError;
 const HISTORY_PATH: &str =
     r"Spotify Extended Streaming History/Streaming_History_Audio_(\d{4}(-\d{4})?)(?:_(\d+))?\.json";
 
+/// Entry size taken from the ZIP header on trust. A Spotify history file is about 12 MB.
+/// The archive length is not a bound: JSON deflates about 14 to 1, so an entry outgrows its archive.
+const TRUSTED_ENTRY: usize = 64 << 20;
+
 pub struct Entry {
     pub bytes: Vec<u8>,
 }
@@ -34,10 +38,14 @@ pub fn files(bytes: &[u8], selection: &Selection) -> Result<(Vec<Entry>, u64), R
 
         let mut body = Vec::new();
         if let Ok(declared) = usize::try_from(file.size()) {
-            let _ = body.try_reserve(declared.min(bytes.len()));
+            let _ = body.try_reserve_exact(declared.min(TRUSTED_ENTRY));
         }
         file.read_to_end(&mut body)
             .map_err(zip::result::ZipError::from)?;
+        // A header that declared more than the entry holds leaves capacity behind. Give it back.
+        if body.capacity() > body.len() {
+            body.shrink_to_fit();
+        }
         kept.push(Entry { bytes: body });
     }
 
