@@ -3,7 +3,7 @@
 use std::borrow::Cow;
 use std::convert::Infallible;
 
-use domain::play::{Play, RawPlay};
+use domain::play::{Names, Play, RawPlay};
 
 use super::{clean, pool};
 
@@ -19,13 +19,14 @@ pub fn plays(batches: Vec<Vec<RawPlay<'_>>>) -> Vec<Play> {
 
 fn batch(raws: Vec<RawPlay<'_>>) -> Vec<Play> {
     let mut kept = Vec::with_capacity(raws.len());
+    let mut names = Names::with_capacity(raws.len() / 2);
     for mut raw in raws {
         let cleaned = match raw.take_title() {
             Some(Cow::Borrowed(title)) => clean::title(title),
             Some(Cow::Owned(title)) => Cow::Owned(clean::title(&title).into_owned()),
             None => Cow::Borrowed(""),
         };
-        let Ok(play) = Play::try_from(raw.with_title(cleaned)) else {
+        let Ok(play) = Play::shared(&raw.with_title(cleaned), &mut names) else {
             continue;
         };
         kept.push(play);

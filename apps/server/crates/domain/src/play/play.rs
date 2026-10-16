@@ -1,26 +1,33 @@
 //! A play that passed artist, title, and duration checks.
 
-use std::borrow::Cow;
+use std::sync::Arc;
 
 use chrono::{DateTime, NaiveDateTime, Utc};
 
+use super::names::Names;
 use super::platform::Platform;
 use super::raw::RawPlay;
 
 const MIN_MS: i64 = 30_000;
 
 /// One kept listen, before it is tied to a catalog track.
+///
+/// The artist is an `Arc<str>` shared by the plays that repeat it. The title is a `Box<str>`.
+/// Both are 16 bytes instead of 24 for a `String`, so a play is 56 bytes and fits one 64-byte
+/// cache line. The const assert below keeps it there.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Play {
     at: DateTime<Utc>,
     platform: Platform,
     ms: u32,
-    artist: String,
-    title: String,
+    artist: Arc<str>,
+    title: Box<str>,
     shuffle: bool,
     skip: bool,
     offline: bool,
 }
+
+const _: () = assert!(size_of::<Play>() <= 64, "Play outgrew a cache line");
 
 /// `Play::try_from` rejected a [`RawPlay`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
@@ -80,9 +87,21 @@ impl Play {
 impl TryFrom<RawPlay<'_>> for Play {
     type Error = PlayError;
 
+    /// One allocation per string. `read` uses [`Play::shared`] instead.
     fn try_from(raw: RawPlay<'_>) -> Result<Self, Self::Error> {
-        let artist = required(raw.artist, PlayError::Artist)?;
-        let title = required(raw.title, PlayError::Title)?;
+        Self::shared(&raw, &mut Names::default())
+    }
+}
+
+impl Play {
+    /// Like `try_from`, with the artist taken from `names`, so a repeated artist is not copied again.
+    ///
+    /// # Errors
+    ///
+    /// The same [`PlayError`] as `try_from`.
+    pub fn shared(raw: &RawPlay<'_>, names: &mut Names) -> Result<Self, PlayError> {
+        let artist = required(raw.artist.as_deref(), PlayError::Artist)?;
+        let title = required(raw.title.as_deref(), PlayError::Title)?;
         if raw.ms <= MIN_MS {
             return Err(PlayError::Duration);
         }
@@ -95,8 +114,8 @@ impl TryFrom<RawPlay<'_>> for Play {
             at,
             platform: Platform::from(raw.platform.as_ref()),
             ms,
-            artist,
-            title,
+            artist: names.get(artist),
+            title: Box::from(title),
             shuffle: raw.shuffle,
             skip: raw.skip,
             offline: raw.offline,
@@ -104,7 +123,7 @@ impl TryFrom<RawPlay<'_>> for Play {
     }
 }
 
-fn required(value: Option<Cow<'_, str>>, error: PlayError) -> Result<String, PlayError> {
+fn required(value: Option<&str>, error: PlayError) -> Result<&str, PlayError> {
     let Some(text) = value else {
         return Err(error);
     };
@@ -112,10 +131,7 @@ fn required(value: Option<Cow<'_, str>>, error: PlayError) -> Result<String, Pla
     if trimmed.is_empty() {
         return Err(error);
     }
-    if trimmed.len() == text.len() {
-        return Ok(text.into_owned());
-    }
-    Ok(trimmed.to_owned())
+    Ok(trimmed)
 }
 
 const NAIVE_CLOCKS: [&str; 4] = [

@@ -1,5 +1,6 @@
 mod history;
 mod listen;
+mod names;
 mod platform;
 #[expect(
     clippy::module_inception,
@@ -10,6 +11,7 @@ mod raw;
 
 pub use history::History;
 pub use listen::Listen;
+pub use names::Names;
 pub use platform::Platform;
 pub use play::{Play, PlayError};
 pub use raw::RawPlay;
