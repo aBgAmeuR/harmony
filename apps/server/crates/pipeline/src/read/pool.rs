@@ -5,13 +5,25 @@
 
 use std::num::NonZeroUsize;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
-use std::sync::{Mutex, PoisonError};
+use std::sync::{Mutex, OnceLock, PoisonError};
 use std::thread;
 
-/// Workers for `len` items: `available_parallelism` (cores, after cgroup and affinity limits), capped by `len`.
+/// Workers for `len` items: the cores of [`cores`], capped by `len`.
+/// One item never asks the kernel anything.
 pub fn workers(len: usize) -> usize {
-    let cores = thread::available_parallelism().map_or(1, NonZeroUsize::get);
-    cores.min(len).max(1)
+    if len <= 1 {
+        return 1;
+    }
+    cores().min(len)
+}
+
+/// `available_parallelism` (cores after cgroup and affinity limits), read once per process.
+///
+/// Each call opens `/proc/self/cgroup` and walks the `cpu.max` files: about 17 syscalls.
+/// Three calls per `read` cost about 0.1 ms on this VM, 9 % of a one-file archive.
+fn cores() -> usize {
+    static CORES: OnceLock<usize> = OnceLock::new();
+    *CORES.get_or_init(|| thread::available_parallelism().map_or(1, NonZeroUsize::get))
 }
 
 /// Applies `work` to every item and keeps the input order.
