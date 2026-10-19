@@ -8,7 +8,7 @@ import { explorerTrendsFn } from "@/data/explorer/trends";
 import { previousRange } from "@/data/overview/range";
 import { toSqlDate } from "@/data/sql/date-range";
 
-export const PAGE_SIZE = 100;
+export const PAGE_SIZE = 50;
 
 type ListArgs = {
   by: RankBy;

@@ -65,27 +65,23 @@ const Measure = ({ row, sort, value, max }: MeasureProps) => (
 type ExplorerTableProps = {
   rows: ExplorerRow[];
   trends: ExplorerTrends | undefined;
-  trendMax: number;
   trendUnit: TrendUnit;
   sort: ExplorerSort;
   onSort: (sort: ExplorerSort) => void;
   active: number;
   selectedId?: number;
   onOpen: (row: ExplorerRow) => void;
-  onPickMonth: (date: Date) => void;
 };
 
 export const ExplorerTable = ({
   rows,
   trends,
-  trendMax,
   trendUnit,
   sort,
   onSort,
   active,
   selectedId,
   onOpen,
-  onPickMonth,
 }: ExplorerTableProps) => {
   const maxPlaytime = Math.max(0, ...rows.map((row) => row.playtime));
   const maxStreams = Math.max(0, ...rows.map((row) => row.streams));
@@ -129,16 +125,7 @@ export const ExplorerTable = ({
                 </Media>
               </Table.Cell>
               <Table.Cell>
-                {points && points.length > 0 ? (
-                  <ExplorerTrend
-                    name={row.name}
-                    points={points}
-                    sort={sort}
-                    unit={trendUnit}
-                    max={trendMax}
-                    onPickMonth={onPickMonth}
-                  />
-                ) : null}
+                {points && points.length > 0 ? <ExplorerTrend points={points} sort={sort} /> : null}
               </Table.Cell>
               <Table.Cell className="text-right">
                 <Delta

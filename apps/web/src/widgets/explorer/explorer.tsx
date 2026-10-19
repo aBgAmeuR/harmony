@@ -14,14 +14,13 @@ import { calendarDaySpan } from "@/data/sql/period-range";
 import { Empty } from "@/shared/primitives/empty";
 import { Pane } from "@/shared/primitives/pane";
 import { Toolbar } from "@/shared/primitives/toolbar";
-import { useDateRangeStore, useScope } from "@/shared/scope";
+import { useScope } from "@/shared/scope";
 
 import type { ExplorerSearch, ExplorerSort, ExplorerTab } from "./search";
 
 import { explorerQueries, PAGE_SIZE } from "./api";
 import { BY, DEFAULT_SORT, DEFAULT_TAB, TABS } from "./search";
 import { ExplorerTable } from "./table";
-import { valueOf } from "./trend";
 import { useExplorerKeys } from "./use-keys";
 
 const LABELS: Record<ExplorerTab, string> = {
@@ -72,10 +71,6 @@ export const Explorer = ({ search, onChange, onOpenEntity }: ExplorerProps) => {
   const ids = rows.map((row) => row.id);
   const trends = useQuery(explorerQueries.trends.queryOptions({ by, ids, scope })).data;
   const trendUnit = calendarDaySpan(scope.from, scope.to) < 31 ? "day" : "month";
-  const trendMax = Math.max(
-    0,
-    ...Object.values(trends ?? {}).flatMap((points) => points.map((p) => valueOf(p, sort))),
-  );
 
   // The keyboard cursor resets whenever the list changes, like paging.
   const [cursor, setCursor] = useState({ signature, index: -1 });
@@ -102,12 +97,6 @@ export const Explorer = ({ search, onChange, onOpenEntity }: ExplorerProps) => {
     onSearch: () => inputRef.current?.focus(),
     onEscape: () => setActive(-1),
   });
-
-  const pickMonth = (date: Date) => {
-    const { setMode, setCursor } = useDateRangeStore.getState();
-    setMode("month");
-    setCursor(date);
-  };
 
   const setSort = (next: ExplorerSort) =>
     onChange({ sort: next === DEFAULT_SORT ? undefined : next });
@@ -172,14 +161,12 @@ export const Explorer = ({ search, onChange, onOpenEntity }: ExplorerProps) => {
           <ExplorerTable
             rows={rows}
             trends={trends}
-            trendMax={trendMax}
             trendUnit={trendUnit}
             sort={sort}
             onSort={setSort}
             active={active}
             selectedId={tab === "tracks" ? search.track : undefined}
             onOpen={open}
-            onPickMonth={pickMonth}
           />
         )}
         {rows.length < total ? (
