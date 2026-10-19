@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useSpring } from "motion/react";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 
 import type { IndicatorFadeEdges } from "../indicator-fade";
@@ -108,7 +108,6 @@ const ChartTooltipInner = memo(function ChartTooltipInner({
     lines,
     xAccessor,
     dateLabels,
-    containerRef,
     orientation,
     barXAccessor,
   } = useChart();
@@ -258,7 +257,7 @@ const ChartTooltipInner = memo(function ChartTooltipInner({
         backgroundColor={backgroundColor}
         className={className}
         containerHeight={height}
-        containerRef={containerRef}
+        container={container}
         containerWidth={width}
         panelStyle={panelStyle}
         springConfig={boxMotion.springConfig}
@@ -296,16 +295,9 @@ const ChartTooltipInner = memo(function ChartTooltipInner({
 });
 
 export function ChartTooltip(props: ChartTooltipProps) {
-  const { containerRef } = useChartStable();
-  const [mounted, setMounted] = useState(false);
+  const { container } = useChartStable();
 
-  // Only render portals on client side after mount
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const container = containerRef.current;
-  if (!(mounted && container)) {
+  if (!container) {
     return null;
   }
 

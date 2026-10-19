@@ -7,9 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@harmony/ui/components/card";
-import { UploadError, type Pipeline, type PipelineRunStatus } from "@harmony/upload";
+import { UploadError, type PipelineRunStatus } from "@harmony/upload";
 import { usePipeline } from "@harmony/upload/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { format } from "@/utils/format";
 
@@ -45,29 +45,33 @@ export const UploadDeployStep = () => {
   const [nowTs, setNowTs] = useState(() => Date.now());
   const [localPublicId, setLocalPublicId] = useState<string | null>(publicId);
   const [deployError, setDeployError] = useState<string | null>(null);
-  const [pipeline, setPipeline] = useState<Pipeline | null>(null);
   const [isDeploying, setIsDeploying] = useState(false);
   const resumeAppliedRef = useRef(false);
   const lastAttemptRef = useRef(0);
 
-  useEffect(() => {
+  const [prevPublicId, setPrevPublicId] = useState(publicId);
+  if (publicId !== prevPublicId) {
+    setPrevPublicId(publicId);
     setLocalPublicId(publicId);
-  }, [publicId]);
+  }
+
+  // Creating a pipeline has no side effects; the effect owns the SSE connection.
+  const pipeline = useMemo(
+    () => (localPublicId ? uploadClient.pipeline(localPublicId) : null),
+    [localPublicId],
+  );
 
   useEffect(() => {
-    if (!localPublicId) {
-      setPipeline(null);
+    if (!pipeline) {
       return;
     }
 
-    const nextPipeline = uploadClient.pipeline(localPublicId).connect();
-    setPipeline(nextPipeline);
+    pipeline.connect();
 
     return () => {
-      nextPipeline.disconnect();
+      pipeline.disconnect();
     };
-  }, [localPublicId]);
-
+  }, [pipeline]);
   const { state: pipelineState, connectionError } = usePipeline(pipeline);
 
   useEffect(() => {

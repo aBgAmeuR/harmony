@@ -1,4 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+
+const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+
+const subscribeReducedMotion = (onChange: () => void) => {
+  const mql = window.matchMedia(REDUCED_MOTION);
+  mql.addEventListener("change", onChange);
+  return () => mql.removeEventListener("change", onChange);
+};
+const getReducedMotion = () => window.matchMedia(REDUCED_MOTION).matches;
+const getServerReducedMotion = () => false;
 
 type UseStaggerRevealOptions = {
   /** Reveal on mount (above-the-fold) instead of waiting for scroll. */
@@ -14,11 +24,15 @@ export const useStaggerReveal = <T extends HTMLElement = HTMLElement>({
 }: UseStaggerRevealOptions = {}) => {
   const ref = useRef<T>(null);
   const [isShown, setIsShown] = useState(false);
+  // Reduced motion shows everything at once, with no reveal to wait for.
+  const prefersReducedMotion = useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotion,
+    getServerReducedMotion,
+  );
 
   useEffect(() => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) {
-      setIsShown(true);
       return;
     }
 
@@ -48,7 +62,7 @@ export const useStaggerReveal = <T extends HTMLElement = HTMLElement>({
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, [immediate, threshold, rootMargin]);
+  }, [immediate, threshold, rootMargin, prefersReducedMotion]);
 
-  return { ref, isShown };
+  return { ref, isShown: isShown || prefersReducedMotion };
 };

@@ -30,7 +30,7 @@ export default defineConfig(({ command, isPreview }) => ({
         enabled: true,
       },
     }),
-    viteReact(),
+    viteReact({ compiler: true }),
     // Dev server only: in build and preview (used by the SPA prerender) its workers keep Node alive.
     command === "serve" && !isPreview ? checker({ oxlint: true }) : null,
   ],

@@ -68,6 +68,8 @@ export const InteractionsTable = ({ interactions, enabled = true }: Interactions
   });
   const rows = table.getRowModel().rows;
 
+  // TanStack Virtual returns mutable functions: React Compiler skips this component, which is fine.
+  // oxlint-disable-next-line react/incompatible-library
   const virtualizer = useVirtualizer({
     count: rows.length,
     estimateSize: () => ROW_HEIGHT,

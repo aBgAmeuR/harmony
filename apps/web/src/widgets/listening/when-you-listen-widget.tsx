@@ -38,6 +38,7 @@ const colorScale = (count: number | null | undefined): string => {
 };
 
 const EMPTY_WHEN_YOU_LISTEN: WhenYouListenByYear = {};
+const CURRENT_YEAR = new Date().getFullYear();
 
 export const WhenYouListenWidget = () => {
   const { data = EMPTY_WHEN_YOU_LISTEN } = useQuery(listeningQueries.whenYouListen.queryOptions());
@@ -47,7 +48,7 @@ export const WhenYouListenWidget = () => {
     .map(Number)
     .sort((a, b) => a - b);
 
-  const activeYear = selectedYear ?? years.at(-1) ?? new Date().getFullYear();
+  const activeYear = selectedYear ?? years.at(-1) ?? CURRENT_YEAR;
   const columns = data[activeYear] ?? [];
 
   return (

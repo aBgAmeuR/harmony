@@ -1,7 +1,5 @@
 "use client";
 
-import type { RefObject } from "react";
-
 import { cn } from "@harmony/ui/lib/utils";
 import { motion, useSpring } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -17,8 +15,8 @@ export interface TooltipBoxProps {
   y: number;
   /** Whether the tooltip is visible */
   visible: boolean;
-  /** Container ref for portal rendering */
-  containerRef: RefObject<HTMLDivElement | null>;
+  /** Container element for portal rendering (null until mounted) */
+  container: HTMLElement | null;
   /** Container width for flip detection */
   containerWidth: number;
   /** Container height for bounds clamping */
@@ -52,18 +50,8 @@ export interface TooltipBoxProps {
 
 // Inner-only-on-visible so `useSpring` initializes at the cursor's actual x/y
 // instead of (0, 0) on first hover.
-export function TooltipBox(props: TooltipBoxProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const container = props.containerRef.current;
-  if (!(mounted && container)) {
-    return null;
-  }
-  if (!props.visible) {
+export function TooltipBox({ container, visible, ...props }: TooltipBoxProps) {
+  if (!(container && visible)) {
     return null;
   }
   return <TooltipBoxInner {...props} container={container} />;
@@ -86,19 +74,17 @@ function TooltipBoxInner({
   panelStyle,
   backgroundColor = chartCssVars.tooltipBackground,
   container,
-}: Omit<TooltipBoxProps, "visible" | "containerRef"> & {
+}: Omit<TooltipBoxProps, "visible" | "container"> & {
   container: HTMLElement;
 }) {
   const { tooltipBoxSpring } = useChartConfig();
   const effectiveSpring = springConfig ?? tooltipBoxSpring;
 
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const tooltipWidthRef = useRef(180);
-  const tooltipHeightRef = useRef(80);
-  const [staticPosition, setStaticPosition] = useState({ left: x, top: y });
+  const [size, setSize] = useState({ width: 180, height: 80 });
 
-  const tw = tooltipWidthRef.current;
-  const th = tooltipHeightRef.current;
+  const tw = size.width;
+  const th = size.height;
   const shouldFlipX = x + tw + offset > containerWidth;
   const targetX = shouldFlipX ? x - offset - tw : x + offset;
   const targetY = Math.max(offset, Math.min(y - th / 2, containerHeight - th - offset));
@@ -113,46 +99,20 @@ function TooltipBoxInner({
     animatedTop.set(targetY);
   }
 
+  // Re-measure when content changes; the panel size depends on it.
   useLayoutEffect(() => {
-    if (!tooltipRef.current) {
+    const el = tooltipRef.current;
+    if (!el) {
       return;
     }
-    const el = tooltipRef.current;
     const w = el.offsetWidth;
     const h = el.offsetHeight;
-    if (w > 0) {
-      tooltipWidthRef.current = w;
-    }
-    if (h > 0) {
-      tooltipHeightRef.current = h;
-    }
-    const w2 = tooltipWidthRef.current;
-    const h2 = tooltipHeightRef.current;
-    const flip = x + w2 + offset > containerWidth;
-    const tx = flip ? x - offset - w2 : x + offset;
-    const ty = Math.max(offset, Math.min(y - h2 / 2, containerHeight - h2 - offset));
-    if (!animate) {
-      setStaticPosition({ left: tx, top: ty });
-      return;
-    }
-    if (leftOverride === undefined) {
-      animatedLeft.set(tx);
-    }
-    if (topOverride === undefined) {
-      animatedTop.set(ty);
-    }
-  }, [
-    x,
-    y,
-    containerWidth,
-    containerHeight,
-    offset,
-    leftOverride,
-    topOverride,
-    animate,
-    animatedLeft,
-    animatedTop,
-  ]);
+    setSize((prev) => {
+      const width = w > 0 ? w : prev.width;
+      const height = h > 0 ? h : prev.height;
+      return width === prev.width && height === prev.height ? prev : { width, height };
+    });
+  }, [children]);
 
   const prevFlipRef = useRef(shouldFlipX);
   const [flipKey, setFlipKey] = useState(0);
@@ -164,8 +124,8 @@ function TooltipBoxInner({
     }
   }, [shouldFlipX]);
 
-  const finalLeft = animate ? (leftOverride ?? animatedLeft) : staticPosition.left;
-  const finalTop = animate ? (topOverride ?? animatedTop) : staticPosition.top;
+  const finalLeft = animate ? (leftOverride ?? animatedLeft) : targetX;
+  const finalTop = animate ? (topOverride ?? animatedTop) : targetY;
   const isFlipped = flippedOverride ?? shouldFlipX;
   const transformOrigin = isFlipped ? "right top" : "left top";
 
@@ -189,7 +149,7 @@ function TooltipBoxInner({
       <div
         className={cn("pointer-events-none absolute z-50", className)}
         ref={tooltipRef}
-        style={{ left: staticPosition.left, top: staticPosition.top }}
+        style={{ left: targetX, top: targetY }}
       >
         <div className={panelClassName} style={panelStyleResolved}>
           {children}

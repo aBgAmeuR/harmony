@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@harmony/ui/lib/utils";
-import { memo, useEffect, useId, useMemo, useState } from "react";
+import { memo, useId, useMemo } from "react";
 import { createPortal } from "react-dom";
 
 import { useHeatmap } from "./heatmap-context";
@@ -91,15 +91,10 @@ export const HeatmapSeparator = memo(function HeatmapSeparator({
   strokeWidth = 1,
   strokeOpacity = 1,
 }: HeatmapSeparatorProps) {
-  const { gap, innerHeight, margin, separatorLayout, xScale, containerRef } = useHeatmap();
+  const { gap, innerHeight, margin, separatorLayout, xScale, container } = useHeatmap();
 
-  const [mounted, setMounted] = useState(false);
   const reactId = useId().replace(/:/g, "");
   const gradientId = `heatmap-separator-gradient-${reactId}`;
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const separators = useMemo(() => {
     if (!separatorLayout) {
@@ -146,9 +141,8 @@ export const HeatmapSeparator = memo(function HeatmapSeparator({
     ? buildHeatmapSeparatorGradientStops(gradient, strokeOpacity)
     : null;
 
-  const container = containerRef.current;
   const labelPortal =
-    mounted && container && labels.length > 0
+    container && labels.length > 0
       ? createPortal(
           labels.map((tick) => (
             <div

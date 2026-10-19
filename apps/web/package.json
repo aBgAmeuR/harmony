@@ -42,6 +42,7 @@
     "@types/react-dom": "catalog:react",
     "@vitejs/plugin-react": "catalog:react",
     "jsdom": "catalog:test",
+    "oxc-transform-react": "catalog:react",
     "typescript": "catalog:build",
     "vite": "catalog:build",
     "vite-plugin-checker": "catalog:build",

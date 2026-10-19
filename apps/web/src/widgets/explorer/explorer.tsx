@@ -48,10 +48,13 @@ export const Explorer = ({ search, onChange, onOpenEntity }: ExplorerProps) => {
   const scope = useScope();
   const inputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState(q);
-  const [active, setActive] = useState(-1);
 
   // The search box is local so typing stays smooth, the URL follows once typing pauses.
-  useEffect(() => setText(q), [q]);
+  const [prevQ, setPrevQ] = useState(q);
+  if (q !== prevQ) {
+    setPrevQ(q);
+    setText(q);
+  }
   useEffect(() => {
     if (text === q) return;
     const timer = window.setTimeout(() => onChange({ q: text || undefined }, true), SEARCH_DELAY);
@@ -74,7 +77,11 @@ export const Explorer = ({ search, onChange, onOpenEntity }: ExplorerProps) => {
     ...Object.values(trends ?? {}).flatMap((points) => points.map((p) => valueOf(p, sort))),
   );
 
-  useEffect(() => setActive(-1), [signature]);
+  // The keyboard cursor resets whenever the list changes, like paging.
+  const [cursor, setCursor] = useState({ signature, index: -1 });
+  const active = cursor.signature === signature ? cursor.index : -1;
+  const setActive = (index: number) => setCursor({ signature, index });
+
   useEffect(() => {
     document.querySelector(`[data-index="${active}"]`)?.scrollIntoView({ block: "nearest" });
   }, [active]);

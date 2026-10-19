@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@harmony/ui/lib/utils";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
 import { createPortal } from "react-dom";
 
 import { useHeatmap } from "./heatmap-context";
@@ -15,12 +15,7 @@ export interface HeatmapXAxisProps {
 const monthFmt = new Intl.DateTimeFormat("en-US", { month: "short" });
 
 export const HeatmapXAxis = memo(function HeatmapXAxis({ className }: HeatmapXAxisProps) {
-  const { containerRef, data, margin, xScale } = useHeatmap();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { container, data, margin, xScale } = useHeatmap();
 
   const labels = useMemo(() => {
     const ticks: { label: string; x: number; key: string }[] = [];
@@ -53,8 +48,7 @@ export const HeatmapXAxis = memo(function HeatmapXAxis({ className }: HeatmapXAx
     return ticks;
   }, [data, margin.left, xScale]);
 
-  const container = containerRef.current;
-  if (!(mounted && container)) {
+  if (!container) {
     return null;
   }
 

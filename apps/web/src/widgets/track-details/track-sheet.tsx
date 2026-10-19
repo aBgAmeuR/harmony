@@ -5,7 +5,7 @@ import { Spinner } from "@harmony/ui/components/spinner";
 import { cn } from "@harmony/ui/lib/utils";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import type { TrackDetails } from "@/data/tracks/get";
 
@@ -63,11 +63,10 @@ const TrackBody = ({ track }: { track: TrackDetails }) => {
 };
 
 const TrackDetailsView = ({ track }: { track: TrackDetails }) => {
-  const [showInteractions, setShowInteractions] = useState(false);
-
-  useEffect(() => {
-    setShowInteractions(false);
-  }, [track.id]);
+  // Each track opens on its overview.
+  const [interactionsFor, setInteractionsFor] = useState<number | null>(null);
+  const showInteractions = interactionsFor === track.id;
+  const setShowInteractions = (show: boolean) => setInteractionsFor(show ? track.id : null);
 
   return (
     <Pane className="h-full">
