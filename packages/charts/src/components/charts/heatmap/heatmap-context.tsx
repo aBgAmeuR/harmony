@@ -8,7 +8,6 @@ import {
   createContext,
   type Dispatch,
   type ReactNode,
-  type RefObject,
   type SetStateAction,
   useCallback,
   useContext,
@@ -75,7 +74,7 @@ export interface HeatmapContextValue {
   colorScale: (count: number | null | undefined) => string;
   fillScale: (count: number | null | undefined) => string;
   levelStyles: HeatmapLevelStyles;
-  containerRef: RefObject<HTMLDivElement | null>;
+  container: HTMLDivElement | null;
   chartStatus: ChartStatus;
   chartPhase: ChartPhase;
   isLoaded: boolean;

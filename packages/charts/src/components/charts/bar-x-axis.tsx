@@ -1,6 +1,6 @@
 import { cn } from "@harmony/ui/lib/utils";
 import { motion } from "motion/react";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
 import { createPortal } from "react-dom";
 
 import { useChart, useChartStable } from "./chart-context";
@@ -69,15 +69,9 @@ function BarXAxisLabel({
 }
 
 export function BarXAxis(props: BarXAxisProps) {
-  const { containerRef, barScale } = useChartStable();
-  const [mounted, setMounted] = useState(false);
+  const { container, barScale } = useChartStable();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const container = containerRef.current;
-  if (!(mounted && container)) {
+  if (!container) {
     return null;
   }
 

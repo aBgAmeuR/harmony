@@ -106,10 +106,10 @@ function MonthCal({
   onYearForward,
 }: MonthCalProps) {
   const [year, setYear] = React.useState<number>(
-    selectedMonth?.getFullYear() ?? new Date().getFullYear(),
+    () => selectedMonth?.getFullYear() ?? new Date().getFullYear(),
   );
   const [month, setMonth] = React.useState<number>(
-    selectedMonth?.getMonth() ?? new Date().getMonth(),
+    () => selectedMonth?.getMonth() ?? new Date().getMonth(),
   );
   const [menuYear, setMenuYear] = React.useState<number>(year);
 

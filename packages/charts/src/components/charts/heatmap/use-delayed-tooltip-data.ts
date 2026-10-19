@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { HeatmapTooltipData } from "./heatmap-context";
 
@@ -9,63 +9,30 @@ export function useDelayedTooltipData(
   showDelay: number,
   hideDelay: number,
 ): HeatmapTooltipData | null {
-  const [displayData, setDisplayData] = useState<HeatmapTooltipData | null>(null);
-  const isShowingRef = useRef(false);
-  const showTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const [shown, setShown] = useState(false);
+  const [lastData, setLastData] = useState<HeatmapTooltipData | null>(null);
 
+  // Keep the last hovered cell so it stays visible during the hide delay.
+  if (tooltipData && tooltipData !== lastData) {
+    setLastData(tooltipData);
+  }
+
+  const wantShown = tooltipData !== null;
+  const immediate = wantShown ? showDelay === 0 : hideDelay === 0;
+  if (immediate && shown !== wantShown) {
+    setShown(wantShown);
+  }
+
+  // `tooltipData` restarts a pending show delay while the pointer keeps moving.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tooltipData
   useEffect(() => {
-    if (showTimerRef.current) {
-      clearTimeout(showTimerRef.current);
-      showTimerRef.current = undefined;
-    }
-    if (hideTimerRef.current) {
-      clearTimeout(hideTimerRef.current);
-      hideTimerRef.current = undefined;
-    }
-
-    if (tooltipData) {
-      if (isShowingRef.current) {
-        setDisplayData(tooltipData);
-        return;
-      }
-
-      if (showDelay === 0) {
-        isShowingRef.current = true;
-        setDisplayData(tooltipData);
-        return;
-      }
-
-      showTimerRef.current = setTimeout(() => {
-        isShowingRef.current = true;
-        setDisplayData(tooltipData);
-      }, showDelay);
+    if (immediate || shown === wantShown) {
       return;
     }
+    const timer = setTimeout(() => setShown(wantShown), wantShown ? showDelay : hideDelay);
+    return () => clearTimeout(timer);
+  }, [tooltipData, wantShown, shown, immediate, showDelay, hideDelay]);
 
-    if (hideDelay === 0) {
-      isShowingRef.current = false;
-      setDisplayData(null);
-      return;
-    }
-
-    hideTimerRef.current = setTimeout(() => {
-      isShowingRef.current = false;
-      setDisplayData(null);
-    }, hideDelay);
-  }, [tooltipData, showDelay, hideDelay]);
-
-  useEffect(
-    () => () => {
-      if (showTimerRef.current) {
-        clearTimeout(showTimerRef.current);
-      }
-      if (hideTimerRef.current) {
-        clearTimeout(hideTimerRef.current);
-      }
-    },
-    [],
-  );
-
-  return displayData;
+  const visible = immediate ? wantShown : shown;
+  return visible ? (tooltipData ?? lastData) : null;
 }

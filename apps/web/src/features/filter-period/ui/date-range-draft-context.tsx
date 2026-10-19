@@ -1,13 +1,4 @@
-import {
-  createContext,
-  use,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, use, useCallback, useMemo, useState, type ReactNode } from "react";
 
 import type { DateRangeMode } from "@/shared/scope";
 
@@ -50,14 +41,14 @@ export const DateRangeDraftProvider = ({
   onClose,
 }: DateRangeDraftProviderProps) => {
   const [draft, setDraft] = useState<DateRangeDraft>(snapshotDateRangeDraft);
-  const draftRef = useRef(draft);
-  draftRef.current = draft;
-
-  useEffect(() => {
+  // Start each opening from the committed range.
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setDraft(snapshotDateRangeDraft());
     }
-  }, [open]);
+  }
 
   const draftRange = useMemo(() => buildDraftRangePreview(draft), [draft]);
   const draftCursor = useMemo(() => new Date(draft.cursorMs), [draft.cursorMs]);
@@ -114,9 +105,9 @@ export const DateRangeDraftProvider = ({
   }, []);
 
   const commit = useCallback(() => {
-    commitDateRangeDraft(draftRef.current);
+    commitDateRangeDraft(draft);
     onClose();
-  }, [onClose]);
+  }, [draft, onClose]);
 
   const value = useMemo<DateRangeDraftContextValue>(
     () => ({

@@ -5,7 +5,7 @@ import { cell, defineChart } from "@tanstack/charts";
 import { scaleBand } from "@tanstack/charts/scales/band";
 import { tooltip } from "@tanstack/charts/tooltip";
 import { portal } from "@tanstack/charts/tooltip/portal";
-import { useMemo, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 
 import type { Row } from "./types";
 
@@ -66,12 +66,16 @@ export const Heatmap = <TDatum extends Row>({
 }: HeatmapProps<TDatum>) => {
   // Formatters are read through a ref: inline functions do not rebuild the chart.
   const latest = useRef({ xFormat, format, title });
-  latest.current = { xFormat, format, title };
+  useLayoutEffect(() => {
+    latest.current = { xFormat, format, title };
+  });
 
   const definition = useMemo<HeatmapDefinition>(() => {
     const rows: readonly Row[] = data;
     const max = Math.max(0, ...rows.map((row) => toNumber(row[value]) ?? 0));
 
+    // The `latest` closures run at tooltip/tick time, after commit, never during this build.
+    // oxlint-disable-next-line react/refs
     return defineChart({
       marks: [
         cell(rows, {

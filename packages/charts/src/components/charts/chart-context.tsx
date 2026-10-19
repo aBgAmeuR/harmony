@@ -12,7 +12,6 @@ import {
   createContext,
   type Dispatch,
   type ReactNode,
-  type RefObject,
   type SetStateAction,
   useContext,
   useMemo,
@@ -137,8 +136,8 @@ export interface ChartContextValue extends ChartHoverContextValue {
   // Column width for spacing calculations
   columnWidth: number;
 
-  // Container ref for portals
-  containerRef: RefObject<HTMLDivElement | null>;
+  // Container element for portals (null until mounted)
+  container: HTMLDivElement | null;
 
   // Line configurations (extracted from children)
   lines: LineConfig[];
@@ -248,7 +247,7 @@ export function ChartProvider({
       innerHeight: value.innerHeight,
       margin: value.margin,
       columnWidth: value.columnWidth,
-      containerRef: value.containerRef,
+      container: value.container,
       lines: value.lines,
       referenceAreas: value.referenceAreas,
       chartPhase: value.chartPhase,
@@ -293,7 +292,7 @@ export function ChartProvider({
       value.innerHeight,
       value.margin,
       value.columnWidth,
-      value.containerRef,
+      value.container,
       value.lines,
       value.referenceAreas,
       value.chartPhase,

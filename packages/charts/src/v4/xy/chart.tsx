@@ -1,7 +1,7 @@
 import type { ChartMargin } from "@tanstack/charts";
 import type { ReactNode } from "react";
 
-import { useMemo, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import type { Row } from "../types";
 import type { Reader } from "./build";
@@ -44,13 +44,15 @@ const Root = <TDatum extends Row>({
 
   // Callbacks are read through this ref, so a new inline function does not rebuild the chart.
   const latest = useRef(parts);
-  latest.current = parts;
+  useLayoutEffect(() => {
+    latest.current = parts;
+  });
 
   // The same object until a series, axis or option changes: it is what the definition depends on.
   const key = signature(parts);
-  const stable = useRef({ key, parts });
-  if (stable.current.key !== key) stable.current = { key, parts };
-  const structure = stable.current.parts;
+  const [stable, setStable] = useState({ key, parts });
+  if (stable.key !== key) setStable({ key, parts });
+  const structure = stable.key === key ? stable.parts : parts;
 
   const read = useMemo<Reader>(
     () => ({
@@ -69,6 +71,8 @@ const Root = <TDatum extends Row>({
   );
 
   const definition = useMemo(
+    // `read` closures run at tooltip/axis time, after commit, never during this build.
+    // oxlint-disable-next-line react/refs
     () => buildXY({ data, x, parts: structure, read, margin, yMax }),
     [data, x, structure, read, margin, yMax],
   );

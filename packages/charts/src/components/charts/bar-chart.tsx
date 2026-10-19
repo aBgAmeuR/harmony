@@ -11,7 +11,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 
@@ -148,7 +147,7 @@ interface ChartInnerProps {
   stacked: boolean;
   stackGap: number;
   children: ReactNode;
-  containerRef: React.RefObject<HTMLDivElement | null>;
+  container: HTMLDivElement | null;
   onPhaseChange?: (phase: ChartPhase) => void;
   status: ChartStatus;
 }
@@ -177,7 +176,7 @@ const ChartCore = memo(function ChartCore({
   stacked,
   stackGap,
   children,
-  containerRef,
+  container,
   onPhaseChange,
   status,
 }: ChartInnerProps) {
@@ -341,8 +340,8 @@ const ChartCore = memo(function ChartCore({
 
   // Create a fake time scale for compatibility with ChartContext
   const fakeTimeScale = useMemo(() => {
-    const now = Date.now();
-    const start = now - data.length * 24 * 60 * 60 * 1000;
+    const start = 0;
+    const now = data.length * 24 * 60 * 60 * 1000;
     const scale = {
       ...categoryScale,
       domain: () => [new Date(start), new Date(now)],
@@ -354,10 +353,16 @@ const ChartCore = memo(function ChartCore({
   }, [categoryScale, innerWidth, data.length]);
 
   // Animation timing — replay when motion settings change
-  // biome-ignore lint/correctness/useExhaustiveDependencies: revealSignature
-  useEffect(() => {
+  const revealKey = `${animationDuration}|${revealSignature}|${status}`;
+  const [prevRevealKey, setPrevRevealKey] = useState(revealKey);
+  if (prevRevealKey !== revealKey) {
+    setPrevRevealKey(revealKey);
     setRevealEpoch((n) => n + 1);
     setIsLoaded(false);
+  }
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: revealSignature
+  useEffect(() => {
     // While loading, hold the skeleton (no reveal, no interaction). When
     // status flips to "ready" this effect re-runs and plays the grow reveal.
     if (status === "loading") {
@@ -547,7 +552,7 @@ const ChartCore = memo(function ChartCore({
     columnWidth,
     tooltipData,
     setTooltipData,
-    containerRef,
+    container,
     lines,
     referenceAreas,
     isLoaded,
@@ -624,13 +629,13 @@ export function BarChart({
   onPhaseChange,
   status = "ready",
 }: BarChartProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const margin = { ...DEFAULT_MARGIN, ...marginProp };
 
   return (
     <div
       className={cn("relative w-full overflow-visible", className)}
-      ref={containerRef}
+      ref={setContainer}
       style={{ aspectRatio }}
     >
       <ParentSize debounceTime={10}>
@@ -640,7 +645,7 @@ export function BarChart({
             animationEasing={animationEasing}
             barGap={barGap}
             barWidthProp={barWidth}
-            containerRef={containerRef}
+            container={container}
             data={data}
             enterTransition={enterTransition}
             height={height}

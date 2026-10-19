@@ -221,17 +221,21 @@ const ClockDialVisual = () => {
   );
 };
 
+// Each segment starts where the previous ones end, as a percent of the ring.
+const GENRE_OFFSETS = GENRE_SEGMENTS.map((_, index) =>
+  GENRE_SEGMENTS.slice(0, index).reduce((sum, segment) => sum + segment.pct, 0),
+);
+
 const GenreDonutVisual = () => {
   const radius = 15.915;
-  let offset = 0;
   return (
     <VisualPanel>
       <div className="flex items-center gap-5 px-6">
         <div className="relative grid size-28 shrink-0 place-items-center">
           <svg viewBox="0 0 40 40" className="size-28 -rotate-90 text-primary" aria-hidden>
-            {GENRE_SEGMENTS.map((segment) => {
+            {GENRE_SEGMENTS.map((segment, index) => {
               const dash = `${segment.pct} ${100 - segment.pct}`;
-              const node = (
+              return (
                 <circle
                   key={segment.label}
                   cx="20"
@@ -242,11 +246,9 @@ const GenreDonutVisual = () => {
                   strokeOpacity={segment.opacity}
                   strokeWidth="6"
                   strokeDasharray={dash}
-                  strokeDashoffset={-offset}
+                  strokeDashoffset={-(GENRE_OFFSETS[index] ?? 0)}
                 />
               );
-              offset += segment.pct;
-              return node;
             })}
           </svg>
           <div className="pointer-events-none absolute flex flex-col items-center">

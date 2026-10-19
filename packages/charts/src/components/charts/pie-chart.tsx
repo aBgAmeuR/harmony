@@ -261,12 +261,28 @@ const PieChartCore = memo(function PieChartCore({
 
   const effectiveIsLoaded = geometryScrubbing || isLoaded;
 
+  // Replay the enter reveal when motion settings change
+  const [revealDeps, setRevealDeps] = useState({
+    enterTransition,
+    enterStaggerScale,
+    geometryScrubbing,
+  });
+  if (
+    revealDeps.enterTransition !== enterTransition ||
+    revealDeps.enterStaggerScale !== enterStaggerScale ||
+    revealDeps.geometryScrubbing !== geometryScrubbing
+  ) {
+    setRevealDeps({ enterTransition, enterStaggerScale, geometryScrubbing });
+    if (!geometryScrubbing) {
+      setIsLoaded(false);
+    }
+  }
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: enterTransition
   useEffect(() => {
     if (geometryScrubbing) {
       return;
     }
-    setIsLoaded(false);
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 100);

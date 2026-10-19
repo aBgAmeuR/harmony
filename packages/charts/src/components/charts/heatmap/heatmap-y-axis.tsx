@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@harmony/ui/lib/utils";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
 import { createPortal } from "react-dom";
 
 import { useHeatmap } from "./heatmap-context";
@@ -31,12 +31,7 @@ export const HeatmapYAxis = memo(function HeatmapYAxis({
   labelFormat = "full",
   rowOpacity,
 }: HeatmapYAxisProps) {
-  const { containerRef, margin, binHeight, gap, yScale, weekStartDay } = useHeatmap();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { container, margin, binHeight, gap, yScale, weekStartDay } = useHeatmap();
 
   const labels = useMemo(
     () =>
@@ -50,8 +45,7 @@ export const HeatmapYAxis = memo(function HeatmapYAxis({
     [binHeight, gap, labelFormat, margin.top, tickFilter, weekStartDay, yScale],
   );
 
-  const container = containerRef.current;
-  if (!(mounted && container)) {
+  if (!container) {
     return null;
   }
 

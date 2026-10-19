@@ -132,6 +132,7 @@ export interface HeatmapChartProps {
 }
 
 const DEFAULT_MARGIN: Margin = { top: 28, right: 16, bottom: 0, left: 40 };
+const EMPTY_TIME_DOMAIN: [Date, Date] = [new Date(0), new Date(0)];
 
 function computeHeatmapDimensions({
   width,
@@ -260,7 +261,7 @@ function HeatmapChartInner({
   weekStartDay,
   children,
 }: HeatmapChartInnerProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
   const filteredData = useMemo(() => filterHeatmapColumns(data, xDomain), [data, xDomain]);
 
@@ -313,7 +314,7 @@ function HeatmapChartInner({
   const timeExtent = useMemo(() => getHeatmapTimeExtent(data), [data]);
 
   const timeXScale = useMemo(() => {
-    const domain = timeExtent ?? [new Date(), new Date()];
+    const domain = timeExtent ?? EMPTY_TIME_DOMAIN;
     return scaleTime({
       domain,
       range: [0, innerWidth],
@@ -350,7 +351,7 @@ function HeatmapChartInner({
       colorScale,
       fillScale,
       levelStyles,
-      containerRef,
+      container,
       chartStatus,
       chartPhase,
       isLoaded,
@@ -377,6 +378,7 @@ function HeatmapChartInner({
       chartStatus,
       chartWidth,
       colorScale,
+      container,
       fillScale,
       enterStaggerScale,
       enterTransition,
@@ -411,15 +413,24 @@ function HeatmapChartInner({
   return (
     <HeatmapProvider value={contextValue}>
       <HeatmapInteractionRoot>
-        <HeatmapChartSurface layout={layout}>{children}</HeatmapChartSurface>
+        <HeatmapChartSurface containerRef={setContainer} layout={layout}>
+          {children}
+        </HeatmapChartSurface>
       </HeatmapInteractionRoot>
     </HeatmapProvider>
   );
 }
 
-function HeatmapChartSurface({ layout, children }: { layout: HeatmapLayout; children: ReactNode }) {
+function HeatmapChartSurface({
+  containerRef,
+  layout,
+  children,
+}: {
+  containerRef: (node: HTMLDivElement | null) => void;
+  layout: HeatmapLayout;
+  children: ReactNode;
+}) {
   const {
-    containerRef,
     height,
     width,
     margin,
@@ -483,7 +494,9 @@ function useHeatmapChartLifecycle({
   const [revealMode, setRevealMode] = useState<HeatmapRevealMode>(null);
   const prevStatusRef = useRef(chartStatus);
   const phaseRef = useRef(chartPhase);
-  phaseRef.current = chartPhase;
+  useLayoutEffect(() => {
+    phaseRef.current = chartPhase;
+  });
 
   const animateCells = animate && !reducedMotion;
   const animateEnter = animateCells && animationDuration > 0;
@@ -540,8 +553,6 @@ function useHeatmapChartLifecycle({
   // biome-ignore lint/correctness/useExhaustiveDependencies: revealSignature replays enter
   useEffect(() => {
     if (!animateEnter) {
-      setIsLoaded(true);
-      setChartPhase(resolveRestingChartPhase(chartStatus));
       return;
     }
     if (chartStatus !== "ready") {
@@ -564,9 +575,10 @@ function useHeatmapChartLifecycle({
     return () => window.clearTimeout(finishTimer);
   }, [animateEnter, animationDuration, chartPhase, finishReveal, revealEpoch]);
 
+  // Without an enter animation the chart rests in the phase its status implies.
   return {
-    chartPhase,
-    isLoaded,
+    chartPhase: animateEnter ? chartPhase : resolveRestingChartPhase(chartStatus),
+    isLoaded: animateEnter ? isLoaded : true,
     revealEpoch,
     revealMode,
     animateCells,
