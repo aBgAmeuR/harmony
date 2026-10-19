@@ -5,4 +5,5 @@ export type NavItem = {
   href: string;
   icon?: IconSvgElement;
   external?: boolean;
+  also?: string[];
 };

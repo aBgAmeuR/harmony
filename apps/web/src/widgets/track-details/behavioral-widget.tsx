@@ -1,9 +1,12 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/tooltip";
-import { cn } from "@harmony/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 
 import { trackQueries } from "@/entities/track";
+import { Grid } from "@/shared/primitives/grid";
+import { Meter } from "@/shared/primitives/meter";
+import { Section } from "@/shared/primitives/section";
 import { usePeriod } from "@/shared/scope";
+import { format } from "@/utils/format";
 
 type BehavioralWidgetProps = {
   trackId: number;
@@ -21,7 +24,7 @@ export const BehavioralWidget = ({ trackId }: BehavioralWidgetProps) => {
   const { data } = useQuery(trackQueries.behavioral.queryOptions({ trackId, from, to }));
 
   const retention = data?.retention ?? [];
-  const completePercentage = data?.completePercentage ?? 0;
+  const completeShare = data?.completeShare ?? 0;
   const avgSkipMs = data?.avgSkipMs ?? null;
   const trackDurationMs = data?.trackDurationMs ?? 0;
   const avgSkipPercent =
@@ -30,32 +33,29 @@ export const BehavioralWidget = ({ trackId }: BehavioralWidgetProps) => {
       : null;
 
   return (
-    <section className="flex flex-col gap-1.5">
-      <p className="text-xs font-normal text-muted-foreground">Behavioral</p>
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
+    <Section size="sm">
+      <Section.Title>Behavioral</Section.Title>
+      <Grid variant="ruled">
         <div className="flex flex-col gap-2 px-2.5 py-2.5">
           <div className="flex items-center justify-between gap-2">
             <p className="text-xs font-normal text-muted-foreground">Retention</p>
-            <span className="text-xs font-medium">{completePercentage}% Complete</span>
+            <span className="text-xs font-medium">
+              {format.as(completeShare, "percent")} Complete
+            </span>
           </div>
-          <div className="flex h-2 w-full gap-0.5 overflow-hidden rounded-full">
+          <Meter size="lg">
             {retention.map((segment) => (
-              <Tooltip key={segment.key}>
-                <TooltipTrigger
-                  className={cn("h-full min-w-0 rounded-sm", segment.colorClass)}
-                  style={{ flexGrow: Math.max(segment.percentage, 0), flexBasis: 0 }}
-                />
-                <TooltipContent>
-                  <p>
-                    {segment.label} · {segment.percentage}%
-                  </p>
-                </TooltipContent>
-              </Tooltip>
+              <Meter.Seg
+                key={segment.key}
+                value={segment.share}
+                label={`${segment.label} · ${format.as(segment.share, "percent")}`}
+                className={segment.colorClass}
+              />
             ))}
-          </div>
+          </Meter>
         </div>
 
-        <div className="border-t border-border px-2.5 py-2.5">
+        <div className="px-2.5 py-2.5">
           <div className="flex items-center justify-between gap-2">
             <p className="text-xs font-normal text-muted-foreground">Average Skip</p>
             <span className="text-xs font-medium text-destructive">
@@ -78,7 +78,7 @@ export const BehavioralWidget = ({ trackId }: BehavioralWidgetProps) => {
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </Grid>
+    </Section>
   );
 };

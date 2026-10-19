@@ -12,7 +12,7 @@ export const listeningTimeFn = async (
 
   const [valueRows, trendRows] = await Promise.all([
     db.query<ListeningHabitValueRow>(`
-      SELECT ROUND(SUM(i.ms_played) / 3600000.0)::DOUBLE AS value
+      SELECT ROUND(SUM(i.ms_played) / 60000.0)::DOUBLE AS value
       FROM interactions i
       ${artistJoin}
       ${where}

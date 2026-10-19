@@ -24,7 +24,6 @@ import { Button } from "@harmony/ui/components/button";
 import {
   Card,
   CardAction,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -38,6 +37,9 @@ import { useState } from "react";
 
 import { Pipeline } from "@/entities/package";
 import { packageQueries } from "@/entities/package";
+import { Grid } from "@/shared/primitives/grid";
+import { Section } from "@/shared/primitives/section";
+import { Stat } from "@/shared/primitives/stat";
 import { format } from "@/utils/format";
 
 const periodQuery = packageQueries.period.queryOptions();
@@ -143,60 +145,50 @@ export const PackagePage = () => {
 
   return (
     <div className="rise-in mx-auto w-full max-w-3xl space-y-6 p-3 pt-12">
-      <section className="space-y-2">
-        <h2 className="mb-3 text-xs font-semibold text-muted-foreground">Overview</h2>
-        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-          <Card size="sm" className="gap-0!">
-            <CardHeader>
-              <CardAction>
+      <Section size="sm">
+        <Section.Title>Overview</Section.Title>
+        <Grid cols={3}>
+          <Card size="xs">
+            <Stat>
+              <Stat.Label>Total duration</Stat.Label>
+              <Stat.Value>{format.duration(data.totalDurationMs)}</Stat.Value>
+              <Stat.Hint>Started at {format.date(data.startedAt)}</Stat.Hint>
+              <Stat.Aside>
                 <Icon icon={Clock01Icon} className="size-4 text-muted-foreground" />
-              </CardAction>
-              <CardTitle className="text-muted-foreground">Total duration</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-lg font-semibold">{format.duration(data.totalDurationMs)}</p>
-              <p className="text-xs text-muted-foreground">
-                Started at {format.date(data.startedAt)}
-              </p>
-            </CardContent>
+              </Stat.Aside>
+            </Stat>
           </Card>
-          <Card size="sm" className="gap-0!">
-            <CardHeader>
-              <CardAction>
-                <Icon icon={Calendar02Icon} className="size-4 text-muted-foreground" />
-              </CardAction>
-              <CardTitle className="text-muted-foreground">Period</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-lg font-semibold">
-                {period ? `${period.days.toLocaleString()} days` : "-"}
-              </p>
-              <p className="text-xs text-muted-foreground">
+          <Card size="xs">
+            <Stat>
+              <Stat.Label>Period</Stat.Label>
+              <Stat.Value>{period ? `${period.days.toLocaleString()} days` : "-"}</Stat.Value>
+              <Stat.Hint>
                 {period
                   ? `From ${format.date(period.startDate)} to ${format.date(period.endDate)}`
                   : "No listening history"}
-              </p>
-            </CardContent>
+              </Stat.Hint>
+              <Stat.Aside>
+                <Icon icon={Calendar02Icon} className="size-4 text-muted-foreground" />
+              </Stat.Aside>
+            </Stat>
           </Card>
-          <Card size="sm" className="gap-0!">
-            <CardHeader>
-              <CardAction>
+          <Card size="xs">
+            <Stat>
+              <Stat.Label>Missed tracks</Stat.Label>
+              <Stat.Value value={missedTracks} />
+              <Stat.Hint>During track resolution</Stat.Hint>
+              <Stat.Aside>
                 <Icon icon={Alert02FreeIcons} className="size-4 text-muted-foreground" />
-              </CardAction>
-              <CardTitle className="text-muted-foreground">Missed tracks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-lg font-semibold">{missedTracks?.toLocaleString() ?? "-"}</p>
-              <p className="text-xs text-muted-foreground">During track resolution</p>
-            </CardContent>
+              </Stat.Aside>
+            </Stat>
           </Card>
-        </div>
-      </section>
+        </Grid>
+      </Section>
 
-      <section className="space-y-2">
-        <h2 className="mb-3 text-xs font-semibold text-muted-foreground">Pipeline</h2>
+      <Section size="sm">
+        <Section.Title>Pipeline</Section.Title>
         <Pipeline steps={data.steps} />
-      </section>
+      </Section>
 
       {/* {details?.failure ? (
         <section className="space-y-2">

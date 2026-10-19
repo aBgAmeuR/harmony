@@ -6,9 +6,9 @@ import { Button } from "@harmony/ui/components/button";
 import { ButtonGroup } from "@harmony/ui/components/button-group";
 import { cn } from "@harmony/ui/lib/utils";
 
-import { Cover } from "@/shared/primitives/cover";
-import { Stat } from "@/shared/primitives/stat";
-import { Trend } from "@/shared/primitives/trend";
+import { Art } from "@/shared/primitives/art";
+import { Num } from "@/shared/primitives/num";
+import { Spark } from "@/shared/primitives/spark";
 
 import { useStaggerReveal } from "./use-stagger-reveal";
 
@@ -152,11 +152,11 @@ const PodiumVisual = () => {
       <div className="mx-auto flex h-full w-full max-w-xs items-end justify-center gap-3 px-4 pt-2">
         {PODIUM.map((entry) => (
           <div key={entry.name} className="flex w-1/3 flex-col items-center gap-0.5">
-            <Cover src={entry.image} alt={entry.name} size="md" />
+            <Art src={entry.image} alt={entry.name} size="md" />
             <p className="mt-1 max-w-full truncate text-xs font-medium text-foreground">
               {entry.name}
             </p>
-            <Stat value={entry.minutes} unit="min" size="xs" className="mb-1.5" />
+            <Num value={entry.minutes} kind="minutes" size="xs" className="mb-1.5" />
             <div
               className={cn(
                 "flex w-full items-start justify-center rounded-t-md border border-b-0 border-[#ffffff14]/50 pt-1",
@@ -275,7 +275,7 @@ const FilterVisual = () => {
     <VisualPanel className="flex-col items-stretch justify-center gap-3 p-4">
       <div className="flex items-center justify-between gap-1.5">
         <Button variant="outline" size="sm" tabIndex={-1} className="max-w-full gap-1.5">
-          <Cover
+          <Art
             src={FILTER_ARTIST.image}
             alt={FILTER_ARTIST.name}
             size="sm"
@@ -307,12 +307,12 @@ const FilterVisual = () => {
               index > 0 && "border-t border-border",
             )}
           >
-            <Cover src={track.image} alt={track.name} size="sm" />
+            <Art src={track.image} alt={track.name} size="sm" />
             <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
               {track.name}
             </span>
-            <Trend data={track.sparkline} className="me-0.5 h-4 w-10" />
-            <Stat value={track.minutes} unit="min" size="xs" />
+            <Spark data={track.sparkline} className="me-0.5 h-4 w-10" />
+            <Num value={track.minutes} kind="minutes" size="xs" />
           </li>
         ))}
       </ul>

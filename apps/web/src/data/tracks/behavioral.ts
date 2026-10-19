@@ -5,13 +5,14 @@ import { interactionDateConditions, joinWhere } from "@/data/sql/date-range";
 export type BehavioralRetentionSegment = {
   key: "complete" | "partial" | "quick-skips";
   label: string;
-  percentage: number;
+  // Fraction of the plays, between 0 and 1.
+  share: number;
   colorClass: string;
 };
 
 export type TrackBehavioralMetrics = {
   retention: BehavioralRetentionSegment[];
-  completePercentage: number;
+  completeShare: number;
   avgSkipMs: number | null;
   trackDurationMs: number;
 };
@@ -82,13 +83,13 @@ export const trackBehavioralFn = async ({
     const count = counts[segment.key];
     return {
       ...segment,
-      percentage: total > 0 ? Math.round((count / total) * 100) : 0,
+      share: total > 0 ? count / total : 0,
     };
   });
 
   return {
     retention,
-    completePercentage: retention.find((segment) => segment.key === "complete")?.percentage ?? 0,
+    completeShare: retention.find((segment) => segment.key === "complete")?.share ?? 0,
     avgSkipMs: row?.avg_skip_ms ?? null,
     trackDurationMs: row?.track_duration_ms ?? 0,
   };

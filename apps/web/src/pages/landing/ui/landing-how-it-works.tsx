@@ -6,10 +6,12 @@ import { Badge } from "@harmony/ui/components/badge";
 import { Checkbox } from "@harmony/ui/components/checkbox";
 import { cn } from "@harmony/ui/lib/utils";
 
-import { Cover } from "@/shared/primitives/cover";
+import type { Kind } from "@/utils/format";
+
+import { Art } from "@/shared/primitives/art";
 import { Icons } from "@/shared/primitives/icons";
+import { Num } from "@/shared/primitives/num";
 import { Rank } from "@/shared/primitives/rank";
-import { Stat } from "@/shared/primitives/stat";
 
 import { useStaggerReveal } from "./use-stagger-reveal";
 
@@ -72,11 +74,11 @@ const INSIGHT_TRACK = {
     "https://cdn-images.dzcdn.net/images/cover/6c91e64b7157f1332a4f6b0de9e4c714/56x56-000000-80-0-0.jpg",
 } as const;
 
-const OVERVIEW_STATS: ReadonlyArray<{ label: string; value: number; unit?: string }> = [
+const OVERVIEW_STATS: ReadonlyArray<{ label: string; value: number; kind?: Kind }> = [
   { label: "Total streams", value: 1190 },
-  { label: "Time listened", value: 2538, unit: "min" },
-  { label: "Avg completion", value: 87, unit: "%" },
-  { label: "Skip rate", value: 9, unit: "%" },
+  { label: "Time listened", value: 2538, kind: "minutes" },
+  { label: "Avg completion", value: 0.87, kind: "percent" },
+  { label: "Skip rate", value: 0.09, kind: "percent" },
 ];
 
 const LISTENING_DATA = [
@@ -297,7 +299,7 @@ const InsightCard = () => {
   return (
     <ShowcaseCard title="Your Insight" className="h-full">
       <div className="flex items-center gap-3">
-        <Cover src={INSIGHT_TRACK.image} alt={INSIGHT_TRACK.name} size="lg" blur />
+        <Art src={INSIGHT_TRACK.image} alt={INSIGHT_TRACK.name} size="lg" variant="glow" />
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-foreground">{INSIGHT_TRACK.name}</p>
           <p className="truncate text-xs text-muted-foreground">{INSIGHT_TRACK.artists}</p>
@@ -313,7 +315,7 @@ const InsightCard = () => {
           {OVERVIEW_STATS.map((stat) => (
             <div key={stat.label} className="flex flex-col px-2.5 py-1.5">
               <span className="text-[10px] font-medium text-muted-foreground">{stat.label}</span>
-              <Stat size="md" value={stat.value} unit={stat.unit} />
+              <Num size="md" value={stat.value} kind={stat.kind} />
             </div>
           ))}
         </div>

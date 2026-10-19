@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { Cover } from "@/shared/primitives/cover";
+import { Empty } from "@/shared/primitives/empty";
+import { Media } from "@/shared/primitives/media";
+import { Section } from "@/shared/primitives/section";
 import { useScope } from "@/shared/scope";
 
 import { milestoneQueries } from "./api";
@@ -11,35 +13,33 @@ export const FirstsWidget = () => {
   const { data = [], isPending } = useQuery(milestoneQueries.firsts.queryOptions(filter));
 
   return (
-    <section className="min-w-0 space-y-3" aria-labelledby="discoveries-that-stayed">
+    <Section aria-labelledby="discoveries-that-stayed">
       <header>
-        <h2 id="discoveries-that-stayed" className="text-base font-semibold tracking-tight">
-          Discoveries that stayed
-        </h2>
+        <Section.Title id="discoveries-that-stayed">Discoveries that stayed</Section.Title>
         <p className="text-xs text-pretty text-muted-foreground">
           Artists you first heard in this range, now in your top 50.
         </p>
       </header>
       {!isPending && data.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
+        <Empty className="items-start py-0">
           No top-50 artists were first heard in this range.
-        </p>
+        </Empty>
       ) : (
         <ul className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
           {data.map((row) => (
-            <li key={row.id} className="flex items-center gap-3">
-              <Cover src={row.image} alt={row.name} />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm">{row.name}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {formatMilestoneDate(row.date)}
-                </p>
-              </div>
-              <p className="shrink-0 text-sm font-medium text-primary">#{row.laterRank}</p>
+            <li key={row.id}>
+              <Media>
+                <Media.Art src={row.image} alt={row.name} />
+                <Media.Body>
+                  <Media.Title className="font-normal">{row.name}</Media.Title>
+                  <Media.Sub>{formatMilestoneDate(row.date)}</Media.Sub>
+                </Media.Body>
+                <Media.End className="text-sm font-medium text-primary">#{row.laterRank}</Media.End>
+              </Media>
             </li>
           ))}
         </ul>
       )}
-    </section>
+    </Section>
   );
 };

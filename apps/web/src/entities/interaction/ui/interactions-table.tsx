@@ -79,7 +79,7 @@ export const InteractionsTable = ({ interactions, enabled = true }: Interactions
 
   return (
     <div ref={scrollRef} className="relative h-full overflow-auto">
-      <div className="[&_[data-slot=table-container]]:overflow-visible">
+      <div className="**:data-[slot=table-container]:overflow-visible">
         <Table className="grid w-full">
           <TableHeader className="sticky top-0 z-10 grid bg-background">
             {table.getHeaderGroups().map((group) => (

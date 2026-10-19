@@ -1,15 +1,14 @@
-import { cn } from "@harmony/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 
 import { trackQueries } from "@/entities/track";
+import { Delta } from "@/shared/primitives/delta";
+import { Grid } from "@/shared/primitives/grid";
+import { Section } from "@/shared/primitives/section";
+import { Stat } from "@/shared/primitives/stat";
 import { usePeriod } from "@/shared/scope";
 
 type VsAverageWidgetProps = {
   trackId: number;
-};
-
-const formatMultiplier = (value: number): string => {
-  return `${value.toLocaleString("en-US", { maximumFractionDigits: 1 })}x`;
 };
 
 export const VsAverageWidget = ({ trackId }: VsAverageWidgetProps) => {
@@ -23,28 +22,16 @@ export const VsAverageWidget = ({ trackId }: VsAverageWidgetProps) => {
   ];
 
   return (
-    <section className="flex flex-col gap-1.5">
-      <p className="text-xs font-normal text-muted-foreground">Vs. average</p>
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
-        {rows.map((row, index) => (
-          <div
-            key={row.label}
-            className={`flex items-center justify-between gap-3 px-2.5 py-1.5 ${
-              index < rows.length - 1 ? "border-b border-border" : ""
-            }`}
-          >
-            <span className="truncate text-xs text-muted-foreground">{row.label}</span>
-            <span
-              className={cn(
-                "text-xs font-medium tabular-nums",
-                row.multiplier >= 1 ? "text-primary" : "text-destructive",
-              )}
-            >
-              {data ? formatMultiplier(row.multiplier) : "-"}
-            </span>
-          </div>
+    <Section size="sm">
+      <Section.Title>Vs. average</Section.Title>
+      <Grid variant="ruled">
+        {rows.map((row) => (
+          <Stat key={row.label} layout="row">
+            <Stat.Label>{row.label}</Stat.Label>
+            <Delta kind="ratio" value={data ? row.multiplier : null} />
+          </Stat>
         ))}
-      </div>
-    </section>
+      </Grid>
+    </Section>
   );
 };

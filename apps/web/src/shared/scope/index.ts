@@ -8,5 +8,6 @@ export {
   type DateRangeDraft,
   type DateRangeMode,
 } from "./period";
+export { periodLabel } from "./label";
 export { readScope, useScope } from "./scope";
 export type { Scope } from "./types";

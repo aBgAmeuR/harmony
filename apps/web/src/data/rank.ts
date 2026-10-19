@@ -81,11 +81,11 @@ const byArtist = ({ from, to }: Scope) => `
   GROUP BY a.id
 `;
 
-const sources = { artist: byArtist, track: byTrack, album: byAlbum };
+export const rankSources = { artist: byArtist, track: byTrack, album: byAlbum };
 
 export const rankFn = ({ by, scope, sort = "playtime", limit = 50 }: RankArgs) =>
   db.query<RankRow>(`
-    SELECT * FROM (${sources[by](scope)})
+    SELECT * FROM (${rankSources[by](scope)})
     ORDER BY ${sort} DESC
     LIMIT ${Math.trunc(limit)}
   `);

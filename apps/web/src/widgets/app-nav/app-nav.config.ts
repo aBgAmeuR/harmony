@@ -3,15 +3,13 @@ import {
   Book02Icon,
   Chart03Icon,
   CheckmarkBadge01Icon,
-  MusicNote03Icon,
   PackageIcon,
   Search01Icon,
   Settings01Icon,
   Share08Icon,
-  UserIcon,
   UserMultipleIcon,
-  Vynil01Icon,
   GithubIcon,
+  DiscoverCircleIcon,
 } from "@harmony/icons";
 
 import { NavItem } from "./types/nav-item";
@@ -31,19 +29,10 @@ export const appNav = {
   ],
   library: [
     {
-      title: "Artists",
-      href: "/artists",
-      icon: UserIcon,
-    },
-    {
-      title: "Tracks",
-      href: "/tracks",
-      icon: MusicNote03Icon,
-    },
-    {
-      title: "Albums",
-      href: "/albums",
-      icon: Vynil01Icon,
+      title: "Explorer",
+      href: "/explorer",
+      icon: DiscoverCircleIcon,
+      also: ["/artists", "/albums"],
     },
   ],
   insights: [

@@ -1,6 +1,7 @@
 import { DateRangeFilter } from "@/features/filter-period";
 import { ArtistsSelect } from "@/features/pick-artist";
 import { Pane } from "@/shared/primitives/pane";
+import { Toolbar } from "@/shared/primitives/toolbar";
 import { WeeklyListeningVsReleasesWidget } from "@/widgets/discoveries/weekly-listening-vs-releases-widget";
 
 export const DiscoveriesPage = () => {
@@ -8,15 +9,15 @@ export const DiscoveriesPage = () => {
     <Pane>
       <Pane.Header>
         <Pane.Title>Discoveries</Pane.Title>
-        <Pane.Sep />
+        <Toolbar.Sep />
         <ArtistsSelect />
-        <Pane.Actions>
+        <Toolbar.End>
           <DateRangeFilter />
-        </Pane.Actions>
+        </Toolbar.End>
       </Pane.Header>
-      <main className="mx-auto max-w-7xl space-y-3 p-4 pt-0">
+      <Pane.Body width="lg" className="space-y-3">
         <WeeklyListeningVsReleasesWidget />
-      </main>
+      </Pane.Body>
     </Pane>
   );
 };

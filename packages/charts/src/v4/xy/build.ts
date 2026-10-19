@@ -35,6 +35,7 @@ type BuildInput = {
   parts: Parts;
   read: Reader;
   margin?: number | Partial<ChartMargin>;
+  yMax?: number;
 };
 
 type Entry = { key: string; label: string; color: string };
@@ -69,7 +70,7 @@ const pick = (data: readonly Row[], key: string, at: "max" | "min"): Row[] => {
   return best ? [best] : [];
 };
 
-export const buildXY = ({ data, x, parts, read, margin }: BuildInput): XYDefinition => {
+export const buildXY = ({ data, x, parts, read, margin, yMax }: BuildInput): XYDefinition => {
   const xOf = (row: Row) => toLabel(row[x]);
   const yOf = (key: string) => (row: Row) => toNumber(row[key]);
 
@@ -253,8 +254,8 @@ export const buildXY = ({ data, x, parts, read, margin }: BuildInput): XYDefinit
           : false,
       },
       y: {
-        scale: scaleLinear,
-        nice: true,
+        scale: yMax === undefined ? scaleLinear : scaleLinear().domain([0, yMax]),
+        nice: yMax === undefined,
         grid: parts.grid ? GRID_ACROSS : false,
         ...(yAxis?.side ? { side: yAxis.side } : {}),
         axis: yAxis

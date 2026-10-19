@@ -4,7 +4,8 @@ import { interactionDateConditions, joinWhere } from "@/data/sql/date-range";
 
 export type DeviceShare = {
   label: string;
-  percentage: number;
+  // Fraction of the plays, between 0 and 1.
+  share: number;
 };
 
 export type TrackDevicesMetrics = {
@@ -36,19 +37,19 @@ const toPrimaryDevices = (rows: PlatformRow[]): DeviceShare[] => {
   const total = rows.reduce((sum, row) => sum + row.value, 0);
   if (total === 0) return [];
 
-  const withPercent = rows.map((row) => ({
+  const withShare = rows.map((row) => ({
     label: PLATFORM_LABELS[row.platform] ?? row.platform,
-    percentage: Math.round((row.value / total) * 100),
+    share: row.value / total,
   }));
 
-  if (withPercent.length <= 2) {
-    return withPercent;
+  if (withShare.length <= 2) {
+    return withShare;
   }
 
-  const top = withPercent.slice(0, 2);
-  const othersPercentage = withPercent.slice(2).reduce((sum, device) => sum + device.percentage, 0);
+  const top = withShare.slice(0, 2);
+  const othersShare = withShare.slice(2).reduce((sum, device) => sum + device.share, 0);
 
-  return [...top, { label: "Others", percentage: othersPercentage }];
+  return [...top, { label: "Others", share: othersShare }];
 };
 
 export const trackDevicesFn = async ({

@@ -12,7 +12,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { ListeningSessions, ListeningStreak, TimelineEvent } from "@/data/milestones/types";
 
-import { Cover } from "@/shared/primitives/cover";
+import { Art } from "@/shared/primitives/art";
+import { Empty } from "@/shared/primitives/empty";
+import { Section } from "@/shared/primitives/section";
 import { useScope } from "@/shared/scope";
 
 import { milestoneQueries } from "./api";
@@ -160,23 +162,19 @@ export const TimelineWidget = () => {
 
   if (!isPending && rows.length === 0) {
     return (
-      <section className="space-y-3" aria-labelledby="milestones-timeline">
-        <h2 id="milestones-timeline" className="text-base font-semibold tracking-tight">
-          Milestones timeline
-        </h2>
-        <p className="text-sm text-muted-foreground">No milestones in this range.</p>
-      </section>
+      <Section aria-labelledby="milestones-timeline">
+        <Section.Title id="milestones-timeline">Milestones timeline</Section.Title>
+        <Empty className="items-start py-0">No milestones in this range.</Empty>
+      </Section>
     );
   }
 
   return (
-    <section className="space-y-1" aria-labelledby="milestones-timeline">
-      <header className="flex items-center justify-between gap-2">
-        <h2 id="milestones-timeline" className="text-base font-semibold tracking-tight">
-          Milestones timeline
-        </h2>
-        {pager}
-      </header>
+    <Section aria-labelledby="milestones-timeline">
+      <Section.Head>
+        <Section.Title id="milestones-timeline">Milestones timeline</Section.Title>
+        <Section.Action>{pager}</Section.Action>
+      </Section.Head>
       <TooltipProvider delay={80}>
         <div
           ref={ref}
@@ -218,7 +216,7 @@ export const TimelineWidget = () => {
                     <p className="truncate text-sm font-medium">{event.label}</p>
                     {event.entity ? (
                       <div className="mt-1.5 flex min-w-0 items-center gap-2">
-                        <Cover src={event.image} alt={event.entity} />
+                        <Art src={event.image} alt={event.entity} />
                         <div className="min-w-0">
                           <p className="truncate text-xs">{event.entity}</p>
                           {event.subtitle ? (
@@ -236,6 +234,6 @@ export const TimelineWidget = () => {
           </ol>
         </div>
       </TooltipProvider>
-    </section>
+    </Section>
   );
 };

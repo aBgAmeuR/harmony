@@ -1,19 +1,15 @@
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@harmony/ui/components/card";
+import { Card } from "@harmony/ui/components/card";
 import { useQuery } from "@tanstack/react-query";
 
+import { Art } from "@/shared/primitives/art";
+import { Grid } from "@/shared/primitives/grid";
+import { Meta } from "@/shared/primitives/meta";
+import { Num } from "@/shared/primitives/num";
+import { Stat } from "@/shared/primitives/stat";
 import { format } from "@/utils/format";
 
 import { overviewQueries } from "./api";
 import { shortDate } from "./format";
-import { Picture } from "./ui/picture";
-import { Playtime } from "./ui/playtime";
 import { useRanges } from "./use-range";
 
 export const HighlightsWidget = () => {
@@ -25,69 +21,65 @@ export const HighlightsWidget = () => {
   const { peakDay, streak, newArtists, replayed } = data;
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <Card size="xs" className="p-2">
-        <CardHeader>
-          <CardDescription>Peak day</CardDescription>
-          <CardTitle className="text-xl font-semibold tracking-tight tabular-nums">
-            {peakDay ? shortDate(peakDay.date) : "-"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-muted-foreground">
+    <Grid cols={4}>
+      <Card size="xs">
+        <Stat>
+          <Stat.Label>Peak day</Stat.Label>
+          <Stat.Value>{peakDay ? shortDate(peakDay.date) : "-"}</Stat.Value>
           {peakDay ? (
-            <span className="flex items-center gap-1.5">
-              <Playtime minutes={peakDay.minutes} />
-              <span>·</span>
-              <span className="tabular-nums">{format.count(peakDay.streams)} streams</span>
-            </span>
+            <Stat.Hint>
+              <Meta>
+                <Num value={peakDay.minutes} kind="minutes" size="xs" />
+                <span className="tabular-nums">{format.count(peakDay.streams)} streams</span>
+              </Meta>
+            </Stat.Hint>
           ) : null}
-        </CardContent>
+        </Stat>
       </Card>
 
-      <Card size="xs" className="p-2">
-        <CardHeader>
-          <CardDescription>Longest streak</CardDescription>
-          <CardTitle className="text-xl font-semibold tracking-tight tabular-nums">
-            {format.count(streak.days)} days
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-muted-foreground tabular-nums">
-          {streak.start && streak.end
-            ? `${shortDate(streak.start)} - ${shortDate(streak.end)}`
-            : null}
-        </CardContent>
+      <Card size="xs">
+        <Stat>
+          <Stat.Label>Longest streak</Stat.Label>
+          <Stat.Value>{format.count(streak.days)} days</Stat.Value>
+          {streak.start && streak.end ? (
+            <Stat.Hint className="tabular-nums">
+              {shortDate(streak.start)} - {shortDate(streak.end)}
+            </Stat.Hint>
+          ) : null}
+        </Stat>
       </Card>
 
-      <Card size="xs" className="p-2">
-        <CardHeader>
-          <CardDescription>New artists</CardDescription>
-          <CardTitle className="text-xl font-semibold tracking-tight tabular-nums">
-            {newArtists === null ? "-" : format.count(newArtists)}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-muted-foreground">
-          {newArtists === null ? "Needs history before this period" : "First listened this period"}
-        </CardContent>
+      <Card size="xs">
+        <Stat>
+          <Stat.Label>New artists</Stat.Label>
+          <Stat.Value value={newArtists} />
+          <Stat.Hint>
+            {newArtists === null
+              ? "Needs history before this period"
+              : "First listened this period"}
+          </Stat.Hint>
+        </Stat>
       </Card>
 
-      <Card size="xs" className="p-2">
-        <CardHeader>
-          <CardDescription>Most replayed</CardDescription>
-          <CardTitle className="truncate text-xl font-semibold tracking-tight">
-            {replayed?.name ?? "-"}
-          </CardTitle>
+      <Card size="xs">
+        <Stat className="pr-18">
+          <Stat.Label>Most replayed</Stat.Label>
+          <Stat.Value className="truncate">{replayed?.name ?? "-"}</Stat.Value>
           {replayed ? (
-            <CardAction>
-              <Picture src={replayed.image} name={replayed.name} size="lg" />
-            </CardAction>
+            <>
+              <Stat.Hint className="truncate">
+                <Meta>
+                  {replayed.description}
+                  <span className="tabular-nums">{format.count(replayed.streams)} streams</span>
+                </Meta>
+              </Stat.Hint>
+              <Stat.Aside>
+                <Art src={replayed.image} alt={replayed.name} size="lg" fallback="initials" />
+              </Stat.Aside>
+            </>
           ) : null}
-        </CardHeader>
-        <CardContent className="truncate text-muted-foreground">
-          {replayed
-            ? `${replayed.description ? `${replayed.description} · ` : ""}${format.count(replayed.streams)} streams`
-            : null}
-        </CardContent>
+        </Stat>
       </Card>
-    </div>
+    </Grid>
   );
 };

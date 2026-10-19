@@ -10,20 +10,6 @@ export const durationLabel = (minutes: number): string => {
   return `${value} ${unit}`;
 };
 
-// Hours and minutes of a listening time: "51 h 12 min", "42 min", "142 h".
-export const playtimeParts = (minutes: number): { value: string; unit: string }[] => {
-  const total = Math.max(Math.round(minutes), 0);
-  if (total < 60) return [{ value: String(total), unit: "min" }];
-
-  const hours = Math.floor(total / 60);
-  const rest = total % 60;
-  if (hours >= 100 || rest === 0) return [{ value: format.count(hours), unit: "h" }];
-  return [
-    { value: String(hours), unit: "h" },
-    { value: String(rest), unit: "m" },
-  ];
-};
-
 // Relative change vs the previous range, null when there is nothing to compare to.
 export const delta = (current: number, previous: number): number | null =>
   previous > 0 ? (current - previous) / previous : null;
@@ -81,11 +67,3 @@ export const periodWord = (from: Date, to: Date): string => {
   }
   return "in this period";
 };
-
-export const initials = (name: string): string =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word.charAt(0).toUpperCase())
-    .join("");
