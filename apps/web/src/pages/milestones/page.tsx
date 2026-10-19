@@ -1,6 +1,7 @@
 import { DateRangeFilter } from "@/features/filter-period";
 import { ArtistsSelect } from "@/features/pick-artist";
 import { Pane } from "@/shared/primitives/pane";
+import { Toolbar } from "@/shared/primitives/toolbar";
 import { FirstsWidget } from "@/widgets/milestones/firsts-widget";
 import { NextMilestonesWidget } from "@/widgets/milestones/next-milestones-widget";
 import { SessionsStreaksWidget } from "@/widgets/milestones/sessions-streaks-widget";
@@ -12,13 +13,13 @@ export const MilestonesPage = () => {
     <Pane>
       <Pane.Header>
         <Pane.Title>Milestones</Pane.Title>
-        <Pane.Sep />
+        <Toolbar.Sep />
         <ArtistsSelect />
-        <Pane.Actions>
+        <Toolbar.End>
           <DateRangeFilter />
-        </Pane.Actions>
+        </Toolbar.End>
       </Pane.Header>
-      <main className="mx-auto max-w-6xl p-4">
+      <Pane.Body width="lg" className="pt-4">
         <SummaryHero />
 
         <div className="grid grid-cols-1 gap-6 pt-5 md:grid-cols-2">
@@ -33,7 +34,7 @@ export const MilestonesPage = () => {
         <div className="pt-5">
           <FirstsWidget />
         </div>
-      </main>
+      </Pane.Body>
     </Pane>
   );
 };

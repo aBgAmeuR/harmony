@@ -1,1 +1,1 @@
-export { Rank, rankTone } from "./rank";
+export { Rank } from "./rank";

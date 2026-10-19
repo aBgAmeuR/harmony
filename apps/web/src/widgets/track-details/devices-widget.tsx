@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { trackQueries } from "@/entities/track";
+import { Empty } from "@/shared/primitives/empty";
+import { Grid } from "@/shared/primitives/grid";
+import { Section } from "@/shared/primitives/section";
+import { Stat } from "@/shared/primitives/stat";
 import { usePeriod } from "@/shared/scope";
 
 type DevicesWidgetProps = {
@@ -14,27 +18,22 @@ export const DevicesWidget = ({ trackId }: DevicesWidgetProps) => {
   const devices = data?.devices ?? [];
 
   return (
-    <section className="flex flex-col gap-1.5">
-      <p className="text-xs font-normal text-muted-foreground">Devices</p>
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
-        {devices.length > 0 ? (
-          devices.map((device, index) => (
-            <div
-              key={device.label}
-              className={`flex items-center justify-between gap-3 px-2.5 py-1.5 ${
-                index < devices.length - 1 ? "border-b border-border" : ""
-              }`}
-            >
-              <span className="truncate text-xs">{device.label}</span>
-              <span className="text-xs font-medium tabular-nums">{device.percentage}%</span>
-            </div>
-          ))
-        ) : (
-          <div className="px-2.5 py-1.5">
-            <span className="text-xs text-muted-foreground">No device data</span>
-          </div>
-        )}
-      </div>
-    </section>
+    <Section size="sm">
+      <Section.Title>Devices</Section.Title>
+      {devices.length > 0 ? (
+        <Grid variant="ruled">
+          {devices.map((device) => (
+            <Stat key={device.label} layout="row">
+              <Stat.Label className="text-foreground">{device.label}</Stat.Label>
+              <Stat.Value value={device.share} kind="percent" />
+            </Stat>
+          ))}
+        </Grid>
+      ) : (
+        <Empty variant="framed" className="py-2 text-xs">
+          No device data
+        </Empty>
+      )}
+    </Section>
   );
 };

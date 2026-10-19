@@ -1,13 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { loadTracks } from "@/pages/tracks/load";
-import { TracksPage } from "@/pages/tracks/page";
-
+// The track list moved into the Explorer.
 export const Route = createFileRoute("/app/$packageId/tracks")({
-  ssr: false,
-  loader: async ({ context: { queryClient }, parentMatchPromise }) => {
-    await parentMatchPromise;
-    await loadTracks(queryClient);
+  beforeLoad: ({ params }) => {
+    throw redirect({ to: "/app/$packageId/explorer", params, search: { tab: "tracks" } });
   },
-  component: TracksPage,
 });

@@ -1,6 +1,7 @@
 import { DateRangeFilter } from "@/features/filter-period";
 import { ArtistsSelect } from "@/features/pick-artist";
 import { Pane } from "@/shared/primitives/pane";
+import { Toolbar } from "@/shared/primitives/toolbar";
 import { ActiveDaysWidget } from "@/widgets/listening/active-days-widget";
 import { DaysOfWeekWidget } from "@/widgets/listening/days-of-week-widget";
 import { ListeningTimeWidget } from "@/widgets/listening/listening-time-widget";
@@ -13,13 +14,13 @@ export const ListeningPage = () => {
     <Pane>
       <Pane.Header>
         <Pane.Title>Listening Habits</Pane.Title>
-        <Pane.Sep />
+        <Toolbar.Sep />
         <ArtistsSelect />
-        <Pane.Actions>
+        <Toolbar.End>
           <DateRangeFilter />
-        </Pane.Actions>
+        </Toolbar.End>
       </Pane.Header>
-      <main className="mx-auto max-w-7xl space-y-3 p-4 pt-0">
+      <Pane.Body width="lg" className="space-y-3">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <ListeningTimeWidget />
           <TotalStreamsWidget />
@@ -49,7 +50,7 @@ export const ListeningPage = () => {
           <ReleaseYearWidget />
           <GenresWidget />
         </div> */}
-      </main>
+      </Pane.Body>
     </Pane>
   );
 };

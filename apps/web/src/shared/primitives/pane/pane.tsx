@@ -1,32 +1,43 @@
-import {
-  Children,
-  isValidElement,
-  type PropsWithChildren,
-  type ReactElement,
-  type ReactNode,
-} from "react";
+import type { ComponentProps } from "react";
 
-import { Actions, Header, Sep, Title } from "./header";
-import { Resizable, type FrameProps } from "./resizable";
-import { Scroll } from "./scroll";
+import { ScrollArea } from "@harmony/ui/components/scroll-area";
+import { cn } from "@harmony/ui/lib/utils";
 
-type RootProps = PropsWithChildren<{
-  layoutId?: string;
-}>;
+const Root = ({ className, ...props }: ComponentProps<"div">) => (
+  <div
+    data-slot="pane"
+    className={cn("flex h-svh min-h-0 flex-col overflow-hidden", className)}
+    {...props}
+  />
+);
 
-const Frame = ({ children }: FrameProps) => children;
+const Header = ({ className, ...props }: ComponentProps<"header">) => (
+  <header
+    data-slot="pane-header"
+    className={cn("flex shrink-0 items-center gap-1 px-4 py-2", className)}
+    {...props}
+  />
+);
 
-const isFrame = (child: ReactNode): child is ReactElement<FrameProps> =>
-  isValidElement(child) && child.type === Frame;
+const Title = ({ className, ...props }: ComponentProps<"h1">) => (
+  <h1 data-slot="pane-title" className={cn("font-semibold tracking-tight", className)} {...props} />
+);
 
-const Root = ({ children, layoutId }: RootProps) => {
-  const frames = Children.toArray(children).filter(isFrame);
+const widths = {
+  full: "",
+  lg: "mx-auto max-w-7xl p-4 pt-0",
+  md: "mx-auto max-w-5xl p-4 pt-0",
+} as const;
 
-  if (frames.length === 0) {
-    return <div>{children}</div>;
-  }
-
-  return <Resizable layoutId={layoutId ?? "harmony:pane-layout:v1"} frames={frames} />;
+type BodyProps = ComponentProps<"div"> & {
+  width?: keyof typeof widths;
 };
 
-export const Pane = Object.assign(Root, { Frame, Header, Title, Sep, Actions, Scroll });
+// Scrolls under a fixed header. `className` styles the content, not the scroller.
+const Body = ({ width = "full", className, ...props }: BodyProps) => (
+  <ScrollArea data-slot="pane-body" className="min-h-0 flex-1 overflow-hidden">
+    <div className={cn("w-full", widths[width], className)} {...props} />
+  </ScrollArea>
+);
+
+export const Pane = Object.assign(Root, { Header, Title, Body });

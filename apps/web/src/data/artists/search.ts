@@ -1,50 +1,51 @@
 import { db } from "@harmony/duckdb";
 
-import type { RankRow } from "../rank";
+import { interactionDateConditions, joinWhere } from "@/data/sql/date-range";
+import { escapeLike } from "@/data/sql/escape";
 
-type ArtistRow = Pick<RankRow, "id" | "name" | "image">;
-
-const escapeSqlLiteral = (value: string): string => {
-  return value.replaceAll("'", "''");
+export type ArtistOption = {
+  id: number;
+  name: string;
+  image: string | null;
+  // Minutes listened in the period.
+  playtime: number;
 };
 
-export const searchArtistsFn = async ({ query }: { query?: string }): Promise<ArtistRow[]> => {
-  const trimmed = query?.trim() ?? "";
+type SearchArgs = {
+  query?: string;
+  from: Date;
+  to: Date;
+};
 
-  if (trimmed === "") {
-    return await db.query<ArtistRow>(`
-      WITH track_stats AS (
-        SELECT
-          i.track_id,
-          SUM(i.ms_played) AS ms_played
-        FROM interactions i
-        GROUP BY i.track_id
-      )
-      SELECT
-        a.id AS id,
-        ANY_VALUE(a.name) AS name,
-        ANY_VALUE(a.image) AS image
+// Artists matching the query, or the most listened to in the period when there is none.
+export const searchArtistsFn = async ({ query, from, to }: SearchArgs): Promise<ArtistOption[]> => {
+  const term = query?.trim() ?? "";
+  const like = `'%${escapeLike(term)}%' ESCAPE '\\'`;
+
+  return await db.query<ArtistOption>(`
+    WITH track_stats AS (
+      SELECT i.track_id, SUM(i.ms_played) AS ms_played
+      FROM interactions i
+      ${joinWhere(interactionDateConditions(from, to))}
+      GROUP BY i.track_id
+    ),
+    artist_stats AS (
+      SELECT u.artist_id AS id, SUM(ts.ms_played) AS ms_played
       FROM track_stats ts
       JOIN tracks t ON t.id = ts.track_id
       CROSS JOIN unnest(t.artists) AS u(artist_id)
-      JOIN artists a ON a.id = u.artist_id
-      GROUP BY a.id
-      ORDER BY SUM(ts.ms_played) DESC, ANY_VALUE(a.name) ASC
-      LIMIT 25
-    `);
-  }
-
-  const escaped = escapeSqlLiteral(trimmed);
-
-  return await db.query<ArtistRow>(`
+      GROUP BY u.artist_id
+    )
     SELECT
       a.id AS id,
       a.name AS name,
-      a.image AS image
+      a.image AS image,
+      ROUND(COALESCE(s.ms_played, 0) / 60000.0)::INTEGER AS playtime
     FROM artists a
-    WHERE a.name ILIKE '%${escaped}%'
-    ORDER BY
-      (a.name ILIKE '${escaped}%') DESC,
+    LEFT JOIN artist_stats s ON s.id = a.id
+    ${term === "" ? "WHERE s.ms_played > 0" : `WHERE a.name ILIKE ${like}`}
+    ORDER BY ${term === "" ? "" : `(a.name ILIKE '${escapeLike(term)}%' ESCAPE '\\') DESC,`}
+      s.ms_played DESC NULLS LAST,
       a.name ASC
     LIMIT 25
   `);

@@ -1,8 +1,8 @@
 import { cn } from "@harmony/ui/lib/utils";
 
-import { Cover } from "@/shared/primitives/cover";
+import { Art } from "@/shared/primitives/art";
+import { Num } from "@/shared/primitives/num";
 import { Rank } from "@/shared/primitives/rank";
-import { Stat } from "@/shared/primitives/stat";
 
 import type { HeroEntityCard as HeroEntityCardData } from "./mock-data";
 
@@ -22,14 +22,14 @@ export const HeroEntityCard = ({ card, className }: HeroEntityCardProps) => {
         className,
       )}
     >
-      <Cover src={card.image} alt={card.name} size="md" />
+      <Art src={card.image} alt={card.name} size="md" />
       <div className="flex w-full items-center justify-between gap-4">
         <div className="flex min-h-9 min-w-0 flex-col justify-center">
           <p className="truncate text-sm font-medium">{card.name}</p>
           <p className="truncate text-xs text-muted-foreground">{card.subtitle}</p>
         </div>
 
-        {card.rank ? <Rank n={card.rank} /> : <Stat value={card.metric} unit="min" size="sm" />}
+        {card.rank ? <Rank n={card.rank} /> : <Num value={card.metric} kind="minutes" size="md" />}
       </div>
     </div>
   );

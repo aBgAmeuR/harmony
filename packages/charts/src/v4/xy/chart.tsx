@@ -21,6 +21,10 @@ export type XYChartProps<TDatum extends Row> = {
   className?: string;
   // Fixed plot margins, use the same value on charts that must line up.
   margin?: number | Partial<ChartMargin>;
+  // Upper bound of the y axis, to share one scale between several charts.
+  yMax?: number;
+  // Called with the x value of the clicked point or bar.
+  onSelect?: (x: string) => void;
   children?: ReactNode;
 };
 
@@ -32,6 +36,8 @@ const Root = <TDatum extends Row>({
   aspectRatio,
   className,
   margin,
+  yMax,
+  onSelect,
   children,
 }: XYChartProps<TDatum>) => {
   const parts = parseParts(children);
@@ -63,8 +69,8 @@ const Root = <TDatum extends Row>({
   );
 
   const definition = useMemo(
-    () => buildXY({ data, x, parts: structure, read, margin }),
-    [data, x, structure, read, margin],
+    () => buildXY({ data, x, parts: structure, read, margin, yMax }),
+    [data, x, structure, read, margin, yMax],
   );
 
   return (
@@ -74,6 +80,7 @@ const Root = <TDatum extends Row>({
       height={height}
       aspectRatio={aspectRatio}
       className={className}
+      onSelectX={onSelect}
     />
   );
 };

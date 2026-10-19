@@ -23,16 +23,17 @@ export const useAppLinkAdapter = (): NavLinkAdapter => {
     isActive: (item) => {
       if (item.external) return false;
 
-      const to = toRelative(item.href);
       const exact = item.href === "/";
 
-      return Boolean(
-        matchRoute({
-          from: "/app/$packageId",
-          to,
-          fuzzy: !exact,
-          includeSearch: false,
-        }),
+      return [item.href, ...(item.also ?? [])].some((href) =>
+        Boolean(
+          matchRoute({
+            from: "/app/$packageId",
+            to: toRelative(href),
+            fuzzy: !exact,
+            includeSearch: false,
+          }),
+        ),
       );
     },
   };

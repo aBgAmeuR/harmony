@@ -3,6 +3,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/
 import { useQuery } from "@tanstack/react-query";
 
 import { trackQueries } from "@/entities/track";
+import { Grid } from "@/shared/primitives/grid";
+import { Section } from "@/shared/primitives/section";
+import { Stat } from "@/shared/primitives/stat";
 import { usePeriod } from "@/shared/scope";
 import { format } from "@/utils/format";
 
@@ -43,35 +46,28 @@ export const HistoryWidget = ({ trackId }: HistoryWidgetProps) => {
   ];
 
   return (
-    <section className="flex flex-col gap-1.5">
-      <p className="text-xs font-normal text-muted-foreground">History</p>
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
-        {rows.map((row, index) => (
-          <div
-            key={row.label}
-            className={`flex items-center justify-between gap-3 px-2.5 py-1.5 ${
-              index < rows.length - 1 ? "border-b border-border" : ""
-            }`}
-          >
-            <span className="shrink-0 text-xs text-muted-foreground">{row.label}</span>
-            <div className="flex min-w-0 items-center justify-end gap-1 text-right">
-              {row.detail ? (
-                <Tooltip>
-                  <TooltipTrigger className="flex items-center gap-1">
-                    <Icon icon={InformationCircleIcon} className="size-2.5 text-muted-foreground" />
-                    <p className="text-xs font-medium">{row.value}</p>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{row.detail}</p>
-                  </TooltipContent>
-                </Tooltip>
-              ) : (
-                <p className="text-xs font-medium">{row.value}</p>
-              )}
-            </div>
-          </div>
+    <Section size="sm">
+      <Section.Title>History</Section.Title>
+      <Grid variant="ruled">
+        {rows.map((row) => (
+          <Stat key={row.label} layout="row">
+            <Stat.Label className="shrink-0">{row.label}</Stat.Label>
+            {row.detail ? (
+              <Tooltip>
+                <TooltipTrigger className="flex items-center gap-1">
+                  <Icon icon={InformationCircleIcon} className="size-2.5 text-muted-foreground" />
+                  <Stat.Value>{row.value}</Stat.Value>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{row.detail}</p>
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Stat.Value>{row.value}</Stat.Value>
+            )}
+          </Stat>
         ))}
-      </div>
-    </section>
+      </Grid>
+    </Section>
   );
 };

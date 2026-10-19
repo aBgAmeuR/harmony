@@ -5,6 +5,7 @@ import { interactionDateConditions, joinWhere } from "@/data/sql/date-range";
 export type TrackOverviewMetrics = {
   streams: number;
   timeListenedMin: number;
+  // Fractions between 0 and 1.
   avgCompletion: number;
   skipRate: number;
 };
@@ -33,19 +34,13 @@ export const trackOverviewFn = async ({
     SELECT
       COUNT(*)::INTEGER AS streams,
       ROUND(SUM(i.ms_played) / 60000.0, 1)::DOUBLE AS time_listened_min,
-      ROUND(
-        100.0 * AVG(
-          LEAST(
-            i.ms_played::DOUBLE / NULLIF(t.duration * 1000.0, 0),
-            1.0
-          )
-        ),
-        1
+      AVG(
+        LEAST(
+          i.ms_played::DOUBLE / NULLIF(t.duration * 1000.0, 0),
+          1.0
+        )
       )::DOUBLE AS avg_completion,
-      ROUND(
-        100.0 * COUNT(*) FILTER (WHERE i.skipped) / NULLIF(COUNT(*), 0),
-        1
-      )::DOUBLE AS skip_rate
+      (COUNT(*) FILTER (WHERE i.skipped) / NULLIF(COUNT(*), 0))::DOUBLE AS skip_rate
     FROM interactions i
     INNER JOIN tracks t ON t.id = i.track_id
     ${joinWhere(conditions)}

@@ -1,8 +1,8 @@
+import { Spinner } from "@harmony/ui/components/spinner";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 
 import "./index.css";
 import { queryClient } from "@/app/query-client";
-import { Loader } from "@/shared/primitives/loader";
 
 import { routeTree } from "./routeTree.gen";
 
@@ -11,7 +11,11 @@ export const getRouter = () => {
     routeTree,
     defaultPreloadStaleTime: 1000 * 60 * 60, // 1h
     context: { queryClient },
-    defaultPendingComponent: () => <Loader />,
+    defaultPendingComponent: () => (
+      <div className="flex h-full items-center justify-center pt-8">
+        <Spinner />
+      </div>
+    ),
     defaultPendingMs: 1000,
     defaultNotFoundComponent: () => <div>Not Found</div>,
     Wrap: ({ children }) => <>{children}</>,

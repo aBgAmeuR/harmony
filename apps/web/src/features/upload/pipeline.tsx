@@ -2,16 +2,9 @@ import type { PipelineStep } from "@harmony/upload";
 
 import { Badge } from "@harmony/ui/components/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/tooltip";
-import { cn } from "@harmony/ui/lib/utils";
 
-import {
-  PipelineItem,
-  PipelineItemDuration,
-  PipelineItemHeader,
-  PipelineItemIcon,
-  PipelineItemLabel,
-  PipelineItemOutput,
-} from "@/shared/primitives/pipeline";
+import { StepOutput } from "@/entities/package";
+import { Steps } from "@/shared/primitives/steps";
 
 type UploadPipelineProps = {
   steps: PipelineStep[];
@@ -44,41 +37,21 @@ const StepProgressBadge = ({ step }: { step: PipelineStep }) => {
 
 export const UploadPipeline = ({ steps, nowTs }: UploadPipelineProps) => {
   return (
-    <div className="flex flex-col gap-px divide-y divide-border/50 overflow-hidden rounded-lg border">
-      {steps.map((step) => {
-        return (
-          <PipelineItem
-            key={step.id}
-            className={cn(
-              "py-2",
-              step.status === "done" && "bg-muted/10",
-              step.status === "running" && "bg-primary/5",
-              step.status === "pending" && "opacity-50",
-            )}
-          >
-            <PipelineItemHeader className="w-full">
-              <PipelineItemIcon status={step.status} />
-              <PipelineItemLabel
-                label={step.label}
-                className={cn(
-                  "me-auto",
-                  step.status === "running" && "font-medium",
-                  step.status === "pending" && "text-muted-foreground",
-                )}
-              />
-              <StepProgressBadge step={step} />
-              <PipelineItemOutput output={step.output} stepId={step.id} />
-              {step.startedAt ? (
-                <PipelineItemDuration
-                  startAt={step.startedAt}
-                  endAt={step.endedAt}
-                  now={step.endedAt ? undefined : nowTs}
-                />
-              ) : null}
-            </PipelineItemHeader>
-          </PipelineItem>
-        );
-      })}
-    </div>
+    <Steps className="bg-transparent">
+      {steps.map((step) => (
+        <Steps.Item key={step.id} status={step.status}>
+          <Steps.Label className="me-auto">{step.label}</Steps.Label>
+          <StepProgressBadge step={step} />
+          <StepOutput output={step.output} stepId={step.id} />
+          {step.startedAt ? (
+            <Steps.Time
+              start={step.startedAt}
+              end={step.endedAt}
+              now={step.endedAt ? undefined : nowTs}
+            />
+          ) : null}
+        </Steps.Item>
+      ))}
+    </Steps>
   );
 };

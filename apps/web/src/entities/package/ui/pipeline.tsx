@@ -1,24 +1,19 @@
 import type { PipelineStep } from "@harmony/upload";
 
-import {
-  PipelineItem,
-  PipelineItemDuration,
-  PipelineItemIcon,
-  PipelineItemLabel,
-  PipelineItemOutput,
-} from "@/shared/primitives/pipeline";
+import { Steps } from "@/shared/primitives/steps";
+
+import { StepOutput } from "./step-output";
 
 export const Pipeline = ({ steps }: { steps: PipelineStep[] }) => {
   return (
-    <div className="divide-y divide-border/50 rounded-lg bg-card">
+    <Steps>
       {steps.map((item) => (
-        <PipelineItem key={item.id}>
-          <PipelineItemIcon status={item.status} />
-          <PipelineItemLabel label={item.label} />
-          <PipelineItemOutput output={item.output} stepId={item.id} />
-          <PipelineItemDuration startAt={item.startedAt} endAt={item.endedAt} />
-        </PipelineItem>
+        <Steps.Item key={item.id} status={item.status}>
+          <Steps.Label>{item.label}</Steps.Label>
+          <StepOutput output={item.output} stepId={item.id} />
+          <Steps.Time start={item.startedAt} end={item.endedAt} />
+        </Steps.Item>
       ))}
-    </div>
+    </Steps>
   );
 };

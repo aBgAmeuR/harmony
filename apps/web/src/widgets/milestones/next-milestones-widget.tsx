@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { Empty } from "@/shared/primitives/empty";
+import { Meter } from "@/shared/primitives/meter";
+import { Section } from "@/shared/primitives/section";
 import { useScope } from "@/shared/scope";
 
 import { milestoneQueries } from "./api";
@@ -11,12 +14,10 @@ export const NextMilestonesWidget = () => {
   const upcoming = data.filter((bar) => !bar.reached);
 
   return (
-    <section className="min-w-0 space-y-3" aria-labelledby="next-milestones">
-      <h2 id="next-milestones" className="text-base font-semibold tracking-tight">
-        Next Milestones
-      </h2>
+    <Section aria-labelledby="next-milestones">
+      <Section.Title id="next-milestones">Next Milestones</Section.Title>
       {upcoming.length === 0 ? (
-        <p className="text-sm text-muted-foreground">You have passed every listed mark.</p>
+        <Empty className="items-start py-0">You have passed every listed mark.</Empty>
       ) : (
         <div className="grid grid-cols-2 gap-4">
           {upcoming.map((bar) => {
@@ -29,20 +30,7 @@ export const NextMilestonesWidget = () => {
                   {` left before `}
                   <span>{target}</span>
                 </p>
-                <div
-                  role="progressbar"
-                  aria-label={label}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={bar.percent}
-                  aria-valuetext={label}
-                  className="h-1 overflow-hidden rounded-md bg-muted"
-                >
-                  <div
-                    className="origin-start h-full bg-primary transition-transform duration-200 ease-out motion-reduce:transition-none"
-                    style={{ transform: `scaleX(${bar.percent / 100})` }}
-                  />
-                </div>
+                <Meter value={bar.percent} size="sm" label={label} />
                 <p className="text-end text-[10px] text-muted-foreground">
                   {formatBarCurrent(bar)} / {formatCount(bar.target)}
                 </p>
@@ -51,6 +39,6 @@ export const NextMilestonesWidget = () => {
           })}
         </div>
       )}
-    </section>
+    </Section>
   );
 };

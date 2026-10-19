@@ -2,18 +2,21 @@ import { AreaChart, BarChart } from "@harmony/charts/v4";
 import { ChartColumnIcon, ChartLineData01Icon, Icon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
 import { Tabs, TabsList, TabsTrigger } from "@harmony/ui/components/tabs";
-import { cn } from "@harmony/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 import type { Totals } from "@/data/overview/kpis";
+import type { Kind } from "@/utils/format";
 
+import { measure } from "@/shared/lib/measure";
+import { Delta } from "@/shared/primitives/delta";
+import { Empty } from "@/shared/primitives/empty";
+import { Stat } from "@/shared/primitives/stat";
+import { Toolbar } from "@/shared/primitives/toolbar";
 import { format } from "@/utils/format";
 
 import { overviewQueries } from "./api";
-import { compareLabel, delta, duration } from "./format";
-import { Delta } from "./ui/delta";
-import { Empty } from "./ui/empty";
+import { compareLabel, delta } from "./format";
 import { useRanges } from "./use-range";
 
 type Key = "minutes" | "streams" | "artists" | "days";
@@ -21,7 +24,7 @@ type Key = "minutes" | "streams" | "artists" | "days";
 type MetricDef = {
   key: Key;
   label: string;
-  value: (totals: Totals) => { value: string; unit?: string };
+  kind: Kind;
   hint: (totals: Totals, days: number) => string;
   // chart values and tooltip unit
   scale: (value: number) => number;
@@ -31,32 +34,28 @@ type MetricDef = {
 const metrics: MetricDef[] = [
   {
     key: "minutes",
-    label: "Listening time",
-    value: (t) => duration(t.minutes),
+    ...measure.playtime,
     hint: (t) => `${(t.minutes / 1440).toFixed(1)} days of non-stop music`,
     scale: (v) => Math.round((v / 60) * 10) / 10,
     suffix: "h",
   },
   {
     key: "streams",
-    label: "Streams",
-    value: (t) => ({ value: format.count(t.streams) }),
+    ...measure.streams,
     hint: (t) => `${format.count(t.streams / Math.max(t.days, 1))} per active day`,
     scale: (v) => v,
     suffix: "",
   },
   {
     key: "artists",
-    label: "Artists",
-    value: (t) => ({ value: format.count(t.artists) }),
+    ...measure.artists,
     hint: (t) => `${format.count(t.tracks)} distinct tracks`,
     scale: (v) => v,
     suffix: "",
   },
   {
     key: "days",
-    label: "Active days",
-    value: (t) => ({ value: format.count(t.days) }),
+    ...measure.days,
     hint: (_, days) => `out of ${format.count(days)} days`,
     scale: (v) => v,
     suffix: "",
@@ -65,7 +64,6 @@ const metrics: MetricDef[] = [
 
 const CURRENT = "var(--chart-1)";
 const PREVIOUS = "color-mix(in srgb, var(--muted-foreground) 55%, transparent)";
-const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
 
 const peakIndex = (values: number[]): number =>
   values.reduce((best, value, i) => (value > (values[best] ?? 0) ? i : best), 0);
@@ -78,7 +76,13 @@ export const KpiChartWidget = () => {
   const [mode, setMode] = useState<"line" | "bar">("line");
 
   if (!data) return <div className="h-96 animate-pulse rounded-lg bg-card" />;
-  if (data.current.totals.streams === 0) return <Empty>No listening in this period.</Empty>;
+  if (data.current.totals.streams === 0) {
+    return (
+      <Empty variant="framed" className="py-10">
+        No listening in this period.
+      </Empty>
+    );
+  }
 
   const def = metrics.find((m) => m.key === key) ?? metrics[0]!;
   const against = compareLabel(data.previous.from, data.previous.to);
@@ -99,57 +103,47 @@ export const KpiChartWidget = () => {
   const tickByLabel = new Map(data.labels.map((label, i) => [label, data.ticks[i] ?? ""]));
   const ticks = monthly ? data.labels.filter((label) => tickByLabel.get(label)) : undefined;
   const tickFormat = monthly ? (label: string) => tickByLabel.get(label) ?? label : undefined;
-  const yFormat = (value: number) => compact.format(value);
+  const yFormat = (value: number) => format.as(value, "compact");
 
   return (
     <section className="flex min-w-0 flex-col">
-      <Tabs value={key} onValueChange={(next) => setKey(next as Key)}>
+      <Tabs value={key} onValueChange={(next: Key) => setKey(next)}>
         <TabsList
           variant="line"
           className="grid h-auto w-full grid-cols-2 gap-x-6 p-0 group-data-horizontal/tabs:h-auto lg:grid-cols-4"
         >
-          {metrics.map((m) => {
-            const active = m.key === key;
-            const { value, unit } = m.value(data.current.totals);
-
-            return (
-              <TabsTrigger
-                key={m.key}
-                value={m.key}
-                className="group/tab h-auto flex-col items-start justify-start gap-1.5 rounded-none px-0 py-4 text-left after:hidden"
-              >
-                <span
-                  className={cn(
-                    "flex items-center gap-1.5 text-sm font-medium transition-colors",
-                    active ? "text-foreground" : "text-muted-foreground",
-                  )}
-                >
-                  {m.label}
-                </span>
-                <div className="flex items-end gap-2">
-                  <span className="flex items-baseline gap-1.5 text-3xl leading-none font-semibold tracking-tighter text-foreground/25 tabular-nums transition-colors group-hover/tab:text-foreground/50 group-data-active/tab:text-foreground md:text-4xl">
-                    {value}
-                    {unit ? (
-                      <span className="text-xl font-medium text-muted-foreground md:text-2xl">
-                        {unit}
-                      </span>
-                    ) : null}
-                  </span>
-                  <Delta
-                    muted={!active}
-                    className="mb-1 text-xs"
-                    value={delta(data.current.totals[m.key], data.previous.totals[m.key])}
-                  />
-                </div>
-              </TabsTrigger>
-            );
-          })}
+          {metrics.map((m) => (
+            <TabsTrigger
+              key={m.key}
+              value={m.key}
+              nativeButton={false}
+              render={<Stat />}
+              className="group/tab h-auto items-start justify-start gap-1.5 rounded-none px-0 py-4 text-left after:hidden"
+            >
+              <Stat.Label className="text-sm font-medium transition-colors group-data-active/tab:text-foreground">
+                {m.label}
+              </Stat.Label>
+              <div className="flex items-end gap-2">
+                <Stat.Value
+                  value={data.current.totals[m.key]}
+                  kind={m.kind}
+                  size="xl"
+                  className="text-foreground/25 transition-colors group-hover/tab:text-foreground/50 group-data-active/tab:text-foreground"
+                />
+                <Delta
+                  tone={m.key === key ? "auto" : "muted"}
+                  className="mb-1"
+                  value={delta(data.current.totals[m.key], data.previous.totals[m.key])}
+                />
+              </div>
+            </TabsTrigger>
+          ))}
         </TabsList>
       </Tabs>
 
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+      <Toolbar className="justify-between gap-x-6 gap-y-3">
         <p className="text-sm text-muted-foreground">{def.hint(data.current.totals, data.days)}</p>
-        <div className="flex items-center gap-1">
+        <Toolbar.End>
           <Button
             variant={compare ? "secondary" : "outline"}
             aria-pressed={compare}
@@ -167,8 +161,8 @@ export const KpiChartWidget = () => {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-        </div>
-      </div>
+        </Toolbar.End>
+      </Toolbar>
 
       <div className="pt-0">
         {mode === "line" ? (

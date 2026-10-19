@@ -10,7 +10,8 @@ export type ListeningChartPoint = {
 export type ListeningDayPart = {
   key: "morning" | "afternoon" | "evening" | "night";
   label: string;
-  percentage: number;
+  // Fraction of the plays, between 0 and 1.
+  share: number;
 };
 
 export type TrackListeningMetrics = {
@@ -132,7 +133,7 @@ export const trackListeningFn = async (
     return {
       key: part.key,
       label: part.label,
-      percentage: totalParts > 0 ? Math.round((value / totalParts) * 100) : 0,
+      share: totalParts > 0 ? value / totalParts : 0,
     };
   });
 
