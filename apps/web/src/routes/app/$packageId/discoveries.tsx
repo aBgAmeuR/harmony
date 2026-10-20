@@ -7,7 +7,7 @@ export const Route = createFileRoute("/app/$packageId/discoveries")({
   ssr: false,
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
     await parentMatchPromise;
-    await loadDiscoveries(queryClient);
+    loadDiscoveries(queryClient);
   },
   component: DiscoveriesPage,
 });

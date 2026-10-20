@@ -24,7 +24,8 @@ export const SessionsStreaksWidget = () => {
 
   const hasStreak = streak !== undefined && streak.longestDays >= 2;
   const hasSessions = sessions !== undefined && sessions.sessions > 0;
-  const noSessions = "No sessions in this range";
+  // A placeholder while the data loads, so "no sessions" is not shown by mistake.
+  const noSessions = sessions === undefined ? "…" : "No sessions in this range";
 
   return (
     <Section aria-labelledby="sessions-and-streaks">
@@ -50,7 +51,7 @@ export const SessionsStreaksWidget = () => {
           <Stat.Label>Longest listening streak</Stat.Label>
           <Stat.Value>{hasStreak ? `${formatCount(streak.longestDays)} days` : "-"}</Stat.Value>
           <Stat.Hint className="text-pretty">
-            {streakCaption(hasStreak ? streak : undefined)}
+            {streak === undefined ? "…" : streakCaption(hasStreak ? streak : undefined)}
           </Stat.Hint>
         </Stat>
       </Grid>

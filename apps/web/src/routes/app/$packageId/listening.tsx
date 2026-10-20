@@ -7,7 +7,7 @@ export const Route = createFileRoute("/app/$packageId/listening")({
   ssr: false,
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
     await parentMatchPromise;
-    await loadListening(queryClient);
+    loadListening(queryClient);
   },
   component: ListeningPage,
 });

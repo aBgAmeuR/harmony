@@ -10,7 +10,7 @@ export const Route = createFileRoute("/app/$packageId/explorer")({
   loaderDeps: ({ search: { tab, sort, q } }) => ({ tab, sort, q }),
   loader: async ({ context: { queryClient }, deps, parentMatchPromise }) => {
     await parentMatchPromise;
-    await loadExplorer(queryClient, deps);
+    loadExplorer(queryClient, deps);
   },
   component: ExplorerPage,
 });

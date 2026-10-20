@@ -8,7 +8,7 @@ import { listeningQueries } from "./api";
 
 export const MonthlyActivityWidget = () => {
   const filter = useScope();
-  const { data = [] } = useQuery(listeningQueries.monthlyActivity.queryOptions(filter));
+  const { data = [], isPending } = useQuery(listeningQueries.monthlyActivity.queryOptions(filter));
 
   return (
     <Card size="sm" className="pb-0.5">
@@ -25,6 +25,7 @@ export const MonthlyActivityWidget = () => {
         <BarChart
           className="aspect-4/1"
           data={data}
+          isLoading={isPending}
           config={{
             value: {
               label: "Time",

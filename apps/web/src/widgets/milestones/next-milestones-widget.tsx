@@ -10,13 +10,13 @@ import { formatBarCurrent, formatCount, nextMilestoneCopy } from "./format";
 
 export const NextMilestonesWidget = () => {
   const filter = useScope();
-  const { data = [] } = useQuery(milestoneQueries.nextMilestones.queryOptions(filter));
+  const { data = [], isPending } = useQuery(milestoneQueries.nextMilestones.queryOptions(filter));
   const upcoming = data.filter((bar) => !bar.reached);
 
   return (
     <Section aria-labelledby="next-milestones">
       <Section.Title id="next-milestones">Next Milestones</Section.Title>
-      {upcoming.length === 0 ? (
+      {!isPending && upcoming.length === 0 ? (
         <Empty className="items-start py-0">You have passed every listed mark.</Empty>
       ) : (
         <div className="grid grid-cols-2 gap-4">

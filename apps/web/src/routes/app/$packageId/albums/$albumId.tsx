@@ -11,7 +11,7 @@ export const Route = createFileRoute("/app/$packageId/albums/$albumId")({
   }),
   loader: async ({ context: { queryClient }, params, parentMatchPromise }) => {
     await parentMatchPromise;
-    await loadAlbum(queryClient, Number(params.albumId));
+    loadAlbum(queryClient, Number(params.albumId));
   },
   component: AlbumPage,
 });
