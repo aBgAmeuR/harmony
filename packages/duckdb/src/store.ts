@@ -2,7 +2,7 @@ import type { AsyncDuckDBConnection } from "@duckdb/duckdb-wasm";
 
 import { create } from "zustand";
 
-import { getDuckDBInstance, registerPackageDatabase } from "./duckdb";
+import { fetchPackageDatabase, getDuckDBInstance } from "./duckdb";
 import { DuckDBError } from "./error";
 
 type DbStatus = "idle" | "loading" | "ready" | "error";
@@ -34,8 +34,12 @@ export const useDbStore = create<DbStore>()((set, get) => ({
       set({ status: "loading", error: null });
 
       try {
-        const db = await getDuckDBInstance();
-        const fileName = await registerPackageDatabase(db, packageId, url);
+        const [db, buffer] = await Promise.all([
+          getDuckDBInstance(),
+          fetchPackageDatabase(packageId, url),
+        ]);
+        const fileName = `${packageId}.duckdb`;
+        await db.registerFileBuffer(fileName, buffer);
         const conn = get().conn ?? (await db.connect());
 
         await conn.query(`USE memory`);

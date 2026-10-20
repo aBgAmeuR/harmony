@@ -47,11 +47,7 @@ export const getDuckDBInstance = async () => {
   return initPromise;
 };
 
-export async function registerPackageDatabase(
-  dbInstance: AsyncDuckDB,
-  packageId: string,
-  url: string,
-) {
+export async function fetchPackageDatabase(packageId: string, url: string) {
   const response = await fetch(url);
   if (!response.ok) {
     if (response.status === 404) {
@@ -60,10 +56,5 @@ export async function registerPackageDatabase(
     throw new DuckDBFetchError(packageId, response.status);
   }
 
-  const buffer = new Uint8Array(await response.arrayBuffer());
-  const fileName = `${packageId}.duckdb`;
-
-  await dbInstance.registerFileBuffer(fileName, buffer);
-
-  return fileName;
+  return new Uint8Array(await response.arrayBuffer());
 }

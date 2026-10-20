@@ -127,9 +127,14 @@
   transform: translateY(0);
   filter: blur(0);
 }
-/* Exit decouples from the stagger: same fade for every line,
-   no Y return, no blur — so the disappearance reads as a
-   single quiet fade instead of a reverse reveal. */
+@starting-style {
+  .t-stagger.is-shown .t-stagger-line {
+    opacity: 0;
+    transform: translateY(var(--stagger-distance));
+    filter: blur(var(--stagger-blur));
+  }
+}
+
 .t-stagger.is-hiding .t-stagger-line {
   opacity: 0;
   transform: translateY(0);

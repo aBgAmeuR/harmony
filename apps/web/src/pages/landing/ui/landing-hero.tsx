@@ -5,7 +5,6 @@ import { Link } from "@tanstack/react-router";
 import { HeroChart } from "./hero-chart";
 import { HeroEntityCard } from "./hero-entity-card";
 import { HERO_ENTITY_CARDS } from "./mock-data";
-import { useStaggerReveal } from "./use-stagger-reveal";
 
 const WaveUnderline = () => {
   return (
@@ -36,10 +35,8 @@ const CARD_FLOAT = [
 ] as const;
 
 export const LandingHero = () => {
-  const { ref, isShown } = useStaggerReveal<HTMLDivElement>({ immediate: true });
-
   return (
-    <div ref={ref} className={cn("t-stagger", isShown && "is-shown")}>
+    <div className="t-stagger is-shown">
       <section className="mx-auto mt-10 flex w-full max-w-xl flex-col px-4 sm:mt-14 sm:px-0">
         <div className="flex flex-col items-start gap-6">
           <div className="flex w-full flex-col gap-3">
