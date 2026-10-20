@@ -15,7 +15,6 @@ import { Table } from "@/shared/primitives/table";
 import type { ExplorerSort } from "./search";
 
 import { PAGE_SIZE } from "./api";
-
 import { ExplorerTrend, type TrendUnit } from "./trend";
 
 type SortHeadProps = {
