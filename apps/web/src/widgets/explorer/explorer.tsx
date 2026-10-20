@@ -68,6 +68,9 @@ export const Explorer = ({ search, onChange, onOpenEntity }: ExplorerProps) => {
   const rows = list.data?.rows ?? [];
   const total = list.data?.total ?? 0;
 
+  const [shown, setShown] = useState(signature);
+  if (list.data && !list.isPlaceholderData && shown !== signature) setShown(signature);
+
   const ids = rows.map((row) => row.id);
   const trends = useQuery(explorerQueries.trends.queryOptions({ by, ids, scope })).data;
   const trendUnit = calendarDaySpan(scope.from, scope.to) < 31 ? "day" : "month";
@@ -167,6 +170,7 @@ export const Explorer = ({ search, onChange, onOpenEntity }: ExplorerProps) => {
             active={active}
             selectedId={tab === "tracks" ? search.track : undefined}
             onOpen={open}
+            version={shown}
           />
         )}
         {rows.length < total ? (

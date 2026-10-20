@@ -34,7 +34,11 @@ const Root = ({
     return (
       <div
         data-slot="meter"
-        className={cn("flex w-full gap-0.5 overflow-hidden rounded-full", sizes[size], className)}
+        className={cn(
+          "flex w-full origin-left animate-grow-x gap-0.5 overflow-hidden rounded-full",
+          sizes[size],
+          className,
+        )}
         {...props}
       >
         {children}
@@ -58,7 +62,7 @@ const Root = ({
     >
       {/* A sliver stays visible for any value above zero. */}
       <div
-        className="h-full rounded-full bg-primary"
+        className="h-full origin-left animate-grow-x rounded-full bg-primary"
         style={{ width: `${value > 0 ? Math.max(pct, 1) : 0}%` }}
       />
     </div>

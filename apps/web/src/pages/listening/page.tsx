@@ -21,7 +21,7 @@ export const ListeningPage = () => {
         </Toolbar.End>
       </Pane.Header>
       <Pane.Body width="lg" className="space-y-3">
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="rise-in grid grid-cols-2 gap-3 lg:grid-cols-4">
           <ListeningTimeWidget />
           <TotalStreamsWidget />
           <ActiveDaysWidget />

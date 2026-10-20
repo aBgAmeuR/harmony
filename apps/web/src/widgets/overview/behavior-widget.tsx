@@ -34,7 +34,7 @@ export const BehaviorWidget = () => {
             </span>
             <span className="text-muted-foreground">played to the end</span>
           </div>
-          <div className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-muted">
+          <div className="flex h-2 origin-left animate-grow-x gap-0.5 overflow-hidden rounded-full bg-muted">
             {segments.map((s) => (
               <div
                 key={s.label}
