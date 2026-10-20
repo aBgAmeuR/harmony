@@ -33,10 +33,9 @@ type BodyProps = ComponentProps<"div"> & {
   width?: keyof typeof widths;
 };
 
-// Scrolls under a fixed header. `className` styles the content, not the scroller.
 const Body = ({ width = "full", className, ...props }: BodyProps) => (
   <ScrollArea data-slot="pane-body" className="min-h-0 flex-1 overflow-hidden">
-    <div className={cn("w-full", widths[width], className)} {...props} />
+    <div className={cn("rise-in w-full", widths[width], className)} {...props} />
   </ScrollArea>
 );
 

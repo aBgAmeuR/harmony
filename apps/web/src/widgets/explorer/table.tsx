@@ -14,6 +14,7 @@ import { Table } from "@/shared/primitives/table";
 
 import type { ExplorerSort } from "./search";
 
+import { PAGE_SIZE } from "./api";
 import { ExplorerTrend, type TrendUnit } from "./trend";
 
 type SortHeadProps = {
@@ -71,7 +72,10 @@ type ExplorerTableProps = {
   active: number;
   selectedId?: number;
   onOpen: (row: ExplorerRow) => void;
+  version: string;
 };
+
+const delay = (index: number) => `${Math.min(index % PAGE_SIZE, 12) * 10}ms`;
 
 export const ExplorerTable = ({
   rows,
@@ -82,6 +86,7 @@ export const ExplorerTable = ({
   active,
   selectedId,
   onOpen,
+  version,
 }: ExplorerTableProps) => {
   const maxPlaytime = Math.max(0, ...rows.map((row) => row.playtime));
   const maxStreams = Math.max(0, ...rows.map((row) => row.streams));
@@ -100,7 +105,7 @@ export const ExplorerTable = ({
           <SortHead sort={sort} value="streams" onSort={onSort} className="w-24 pr-4" />
         </Table.Row>
       </Table.Head>
-      <Table.Body>
+      <Table.Body key={version}>
         {rows.map((row, index) => {
           const points = trends?.[row.id];
 
@@ -111,6 +116,8 @@ export const ExplorerTable = ({
               data-active={index === active ? "" : undefined}
               selected={index === active || row.id === selectedId}
               onSelect={() => onOpen(row)}
+              className="animate-rise-in"
+              style={{ animationDelay: delay(index) }}
             >
               <Table.Cell className="pl-4 text-center">
                 <Rank n={row.rank} />
