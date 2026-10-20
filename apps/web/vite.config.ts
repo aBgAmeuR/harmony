@@ -19,6 +19,8 @@ export default defineConfig(({ command, isPreview }) => ({
   customLogger: logger,
   plugins: [
     nitro({
+      // Served by the Rust server from `.br`/`.gz` siblings (DuckDB wasm is 36 MB raw, 8 MB gzip).
+      compressPublicAssets: { brotli: true, gzip: true },
       devProxy: {
         "/api/**": "http://127.0.0.1:3000",
         "/files/**": "http://127.0.0.1:3000",
@@ -26,8 +28,12 @@ export default defineConfig(({ command, isPreview }) => ({
     }),
     tailwindcss(),
     tanstackStart({
+      // The landing page is prerendered to `index.html` so it shows without waiting for JS.
+      pages: [{ path: "/", prerender: { enabled: true, crawlLinks: false } }],
       spa: {
         enabled: true,
+        // Not "/": that path is taken by the landing page above.
+        maskPath: "/upload",
       },
     }),
     viteReact({ compiler: true }),

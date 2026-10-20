@@ -21,6 +21,7 @@ use domain::ports::Store;
 use http::HttpError;
 use serde::Serialize;
 use tokio::sync::{Notify, watch};
+use tower_http::compression::CompressionLayer;
 use tower_http::services::{ServeDir, ServeFile};
 
 use crate::config::{Config, Files, LogFormat, Lookup, SPA_SHELL_FILE};
@@ -169,13 +170,17 @@ fn routes(app: App, static_dir: Option<&std::path::Path>) -> Router {
         .route("/api/v1/config", get(limits))
         .route("/api/v1/packages", post(upload))
         .route("/api/v1/packages/{id}/stream", get(stream))
-        .route("/files/{name}", get(download))
+        .route(
+            "/files/{name}",
+            get(download).layer(CompressionLayer::new()),
+        )
         .layer(OtelInResponseLayer)
         .layer(OtelAxumLayer::default())
         .route("/health", get(health));
     let router = match static_dir {
         Some(dir) => router
             .route("/api/{*rest}", any(api_not_found))
+            .nest_service("/assets", assets(&dir.join("assets")))
             .fallback_service(spa(dir)),
         None => router,
     };
@@ -183,7 +188,26 @@ fn routes(app: App, static_dir: Option<&std::path::Path>) -> Router {
 }
 
 fn spa(dir: &std::path::Path) -> ServeDir<ServeFile> {
-    ServeDir::new(dir).fallback(ServeFile::new(dir.join(SPA_SHELL_FILE)))
+    ServeDir::new(dir)
+        .precompressed_br()
+        .precompressed_gzip()
+        .fallback(ServeFile::new(dir.join(SPA_SHELL_FILE)))
+}
+
+fn assets(dir: &std::path::Path) -> Router {
+    Router::new()
+        .fallback_service(ServeDir::new(dir).precompressed_br().precompressed_gzip())
+        .layer(axum::middleware::map_response(immutable))
+}
+
+async fn immutable(mut response: Response) -> Response {
+    if response.status().is_success() {
+        response.headers_mut().insert(
+            header::CACHE_CONTROL,
+            HeaderValue::from_static("public, max-age=31536000, immutable"),
+        );
+    }
+    response
 }
 
 async fn api_not_found() -> Response {
@@ -411,7 +435,7 @@ mod tests {
     use adapters::deezer::{Deezer, Mode};
     use adapters::fs::Fs;
     use axum::body::Body;
-    use axum::http::{Request, StatusCode};
+    use axum::http::{Request, StatusCode, header};
     use domain::observe::Progress;
     use domain::ports::Store;
     use tokio::sync::Notify;
@@ -445,13 +469,46 @@ mod tests {
     }
 
     #[test]
-    fn static_dir_serves_the_shell_and_keeps_api_routes() -> Result<(), Box<dyn std::error::Error>>
-    {
+    fn package_files_are_gzipped_on_request() -> Result<(), Box<dyn std::error::Error>> {
+        let root = tempfile::tempdir()?;
+        let data = root.path().join("data");
+        let package = "a".repeat(64 * 1024);
+        let router = routes(app(&data)?, None);
+        std::fs::write(data.join("harmony").join("abc123.duckdb"), &package)?;
+
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()?;
+        let result = runtime.block_on(async {
+            let request = Request::builder()
+                .uri("/files/abc123.duckdb")
+                .header(header::ACCEPT_ENCODING, "gzip")
+                .body(Body::empty())?;
+            let response = router.clone().oneshot(request).await?;
+            assert_eq!(response.status(), StatusCode::OK);
+            assert_eq!(response.headers()[header::CONTENT_ENCODING], "gzip");
+            let gzipped = axum::body::to_bytes(response.into_body(), package.len()).await?;
+            assert!(gzipped.len() < package.len() / 10, "{}", gzipped.len());
+
+            let plain = call(&router, "/files/abc123.duckdb").await?;
+            assert_eq!(plain, (StatusCode::OK, package.clone()));
+            Ok(())
+        });
+        drop(runtime);
+        drop(router);
+        result
+    }
+
+    #[test]
+    fn static_dir_serves_pages_assets_and_keeps_api_routes()
+    -> Result<(), Box<dyn std::error::Error>> {
         let root = tempfile::tempdir()?;
         let public = root.path().join("public");
         std::fs::create_dir_all(public.join("assets"))?;
         std::fs::write(public.join(SPA_SHELL_FILE), "shell")?;
+        std::fs::write(public.join("index.html"), "landing")?;
         std::fs::write(public.join("assets").join("app.js"), "js")?;
+        std::fs::write(public.join("assets").join("app.js.br"), "js-br")?;
 
         // `Deezer` owns a blocking runtime. Drop it only after this runtime ends.
         let router = routes(app(&root.path().join("data"))?, Some(&public));
@@ -460,13 +517,28 @@ mod tests {
             .build()?;
         let result = runtime.block_on(async {
             let page = call(&router, "/").await?;
-            assert_eq!(page, (StatusCode::OK, "shell".to_owned()));
+            assert_eq!(page, (StatusCode::OK, "landing".to_owned()));
 
             let nested = call(&router, "/app/pkg").await?;
             assert_eq!(nested, (StatusCode::OK, "shell".to_owned()));
 
             let asset = call(&router, "/assets/app.js").await?;
             assert_eq!(asset, (StatusCode::OK, "js".to_owned()));
+
+            let request = Request::builder()
+                .uri("/assets/app.js")
+                .header(header::ACCEPT_ENCODING, "br")
+                .body(Body::empty())?;
+            let response = router.clone().oneshot(request).await?;
+            let headers = response.headers();
+            assert_eq!(headers[header::CONTENT_ENCODING], "br");
+            assert_eq!(
+                headers[header::CACHE_CONTROL],
+                "public, max-age=31536000, immutable"
+            );
+
+            let stale = call(&router, "/assets/old.js").await?;
+            assert_eq!(stale.0, StatusCode::NOT_FOUND);
 
             let health = call(&router, "/health").await?;
             assert_eq!(health, (StatusCode::OK, "ok".to_owned()));
