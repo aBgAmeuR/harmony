@@ -11,7 +11,7 @@ export const Route = createFileRoute("/app/$packageId/artists/$artistId")({
   }),
   loader: async ({ context: { queryClient }, params, parentMatchPromise }) => {
     await parentMatchPromise;
-    await loadArtist(queryClient, Number(params.artistId));
+    loadArtist(queryClient, Number(params.artistId));
   },
   component: ArtistPage,
 });

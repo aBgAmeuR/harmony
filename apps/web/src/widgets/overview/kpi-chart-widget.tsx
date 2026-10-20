@@ -1,6 +1,7 @@
 import { AreaChart, BarChart } from "@harmony/charts/v4";
 import { ChartColumnIcon, ChartLineData01Icon, Icon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
+import { Skeleton } from "@harmony/ui/components/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@harmony/ui/components/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -75,7 +76,15 @@ export const KpiChartWidget = () => {
   const [compare, setCompare] = useState(true);
   const [mode, setMode] = useState<"line" | "bar">("line");
 
-  if (!data) return <div className="h-96 animate-pulse rounded-lg bg-card" />;
+  // Same height as the loaded widget: the KPI tabs and toolbar, then the 4:1 chart.
+  if (!data) {
+    return (
+      <div className="flex flex-col gap-8">
+        <Skeleton className="h-24 rounded-lg" />
+        <Skeleton className="aspect-4/1 rounded-lg" />
+      </div>
+    );
+  }
   if (data.current.totals.streams === 0) {
     return (
       <Empty variant="framed" className="py-10">

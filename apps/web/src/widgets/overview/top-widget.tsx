@@ -1,4 +1,5 @@
 import { Card } from "@harmony/ui/components/card";
+import { Skeleton } from "@harmony/ui/components/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
@@ -28,7 +29,7 @@ const config = {
 export const TopWidget = ({ by }: TopWidgetProps) => {
   const { range, full } = useRanges();
   const { title, to, query } = config[by];
-  const { data = [] } = useQuery(query.queryOptions(range));
+  const { data = [], isPending } = useQuery(query.queryOptions(range));
   const { data: overview } = useQuery(overviewQueries.kpis.queryOptions(range, full));
 
   const total = overview?.current.totals.minutes ?? 0;
@@ -57,7 +58,12 @@ export const TopWidget = ({ by }: TopWidgetProps) => {
         </Section.Action>
       </Section.Head>
 
-      {first ? (
+      {isPending ? (
+        <>
+          <Skeleton className="h-16 rounded-lg" />
+          <Skeleton className="h-48 rounded-lg" />
+        </>
+      ) : first ? (
         <Card className="p-0 pr-3">
           <Media size="lg">
             <Media.Art src={first.image} alt={first.name} fallback="initials" />

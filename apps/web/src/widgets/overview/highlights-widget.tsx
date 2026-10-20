@@ -1,4 +1,5 @@
 import { Card } from "@harmony/ui/components/card";
+import { Skeleton } from "@harmony/ui/components/skeleton";
 import { useQuery } from "@tanstack/react-query";
 
 import { Art } from "@/shared/primitives/art";
@@ -16,7 +17,15 @@ export const HighlightsWidget = () => {
   const { range } = useRanges();
   const { data } = useQuery(overviewQueries.highlights.queryOptions(range));
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <Grid cols={4}>
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-22 rounded-lg" />
+        ))}
+      </Grid>
+    );
+  }
 
   const { peakDay, streak, newArtists, replayed } = data;
 

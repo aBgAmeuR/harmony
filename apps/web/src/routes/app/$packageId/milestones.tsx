@@ -7,7 +7,7 @@ export const Route = createFileRoute("/app/$packageId/milestones")({
   ssr: false,
   loader: async ({ context: { queryClient }, parentMatchPromise }) => {
     await parentMatchPromise;
-    await loadMilestones(queryClient);
+    loadMilestones(queryClient);
   },
   component: MilestonesPage,
 });

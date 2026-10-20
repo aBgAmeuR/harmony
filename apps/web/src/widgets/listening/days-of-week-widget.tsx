@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { listeningQueries } from "./api";
 
 export const DaysOfWeekWidget = () => {
-  const { data } = useQuery(listeningQueries.daysOfWeek.queryOptions());
+  const { data, isPending } = useQuery(listeningQueries.daysOfWeek.queryOptions());
 
   const metrics = data?.metrics ?? [];
   const series = data?.data ?? [];
@@ -27,6 +27,7 @@ export const DaysOfWeekWidget = () => {
         <RadarChart
           className="aspect-4/3"
           data={newData}
+          isLoading={isPending}
           config={{
             value: {
               label: "Time",

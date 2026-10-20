@@ -3,14 +3,13 @@ import type { QueryClient } from "@tanstack/react-query";
 import { readScope } from "@/shared/scope";
 import { milestoneQueries } from "@/widgets/milestones/api";
 
-export const loadMilestones = async (queryClient: QueryClient) => {
+// Starts the queries without blocking the navigation: the widgets fill in as data lands.
+export const loadMilestones = (queryClient: QueryClient) => {
   const filter = readScope();
-  await Promise.all([
-    queryClient.ensureQueryData(milestoneQueries.summary.queryOptions(filter)),
-    queryClient.ensureQueryData(milestoneQueries.nextMilestones.queryOptions(filter)),
-    queryClient.ensureQueryData(milestoneQueries.streak.queryOptions(filter)),
-    queryClient.ensureQueryData(milestoneQueries.sessions.queryOptions(filter)),
-    queryClient.ensureQueryData(milestoneQueries.timeline.queryOptions(filter)),
-    queryClient.ensureQueryData(milestoneQueries.firsts.queryOptions(filter)),
-  ]);
+  void queryClient.prefetchQuery(milestoneQueries.summary.queryOptions(filter));
+  void queryClient.prefetchQuery(milestoneQueries.nextMilestones.queryOptions(filter));
+  void queryClient.prefetchQuery(milestoneQueries.streak.queryOptions(filter));
+  void queryClient.prefetchQuery(milestoneQueries.sessions.queryOptions(filter));
+  void queryClient.prefetchQuery(milestoneQueries.timeline.queryOptions(filter));
+  void queryClient.prefetchQuery(milestoneQueries.firsts.queryOptions(filter));
 };
