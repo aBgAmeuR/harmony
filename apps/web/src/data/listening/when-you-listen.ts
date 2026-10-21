@@ -1,8 +1,6 @@
-import type { HeatmapColumn } from "@harmony/charts";
-
 import { db } from "@harmony/duckdb";
 
-import type { WhenYouListenByYear } from "./types";
+import type { ListeningDay, WhenYouListenByYear } from "./types";
 
 type DailyCountRow = {
   date: string | Date;
@@ -29,30 +27,24 @@ const sundayOnOrBefore = (date: Date): Date => {
   return sunday;
 };
 
-const buildYearHeatmap = (year: number, countsByDate: Map<string, number>): HeatmapColumn[] => {
-  const columns: HeatmapColumn[] = [];
-  let weekStart = sundayOnOrBefore(new Date(year, 0, 1));
-  const lastWeekStart = sundayOnOrBefore(new Date(year, 11, 31));
+// Every day of the year, placed in its Sunday-based week column.
+const buildYearHeatmap = (year: number, countsByDate: Map<string, number>): ListeningDay[] => {
+  const days: ListeningDay[] = [];
+  const firstWeek = sundayOnOrBefore(new Date(year, 0, 1));
 
-  for (let week = 0; weekStart <= lastWeekStart; week++) {
-    columns.push({
-      bin: week,
-      bins: Array.from({ length: DAYS_IN_WEEK }, (_, day) => {
-        const date = new Date(weekStart);
-        date.setDate(weekStart.getDate() + day);
-
-        const inYear = date.getFullYear() === year;
-        const count = inYear ? (countsByDate.get(dateKey(date)) ?? 0) : 0;
-
-        return { bin: day, date, count };
-      }),
-    });
-
-    weekStart = new Date(weekStart);
-    weekStart.setDate(weekStart.getDate() + DAYS_IN_WEEK);
+  for (
+    let date = new Date(year, 0, 1);
+    date.getFullYear() === year;
+    date.setDate(date.getDate() + 1)
+  ) {
+    const day = new Date(date);
+    const week = Math.round(
+      (sundayOnOrBefore(day).getTime() - firstWeek.getTime()) / (DAYS_IN_WEEK * 86_400_000),
+    );
+    days.push({ date: day, week, day: day.getDay(), count: countsByDate.get(dateKey(day)) ?? 0 });
   }
 
-  return columns;
+  return days;
 };
 
 const toHeatmapsByYear = (rows: DailyCountRow[]): WhenYouListenByYear => {

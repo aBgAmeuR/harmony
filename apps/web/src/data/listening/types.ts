@@ -1,5 +1,3 @@
-import type { HeatmapColumn } from "@harmony/charts";
-
 export type ListeningHabitTrendPoint = {
   date: Date;
   value: number;
@@ -54,7 +52,15 @@ export type TrackEngagementStage = {
   value: number;
 };
 
-export type WhenYouListenByYear = Record<number, HeatmapColumn[]>;
+// One day of the listening calendar: its Sunday-based week of the year and weekday (0 = Sunday).
+export type ListeningDay = {
+  date: Date;
+  week: number;
+  day: number;
+  count: number;
+};
+
+export type WhenYouListenByYear = Record<number, ListeningDay[]>;
 
 export type ReleaseYearPoint = {
   name: string;

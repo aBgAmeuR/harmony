@@ -1,6 +1,24 @@
-import type { ComponentProps } from "react";
-
-import { AreaChart } from "@harmony/charts/v3";
+import {
+  Chart,
+  areaY,
+  brushX,
+  chartBase,
+  colors,
+  columnGuide,
+  columnTooltip,
+  controlledSignal,
+  curves,
+  decorative,
+  defineChart,
+  fadeGradient,
+  lineY,
+  ruleX,
+  text,
+  xPoint,
+  yValue,
+  type BrushRange,
+  type BrushXChange,
+} from "@harmony/charts/v4";
 import { Icon, UserIcon } from "@harmony/icons";
 import { Card, CardContent, CardHeader, CardTitle } from "@harmony/ui/components/card";
 import {
@@ -12,99 +30,153 @@ import {
   EmptyTitle,
 } from "@harmony/ui/components/empty";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 
 import type { ArtistRelease, WeeklyActivityPoint } from "@/data/discoveries/types";
 
 import { artistQueries } from "@/entities/artist";
 import { ArtistsSelect } from "@/features/pick-artist";
+import { seriesOf } from "@/shared/lib/chart-series";
 import { useScope } from "@/shared/scope";
 
 import { discoveryQueries } from "./api";
 
-const buildReleaseMarkLine = (releases: ArtistRelease[]) => {
-  return {
-    symbol: ["none", "none"],
-    silent: false,
-    animation: false,
-    lineStyle: {
-      color: "#28783e",
-      type: "dashed",
-      width: 1,
-      opacity: 0.75,
-    },
-    label: {
-      show: true,
-      position: "insideEndTop",
-      distance: 4,
-    },
-    data: releases.map((r) => {
-      const raw = r.album.length > 22 ? `${r.album.slice(0, 20).trimEnd()}…` : r.album;
-      const title = raw.replace(/[{}|]/g, "");
-      return {
-        name: r.album,
-        xAxis: r.periodLabel,
-        label: {
-          formatter: () => (r.image ? `{img|}  {title|${title}}` : `{title|${title}}`),
-          rich: {
-            ...(r.image
-              ? {
-                  img: {
-                    width: 14,
-                    height: 14,
-                    borderRadius: 4,
-                    backgroundColor: { image: r.image },
-                  },
-                }
-              : {}),
-            title: {
-              color: "#D9D9D9",
-              fontSize: 10,
-              fontWeight: 500,
-              lineHeight: 14,
-            },
-          },
-        },
-      };
-    }),
-  } satisfies ComponentProps<typeof AreaChart.Area>["markLine"];
-};
+const SERIES = seriesOf("playtime");
+// Stable empty lists, so charts are not rebuilt while the queries load.
+const NO_WEEKS: WeeklyActivityPoint[] = [];
+const NO_RELEASES: ArtistRelease[] = [];
 
-const ListeningVsReleasesChart = ({
-  weekly,
-  releases,
-}: {
+const shortTitle = (album: string) =>
+  album.length > 22 ? `${album.slice(0, 20).trimEnd()}…` : album;
+
+type ChartProps = {
   weekly: WeeklyActivityPoint[];
   releases: ArtistRelease[];
-}) => {
-  const weekNames = new Set(weekly.map((m) => m.name));
-  const chartReleases = releases.filter((r) => weekNames.has(r.periodLabel));
-  const markLine = chartReleases.length > 0 ? buildReleaseMarkLine(chartReleases) : undefined;
+};
+
+// Weeks shown in the main chart, picked with the brush of the overview below it.
+const useWeekRange = (weeks: readonly string[]) => {
+  const [picked, setPicked] = useState<BrushRange<string> | null>(null);
+  const range = useMemo(() => {
+    // a range from another artist or period falls back to every week
+    if (picked && weeks.includes(picked.start) && weeks.includes(picked.end)) return picked;
+    return { start: weeks[0] ?? "", end: weeks.at(-1) ?? "" };
+  }, [picked, weeks]);
+  return [range, setPicked] as const;
+};
+
+const ListeningVsReleasesChart = ({ weekly, releases }: ChartProps) => {
+  const weeks = useMemo(() => weekly.map((week) => week.name), [weekly]);
+  const [range, setRange] = useWeekRange(weeks);
+
+  const detail = useMemo(() => {
+    const from = weeks.indexOf(range.start);
+    const to = weeks.indexOf(range.end);
+    const rows = weekly.slice(Math.min(from, to), Math.max(from, to) + 1);
+    const shown = new Set(rows.map((row) => row.name));
+    const marks = releases.filter((release) => shown.has(release.periodLabel));
+    const top = Math.max(0, ...rows.map((row) => row.value));
+
+    return defineChart({
+      ...chartBase,
+      marks: [
+        decorative(
+          areaY(rows, {
+            id: "area",
+            x: "name",
+            y: "value",
+            fill: "url(#weekly-fade)",
+            curve: curves.monotone,
+          }),
+        ),
+        lineY(rows, {
+          id: "weekly",
+          x: "name",
+          y: "value",
+          z: () => "playtime",
+          curve: curves.monotone,
+          strokeWidth: 1.5,
+        }),
+        // one dashed rule per album release, titled along its top
+        decorative(
+          ruleX(marks, {
+            id: "releases",
+            x: "periodLabel",
+            stroke: "var(--chart-3)",
+            strokeOpacity: 0.75,
+            strokeDasharray: "4 4",
+          }),
+        ),
+        decorative(
+          text(marks, {
+            id: "release-titles",
+            x: "periodLabel",
+            y: () => top,
+            text: (release) => shortTitle(release.album),
+            rotate: -90,
+            anchor: "end",
+            dx: -4,
+            fontSize: 10,
+            fontWeight: 500,
+            fill: colors.muted,
+          }),
+        ),
+        columnGuide(),
+      ],
+      scales: { x: xPoint(), y: { ...yValue(), axis: false } },
+      gradients: [fadeGradient("weekly-fade", colors.primary)],
+      ...columnTooltip(SERIES),
+    });
+  }, [weekly, releases, weeks, range]);
+
+  const overview = useMemo(
+    () =>
+      defineChart({
+        ...chartBase,
+        marks: [
+          areaY(weekly, {
+            id: "overview",
+            x: "name",
+            y: "value",
+            fill: colors.primary,
+            fillOpacity: 0.2,
+            curve: curves.monotone,
+          }),
+        ],
+        scales: { x: xPoint(), y: yValue() },
+        guides: false,
+        margin: 0,
+        // the brush needs weeks to pick from: none while loading or without data
+        controls:
+          weeks.length < 2
+            ? []
+            : [
+                brushX({
+                  range: controlledSignal<BrushRange<string>, BrushXChange<string>>(
+                    range,
+                    (next, { reason }) => {
+                      if (reason.type === "commit") setRange(next);
+                    },
+                  ),
+                  values: weeks,
+                  ariaLabel: "Weeks shown above",
+                  startAriaLabel: "First week",
+                  endAriaLabel: "Last week",
+                }),
+              ],
+      }),
+    [weekly, weeks, range, setRange],
+  );
 
   return (
-    <AreaChart
-      className="aspect-3/1"
-      data={weekly}
-      config={{
-        value: {
-          label: "Time",
-          colors: {
-            light: ["#1db954"],
-          },
-        },
-      }}
-    >
-      <AreaChart.Area
-        dataKey="value"
-        variant="solid"
-        strokeVariant="solid"
-        strokeWidth={1.5}
-        markLine={markLine}
+    <div className="flex flex-col gap-2">
+      <Chart
+        definition={detail}
+        ariaLabel="Weekly listening time with album releases"
+        aspectRatio={3}
       />
-      <AreaChart.XAxis dataKey="name" />
-      <AreaChart.Tooltip suffix="min" />
-      <AreaChart.Grid />
-      <AreaChart.Brush height={48} />
-    </AreaChart>
+      <Chart definition={overview} ariaLabel="Pick the weeks to show" height={48} />
+    </div>
   );
 };
 
@@ -142,10 +214,10 @@ export const WeeklyListeningVsReleasesWidget = () => {
   });
   const artistId = filter.artistId ?? artists[0]?.id;
 
-  const { data: weekly = [] } = useQuery(
+  const { data: weekly = NO_WEEKS } = useQuery(
     discoveryQueries.weeklyActivity.queryOptions({ ...filter, artistId }),
   );
-  const { data: releases = [] } = useQuery(
+  const { data: releases = NO_RELEASES } = useQuery(
     discoveryQueries.artistReleases.queryOptions({ ...filter, artistId }),
   );
 

@@ -1,6 +1,22 @@
 import type { ReactNode } from "react";
 
-import { Area, AreaChart, ChartTooltip } from "@harmony/charts/v2";
+import {
+  Chart,
+  areaY,
+  chartBase,
+  colors,
+  columnGuide,
+  columnTooltip,
+  curves,
+  decorative,
+  defineChart,
+  fold,
+  lineY,
+  seriesColor,
+  xPoint,
+  yValue,
+  type Series,
+} from "@harmony/charts/v4";
 import { ArrowLeft01Icon, ArrowRight01Icon, Cancel01Icon, Icon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
 import { ButtonGroup } from "@harmony/ui/components/button-group";
@@ -9,6 +25,7 @@ import { cn } from "@harmony/ui/lib/utils";
 import { Art } from "@/shared/primitives/art";
 import { Num } from "@/shared/primitives/num";
 import { Spark } from "@/shared/primitives/spark";
+import { format } from "@/utils/format";
 
 import { useStaggerReveal } from "./use-stagger-reveal";
 
@@ -26,6 +43,46 @@ const data = [
   { name: "Nov", "Artist 1": 1010, "Artist 2": 480, "Artist 3": 211 },
   { name: "Dec", "Artist 1": 1023, "Artist 2": 661, "Artist 3": 345 },
 ];
+
+const ARTISTS = ["Artist 1", "Artist 2", "Artist 3"] as const;
+const minutes = (value: number) => format.as(value, "minutes");
+const TREND_SERIES: Series = Object.fromEntries(
+  ARTISTS.map((artist, i) => [
+    artist,
+    { label: artist, color: colors.tiers[i] ?? colors.primary, format: minutes },
+  ]),
+);
+const trends = fold(data, { fields: ARTISTS, as: { key: "artist", value: "minutes" } });
+
+// Each artist's own area from zero: they overlap instead of stacking.
+const TRENDS_CHART = defineChart({
+  ...chartBase,
+  marks: [
+    decorative(
+      areaY(trends, {
+        id: "areas",
+        x: "name",
+        y1: () => 0,
+        y2: "minutes",
+        z: "artist",
+        curve: curves.monotone,
+      }),
+    ),
+    lineY(trends, {
+      id: "lines",
+      x: "name",
+      y: "minutes",
+      z: "artist",
+      curve: curves.monotone,
+      strokeWidth: 2,
+    }),
+    columnGuide(),
+  ],
+  scales: { x: xPoint(), y: { ...yValue(), axis: false } },
+  color: seriesColor(TREND_SERIES),
+  guides: false,
+  ...columnTooltip(TREND_SERIES),
+});
 
 type PodiumEntry = {
   rank: number;
@@ -178,12 +235,11 @@ const PodiumVisual = () => {
 const TrendsVisual = () => {
   return (
     <VisualPanel>
-      <AreaChart className="aspect-auto size-full" data={data} xDataKey="name">
-        <Area dataKey="Artist 1" fill="var(--chart-1)" />
-        <Area dataKey="Artist 2" fill="var(--chart-2)" />
-        <Area dataKey="Artist 3" fill="var(--chart-3)" />
-        <ChartTooltip suffix="min" />
-      </AreaChart>
+      <Chart
+        definition={TRENDS_CHART}
+        ariaLabel="Monthly listening of three artists"
+        className="size-full"
+      />
     </VisualPanel>
   );
 };

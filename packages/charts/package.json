@@ -4,31 +4,16 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.tsx",
-    "./v2": "./src/v2/index.ts",
-    "./v3": "./src/components/evilcharts/index.tsx",
     "./v4": "./src/v4/index.ts"
   },
   "scripts": {
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@number-flow/react": "catalog:ui",
     "@tanstack/charts": "catalog:tanstack",
-    "@visx/event": "catalog:charts",
-    "@visx/grid": "catalog:charts",
-    "@visx/group": "catalog:charts",
-    "@visx/heatmap": "catalog:charts",
-    "@visx/pattern": "catalog:charts",
-    "@visx/responsive": "catalog:charts",
-    "@visx/scale": "catalog:charts",
-    "@visx/shape": "catalog:charts",
     "d3-shape": "catalog:charts",
-    "echarts": "catalog:charts",
-    "motion": "catalog:ui",
     "react": "catalog:react",
-    "react-dom": "catalog:react",
-    "uplot": "catalog:charts"
+    "react-dom": "catalog:react"
   },
   "devDependencies": {
     "@harmony/tsconfig": "workspace:*",

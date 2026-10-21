@@ -1,4 +1,4 @@
-import { defaultPieColors } from "@harmony/charts";
+import { colors } from "@harmony/charts/v4";
 import { Button } from "@harmony/ui/components/button";
 import { cn } from "@harmony/ui/lib/utils";
 import { useState } from "react";
@@ -6,7 +6,7 @@ import { useState } from "react";
 import type { GenreSegment } from "@/data/listening/types";
 
 const segmentColor = (index: number): string => {
-  return defaultPieColors[index % defaultPieColors.length] ?? "var(--chart-1)";
+  return colors.tiers[index % colors.tiers.length] ?? colors.primary;
 };
 
 type GenreSegmentedBarProps = {

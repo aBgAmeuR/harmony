@@ -127,7 +127,4 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
-  .uplot {
-    font-family: inherit !important;
-  }
 }
