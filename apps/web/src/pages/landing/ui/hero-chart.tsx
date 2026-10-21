@@ -1,9 +1,48 @@
-import { AreaChart } from "@harmony/charts/v3";
+import {
+  Chart,
+  areaY,
+  chartBase,
+  colors,
+  curves,
+  defineChart,
+  fadeGradient,
+  lineY,
+  scaleLinear,
+} from "@harmony/charts/v4";
 import { cn } from "@harmony/ui/lib/utils";
 
 import { HERO_CHART_DATA } from "./mock-data";
 
-/** Decorative listening-trend chart via charts/v2 + center fade + glow. */
+// Pure decoration: no guides, no focus, no tooltip.
+const HERO = defineChart({
+  ...chartBase,
+  marks: [
+    areaY(HERO_CHART_DATA, {
+      id: "area",
+      x: "i",
+      y: "value",
+      fill: "url(#hero-fade)",
+      curve: curves.monotone,
+    }),
+    lineY(HERO_CHART_DATA, {
+      id: "line",
+      x: "i",
+      y: "value",
+      stroke: colors.primary,
+      strokeWidth: 2,
+      curve: curves.monotone,
+    }),
+  ],
+  scales: { x: { scale: scaleLinear }, y: { scale: scaleLinear, nice: true } },
+  gradients: [fadeGradient("hero-fade", colors.primary)],
+  guides: false,
+  margin: 0,
+  pointer: false,
+  keyboard: false,
+  focusRing: false,
+});
+
+/** Decorative listening-trend chart + center fade + glow. */
 export const HeroChart = () => {
   return (
     <div className="relative size-full overflow-visible">
@@ -16,21 +55,7 @@ export const HeroChart = () => {
           "mask-radial-from-20% mask-radial-to-80% mask-circle mask-radial-farthest-side mask-radial-at-top",
         )}
       >
-        <AreaChart
-          data={[...HERO_CHART_DATA]}
-          xDataKey="i"
-          className="z-10 aspect-auto! h-full"
-          config={{
-            value: {
-              label: "Value",
-              colors: {
-                light: ["#1db954"],
-              },
-            },
-          }}
-        >
-          <AreaChart.Area dataKey="value" variant="dotted" strokeVariant="solid" strokeWidth={2} />
-        </AreaChart>
+        <Chart definition={HERO} ariaLabel="Listening trend" className="z-10 h-full" />
       </div>
     </div>
   );

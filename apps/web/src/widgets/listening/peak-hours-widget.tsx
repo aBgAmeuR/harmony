@@ -1,10 +1,38 @@
-import { Bar, BarChart, BarXAxis, chartCssVars, ChartTooltip, Grid } from "@harmony/charts";
+import {
+  Chart,
+  barY,
+  chartBase,
+  columnBand,
+  columnTooltip,
+  defineChart,
+  xBand,
+  yValue,
+} from "@harmony/charts/v4";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+
+import { seriesOf } from "@/shared/lib/chart-series";
 
 import { listeningQueries } from "./api";
 
+const SERIES = seriesOf("playtime");
+
 export const PeakHoursWidget = () => {
-  const { data = [] } = useQuery(listeningQueries.peakHours.queryOptions());
+  const { data } = useQuery(listeningQueries.peakHours.queryOptions());
+
+  const definition = useMemo(
+    () =>
+      defineChart({
+        ...chartBase,
+        marks: [
+          barY(data ?? [], { id: "bars", x: "name", y: "value", z: () => "playtime", radius: 2 }),
+          columnBand(),
+        ],
+        scales: { x: xBand(), y: { ...yValue(), axis: false } },
+        ...columnTooltip(SERIES),
+      }),
+    [data],
+  );
 
   return (
     <div className="flex flex-col">
@@ -12,26 +40,11 @@ export const PeakHoursWidget = () => {
         <span className="text-xs text-muted-foreground">Peak Hours</span>
       </div>
       <div className="px-2">
-        <BarChart
-          aspectRatio="2 / 1"
-          barGap={0.1}
-          data={data}
-          margin={{ top: 0, right: 8, bottom: 40, left: 8 }}
-          xDataKey="name"
-        >
-          <Grid horizontal />
-          <Bar dataKey="value" lineCap="butt" />
-          <BarXAxis maxLabels={5} />
-          <ChartTooltip
-            rows={(point) => [
-              {
-                color: chartCssVars.linePrimary,
-                label: "Activity",
-                value: `${point.value?.toLocaleString()} min`,
-              },
-            ]}
-          />
-        </BarChart>
+        <Chart
+          definition={definition}
+          ariaLabel="Listening time by hour of the day"
+          aspectRatio={2}
+        />
       </div>
     </div>
   );

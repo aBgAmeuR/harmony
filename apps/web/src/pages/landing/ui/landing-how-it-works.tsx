@@ -1,6 +1,15 @@
 import type { ReactNode } from "react";
 
-import { BarChart } from "@harmony/charts/v3";
+import {
+  Chart,
+  barY,
+  chartBase,
+  columnBand,
+  columnTooltip,
+  defineChart,
+  xBand,
+  yValue,
+} from "@harmony/charts/v4";
 import { Cancel01Icon, Icon, Loading03Icon, Tick02Icon } from "@harmony/icons";
 import { Badge } from "@harmony/ui/components/badge";
 import { Checkbox } from "@harmony/ui/components/checkbox";
@@ -8,6 +17,7 @@ import { cn } from "@harmony/ui/lib/utils";
 
 import type { Kind } from "@/utils/format";
 
+import { seriesOf } from "@/shared/lib/chart-series";
 import { Art } from "@/shared/primitives/art";
 import { Icons } from "@/shared/primitives/icons";
 import { Num } from "@/shared/primitives/num";
@@ -95,6 +105,16 @@ const LISTENING_DATA = [
   { name: "Nov 2026", value: 35 },
   { name: "Dec 2026", value: 111 },
 ];
+
+const LISTENING_CHART = defineChart({
+  ...chartBase,
+  marks: [
+    barY(LISTENING_DATA, { id: "months", x: "name", y: "value", z: () => "playtime", radius: 2 }),
+    columnBand(),
+  ],
+  scales: { x: xBand(), y: { ...yValue(), grid: false, axis: false } },
+  ...columnTooltip(seriesOf("playtime")),
+});
 
 const SectionLabel = ({ children }: { children: ReactNode }) => {
   return <p className="text-xs font-normal text-muted-foreground">{children}</p>;
@@ -324,30 +344,11 @@ const InsightCard = () => {
       <div className="flex flex-col gap-1.5">
         <SectionLabel>Listening</SectionLabel>
         <div className="rounded-lg border border-border bg-card px-2 pt-1.5">
-          {/* <BarChart className="aspect-7/2" data={LISTENING_DATA} xDataKey="name">
-            <Bar dataKey="value" fill="var(--chart-2)" />
-            <Grid />
-            <XAxis gap={2} />
-            <ChartTooltip suffix="min" />
-          </BarChart> */}
-          <BarChart
-            className="aspect-7/2"
-            data={LISTENING_DATA}
-            xDataKey="name"
-            config={{
-              value: {
-                label: "Month",
-                colors: {
-                  light: ["#1db954"],
-                },
-              },
-            }}
-            barCategoryGap={2}
-          >
-            <BarChart.Bar dataKey="value" />
-            <BarChart.XAxis />
-            <BarChart.Tooltip suffix="min" />
-          </BarChart>
+          <Chart
+            definition={LISTENING_CHART}
+            ariaLabel="Listening time by month"
+            aspectRatio={7 / 2}
+          />
         </div>
       </div>
 
