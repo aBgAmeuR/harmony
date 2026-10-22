@@ -10,6 +10,7 @@ export {
   polar,
   radialArc,
   radialArea,
+  radialBarRadius,
   radialDot,
   radialGrid,
   radialLine,

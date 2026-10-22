@@ -133,9 +133,14 @@ const windowFn = async (range: Range, buckets: Buckets): Promise<Window> => {
   return { from: toSqlDate(range.from), to: toSqlDate(range.to), totals, series };
 };
 
-export const overviewFn = async (range: Range, full: Range = range): Promise<Overview> => {
+// `picked` overrides the bucket unit the range length would choose.
+export const overviewFn = async (
+  range: Range,
+  full: Range = range,
+  picked?: Unit,
+): Promise<Overview> => {
   const prev = previousRange(range, full);
-  const unit = bucketUnit(range);
+  const unit = picked ?? bucketUnit(range);
   const count = bucketCount(range, unit);
 
   const current = buildBuckets(range, unit, count);

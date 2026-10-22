@@ -1,55 +1,42 @@
 import { DateRangeFilter } from "@/features/filter-period";
-import { ArtistsSelect } from "@/features/pick-artist";
+import { Grid } from "@/shared/primitives/grid";
 import { Pane } from "@/shared/primitives/pane";
 import { Toolbar } from "@/shared/primitives/toolbar";
 import { ActiveDaysWidget } from "@/widgets/listening/active-days-widget";
-import { DaysOfWeekWidget } from "@/widgets/listening/days-of-week-widget";
+import { HowYouListenWidget } from "@/widgets/listening/how-you-listen-widget";
+import { ListeningLede } from "@/widgets/listening/lede";
 import { ListeningTimeWidget } from "@/widgets/listening/listening-time-widget";
 import { MonthlyActivityWidget } from "@/widgets/listening/monthly-activity-widget";
+import { ReplaysWidget } from "@/widgets/listening/replays-widget";
+import { RhythmWidget } from "@/widgets/listening/rhythm-widget";
 import { TotalStreamsWidget } from "@/widgets/listening/total-streams-widget";
 import { UniqueTracksWidget } from "@/widgets/listening/unique-tracks-widget";
+import { WhatYouListenWidget } from "@/widgets/listening/what-you-listen-widget";
 
 export const ListeningPage = () => {
   return (
     <Pane>
       <Pane.Header>
         <Pane.Title>Listening Habits</Pane.Title>
-        <Toolbar.Sep />
-        <ArtistsSelect />
         <Toolbar.End>
           <DateRangeFilter />
         </Toolbar.End>
       </Pane.Header>
-      <Pane.Body width="lg" className="space-y-3">
-        <div className="rise-in grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <ListeningTimeWidget />
-          <TotalStreamsWidget />
-          <ActiveDaysWidget />
-          <UniqueTracksWidget />
-          <div className="col-span-2 lg:col-span-3 lg:row-start-2">
-            <MonthlyActivityWidget />
-          </div>
-          <div className="col-span-2 h-full self-start lg:col-span-1 lg:col-start-4 lg:row-start-2">
-            <DaysOfWeekWidget />
-          </div>
+      <Pane.Body width="column" className="space-y-8">
+        <div className="space-y-2">
+          <ListeningLede />
+          <Grid cols={4}>
+            <ListeningTimeWidget />
+            <TotalStreamsWidget />
+            <ActiveDaysWidget />
+            <UniqueTracksWidget />
+          </Grid>
         </div>
-
-        {/* <WhenYouListenWidget /> */}
-
-        {/* <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <PeakHoursWidget />
-          <PlatformsWidget />
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_2fr]">
-          <ListeningStyleWidget />
-          <TrackEngagementWidget />
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <ReleaseYearWidget />
-          <GenresWidget />
-        </div> */}
+        <MonthlyActivityWidget />
+        <RhythmWidget />
+        <HowYouListenWidget />
+        <WhatYouListenWidget />
+        <ReplaysWidget />
       </Pane.Body>
     </Pane>
   );

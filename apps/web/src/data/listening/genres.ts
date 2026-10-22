@@ -1,11 +1,15 @@
 import { db } from "@harmony/duckdb";
 
+import { joinWhere } from "@/data/sql/date-range";
+
 import type { GenreSegment } from "./types";
+
+import { buildListeningFilter, type ListeningRangeParams } from "./listening-filter";
 
 type GenreRow = {
   genre: string;
   value: number;
-  percentage: number;
+  share: number;
 };
 
 const toGenreKey = (label: string, index: number): string => {
@@ -17,7 +21,9 @@ const toGenreKey = (label: string, index: number): string => {
   return slug || `genre_${index}`;
 };
 
-export const genresFn = async (): Promise<GenreSegment[]> => {
+// The five most played album genres, with their share of the plays that have a genre.
+export const genresFn = async (params: ListeningRangeParams): Promise<GenreSegment[]> => {
+  const { conditions } = buildListeningFilter(params);
   const rows = await db.query<GenreRow>(`
     WITH genre_counts AS (
       SELECT
@@ -27,8 +33,7 @@ export const genresFn = async (): Promise<GenreSegment[]> => {
       INNER JOIN tracks t ON t.id = i.track_id
       INNER JOIN albums al ON al.id = t.album_id
       CROSS JOIN unnest(al.genres) AS g(genre)
-      WHERE g.genre IS NOT NULL
-        AND g.genre != ''
+      ${joinWhere([...conditions, "g.genre IS NOT NULL", "g.genre != ''"])}
       GROUP BY g.genre
     ),
     totals AS (
@@ -38,7 +43,7 @@ export const genresFn = async (): Promise<GenreSegment[]> => {
     SELECT
       genre,
       value,
-      ROUND(100.0 * value / NULLIF(totals.total, 0))::INTEGER AS percentage
+      COALESCE(value / NULLIF(totals.total, 0), 0)::DOUBLE AS share
     FROM genre_counts
     CROSS JOIN totals
     ORDER BY value DESC
@@ -49,6 +54,6 @@ export const genresFn = async (): Promise<GenreSegment[]> => {
     key: toGenreKey(row.genre, index),
     label: row.genre,
     value: row.value,
-    percentage: row.percentage,
+    share: row.share,
   }));
 };

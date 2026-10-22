@@ -345,22 +345,34 @@ The system is based on a compact 4px/8px rhythm: {spacing.xs} for toolbar gaps, 
 
 ### Application Shell
 
-The app shell is a fixed two-panel frame. {components.app-sidebar} occupies {spacing.sidebar-expanded} (256px) when expanded and {spacing.sidebar-collapsed} (48px) when collapsed. The main content fills the remaining viewport; catalog routes intentionally avoid centered article widths so tables can use horizontal space. The Listening Habits route is the main exception: it caps dense chart content at a wide analytical measure and uses border rails at very large widths.
+The app shell is a fixed two-panel frame. {components.app-sidebar} occupies {spacing.sidebar-expanded} (256px) when expanded and {spacing.sidebar-collapsed} (48px) when collapsed. The main content fills the remaining viewport. Catalog routes (Explorer, artist and album lists) stay full width so tables can use horizontal space. Insight routes (Overview, Listening Habits, Discoveries, Milestones, artist and album pages, My Package) read as one centered column: `Pane.Body width="column"`, capped at 768px (`max-w-3xl`) with a 16px side gutter.
 
 ### Page Structure
 
 Most package routes follow a two-tier structure:
 
-- A {components.app-header} bar with a page title on the left, optional artist/breadcrumb selector, and a right-aligned toolbar containing Filters, view mode, and date range.
-- A primary content region that is either a {components.catalog-table}, a divided chart grid, an upload pipeline card, or an empty state.
+- A {components.app-header} bar reduced to the page title on the left and the period filter on the right. Page-level filters such as the artist picker sit at the top of the column, in the lede, not in the header.
+- A primary content region that is either a {components.catalog-table}, a column of insight sections, an upload pipeline card, or an empty state.
+- Track details open in the right side panel (sheet); artists and albums open their own page.
 
 ### Grid & Rhythm
 
-Catalog tables use a rank column, a title column with thumbnail and two-line text stack, and right-aligned metric columns. Insight dashboards use bordered widget grids: four metric tiles across on desktop, chart-plus-side-panel rows for mixed data, and simple stacked sections on narrow screens. Dividers are part of the layout language; avoid free-floating cards when a shared grid border can express the same structure.
+Catalog tables use a rank column, a title column with thumbnail and two-line text stack, and right-aligned metric columns.
+
+### Insight Pages
+
+Insight pages are text first and read top to bottom, like a short report:
+
+- A {components.lede} opens the page: a quiet kicker line (dates, page filters), one headline sentence with the key number, and one sentence of context with names and values set in {colors.foreground}.
+- Then a stack of {components.section} blocks, about 48px apart. Each has a title, one {components.insight-sentence} that states what the data shows, then its figure.
+- Each section is composed for its data rather than from a generic widget: a chart with a peak badge and an average line, a {components.split-card} with a large number on one side and a figure on the other, a two-by-two grid of {components.moment-card}, a waffle, a radial clock, a split bar. Vary the composition from one section to the next so the page does not repeat one shape.
+- Figures carry their own annotations (peak badge, average label, median line, "Not yet" hatching for periods without data) instead of legends and option menus. A pill {components.segmented-control} switches the view or the bucket (Day / Week / Month) when a figure has more than one reading.
+- No per-chart menus: no export, copy or show/hide toggles. Hover gives exact values through tooltips, and cards link to the page with the details.
+- Two-column layouts appear only inside a card (for example a heatmap beside its numbers); the page itself stays one column.
 
 ### Whitespace Philosophy
 
-Harmony should feel dense in the way a professional audio tool is dense: lots of signal, little ornament. Use whitespace to separate functional zones, not to create marketing spaciousness. Rows, controls, badges, and headers should stay compact; charts can breathe more because they carry the emotional data story.
+Harmony should feel dense in the way a professional audio tool is dense: lots of signal, little ornament. Use whitespace to separate functional zones, not to create marketing spaciousness. Rows, controls, badges, and headers should stay compact; charts can breathe more because they carry the emotional data story. Catalog screens keep that density; insight pages are calmer, in the spirit of Claude desktop or Notion: one column, a sentence before each figure, generous space between sections, and few controls.
 
 ## Elevation
 
@@ -399,7 +411,21 @@ Use no drop shadow for ordinary dashboard panels, cards, tables, or widgets. Sub
 
 **`card`** - Default contained surface. Background `{colors.surface-card}`, text `{colors.foreground}`, ring or border `{colors.hairline}`, rounded `{rounded.lg}`, padding `{spacing.base}`. Card footers may use `{colors.surface-muted}`. No layout card should cast a visible shadow.
 
-**`chart-panel`** - Insight widget or chart region. Background `{colors.background}` or `{colors.chart-background}`, text `{colors.foreground}`, dividers `{colors.hairline}`, square edges when part of a larger grid, and `{spacing.base}` internal padding. Use green chart tiers instead of unrelated categorical colors.
+**`chart-panel`** - A chart inside a section or a card. Background `{colors.background}` or `{colors.chart-background}`, text `{colors.foreground}`, grid lines at `{colors.hairline}` strength. Tonal greens only: `{colors.chart-1}` for the current series, the peak and the busiest bar; `{colors.chart-2}`/`{colors.chart-3}` for the main group; `{colors.chart-4}`/`{colors.chart-5}` for the quieter rest. A comparison period is a thin dashed line in muted gray. Annotations (peak badge, "Avg" label, median rule) use `{typography.micro}` and stay inside the plot, flipping below a point that sits near the top.
+
+**`lede`** - The opening of an insight page. Kicker in `{typography.body-sm}` muted, headline in `{typography.page-title}` scale (20px, semibold), context sentence in `{typography.body-sm}` muted with emphasized names in `{colors.foreground}`. Loading shows skeleton lines of the same height.
+
+**`section`** - A titled block of an insight page: title in `{typography.body-md}` semibold, then the {components.insight-sentence}, then the figure about 12px below. Sections never draw their own border; spacing separates them.
+
+**`insight-sentence`** - One or two sentences under a section title that say what the figure shows ("Your listening peaked in April at 158 h, 35.7% above your monthly average."). Muted body text with key values in `{colors.foreground}` medium weight. While data loads it is a single skeleton line, never an empty-state message.
+
+**`split-card`** - A {components.card} divided by a hairline into a headline side (a label, a large number at 48px with a smaller unit, a hint) and a figure side. Stacks with a horizontal divider on mobile. Optional footer row of facts in equal columns separated by hairlines.
+
+**`moment-card`** - A highlight in a two-by-two grid: label, value in 18px semibold, hint, a small picture of the moment (calendar heatmap, streak track, dot share, cover with a big count), and a footer link row with a hairline above and an arrow, leading to the page with the details.
+
+**`segmented-control`** - Pill switch for a figure's view or bucket: `{colors.surface-muted}` track, the active option raised with `{colors.foreground}` text, 28px high, labels or 14px icons.
+
+**`kpi-tabs`** - The Overview metric switch: four tabs in a row above the chart card, each with a muted label, the value in 18px and its change against the previous period. The selected tab takes the chart card's surface and ring; the others are transparent with the value in a lighter gray.
 
 **`catalog-table`** - Ranking table for artists, tracks, and albums. Background `{colors.background}`, header band `{colors.surface-muted}`, borders `{colors.hairline}`, type `{typography.body-sm}`. The table is full-width, horizontally scrollable when needed, and optimized for quick scanning.
 
@@ -423,12 +449,12 @@ Use no drop shadow for ordinary dashboard panels, cards, tables, or widgets. Sub
 
 ## Responsive Behavior
 
-| Name    |       Width | Key Changes                                                                                                                                   |
-| ------- | ----------: | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Mobile  |     < 768px | Sidebar becomes a sheet at {spacing.sidebar-mobile}; main content takes full width; tables scroll horizontally; chart grids stack one column. |
-| Tablet  |  768-1024px | Sidebar can persist or collapse; insight widgets move to two-column grids; headers keep toolbar controls compact.                             |
-| Desktop | 1024-1536px | Full {spacing.sidebar-expanded} sidebar, full catalog tables, four-up metric rows, and mixed chart grids.                                     |
-| Wide    |    > 1536px | Listening Habits can cap content width and add side border rails; catalog routes may continue full-width for table legibility.                |
+| Name    |       Width | Key Changes                                                                                                                                             |
+| ------- | ----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mobile  |     < 768px | Sidebar becomes a sheet at {spacing.sidebar-mobile}; the column takes the full width with a 16px gutter; split cards stack; tables scroll horizontally. |
+| Tablet  |  768-1024px | Sidebar can persist or collapse; moment cards and split cards go side by side; headers keep toolbar controls compact.                                   |
+| Desktop | 1024-1536px | Full {spacing.sidebar-expanded} sidebar, full catalog tables, four KPI tabs in a row.                                                                   |
+| Wide    |    > 1536px | Insight pages keep the 768px column centered; catalog routes may continue full width for table legibility.                                              |
 
 ### Touch Targets
 
@@ -440,7 +466,7 @@ Use no drop shadow for ordinary dashboard panels, cards, tables, or widgets. Sub
 
 - Sidebar collapses from {spacing.sidebar-expanded} to {spacing.sidebar-collapsed} on desktop and becomes a {spacing.sidebar-mobile} sheet on mobile.
 - Tables keep their metric alignment and use horizontal overflow rather than wrapping metric cells.
-- Insight dashboards stack by section; dividers remain visible so each chart keeps a clear boundary.
+- Insight pages are already one column; inside cards, side-by-side halves stack with a horizontal hairline.
 - Toolbar clusters should compress by hiding labels before changing color or hierarchy. Preserve the active green state for selected toggles and date/filter affordances.
 - Upload and package status views may use centered narrow cards, but authenticated analytics views should keep the app-shell rhythm.
 
@@ -448,7 +474,7 @@ Use no drop shadow for ordinary dashboard panels, cards, tables, or widgets. Sub
 
 - Motion timing is only partially documented. Existing controls use short transitions and some 200-300ms easing, but the system does not yet define a canonical motion scale.
 - Dark mode is the only documented mode. There is no light theme variant.
-- Success, warning, empty, and skeleton states are not fully extracted beyond destructive red, green progress, and muted empty cards.
+- Success, warning and empty states are not fully extracted beyond destructive red, green progress, and muted empty cards. Skeletons follow one rule on insight pages: the section title stays, the sentence becomes one line, and blocks keep the loaded height.
 - Marketing or public landing pages are not covered in depth; this spec focuses on the authenticated analytics dashboard and upload/package surfaces.
 - Grid mode for catalog views is represented by a toggle but not yet fully specified as a card system.
 - Advanced filters, social comparison, AI personality screens, exports, and settings are navigation promises with limited captured UI, so their component states remain speculative.

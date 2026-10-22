@@ -12,6 +12,8 @@ export type RankRow = {
   name: string;
   description: string | null;
   image: string | null;
+  // The same picture in high resolution, when the catalog has one.
+  cover: string | null;
   streams: number;
   playtime: number;
 };
@@ -29,6 +31,7 @@ const byTrack = ({ artistId, from, to }: Scope) => `
     ANY_VALUE(v.track_name) AS name,
     ANY_VALUE(v.track_artists_description) AS description,
     ANY_VALUE(v.image) AS image,
+    ANY_VALUE(COALESCE(NULLIF(v.image_uri, ''), v.image)) AS cover,
     COUNT(*)::INTEGER AS streams,
     SUM(i.ms_played) / 60000::INTEGER AS playtime
   FROM interactions i
@@ -46,6 +49,7 @@ const byAlbum = ({ artistId, from, to }: Scope) => `
     ANY_VALUE(v.album_title) AS name,
     ANY_VALUE(v.album_artists_description) AS description,
     ANY_VALUE(v.image) AS image,
+    ANY_VALUE(COALESCE(NULLIF(v.image_uri, ''), v.image)) AS cover,
     COUNT(*)::INTEGER AS streams,
     SUM(i.ms_played) / 60000::INTEGER AS playtime
   FROM interactions i
@@ -72,6 +76,7 @@ const byArtist = ({ from, to }: Scope) => `
     ANY_VALUE(a.name) AS name,
     NULL AS description,
     ANY_VALUE(a.image) AS image,
+    ANY_VALUE(COALESCE(NULLIF(a.image_uri, ''), a.image)) AS cover,
     SUM(ts.streams)::INTEGER AS streams,
     (SUM(ts.ms_played) / 60000)::INTEGER AS playtime
   FROM track_stats ts

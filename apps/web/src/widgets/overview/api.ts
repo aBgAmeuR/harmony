@@ -1,9 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import type { Range } from "@/data/overview/range";
+import type { Range, Unit } from "@/data/overview/range";
 
-import { behaviorFn } from "@/data/overview/behavior";
-import { habitsFn } from "@/data/overview/habits";
 import { highlightsFn } from "@/data/overview/highlights";
 import { overviewFn } from "@/data/overview/kpis";
 import { rankFn } from "@/data/rank";
@@ -15,10 +13,10 @@ const key = ({ from, to }: Range) => ({ from: toSqlDate(from), to: toSqlDate(to)
 
 export const overviewQueries = {
   kpis: {
-    queryOptions: (range: Range, full: Range = range) =>
+    queryOptions: (range: Range, full: Range = range, unit?: Unit) =>
       queryOptions({
-        queryKey: ["overview", "kpis", key(range), key(full)],
-        queryFn: () => overviewFn(range, full),
+        queryKey: ["overview", "kpis", key(range), key(full), unit ?? "auto"],
+        queryFn: () => overviewFn(range, full, unit),
       }),
   },
   topArtists: {
@@ -40,20 +38,6 @@ export const overviewQueries = {
       queryOptions({
         queryKey: ["overview", "top-tracks", key(range)],
         queryFn: () => rankFn({ by: "track", scope: range, limit: TOP }),
-      }),
-  },
-  habits: {
-    queryOptions: (range: Range) =>
-      queryOptions({
-        queryKey: ["overview", "habits", key(range)],
-        queryFn: () => habitsFn(range),
-      }),
-  },
-  behavior: {
-    queryOptions: (range: Range) =>
-      queryOptions({
-        queryKey: ["overview", "behavior", key(range)],
-        queryFn: () => behaviorFn(range),
       }),
   },
   highlights: {

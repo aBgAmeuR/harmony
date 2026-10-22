@@ -74,7 +74,7 @@ export const ArtistPage = () => {
           <DateRangeFilter />
         </Toolbar.End>
       </Pane.Header>
-      <Pane.Body width="md" className="flex flex-col gap-4">
+      <Pane.Body width="column" className="flex flex-col gap-6">
         {!isLoading && !artist ? (
           <Empty className="py-8">Artist not found.</Empty>
         ) : (
@@ -102,24 +102,22 @@ export const ArtistPage = () => {
               ))}
             </Grid>
             <Monthly artistId={artistId} />
-            <div className="grid gap-4 lg:grid-cols-2">
-              <Ranking
-                title="Top tracks"
-                rows={tracks}
-                selectedId={trackId}
-                onOpen={(row) => setTrack(row.id)}
-              />
-              <Ranking
-                title="Albums"
-                rows={albums}
-                onOpen={(row) =>
-                  navigate({
-                    to: "/app/$packageId/albums/$albumId",
-                    params: { packageId, albumId: String(row.id) },
-                  })
-                }
-              />
-            </div>
+            <Ranking
+              title="Top tracks"
+              rows={tracks}
+              selectedId={trackId}
+              onOpen={(row) => setTrack(row.id)}
+            />
+            <Ranking
+              title="Albums"
+              rows={albums}
+              onOpen={(row) =>
+                navigate({
+                  to: "/app/$packageId/albums/$albumId",
+                  params: { packageId, albumId: String(row.id) },
+                })
+              }
+            />
           </>
         )}
       </Pane.Body>

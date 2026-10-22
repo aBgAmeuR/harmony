@@ -1,7 +1,7 @@
 import type { ChartGradient } from "@tanstack/charts";
 
 import { d3Curve } from "@tanstack/charts/d3/shape";
-import { curveLinear, curveLinearClosed, curveMonotoneX } from "d3-shape";
+import { curveLinear, curveLinearClosed, curveMonotoneX, curveStepAfter } from "d3-shape";
 
 import { harmonyTheme } from "./theme";
 
@@ -26,6 +26,8 @@ export const formatNumber = (value: number): string => numbers.format(value);
 export const curves = {
   linear: d3Curve(curveLinear),
   monotone: d3Curve(curveMonotoneX),
+  // Each value holds until the next point.
+  step: d3Curve(curveStepAfter),
 } as const;
 
 // Curves of radial marks, which take the D3 factory itself.

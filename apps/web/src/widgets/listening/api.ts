@@ -1,18 +1,18 @@
 import { queryOptions } from "@tanstack/react-query";
 
+import type { OverTimeUnit } from "@/data/listening/types";
+
 import { activeDaysFn } from "@/data/listening/active-days";
-import { daysOfWeekFn } from "@/data/listening/days-of-week";
 import { genresFn } from "@/data/listening/genres";
 import { listeningStyleFn } from "@/data/listening/listening-style";
 import { listeningTimeFn } from "@/data/listening/listening-time";
-import { monthlyActivityFn } from "@/data/listening/monthly-activity";
-import { peakHoursFn } from "@/data/listening/peak-hours";
+import { overTimeFn } from "@/data/listening/over-time";
 import { platformsFn } from "@/data/listening/platforms";
 import { releaseYearFn } from "@/data/listening/release-year";
+import { rhythmFn } from "@/data/listening/rhythm";
 import { totalStreamsFn } from "@/data/listening/total-streams";
 import { trackEngagementFn } from "@/data/listening/track-engagement";
 import { uniqueTracksFn } from "@/data/listening/unique-tracks";
-import { whenYouListenFn } from "@/data/listening/when-you-listen";
 import { Scope } from "@/shared/scope";
 
 export const listeningQueries = {
@@ -44,67 +44,53 @@ export const listeningQueries = {
         queryFn: () => uniqueTracksFn(filter),
       }),
   },
-  monthlyActivity: {
+  overTime: {
+    queryOptions: (filter: Scope, unit: OverTimeUnit) =>
+      queryOptions({
+        queryKey: ["listening", "over-time", filter, unit],
+        queryFn: () => overTimeFn({ ...filter, unit }),
+      }),
+  },
+  rhythm: {
     queryOptions: (filter: Scope) =>
       queryOptions({
-        queryKey: ["listening", "monthly-activity", filter],
-        queryFn: () => monthlyActivityFn(filter),
-      }),
-  },
-  daysOfWeek: {
-    queryOptions: () =>
-      queryOptions({
-        queryKey: ["listening", "days-of-week"],
-        queryFn: () => daysOfWeekFn(),
-      }),
-  },
-  peakHours: {
-    queryOptions: () =>
-      queryOptions({
-        queryKey: ["listening", "peak-hours"],
-        queryFn: () => peakHoursFn(),
+        queryKey: ["listening", "rhythm", filter],
+        queryFn: () => rhythmFn(filter),
       }),
   },
   platforms: {
-    queryOptions: () =>
+    queryOptions: (filter: Scope) =>
       queryOptions({
-        queryKey: ["listening", "platforms"],
-        queryFn: () => platformsFn(),
+        queryKey: ["listening", "platforms", filter],
+        queryFn: () => platformsFn(filter),
       }),
   },
   listeningStyle: {
-    queryOptions: () =>
+    queryOptions: (filter: Scope) =>
       queryOptions({
-        queryKey: ["listening", "listening-style"],
-        queryFn: () => listeningStyleFn(),
+        queryKey: ["listening", "listening-style", filter],
+        queryFn: () => listeningStyleFn(filter),
       }),
   },
   trackEngagement: {
-    queryOptions: () =>
+    queryOptions: (filter: Scope) =>
       queryOptions({
-        queryKey: ["listening", "track-engagement"],
-        queryFn: () => trackEngagementFn(),
-      }),
-  },
-  whenYouListen: {
-    queryOptions: () =>
-      queryOptions({
-        queryKey: ["listening", "when-you-listen"],
-        queryFn: () => whenYouListenFn(),
+        queryKey: ["listening", "track-engagement", filter],
+        queryFn: () => trackEngagementFn(filter),
       }),
   },
   releaseYear: {
-    queryOptions: () =>
+    queryOptions: (filter: Scope) =>
       queryOptions({
-        queryKey: ["listening", "release-year"],
-        queryFn: () => releaseYearFn(),
+        queryKey: ["listening", "release-year", filter],
+        queryFn: () => releaseYearFn(filter),
       }),
   },
   genres: {
-    queryOptions: () =>
+    queryOptions: (filter: Scope) =>
       queryOptions({
-        queryKey: ["listening", "genres"],
-        queryFn: () => genresFn(),
+        queryKey: ["listening", "genres", filter],
+        queryFn: () => genresFn(filter),
       }),
   },
 };

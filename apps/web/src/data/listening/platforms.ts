@@ -1,6 +1,10 @@
 import { db } from "@harmony/duckdb";
 
+import { joinWhere } from "@/data/sql/date-range";
+
 import type { PlatformPoint } from "./types";
+
+import { buildListeningFilter, type ListeningRangeParams } from "./listening-filter";
 
 export const PLATFORM_LABELS: Record<string, string> = {
   android: "Android",
@@ -12,13 +16,15 @@ export const PLATFORM_LABELS: Record<string, string> = {
   not_applicable: "N/A",
 };
 
-export const platformsFn = async (): Promise<PlatformPoint[]> => {
+export const platformsFn = async (params: ListeningRangeParams): Promise<PlatformPoint[]> => {
+  const { artistJoin, conditions } = buildListeningFilter(params);
   const rows = await db.query<{ platform: string; value: number }>(`
     SELECT
       i.platform,
       COUNT(*)::INTEGER AS value
     FROM interactions i
-    WHERE i.platform IS NOT NULL
+    ${artistJoin}
+    ${joinWhere([...conditions, "i.platform IS NOT NULL"])}
     GROUP BY i.platform
     ORDER BY value DESC
   `);

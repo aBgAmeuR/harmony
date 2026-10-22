@@ -10,8 +10,8 @@ export const numSizes = {
   md: { value: "text-sm font-semibold", unit: "text-xs" },
   lg: { value: "text-lg font-semibold", unit: "text-sm" },
   xl: {
-    value: "text-3xl leading-none font-semibold tracking-tighter md:text-4xl",
-    unit: "text-xl font-medium md:text-2xl",
+    value: "text-3xl leading-none font-semibold tracking-tighter",
+    unit: "text-xl font-medium",
   },
 } as const;
 
