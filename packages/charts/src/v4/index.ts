@@ -6,7 +6,7 @@ export { Chart } from "./chart";
 export { chartBase, curves, fadeGradient, formatNumber, polarBase, radialCurves } from "./base";
 export { intensity, intensityColor, intensityLevel, intensityLevels } from "./intensity";
 export { IntensityLegend } from "./intensity-legend";
-export { gridAcross, gridDown, quietAxis, xBand, xPoint, yValue } from "./scales";
+export { edgeTickLabels, gridAcross, gridDown, quietAxis, xBand, xPoint, yValue } from "./scales";
 export {
   columnBand,
   columnGuide,

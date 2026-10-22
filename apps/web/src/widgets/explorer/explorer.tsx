@@ -11,6 +11,7 @@ import type { ExplorerRow } from "@/data/explorer/list";
 
 import { UNKNOWN_ID } from "@/data/explorer/list";
 import { calendarDaySpan } from "@/data/sql/period-range";
+import { ArtistsSelect } from "@/features/pick-artist";
 import { Empty } from "@/shared/primitives/empty";
 import { Pane } from "@/shared/primitives/pane";
 import { Toolbar } from "@/shared/primitives/toolbar";
@@ -106,7 +107,7 @@ export const Explorer = ({ search, onChange, onOpenEntity }: ExplorerProps) => {
 
   return (
     <>
-      <Toolbar className="shrink-0 border-b border-border px-4 pb-2">
+      <Toolbar className="mx-auto w-full max-w-3xl shrink-0 border-b border-border px-4 pb-2">
         <Tabs
           value={tab}
           onValueChange={(next: ExplorerTab) =>
@@ -121,6 +122,7 @@ export const Explorer = ({ search, onChange, onOpenEntity }: ExplorerProps) => {
             ))}
           </TabsList>
         </Tabs>
+        {tab === "artists" ? null : <ArtistsSelect hotkey />}
         <Toolbar.End>
           <div className="relative">
             <Icon
@@ -140,7 +142,7 @@ export const Explorer = ({ search, onChange, onOpenEntity }: ExplorerProps) => {
         </Toolbar.End>
       </Toolbar>
 
-      <Pane.Body>
+      <Pane.Body width="column" className="px-0 pt-0">
         {list.isLoading ? (
           <div className="flex h-32 items-center justify-center">
             <Spinner />

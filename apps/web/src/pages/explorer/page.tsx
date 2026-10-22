@@ -1,11 +1,11 @@
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 
+import type { ExplorerSearch } from "@/widgets/explorer/search";
+
 import { DateRangeFilter } from "@/features/filter-period";
-import { ArtistsSelect } from "@/features/pick-artist";
 import { Pane } from "@/shared/primitives/pane";
 import { Toolbar } from "@/shared/primitives/toolbar";
 import { Explorer } from "@/widgets/explorer/explorer";
-import { DEFAULT_TAB, type ExplorerSearch } from "@/widgets/explorer/search";
 import { TrackSheet } from "@/widgets/track-details/track-sheet";
 
 const FROM = "/app/$packageId/explorer";
@@ -33,12 +33,6 @@ export const ExplorerPage = () => {
     <Pane>
       <Pane.Header>
         <Pane.Title>Explorer</Pane.Title>
-        {(search.tab ?? DEFAULT_TAB) === "artists" ? null : (
-          <>
-            <Toolbar.Sep />
-            <ArtistsSelect hotkey />
-          </>
-        )}
         <Toolbar.End>
           <DateRangeFilter />
         </Toolbar.End>

@@ -8,6 +8,8 @@ import type { Range } from "./range";
 
 export type Highlights = {
   peakDay: { date: string; minutes: number; streams: number } | null;
+  // Minutes of every day in the month of the peak day, days without plays included.
+  peakMonth: { date: string; minutes: number }[];
   streak: { days: number; start: string | null; end: string | null };
   // null when the range starts with the package, where every artist would count as new
   newArtists: number | null;
@@ -58,9 +60,33 @@ export const highlightsFn = async (range: Range): Promise<Highlights> => {
   ]);
 
   const top = replayed[0];
+  const day = peak[0]?.date;
+  const peakMonth = day
+    ? await db.query<{ date: string; minutes: number }>(`
+        WITH days AS (
+          SELECT generate_series::DATE AS d
+          FROM generate_series(
+            date_trunc('month', DATE '${day}')::DATE,
+            (date_trunc('month', DATE '${day}') + INTERVAL 1 MONTH - INTERVAL 1 DAY)::DATE,
+            INTERVAL 1 DAY
+          )
+        ),
+        played AS (
+          SELECT CAST(i.ts AS DATE) AS d, SUM(i.ms_played) / 60000.0 AS minutes
+          FROM interactions i
+          WHERE date_trunc('month', i.ts) = date_trunc('month', DATE '${day}')
+          GROUP BY 1
+        )
+        SELECT days.d::VARCHAR AS date, COALESCE(played.minutes, 0)::DOUBLE AS minutes
+        FROM days
+        LEFT JOIN played ON played.d = days.d
+        ORDER BY days.d
+      `)
+    : [];
 
   return {
     peakDay: peak[0] ?? null,
+    peakMonth,
     streak: { days: streak.longestDays, start: streak.longestStart, end: streak.longestEnd },
     newArtists: fresh[0]?.value ?? null,
     replayed: top

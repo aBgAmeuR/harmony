@@ -1,10 +1,8 @@
 import {
   Chart,
   areaY,
-  barY,
   chartBase,
   colors,
-  columnBand,
   columnGuide,
   columnTooltip,
   curves,
@@ -14,34 +12,33 @@ import {
   fadeGradient,
   fold,
   gridDown,
-  group,
   lineY,
   seriesColor,
-  text,
-  xBand,
   xPoint,
   yValue,
   type Series,
 } from "@harmony/charts/v4";
-import { ChartColumnIcon, ChartLineData01Icon, Icon } from "@harmony/icons";
-import { Button } from "@harmony/ui/components/button";
+import { ArrowRight01Icon, Icon } from "@harmony/icons";
+import { Card } from "@harmony/ui/components/card";
 import { Skeleton } from "@harmony/ui/components/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@harmony/ui/components/tabs";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { useMemo, useRef, useState } from "react";
 
 import type { Overview, Totals } from "@/data/overview/kpis";
+import type { Unit } from "@/data/overview/range";
 import type { Kind } from "@/utils/format";
 
+import { FigureViews } from "@/features/data-figure";
 import { measure } from "@/shared/lib/measure";
 import { Delta } from "@/shared/primitives/delta";
 import { Empty } from "@/shared/primitives/empty";
 import { Stat } from "@/shared/primitives/stat";
-import { Toolbar } from "@/shared/primitives/toolbar";
 import { format } from "@/utils/format";
 
 import { overviewQueries } from "./api";
-import { compareLabel, delta } from "./format";
+import { delta, periodNames } from "./format";
 import { useRanges } from "./use-range";
 
 type Key = "minutes" | "streams" | "artists" | "days";
@@ -50,37 +47,58 @@ type MetricDef = {
   key: Key;
   label: string;
   kind: Kind;
+  // One sentence under the chart.
   hint: (totals: Totals, days: number) => string;
   // Raw units in one chart unit: the chart plots minutes as hours, the tooltip formats raw values.
   unit: number;
+  // The page that tells more, and the words of its link.
+  to: "./listening" | "./artists" | "./milestones";
+  more: string;
 };
 
 const metrics: MetricDef[] = [
   {
     key: "minutes",
     ...measure.playtime,
-    hint: (t) => `${(t.minutes / 1440).toFixed(1)} days of non-stop music`,
+    hint: (t) => `That is ${(t.minutes / 1440).toFixed(1)} days of non-stop music.`,
     unit: 60,
+    to: "./listening",
+    more: "See your listening habits",
   },
   {
     key: "streams",
     ...measure.streams,
-    hint: (t) => `${format.count(t.streams / Math.max(t.days, 1))} per active day`,
+    hint: (t) => `${format.count(t.streams / Math.max(t.days, 1))} streams per active day.`,
     unit: 1,
+    to: "./listening",
+    more: "See your listening habits",
   },
   {
     key: "artists",
     ...measure.artists,
-    hint: (t) => `${format.count(t.tracks)} distinct tracks`,
+    hint: (t) => `Across ${format.count(t.tracks)} distinct tracks.`,
     unit: 1,
+    to: "./artists",
+    more: "Browse your artists",
   },
   {
     key: "days",
     ...measure.days,
-    hint: (_, days) => `out of ${format.count(days)} days`,
+    hint: (t, days) => `You listened on ${format.count(t.days)} of ${format.count(days)} days.`,
     unit: 1,
+    to: "./milestones",
+    more: "See your milestones",
   },
 ];
+
+const UNITS = [
+  { value: "day", label: "Day" },
+  { value: "week", label: "Week" },
+  { value: "month", label: "Month" },
+];
+
+const isUnit = (value: string): value is Unit =>
+  value === "day" || value === "week" || value === "month";
 
 const CURRENT = "var(--chart-1)";
 const PREVIOUS = "color-mix(in srgb, var(--muted-foreground) 55%, transparent)";
@@ -91,13 +109,11 @@ const peakIndex = (values: number[]): number =>
 type KpiChartProps = {
   data: Overview;
   def: MetricDef;
-  against: string;
-  compare: boolean;
+  names: { current: string; previous: string };
 };
 
-// What the line and bar views share: one row per bucket and series, the series, the x ticks and
-// the column tooltip.
-const prepare = ({ data, def, against, compare }: KpiChartProps) => {
+// The period as an area, the one before as a dashed line, and the peak marked.
+const buildChart = ({ data, def, names }: KpiChartProps) => {
   const wide = data.labels.map((label, i) => ({
     label,
     current: (data.current.series[def.key][i] ?? 0) / def.unit,
@@ -106,13 +122,17 @@ const prepare = ({ data, def, against, compare }: KpiChartProps) => {
   const rows = fold(wide, {
     fields: ["current", "previous"] as const,
     as: { key: "series", value: "value" },
-  }).filter((row) => compare || row.series === "current");
+  });
+  const current = rows.filter((row) => row.series === "current");
+  const previous = rows.filter((row) => row.series === "previous");
+  const peak = current[peakIndex(current.map((row) => row.value))];
+  const peaks = peak && peak.value > 0 ? [peak] : [];
 
   // Same text as everywhere else in the app: "51 h 12 m", "1,204".
   const value = (v: number) => format.as(v * def.unit, def.kind);
   const series: Series = {
-    current: { label: def.label, color: CURRENT, format: value },
-    previous: { label: against, color: PREVIOUS, format: value },
+    current: { label: names.current, color: CURRENT, format: value },
+    previous: { label: names.previous, color: PREVIOUS, format: value },
   };
 
   // Weekly buckets only label the first week of each month.
@@ -123,127 +143,151 @@ const prepare = ({ data, def, against, compare }: KpiChartProps) => {
           values: data.labels.filter((label) => tickByLabel.get(label)),
           format: (label: string) => tickByLabel.get(label) ?? label,
         }
-      : {};
+      : data.unit === "day" && data.labels.length > 31
+        ? { values: data.labels.filter((_, i) => i % 30 === 0) }
+        : {};
 
-  return {
-    rows,
-    ticks,
-    spec: {
-      ...chartBase,
-      color: seriesColor(series),
-      ...columnTooltip(series),
-    },
-    y: yValue({ format: (v) => format.as(v, "compact") }),
-  };
-};
-
-const KpiLineChart = ({ data, def, against, compare }: KpiChartProps) => {
-  const definition = useMemo(() => {
-    const { rows, ticks, spec, y } = prepare({ data, def, against, compare });
-    const current = rows.filter((row) => row.series === "current");
-    const previous = rows.filter((row) => row.series === "previous");
-    const peak = current[peakIndex(current.map((row) => row.value))];
-    const peaks = peak ? [peak] : [];
-
-    return defineChart({
-      ...spec,
-      marks: [
-        decorative(
-          areaY(current, {
-            id: "current-area",
-            x: "label",
-            y: "value",
-            fill: "url(#current-fade)",
-            curve: curves.monotone,
-          }),
-        ),
-        // The lines own the points: their color comes from the series.
-        lineY(current, {
-          id: "current",
+  return defineChart({
+    ...chartBase,
+    color: seriesColor(series),
+    ...columnTooltip(series),
+    marks: [
+      decorative(
+        areaY(current, {
+          id: "current-area",
           x: "label",
           y: "value",
-          z: "series",
+          fill: "url(#current-fade)",
           curve: curves.monotone,
+        }),
+      ),
+      lineY(previous, {
+        id: "previous",
+        x: "label",
+        y: "value",
+        z: "series",
+        curve: curves.monotone,
+        strokeWidth: 1,
+        strokeDasharray: "4 4",
+      }),
+      // The current line comes last so it draws over the previous one.
+      lineY(current, {
+        id: "current",
+        x: "label",
+        y: "value",
+        z: "series",
+        curve: curves.monotone,
+        strokeWidth: 2,
+      }),
+      decorative(
+        dot(peaks, {
+          id: "peak",
+          x: "label",
+          y: "value",
+          r: 4,
+          fill: colors.background,
+          stroke: CURRENT,
           strokeWidth: 2,
         }),
-        lineY(previous, {
-          id: "previous",
-          x: "label",
-          y: "value",
-          z: "series",
-          curve: curves.monotone,
-          strokeWidth: 1,
-          strokeDasharray: "4 4",
-        }),
-        decorative(
-          dot(peaks, {
-            id: "peak",
-            x: "label",
-            y: "value",
-            r: 4,
-            fill: CURRENT,
-            stroke: colors.background,
-            strokeWidth: 2,
-          }),
-        ),
-        decorative(
-          text(peaks, {
-            id: "peak-label",
-            x: "label",
-            y: "value",
-            text: (row) => `Peak · ${row.label}`,
-            dy: -14,
-            fontSize: 11,
-            fill: colors.muted,
-          }),
-        ),
-        columnGuide(),
-      ],
-      scales: { x: { ...xPoint(ticks), grid: gridDown }, y },
-      gradients: [fadeGradient("current-fade", CURRENT)],
-    });
-  }, [data, def, against, compare]);
-
-  return <Chart definition={definition} ariaLabel={`${def.label} over time`} aspectRatio={4} />;
+      ),
+      columnGuide(),
+    ],
+    scales: {
+      x: { ...xPoint(data.labels.length > 0 ? ticks : undefined), grid: gridDown },
+      y: yValue({ format: (v) => format.as(v, "compact") }),
+    },
+    gradients: [fadeGradient("current-fade", CURRENT)],
+  });
 };
 
-const KpiBarChart = ({ data, def, against, compare }: KpiChartProps) => {
-  const definition = useMemo(() => {
-    const { rows, ticks, spec, y } = prepare({ data, def, against, compare });
+// Room the peak badge needs above its point, in pixels.
+const BADGE_ROOM = 30;
 
-    return defineChart({
-      ...spec,
-      marks: [
-        barY(rows, {
-          id: "bars",
-          x: "label",
-          y: "value",
-          z: "series",
-          radius: 2,
-          layout: group({ padding: 0.1 }),
-        }),
-        columnBand(),
-      ],
-      scales: { x: { ...xBand(ticks), grid: gridDown }, y },
-    });
-  }, [data, def, against, compare]);
+const KpiChart = ({ data, def, names }: KpiChartProps) => {
+  const definition = useMemo(() => buildChart({ data, def, names }), [data, def, names]);
+  const badge = useRef<HTMLDivElement>(null);
+  const values = data.current.series[def.key];
+  const index = peakIndex(values);
+  const peak = (values[index] ?? 0) > 0 ? data.labels[index] : undefined;
+  const value = format.as(values[index] ?? 0, def.kind);
 
-  return <Chart definition={definition} ariaLabel={`${def.label} over time`} aspectRatio={4} />;
+  // The badge comes first so its ref is set when the chart draws.
+  return (
+    <div className="relative">
+      <div
+        ref={badge}
+        aria-hidden
+        className="pointer-events-none invisible absolute z-10 rounded-md border bg-popover px-1.5 py-0.5 text-[10px] whitespace-nowrap text-muted-foreground tabular-nums"
+      >
+        <span className="font-medium text-foreground">{value}</span> peak
+      </div>
+      <Chart
+        definition={definition}
+        ariaLabel={`${def.label} over time`}
+        aspectRatio={3}
+        onRender={({ scene }) => {
+          const element = badge.current;
+          const { x, y } = scene.scales;
+          if (!element || !x || !y) return;
+          if (!peak) {
+            element.style.visibility = "hidden";
+            return;
+          }
+          const top = y.map((values[index] ?? 0) / def.unit);
+          // Too close to the top, the badge goes under the point instead of being cut.
+          const below = top - BADGE_ROOM < scene.chart.y;
+          // Centered on the point, but kept inside the plot at both ends.
+          const plot = scene.chart;
+          const width = element.offsetWidth;
+          const left = Math.min(
+            Math.max(x.map(peak) - width / 2, plot.x),
+            plot.x + plot.width - width,
+          );
+          element.style.left = `${left}px`;
+          element.style.top = `${top}px`;
+          element.style.transform = below ? "translateY(10px)" : "translateY(calc(-100% - 10px))";
+          element.style.visibility = "visible";
+        }}
+      />
+    </div>
+  );
 };
 
+const Legend = ({ names }: { names: { current: string; previous: string } }) => (
+  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+    <span className="flex items-center gap-1.5">
+      <span aria-hidden className="h-0.5 w-3 rounded-full bg-chart-1" />
+      {names.current}
+    </span>
+    <span className="flex items-center gap-1.5">
+      <span aria-hidden className="w-3 border-t border-dashed border-muted-foreground" />
+      {names.previous}
+    </span>
+  </div>
+);
+
+// The four totals of the period as tabs, each opening its curve against the period before.
 export const KpiChartWidget = () => {
   const { range, full } = useRanges();
-  const { data } = useQuery(overviewQueries.kpis.queryOptions(range, full));
+  const [picked, setPicked] = useState<Unit | undefined>(undefined);
+  const { data } = useQuery({
+    ...overviewQueries.kpis.queryOptions(range, full, picked),
+    // The previous unit stays on screen while the next one loads.
+    placeholderData: keepPreviousData,
+  });
   const [key, setKey] = useState<Key>("minutes");
-  const [compare, setCompare] = useState(true);
-  const [mode, setMode] = useState<"line" | "bar">("line");
+  const names = useMemo(() => periodNames(full), [full]);
 
-  // Same height as the loaded widget: the KPI tabs and toolbar, then the 4:1 chart.
+  // Same height as the loaded widget: the four KPI tabs, then the chart card.
   if (!data) {
     return (
-      <div className="flex flex-col gap-8">
-        <Skeleton className="h-24 rounded-lg" />
-        <Skeleton className="aspect-4/1 rounded-lg" />
+      <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-20 rounded-lg" />
+          ))}
+        </div>
+        <Skeleton className="h-84 rounded-lg" />
       </div>
     );
   }
@@ -256,14 +300,13 @@ export const KpiChartWidget = () => {
   }
 
   const def = metrics.find((m) => m.key === key) ?? metrics[0]!;
-  const against = compareLabel(data.previous.from, data.previous.to);
 
   return (
-    <section className="flex min-w-0 flex-col">
+    <section className="flex min-w-0 flex-col gap-2">
       <Tabs value={key} onValueChange={(next: Key) => setKey(next)}>
         <TabsList
           variant="line"
-          className="grid h-auto w-full grid-cols-2 gap-x-6 p-0 group-data-horizontal/tabs:h-auto lg:grid-cols-4"
+          className="grid h-auto w-full grid-cols-2 gap-2 p-0 group-data-horizontal/tabs:h-auto lg:grid-cols-4"
         >
           {metrics.map((m) => (
             <TabsTrigger
@@ -271,21 +314,20 @@ export const KpiChartWidget = () => {
               value={m.key}
               nativeButton={false}
               render={<Stat />}
-              className="group/tab h-auto items-start justify-start gap-1.5 rounded-none px-0 py-4 text-left after:hidden"
+              className="group/tab h-auto cursor-pointer items-start justify-start gap-2 rounded-lg px-4 py-3 text-left ring-foreground/10 transition-colors after:hidden hover:bg-card/50 data-active:bg-card! data-active:ring-1"
             >
-              <Stat.Label className="text-sm font-medium transition-colors group-data-active/tab:text-foreground">
+              <Stat.Label className="flex items-center gap-1.5 transition-colors group-data-active/tab:text-foreground">
                 {m.label}
               </Stat.Label>
-              <div className="flex items-end gap-2">
+              <div className="flex items-baseline gap-2">
                 <Stat.Value
                   value={data.current.totals[m.key]}
                   kind={m.kind}
                   size="xl"
-                  className="text-foreground/25 transition-colors group-hover/tab:text-foreground/50 group-data-active/tab:text-foreground"
+                  className="text-foreground/75 transition-colors group-hover/tab:text-foreground/70 group-data-active/tab:text-foreground"
                 />
                 <Delta
                   tone={m.key === key ? "auto" : "muted"}
-                  className="mb-1"
                   value={delta(data.current.totals[m.key], data.previous.totals[m.key])}
                 />
               </div>
@@ -294,36 +336,35 @@ export const KpiChartWidget = () => {
         </TabsList>
       </Tabs>
 
-      <Toolbar className="justify-between gap-x-6 gap-y-3">
-        <p className="text-sm text-muted-foreground">{def.hint(data.current.totals, data.days)}</p>
-        <Toolbar.End>
-          <Button
-            variant={compare ? "secondary" : "outline"}
-            aria-pressed={compare}
-            onClick={() => setCompare((current) => !current)}
+      <Card size="xs" className="gap-0">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-3">
+          <Legend names={names} />
+          <FigureViews
+            views={UNITS}
+            value={data.unit}
+            onChange={(next) => {
+              if (isUnit(next)) setPicked(next);
+            }}
+          />
+        </div>
+        <div className="px-4 pt-2 pb-3">
+          <KpiChart data={data} def={def} names={names} />
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-2.5 text-sm">
+          <p className="text-muted-foreground tabular-nums">
+            {def.hint(data.current.totals, data.days)}
+          </p>
+          <Link
+            from="/app/$packageId"
+            to={def.to}
+            preload="intent"
+            className="flex items-center gap-1 text-primary transition-colors hover:text-foreground"
           >
-            Compare
-          </Button>
-          <Tabs value={mode} onValueChange={(next) => setMode(next === "bar" ? "bar" : "line")}>
-            <TabsList className="p-0.5 group-data-horizontal/tabs:h-7">
-              <TabsTrigger value="line" aria-label="Line chart" className="w-6 flex-none px-0">
-                <Icon icon={ChartLineData01Icon} size={14} />
-              </TabsTrigger>
-              <TabsTrigger value="bar" aria-label="Bar chart" className="w-6 flex-none px-0">
-                <Icon icon={ChartColumnIcon} size={14} />
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </Toolbar.End>
-      </Toolbar>
-
-      <div className="pt-0">
-        {mode === "line" ? (
-          <KpiLineChart data={data} def={def} against={against} compare={compare} />
-        ) : (
-          <KpiBarChart data={data} def={def} against={against} compare={compare} />
-        )}
-      </div>
+            {def.more}
+            <Icon icon={ArrowRight01Icon} size={14} />
+          </Link>
+        </div>
+      </Card>
     </section>
   );
 };

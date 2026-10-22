@@ -58,7 +58,7 @@ export const AlbumPage = () => {
           <DateRangeFilter />
         </Toolbar.End>
       </Pane.Header>
-      <Pane.Body width="md" className="flex flex-col gap-4">
+      <Pane.Body width="column" className="flex flex-col gap-6">
         {!isLoading && !album ? (
           <Empty className="py-8">Album not found.</Empty>
         ) : (

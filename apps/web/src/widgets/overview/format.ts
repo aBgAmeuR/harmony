@@ -1,21 +1,9 @@
-import { format } from "@/utils/format";
-
-export const duration = (minutes: number): { value: string; unit: string } =>
-  minutes < 60
-    ? { value: format.count(minutes), unit: "min" }
-    : { value: format.count(minutes / 60), unit: "h" };
-
-export const durationLabel = (minutes: number): string => {
-  const { value, unit } = duration(minutes);
-  return `${value} ${unit}`;
-};
+import { previousRange, type Range } from "@/data/overview/range";
+import { toSqlDate } from "@/data/sql/date-range";
 
 // Relative change vs the previous range, null when there is nothing to compare to.
 export const delta = (current: number, previous: number): number | null =>
   previous > 0 ? (current - previous) / previous : null;
-
-export const percent = (part: number, whole: number): number =>
-  whole > 0 ? Math.round((part / whole) * 100) : 0;
 
 export const shortDate = (value: string): string =>
   new Date(`${value}T00:00:00`).toLocaleDateString("en-US", {
@@ -66,4 +54,13 @@ export const periodWord = (from: Date, to: Date): string => {
     if (from.getMonth() === to.getMonth()) return "this month";
   }
   return "in this period";
+};
+
+// Names of the picked period and of the one it is compared with, such as "2026" and "2025".
+export const periodNames = (full: Range): { current: string; previous: string } => {
+  const previous = previousRange(full, full);
+  return {
+    current: compareLabel(toSqlDate(full.from), toSqlDate(full.to)),
+    previous: compareLabel(toSqlDate(previous.from), toSqlDate(previous.to)),
+  };
 };

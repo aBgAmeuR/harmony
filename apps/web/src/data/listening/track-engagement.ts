@@ -2,6 +2,8 @@ import { db } from "@harmony/duckdb";
 
 import type { TrackEngagementStage } from "./types";
 
+import { buildListeningFilter, type ListeningRangeParams } from "./listening-filter";
+
 type TrackEngagementRow = {
   unique_tracks: number;
   played_twice: number;
@@ -18,15 +20,19 @@ const TRACK_ENGAGEMENT_STAGES = [
   { key: "played_50_plus", label: "Favorites (50+)" },
 ] as const;
 
-export const trackEngagementFn = async (): Promise<TrackEngagementStage[]> => {
+export const trackEngagementFn = async (
+  params: ListeningRangeParams,
+): Promise<TrackEngagementStage[]> => {
+  const { artistJoin, where } = buildListeningFilter(params);
   const [row] = await db.query<TrackEngagementRow>(`
     WITH play_counts AS (
       SELECT
-        track_id,
+        i.track_id,
         COUNT(*)::INTEGER AS plays
       FROM interactions i
-      WHERE i.ts IS NOT NULL
-      GROUP BY track_id
+      ${artistJoin}
+      ${where}
+      GROUP BY i.track_id
     )
     SELECT
       COUNT(*)::INTEGER AS unique_tracks,

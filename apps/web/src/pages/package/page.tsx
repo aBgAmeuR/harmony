@@ -38,6 +38,7 @@ import { useState } from "react";
 import { Pipeline } from "@/entities/package";
 import { packageQueries } from "@/entities/package";
 import { Grid } from "@/shared/primitives/grid";
+import { Pane } from "@/shared/primitives/pane";
 import { Section } from "@/shared/primitives/section";
 import { Stat } from "@/shared/primitives/stat";
 import { format } from "@/utils/format";
@@ -144,53 +145,57 @@ export const PackagePage = () => {
   const missedTracks = missedTrackCount(data.steps);
 
   return (
-    <div className="rise-in mx-auto w-full max-w-3xl space-y-6 p-3 pt-12">
-      <Section size="sm">
-        <Section.Title>Overview</Section.Title>
-        <Grid cols={3}>
-          <Card size="xs">
-            <Stat>
-              <Stat.Label>Total duration</Stat.Label>
-              <Stat.Value>{format.duration(data.totalDurationMs)}</Stat.Value>
-              <Stat.Hint>Started at {format.date(data.startedAt)}</Stat.Hint>
-              <Stat.Aside>
-                <Icon icon={Clock01Icon} className="size-4 text-muted-foreground" />
-              </Stat.Aside>
-            </Stat>
-          </Card>
-          <Card size="xs">
-            <Stat>
-              <Stat.Label>Period</Stat.Label>
-              <Stat.Value>{period ? `${period.days.toLocaleString()} days` : "-"}</Stat.Value>
-              <Stat.Hint>
-                {period
-                  ? `From ${format.date(period.startDate)} to ${format.date(period.endDate)}`
-                  : "No listening history"}
-              </Stat.Hint>
-              <Stat.Aside>
-                <Icon icon={Calendar02Icon} className="size-4 text-muted-foreground" />
-              </Stat.Aside>
-            </Stat>
-          </Card>
-          <Card size="xs">
-            <Stat>
-              <Stat.Label>Missed tracks</Stat.Label>
-              <Stat.Value value={missedTracks} />
-              <Stat.Hint>During track resolution</Stat.Hint>
-              <Stat.Aside>
-                <Icon icon={Alert02FreeIcons} className="size-4 text-muted-foreground" />
-              </Stat.Aside>
-            </Stat>
-          </Card>
-        </Grid>
-      </Section>
+    <Pane>
+      <Pane.Header>
+        <Pane.Title>My Package</Pane.Title>
+      </Pane.Header>
+      <Pane.Body width="column" className="space-y-6">
+        <Section size="sm">
+          <Section.Title>Overview</Section.Title>
+          <Grid cols={3}>
+            <Card size="xs">
+              <Stat>
+                <Stat.Label>Total duration</Stat.Label>
+                <Stat.Value>{format.duration(data.totalDurationMs)}</Stat.Value>
+                <Stat.Hint>Started at {format.date(data.startedAt)}</Stat.Hint>
+                <Stat.Aside>
+                  <Icon icon={Clock01Icon} className="size-4 text-muted-foreground" />
+                </Stat.Aside>
+              </Stat>
+            </Card>
+            <Card size="xs">
+              <Stat>
+                <Stat.Label>Period</Stat.Label>
+                <Stat.Value>{period ? `${period.days.toLocaleString()} days` : "-"}</Stat.Value>
+                <Stat.Hint>
+                  {period
+                    ? `From ${format.date(period.startDate)} to ${format.date(period.endDate)}`
+                    : "No listening history"}
+                </Stat.Hint>
+                <Stat.Aside>
+                  <Icon icon={Calendar02Icon} className="size-4 text-muted-foreground" />
+                </Stat.Aside>
+              </Stat>
+            </Card>
+            <Card size="xs">
+              <Stat>
+                <Stat.Label>Missed tracks</Stat.Label>
+                <Stat.Value value={missedTracks} />
+                <Stat.Hint>During track resolution</Stat.Hint>
+                <Stat.Aside>
+                  <Icon icon={Alert02FreeIcons} className="size-4 text-muted-foreground" />
+                </Stat.Aside>
+              </Stat>
+            </Card>
+          </Grid>
+        </Section>
 
-      <Section size="sm">
-        <Section.Title>Pipeline</Section.Title>
-        <Pipeline steps={data.steps} />
-      </Section>
+        <Section size="sm">
+          <Section.Title>Pipeline</Section.Title>
+          <Pipeline steps={data.steps} />
+        </Section>
 
-      {/* {details?.failure ? (
+        {/* {details?.failure ? (
         <section className="space-y-2">
           <h2 className="mb-3 text-xs font-semibold text-destructive">Failure</h2>
           <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
@@ -199,14 +204,15 @@ export const PackagePage = () => {
         </section>
       ) : null} */}
 
-      <PackageHeaderSection
-        pkg={{
-          fileName: data.fileName,
-          status: data.status,
-          id: data.publicId,
-        }}
-        subtitle={`${format.date(data.createdAt)} • ${format.bytes(data.fileSize)}`}
-      />
-    </div>
+        <PackageHeaderSection
+          pkg={{
+            fileName: data.fileName,
+            status: data.status,
+            id: data.publicId,
+          }}
+          subtitle={`${format.date(data.createdAt)} • ${format.bytes(data.fileSize)}`}
+        />
+      </Pane.Body>
+    </Pane>
   );
 };

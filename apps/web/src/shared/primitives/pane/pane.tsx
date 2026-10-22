@@ -25,8 +25,8 @@ const Title = ({ className, ...props }: ComponentProps<"h1">) => (
 
 const widths = {
   full: "",
-  lg: "mx-auto max-w-7xl p-4 pt-0",
-  md: "mx-auto max-w-5xl p-4 pt-0",
+  // One centered reading column, the same on every page.
+  column: "mx-auto max-w-3xl px-4 pt-4 pb-12",
 } as const;
 
 type BodyProps = ComponentProps<"div"> & {
