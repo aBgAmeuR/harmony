@@ -208,8 +208,8 @@ catalogs:
       version: 21.2.0
   icons:
     '@hugeicons/core-free-icons':
-      specifier: ^1.2.1
-      version: 1.2.1
+      specifier: ^4.3.5
+      version: 4.3.5
     '@hugeicons/react':
       specifier: ^1.1.10
       version: 1.1.10
@@ -554,7 +554,7 @@ importers:
     dependencies:
       '@hugeicons/core-free-icons':
         specifier: catalog:icons
-        version: 1.2.1
+        version: 4.3.5
       '@hugeicons/react':
         specifier: catalog:icons
         version: 1.1.10(react@19.3.1)
@@ -989,8 +989,8 @@ packages:
     peerDependencies:
       hono: ^4
 
-  '@hugeicons/core-free-icons@1.2.1':
-    resolution: {integrity: sha512-ho0QdGMkgL+kt+QsZocCsKvJou1rfyVQWARrxIhNLi+9tCKayUUtD9jlHgioaRphmskSl84TxrDm9Ae0G4Uu1g==}
+  '@hugeicons/core-free-icons@4.3.5':
+    resolution: {integrity: sha512-Sv+NjHRPnQk+yZsGCMcGznCHdTfJR9PMMOEKcJYAQU4gy90dmlc9PwdtvYOImBZIjiheMsTLL5eMn2DmHxUiUg==}
 
   '@hugeicons/react-native@1.0.16':
     resolution: {integrity: sha512-566CkIQPK82oa2Q3sadoNrGgxlsFH7JBz+mXZ8cqelm1o+KFfNhXXgJAII5+OI4nilEBSH2qPQzo9H80uNRUOA==}
@@ -5751,7 +5751,7 @@ snapshots:
     dependencies:
       hono: 4.12.26
 
-  '@hugeicons/core-free-icons@1.2.1': {}
+  '@hugeicons/core-free-icons@4.3.5': {}
 
   '@hugeicons/react-native@1.0.16(react-native-svg@15.15.5(react-native@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(react@19.3.1))(react-native@0.86.0(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(react@19.3.1)':
     dependencies:
