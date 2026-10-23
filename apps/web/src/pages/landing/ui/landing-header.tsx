@@ -1,61 +1,33 @@
-import { Button } from "@harmony/ui/components/button";
+import type { ComponentProps } from "react";
+
+import { cn } from "@harmony/ui/lib/utils";
 import { Link } from "@tanstack/react-router";
 
-import { LandingLogo } from "@/pages/landing/ui/landing-logo";
+import { LandingLogo } from "./landing-logo";
+import { COLUMN } from "./landing-section";
+import { CHANGELOG_URL, DEMO_PACKAGE_ID, DOCS_URL, GITHUB_URL } from "./links";
 
-export const LandingHeader = () => {
-  return (
-    <header className="mx-auto flex h-11 w-full max-w-xl items-center gap-3 px-4 pt-8 sm:px-0">
-      <Link to="/" className="group/logo flex shrink-0 items-center gap-1 outline-none">
-        <LandingLogo />
-        <span className="font-bold tracking-tight text-foreground">Harmony</span>
+const navLink = "rounded-sm text-muted-foreground/70 transition-colors hover:text-foreground";
+
+const External = ({ className, ...props }: ComponentProps<"a">) => (
+  <a target="_blank" rel="noopener noreferrer" className={cn(navLink, className)} {...props} />
+);
+
+export const LandingHeader = () => (
+  <header className={cn(COLUMN, "flex flex-col gap-4")}>
+    <Link to="/" aria-label="Harmony" className="group/logo w-fit rounded-md">
+      <LandingLogo className="size-10" />
+    </Link>
+    <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+      <Link to="/" className="rounded-sm font-medium text-foreground">
+        Harmony
       </Link>
-
-      <nav className="ml-auto flex items-center gap-0.5">
-        <Button
-          nativeButton={false}
-          variant="ghost"
-          className="text-muted-foreground hover:text-foreground"
-          render={
-            <a
-              href="https://github.com/aBgAmeuR/Harmony#readme"
-              target="_blank"
-              rel="noopener noreferrer"
-            />
-          }
-        >
-          Docs
-        </Button>
-        <Button
-          nativeButton={false}
-          variant="ghost"
-          className="text-muted-foreground hover:text-foreground"
-          render={
-            <a
-              href="https://github.com/aBgAmeuR/Harmony/releases"
-              target="_blank"
-              rel="noopener noreferrer"
-            />
-          }
-        >
-          Changelog
-        </Button>
-        <Button
-          nativeButton={false}
-          variant="ghost"
-          className="text-muted-foreground hover:text-foreground"
-          render={
-            <a
-              href="https://github.com/aBgAmeuR/Harmony"
-              target="_blank"
-              rel="noopener noreferrer"
-            />
-          }
-        >
-          GitHub
-        </Button>
-        <Button variant="gradient">Upload</Button>
-      </nav>
-    </header>
-  );
-};
+      <Link to="/app/$packageId" params={{ packageId: DEMO_PACKAGE_ID }} className={navLink}>
+        Demo
+      </Link>
+      <External href={DOCS_URL}>Docs</External>
+      <External href={CHANGELOG_URL}>Changelog</External>
+      <External href={GITHUB_URL}>GitHub</External>
+    </nav>
+  </header>
+);

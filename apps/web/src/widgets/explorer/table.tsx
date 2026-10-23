@@ -56,7 +56,7 @@ type MeasureProps = {
   max: number;
 };
 
-const Measure = ({ row, sort, value, max }: MeasureProps) => (
+export const Measure = ({ row, sort, value, max }: MeasureProps) => (
   <div className="flex flex-col items-end gap-1">
     <Num value={row[value]} kind={measure[value].kind} />
     {sort === value ? <Meter value={row[value]} max={max} size="xs" /> : null}

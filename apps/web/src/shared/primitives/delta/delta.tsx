@@ -6,7 +6,8 @@ const labels = {
   // Relative change, as a fraction: 0.124 is "+12.4%".
   percent: (value: number) => {
     const pct = Math.abs(value * 100);
-    return `${value > 0 ? "+" : value < 0 ? "-" : ""}${pct.toFixed(pct >= 100 ? 0 : 1)}%`;
+    const text = pct.toFixed(pct >= 100 ? 0 : 1).replace(/\.0$/, "");
+    return `${value > 0 ? "+" : value < 0 ? "-" : ""}${text}%`;
   },
   // Places gained (positive) or lost in a ranking.
   places: (value: number) => `${value > 0 ? "▲" : "▼"}${Math.abs(value)}`,
