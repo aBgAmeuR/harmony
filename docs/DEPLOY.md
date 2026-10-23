@@ -2,8 +2,7 @@
 
 Harmony ships as one multi-arch Docker image, `ghcr.io/abgameur/harmony`, built for
 `linux/amd64` and `linux/arm64`. The image contains the API and the built web
-app, and it serves both on port 3000. The project is on a v3 beta line, so tags
-look like `v3.0.0-beta.N`.
+app, and it serves both on port 3000. Releases are tagged `vX.Y.Z`.
 
 This page has two parts: [self-hosting](#self-hosting) for people who run the image,
 and [releases](#releases) for maintainers.
@@ -34,10 +33,20 @@ docker compose up -d
 To change settings, copy [`docker/.env.example`](../docker/.env.example) to `.env`
 next to the compose file and uncomment what you need. Compose reads these variables:
 
-| Variable          | Default  | Purpose                                                         |
-| ----------------- | -------- | --------------------------------------------------------------- |
-| `HARMONY_VERSION` | `latest` | Image tag: `latest`, `v3`, or an exact tag like `v3.0.0-beta.1` |
-| `HARMONY_PORT`    | `3000`   | Port published on the host                                      |
+| Variable          | Default  | Purpose                                  |
+| ----------------- | -------- | ---------------------------------------- |
+| `HARMONY_VERSION` | `latest` | Image tag, see [image tags](#image-tags) |
+| `HARMONY_PORT`    | `3000`   | Port published on the host               |
+
+### Image tags
+
+| Tag          | Points to                                    |
+| ------------ | -------------------------------------------- |
+| `latest`     | Latest stable release                        |
+| `vX`, `vX.Y` | Latest stable release in that major or minor |
+| `vX.Y.Z`     | One exact stable release                     |
+
+Older `v3.0.0-beta.N` tags stay published but no longer receive updates.
 
 Every other variable in that file is passed to the container. The full list of
 server settings, with defaults, is in
@@ -91,12 +100,12 @@ For local development, use `pnpm dev` and not the image. See
 ## Releases
 
 ```text
-pull request -> CI (Web and Server jobs, no image build)
-push to v3   -> semantic-release: GitHub Release and git tag v3.0.0-beta.N
-             -> if a version was published:
-                  build linux/amd64 on ubuntu-24.04 and linux/arm64 on ubuntu-24.04-arm
-                  push each by digest, then one multi-arch manifest tagged
-                  ghcr.io/abgameur/harmony:latest, :v3 and :v3.0.0-beta.N
+pull request   -> CI (Web and Server jobs, no image build)
+push to master -> semantic-release: GitHub Release and git tag vX.Y.Z
+               -> if a version was published:
+                    build linux/amd64 on ubuntu-24.04 and linux/arm64 on ubuntu-24.04-arm
+                    push each by digest, then one multi-arch manifest tagged
+                    :vX.Y.Z, :vX.Y, :vX and :latest
 ```
 
 [`.github/workflows/release.yml`](../.github/workflows/release.yml) runs three jobs:
@@ -107,27 +116,25 @@ digests ([`.github/dependabot.yml`](../.github/dependabot.yml)).
 
 ### Versioning
 
-[`.releaserc.json`](../.releaserc.json) configures semantic-release with Conventional
-Commits. On `v3` it publishes prereleases on the `beta` channel, so versions stay on
-the `3.0.0` line and only the `beta.N` counter moves:
+[`.releaserc.json`](../.releaserc.json) runs semantic-release on `master` with its
+default commit rules:
 
-| Commit                                                                                                   | Effect               |
-| -------------------------------------------------------------------------------------------------------- | -------------------- |
-| `feat`, `fix`, `perf`, `refactor`, `style`, `docs`, `chore`, `build`, `ci`, `test`, or any other message | patch: next `beta.N` |
-| `BREAKING CHANGE` footer or `!` after the type                                                           | major                |
-| `deploy:`                                                                                                | no release           |
-
-To leave beta, remove the `prerelease` and `channel` settings on the `v3` branch in
-`.releaserc.json`.
+| Commit                    | Effect     |
+| ------------------------- | ---------- |
+| `BREAKING CHANGE:` footer | major      |
+| `feat`                    | minor      |
+| `fix`, `perf`             | patch      |
+| Any other type            | no release |
 
 ### Repository prerequisites
 
-- The default `GITHUB_TOKEN` must be allowed to create tags and GitHub Releases on `v3`.
+- The default `GITHUB_TOKEN` must be allowed to create tags and GitHub Releases on
+  `master`.
 - `ghcr.io/abgameur/harmony` must be pullable by the hosts that run it: either make
   the package public, or give them a registry credential with `read:packages`.
 
 ### Checks after a release
 
 - Actions: the **Release** workflow finished all three jobs.
-- GitHub Releases: a new `v3.0.0-beta.N` prerelease with notes generated from the commits.
-- GHCR: `ghcr.io/abgameur/harmony` has that tag, `v3` and `latest`.
+- GitHub Releases: a new release with notes generated from the commits.
+- GHCR: `ghcr.io/abgameur/harmony` has the tags listed in [image tags](#image-tags).
