@@ -1,0 +1,27 @@
+{
+  "name": "@harmony/charts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./v4": "./src/v4/index.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tanstack/charts": "catalog:tanstack",
+    "d3-shape": "catalog:charts",
+    "react": "catalog:react",
+    "react-dom": "catalog:react"
+  },
+  "devDependencies": {
+    "@harmony/tsconfig": "workspace:*",
+    "@harmony/ui": "workspace:*",
+    "@types/d3-shape": "catalog:charts",
+    "@types/node": "catalog:build",
+    "@types/react": "catalog:react",
+    "@types/react-dom": "catalog:react",
+    "typescript": "catalog:build"
+  }
+}

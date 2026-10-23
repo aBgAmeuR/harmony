@@ -1,0 +1,11 @@
+{
+  "name": "@harmony/oxlint",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./oxlint.json": "./oxlint.json"
+  },
+  "scripts": {
+    "lint": "cd ../.. && oxlint -c tooling/oxlint/oxlint.json --ignore-pattern=\"**/routeTree.gen.ts\" ."
+  }
+}

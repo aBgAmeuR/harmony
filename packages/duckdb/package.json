@@ -1,0 +1,23 @@
+{
+  "name": "@harmony/duckdb",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@duckdb/duckdb-wasm": "catalog:duckdb",
+    "apache-arrow": "catalog:duckdb",
+    "zustand": "catalog:app"
+  },
+  "devDependencies": {
+    "@harmony/tsconfig": "workspace:*",
+    "@types/node": "catalog:build",
+    "typescript": "catalog:build",
+    "vite": "catalog:build"
+  }
+}

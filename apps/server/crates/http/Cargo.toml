@@ -1,0 +1,19 @@
+[package]
+# Not `http`: that name collides with crates.io's `http` crate. Cargo then
+# version-qualifies the path dependency in Cargo.lock (`http 0.1.0`), and
+# `cargo chef cook --locked` fails after chef rewrites local versions to 0.0.1.
+name = "harmony-http"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+domain = { path = "../domain" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true

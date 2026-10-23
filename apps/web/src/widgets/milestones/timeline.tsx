@@ -1,0 +1,198 @@
+import { ArrowLeft01Icon, ArrowRight01Icon, Icon } from "@harmony/icons";
+import { Button } from "@harmony/ui/components/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@harmony/ui/components/tooltip";
+import { cn } from "@harmony/ui/lib/utils";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import type { TimelineEvent } from "@/data/milestones/types";
+
+import { Art } from "@/shared/primitives/art";
+import { Empty } from "@/shared/primitives/empty";
+import { Section } from "@/shared/primitives/section";
+
+import { formatMilestoneDate, yearOf } from "./format";
+
+const TimelineSpine = ({ isFirst, isLast }: { isFirst: boolean; isLast: boolean }) => {
+  const hideLine = isFirst && isLast;
+  return (
+    <div className="relative flex h-4 w-full items-center">
+      {hideLine ? null : (
+        <span
+          aria-hidden="true"
+          className={cn(
+            "absolute top-1/2 h-px -translate-y-1/2 bg-border",
+            isFirst
+              ? "inset-s-3 inset-e-0"
+              : isLast
+                ? "inset-s-0 inset-e-[calc(100%-0.75rem)]"
+                : "inset-x-0",
+          )}
+        />
+      )}
+    </div>
+  );
+};
+
+const useHorizontalPager = (itemCount: number) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  const update = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    setCanPrev(el.scrollLeft > 8);
+    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 8);
+  }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => {
+      el.removeEventListener("scroll", update);
+      observer.disconnect();
+    };
+  }, [itemCount, update]);
+
+  const page = (direction: -1 | 1) => {
+    const el = ref.current;
+    if (!el) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollBy({
+      left: direction * Math.max(el.clientWidth * 0.7, 208),
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
+  };
+
+  return { ref, canPrev, canNext, page };
+};
+
+type MilestonesTimelineProps = {
+  rows: TimelineEvent[];
+  // While loading, the empty message stays hidden.
+  isPending?: boolean;
+};
+
+// The milestones in date order on a horizontal strip, paged with the arrows.
+export const MilestonesTimeline = ({ rows, isPending = false }: MilestonesTimelineProps) => {
+  const { ref, canPrev, canNext, page } = useHorizontalPager(rows.length);
+  const showNav = canPrev || canNext;
+  const showYear = rows.map((event, index) => {
+    const year = yearOf(event.date);
+    if (year === null) return false;
+    const previousEvent = rows[index - 1];
+    const previous = previousEvent ? yearOf(previousEvent.date) : null;
+    return year !== previous;
+  });
+
+  const pager = showNav ? (
+    <div className="flex gap-1">
+      <Button
+        type="button"
+        size="icon"
+        variant="secondary"
+        disabled={!canPrev}
+        aria-label="Previous milestones"
+        onClick={() => page(-1)}
+      >
+        <Icon icon={ArrowLeft01Icon} />
+      </Button>
+      <Button
+        type="button"
+        size="icon"
+        variant="secondary"
+        disabled={!canNext}
+        aria-label="Next milestones"
+        onClick={() => page(1)}
+      >
+        <Icon icon={ArrowRight01Icon} />
+      </Button>
+    </div>
+  ) : null;
+
+  if (!isPending && rows.length === 0) {
+    return (
+      <Section aria-labelledby="milestones-timeline">
+        <Section.Title id="milestones-timeline">Milestones timeline</Section.Title>
+        <Empty className="items-start py-0">No milestones in this range.</Empty>
+      </Section>
+    );
+  }
+
+  return (
+    <Section aria-labelledby="milestones-timeline">
+      <Section.Head>
+        <Section.Title id="milestones-timeline">Milestones timeline</Section.Title>
+        <Section.Action>{pager}</Section.Action>
+      </Section.Head>
+      <TooltipProvider delay={80}>
+        <div
+          ref={ref}
+          className="snap-x snap-proximity overflow-x-auto overscroll-x-contain"
+          role="region"
+          aria-label="Milestones timeline"
+        >
+          <ol className="flex w-max min-w-full list-none p-0">
+            {rows.map((event, index) => {
+              const year = yearOf(event.date);
+              const dateValue = event.date.slice(0, 10);
+              const dateLabel = formatMilestoneDate(event.date);
+
+              return (
+                <li key={event.id} className="flex w-52 shrink-0 snap-start flex-col pb-3">
+                  <div className="min-h-7 text-xl font-bold tracking-tight">
+                    {showYear[index] ? year : null}
+                  </div>
+                  <div className="relative w-full">
+                    <TimelineSpine isFirst={index === 0} isLast={index === rows.length - 1} />
+                    <div className="absolute inset-y-0 start-0 flex items-center">
+                      <Tooltip>
+                        <TooltipTrigger
+                          aria-label={`${event.label}, ${dateLabel}`}
+                          className="relative z-1 flex size-6 items-center justify-center rounded-full"
+                        >
+                          <span
+                            className="size-2 rounded-full bg-foreground ring-4 ring-background"
+                            aria-hidden="true"
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <time dateTime={dateValue}>{dateLabel}</time>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </div>
+                  <div className="min-w-0 ps-3">
+                    <p className="truncate text-sm font-medium">{event.label}</p>
+                    {event.entity ? (
+                      <div className="mt-1.5 flex min-w-0 items-center gap-2">
+                        <Art src={event.image} alt={event.entity} />
+                        <div className="min-w-0">
+                          <p className="truncate text-xs">{event.entity}</p>
+                          {event.subtitle ? (
+                            <p className="truncate text-[10px] text-muted-foreground">
+                              {event.subtitle}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      </TooltipProvider>
+    </Section>
+  );
+};

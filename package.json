@@ -1,32 +1,25 @@
 {
-	"name": "harmony",
-	"private": true,
-	"scripts": {
-		"build": "turbo run build",
-		"dev": "turbo run dev",
-		"start": "turbo run start",
-		"generate": "turbo run generate",
-		"ui": "pnpm --filter @repo/ui ui",
-		"studio": "turbo run studio",
-		"format-and-lint": "biome check .",
-		"format-and-lint:fix": "biome check . --write",
-		"e2e:test": "turbo run e2e:test",
-		"typecheck": "turbo run typecheck",
-		"db:push": "turbo run db:push"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "2.0.6",
-		"playwright": "^1.52.0",
-		"prettier": "^3.4.2",
-		"tsx": "4.19.2",
-		"turbo": "^2.5.3"
-	},
-	"dependencies": {
-		"dotenv": "^16.4.7",
-		"dotenv-cli": "^8.0.0"
-	},
-	"packageManager": "pnpm@10.10.0",
-	"engines": {
-		"node": ">=22"
-	}
+  "name": "harmony",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "check": "turbo run check",
+    "test": "turbo run test"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:build",
+    "oxfmt": "catalog:lint",
+    "oxlint": "catalog:lint",
+    "oxlint-tsgolint": "catalog:lint",
+    "turbo": "catalog:build",
+    "typescript": "catalog:build"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@12.14.0"
 }

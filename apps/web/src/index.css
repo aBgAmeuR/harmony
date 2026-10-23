@@ -1,0 +1,138 @@
+@import "@harmony/font/spotify-mix.css";
+@import "@harmony/ui/globals.css";
+@import "@bprogress/core/css";
+
+@theme {
+  --animate-rise-in: riseIn 360ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  --animate-grow-x: growX 800ms 120ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes logo-bar {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.38);
+  }
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes growX {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.rise-in > * {
+  animation: var(--animate-rise-in);
+}
+
+.rise-in > :nth-child(2) {
+  animation-delay: 35ms;
+}
+
+.rise-in > :nth-child(3) {
+  animation-delay: 70ms;
+}
+
+.rise-in > :nth-child(n + 4) {
+  animation-delay: 100ms;
+}
+
+.rise-in > :is(.rise-in, :has(.rise-in, .animate-rise-in)) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes riseIn {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes growX {
+    from {
+      transform: none;
+    }
+  }
+}
+
+/* transitions-dev — texts reveal (18) */
+:root {
+  --stagger-dur: 500ms;
+  --stagger-distance: 12px;
+  --stagger-stagger: 40ms;
+  --stagger-blur: 3px;
+  --stagger-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Lines start translated down + blurred + invisible; .is-shown
+   on the parent flips them to their resting state. The second
+   line's transition-delay holds it back by --stagger-stagger
+   so the eye lands on the headline first. */
+.t-stagger-line {
+  /* No display override — keeps flex/grid children intact. */
+  opacity: 0;
+  transform: translateY(var(--stagger-distance));
+  filter: blur(var(--stagger-blur));
+  transition:
+    opacity var(--stagger-dur) var(--stagger-ease),
+    transform var(--stagger-dur) var(--stagger-ease),
+    filter var(--stagger-dur) var(--stagger-ease);
+  will-change: transform, opacity, filter;
+}
+.t-stagger-line--2 {
+  transition-delay: var(--stagger-stagger);
+}
+.t-stagger-line--3 {
+  transition-delay: calc(var(--stagger-stagger) * 2);
+}
+.t-stagger-line--4 {
+  transition-delay: calc(var(--stagger-stagger) * 3);
+}
+.t-stagger-line--5 {
+  transition-delay: calc(var(--stagger-stagger) * 4);
+}
+.t-stagger-line--6 {
+  transition-delay: calc(var(--stagger-stagger) * 5);
+}
+.t-stagger-line--7 {
+  transition-delay: calc(var(--stagger-stagger) * 6);
+}
+
+.t-stagger.is-shown .t-stagger-line {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+@starting-style {
+  .t-stagger.is-shown .t-stagger-line {
+    opacity: 0;
+    transform: translateY(var(--stagger-distance));
+    filter: blur(var(--stagger-blur));
+  }
+}
+
+.t-stagger.is-hiding .t-stagger-line {
+  opacity: 0;
+  transform: translateY(0);
+  filter: blur(0);
+  transition:
+    opacity 200ms ease,
+    transform 0s linear,
+    filter 0s linear;
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-stagger-line {
+    transition: none !important;
+  }
+}

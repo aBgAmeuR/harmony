@@ -1,0 +1,3 @@
+[env]
+# libduckdb-sys downloads the official prebuilt library instead of compiling DuckDB.
+DUCKDB_DOWNLOAD_LIB = "1"

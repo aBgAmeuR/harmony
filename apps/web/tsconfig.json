@@ -1,9 +1,12 @@
 {
-	"extends": "@repo/tsconfig/nextjs.json",
-	"compilerOptions": {
-		"paths": {
-			"@repo/*": ["../../packages/*/src"],
-			"~/*": ["./*"]
-		}
-	}
+  "extends": "@harmony/tsconfig/react.json",
+  "include": ["**/*.ts", "**/*.tsx"],
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": ["vite/client"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
 }

@@ -1,0 +1,11 @@
+{
+  "extends": "@harmony/tsconfig/react.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@harmony/charts/*": ["./src/*"]
+    }
+  },
+  "include": ["."],
+  "exclude": ["node_modules", "dist"]
+}

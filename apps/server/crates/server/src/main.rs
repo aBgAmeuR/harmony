@@ -1,0 +1,558 @@
+//! Bind the routes, start the worker, and leave on signal.
+
+mod config;
+mod worker;
+
+use std::sync::Arc;
+use std::time::Duration;
+
+use adapters::deezer::{Deezer, Mode};
+use axum::body::Body;
+use axum::extract::{DefaultBodyLimit, Multipart, Path, State};
+use axum::http::{HeaderValue, StatusCode, header};
+use axum::response::sse::{Event, Sse};
+use axum::response::{IntoResponse, Redirect, Response};
+use axum::routing::{any, get, post};
+use axum::{Json, Router};
+use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
+use domain::observe::Progress;
+use domain::package::State as PackageState;
+use domain::ports::Store;
+use http::HttpError;
+use serde::Serialize;
+use tokio::sync::{Notify, watch};
+use tower_http::compression::CompressionLayer;
+use tower_http::services::{ServeDir, ServeFile};
+
+use crate::config::{Config, Files, LogFormat, Lookup, SPA_SHELL_FILE};
+use crate::worker::{App, Shelf};
+
+fn main() {
+    if std::env::args().nth(1).as_deref() == Some("healthcheck") {
+        let code = match tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+        {
+            Ok(runtime) => runtime.block_on(healthcheck()),
+            Err(err) => {
+                eprintln!("healthcheck failed: {err}");
+                1
+            }
+        };
+        std::process::exit(code);
+    }
+
+    if let Err(err) = boot() {
+        eprintln!("{err:#}");
+        std::process::exit(1);
+    }
+}
+
+fn boot() -> anyhow::Result<()> {
+    let _ = dotenvy::dotenv();
+    let config = Config::from_env()?;
+    let guard = init_log(config.log_format())?;
+
+    // Blocking clients own a runtime. Build them before `block_on`, or Tokio
+    // panics while dropping that runtime from the server's async thread.
+    let blob = Arc::new(open_blob(config.files())?);
+    let deezer = Arc::new(Deezer::open(open_mode(config.deezer()))?);
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?;
+    let result = runtime.block_on(serve(config, blob, deezer));
+    // `process::exit` skips destructors. Flush the exporter first.
+    drop(guard);
+    let _ = std::io::Write::flush(&mut std::io::stderr());
+    result?;
+    std::process::exit(0);
+}
+
+async fn serve(config: Config, blob: Arc<Shelf>, deezer: Arc<Deezer>) -> anyhow::Result<()> {
+    let app = App {
+        store: Arc::new(Store::new()),
+        progress: Arc::new(Progress::new()),
+        wake: Arc::new(Notify::new()),
+        blob,
+        deezer,
+        max_upload_bytes: config.max_upload_bytes(),
+        public_url: config.public_url().map(str::to_owned),
+    };
+
+    let (stop_tx, stop_rx) = watch::channel(false);
+    let worker = tokio::spawn(worker::listen(app.clone(), stop_rx));
+    let cap = usize::try_from(http::body_limit(config.max_upload_bytes())).unwrap_or(usize::MAX);
+    let router = routes(app.clone(), config.static_dir()).layer(DefaultBodyLimit::max(cap));
+    let address = format!("{}:{}", config.host(), config.port());
+    let listener = tokio::net::TcpListener::bind(&address).await?;
+    tracing::info!(
+        %address,
+        static_dir = config.static_dir().map(|dir| dir.display().to_string()),
+        "listening"
+    );
+
+    tokio::select! {
+        result = axum::serve(listener, router) => {
+            result?;
+        }
+        () = interrupted() => {}
+    }
+
+    let _ = stop_tx.send(true);
+    let (queued, running) = app.store.counts();
+    tracing::info!(queued, running, "shutdown");
+    worker.abort();
+    Ok(())
+}
+
+fn open_blob(files: &Files) -> Result<Shelf, domain::ports::PutError> {
+    match files {
+        Files::Disk { dir } => Ok(Shelf::Dir(adapters::fs::Fs::open(dir)?)),
+        Files::Bucket {
+            endpoint,
+            bucket,
+            region,
+            access_key,
+            secret_key,
+            ..
+        } => Ok(Shelf::Bucket(adapters::s3::S3::open(
+            endpoint, bucket, region, access_key, secret_key,
+        )?)),
+    }
+}
+
+fn open_mode(deezer: &Lookup) -> Mode {
+    match deezer {
+        Lookup::Direct { per_second } => Mode::Direct {
+            per_second: *per_second,
+        },
+        Lookup::Proxies { urls, secret } => Mode::Proxies {
+            urls: urls.clone(),
+            secret: secret.clone(),
+        },
+    }
+}
+
+fn init_log(format: LogFormat) -> anyhow::Result<init_tracing_opentelemetry::Guard> {
+    let export = otel_export_enabled();
+    let config = init_tracing_opentelemetry::TracingConfig::default()
+        .with_otel(export)
+        .with_logs(export)
+        .with_metrics(export)
+        .with_file_names(false)
+        .with_line_numbers(false)
+        .with_thread_names(false)
+        .without_span_events()
+        .with_timer(init_tracing_opentelemetry::LogTimer::Time)
+        .with_resource_config(
+            init_tracing_opentelemetry::resource::DetectResource::default()
+                .with_fallback_service_name("harmony"),
+        );
+    let config = match format {
+        LogFormat::Compact => config.with_compact_format(),
+        LogFormat::Pretty => config.with_pretty_format(),
+        LogFormat::Json => config.with_json_format(),
+    };
+    let guard = config.init_subscriber()?;
+    if export {
+        tracing::info!("opentelemetry export enabled");
+    }
+    Ok(guard)
+}
+
+/// Export stays off until an OTLP endpoint is set, matching `.env.example`.
+fn otel_export_enabled() -> bool {
+    std::env::var("OTEL_EXPORTER_OTLP_ENDPOINT").is_ok_and(|value| !value.trim().is_empty())
+}
+
+fn routes(app: App, static_dir: Option<&std::path::Path>) -> Router {
+    let router = Router::new()
+        .route("/api/v1/config", get(limits))
+        .route("/api/v1/packages", post(upload))
+        .route("/api/v1/packages/{id}/stream", get(stream))
+        .route(
+            "/files/{name}",
+            get(download).layer(CompressionLayer::new()),
+        )
+        .layer(OtelInResponseLayer)
+        .layer(OtelAxumLayer::default())
+        .route("/health", get(health));
+    let router = match static_dir {
+        Some(dir) => router
+            .route("/api/{*rest}", any(api_not_found))
+            .nest_service("/assets", assets(&dir.join("assets")))
+            .fallback_service(spa(dir)),
+        None => router,
+    };
+    router.with_state(app)
+}
+
+fn spa(dir: &std::path::Path) -> ServeDir<ServeFile> {
+    ServeDir::new(dir)
+        .precompressed_br()
+        .precompressed_gzip()
+        .fallback(ServeFile::new(dir.join(SPA_SHELL_FILE)))
+}
+
+fn assets(dir: &std::path::Path) -> Router {
+    Router::new()
+        .fallback_service(ServeDir::new(dir).precompressed_br().precompressed_gzip())
+        .layer(axum::middleware::map_response(immutable))
+}
+
+async fn immutable(mut response: Response) -> Response {
+    if response.status().is_success() {
+        response.headers_mut().insert(
+            header::CACHE_CONTROL,
+            HeaderValue::from_static("public, max-age=31536000, immutable"),
+        );
+    }
+    response
+}
+
+async fn api_not_found() -> Response {
+    text(StatusCode::NOT_FOUND, "not found".to_owned())
+}
+
+async fn health() -> &'static str {
+    http::health()
+}
+
+async fn limits(State(app): State<App>) -> Json<http::Limits> {
+    Json(http::config(app.max_upload_bytes))
+}
+
+async fn upload(State(app): State<App>, mut multipart: Multipart) -> Response {
+    let mut name = String::new();
+    let mut bytes = None;
+    let mut files = None;
+    loop {
+        let field = match multipart.next_field().await {
+            Ok(Some(field)) => field,
+            Ok(None) => break,
+            Err(err) => return text(StatusCode::BAD_REQUEST, err.to_string()),
+        };
+        let field_name = field.name().map(str::to_owned);
+        match field_name.as_deref() {
+            Some("file") => {
+                if let Some(file_name) = field.file_name() {
+                    name = file_name.to_owned();
+                }
+                match field.bytes().await {
+                    Ok(data) => bytes = Some(data.to_vec()),
+                    Err(err) => return text(StatusCode::BAD_REQUEST, err.to_string()),
+                }
+            }
+            Some("selected_files") => match field.text().await {
+                Ok(raw) => files = Some(raw),
+                Err(err) => return text(StatusCode::BAD_REQUEST, err.to_string()),
+            },
+            _ => {
+                if field.bytes().await.is_err() {
+                    return text(StatusCode::BAD_REQUEST, "bad multipart field".to_owned());
+                }
+            }
+        }
+    }
+    let Some(bytes) = bytes else {
+        return text(StatusCode::BAD_REQUEST, "no file".to_owned());
+    };
+    let source = match http::source(http::Upload::new(name, bytes, files), app.max_upload_bytes) {
+        Ok(source) => source,
+        Err(err) => return http_error(&err),
+    };
+    let package = match app.store.open(source) {
+        Ok(package) => package,
+        Err(err) => return text(StatusCode::BAD_REQUEST, err.to_string()),
+    };
+    app.progress.open(package.id());
+    app.wake.notify_one();
+    (
+        StatusCode::ACCEPTED,
+        Json(Accepted {
+            public_id: package.id().to_string(),
+            status: PackageState::Queued.as_str(),
+        }),
+    )
+        .into_response()
+}
+
+async fn stream(State(app): State<App>, Path(id): Path<String>) -> Response {
+    match http::watch(app.progress.as_ref(), &id) {
+        Ok(rx) => Sse::new(events(rx)).into_response(),
+        Err(err) => http_error(&err),
+    }
+}
+
+async fn download(State(app): State<App>, Path(name): Path<String>) -> Response {
+    let blob = Arc::clone(&app.blob);
+    let public_url = app.public_url.clone();
+    let opened = tokio::task::spawn_blocking(move || {
+        load_download(blob.as_ref(), &name, public_url.as_deref())
+    })
+    .await;
+    match opened {
+        Ok(Ok(Loaded::Redirect(url))) => Redirect::temporary(&url).into_response(),
+        Ok(Ok(Loaded::Bytes(bytes))) => file_response(bytes),
+        Ok(Err(err)) => http_error(&err),
+        Err(_) => text(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "download failed".to_owned(),
+        ),
+    }
+}
+
+fn load_download(blob: &Shelf, name: &str, public_url: Option<&str>) -> Result<Loaded, HttpError> {
+    match http::file(blob, name, public_url)? {
+        http::Body::Redirect(url) => Ok(Loaded::Redirect(url)),
+        http::Body::File(artifact) => match std::fs::read(artifact.path()) {
+            Ok(bytes) => Ok(Loaded::Bytes(bytes)),
+            Err(_) => Err(HttpError::Missing),
+        },
+    }
+}
+
+enum Loaded {
+    Redirect(String),
+    Bytes(Vec<u8>),
+}
+
+fn events(
+    rx: std::sync::mpsc::Receiver<domain::observe::Event>,
+) -> impl futures::Stream<Item = Result<Event, std::convert::Infallible>> {
+    futures::stream::unfold(rx, |rx| async move {
+        let joined = tokio::task::spawn_blocking(move || {
+            let next = rx.recv().ok();
+            (rx, next)
+        })
+        .await
+        .ok()?;
+        let (rx, next) = joined;
+        let event = next?;
+        let data = serde_json::to_string(&event).ok()?;
+        let sse = Event::default().event("pipeline").data(data);
+        Some((Ok(sse), rx))
+    })
+}
+
+fn file_response(bytes: Vec<u8>) -> Response {
+    let mut response = Response::new(Body::from(bytes));
+    if let Ok(kind) = HeaderValue::from_str("application/octet-stream") {
+        response.headers_mut().insert(header::CONTENT_TYPE, kind);
+    }
+    response
+}
+
+fn http_error(err: &HttpError) -> Response {
+    text(status(err.status()), err.to_string())
+}
+
+fn text(status: StatusCode, message: String) -> Response {
+    (status, message).into_response()
+}
+
+fn status(code: u16) -> StatusCode {
+    StatusCode::from_u16(code).unwrap_or(StatusCode::BAD_REQUEST)
+}
+
+#[derive(Serialize)]
+struct Accepted {
+    public_id: String,
+    status: &'static str,
+}
+
+async fn interrupted() {
+    let ctrl_c = tokio::signal::ctrl_c();
+    #[cfg(unix)]
+    {
+        let Ok(mut terminate) =
+            tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+        else {
+            let _ = ctrl_c.await;
+            return;
+        };
+        tokio::select! {
+            _ = ctrl_c => {}
+            _ = terminate.recv() => {}
+        }
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = ctrl_c.await;
+    }
+}
+
+async fn healthcheck() -> i32 {
+    match probe().await {
+        Ok(()) => 0,
+        Err(reason) => {
+            eprintln!("healthcheck failed: {reason}");
+            1
+        }
+    }
+}
+
+async fn probe() -> Result<(), String> {
+    let port = std::env::var("PORT").ok();
+    let url = health_url(port.as_deref())?;
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(3))
+        .build()
+        .map_err(|err| err.to_string())?;
+    let response = client
+        .get(&url)
+        .send()
+        .await
+        .map_err(|err| format!("{url}: {err}"))?;
+    let status = response.status();
+    let body = response
+        .text()
+        .await
+        .map_err(|err| format!("{url}: {err}"))?;
+    if status != reqwest::StatusCode::OK || body != "ok" {
+        return Err(format!("{url} returned {status}: {body}"));
+    }
+    Ok(())
+}
+
+fn health_url(port: Option<&str>) -> Result<String, String> {
+    let port = match port.map(str::trim) {
+        None | Some("") => 3000,
+        Some(value) => value
+            .parse::<u16>()
+            .map_err(|_| format!("PORT is invalid: {value}"))?,
+    };
+    if port == 0 {
+        return Err("PORT is invalid: 0".to_owned());
+    }
+    Ok(format!("http://127.0.0.1:{port}/health"))
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use adapters::deezer::{Deezer, Mode};
+    use adapters::fs::Fs;
+    use axum::body::Body;
+    use axum::http::{Request, StatusCode, header};
+    use domain::observe::Progress;
+    use domain::ports::Store;
+    use tokio::sync::Notify;
+    use tower::ServiceExt;
+
+    use super::routes;
+    use crate::config::SPA_SHELL_FILE;
+    use crate::worker::{App, Shelf};
+
+    fn app(dir: &std::path::Path) -> Result<App, Box<dyn std::error::Error>> {
+        Ok(App {
+            store: Arc::new(Store::new()),
+            progress: Arc::new(Progress::new()),
+            wake: Arc::new(Notify::new()),
+            blob: Arc::new(Shelf::Dir(Fs::open(dir)?)),
+            deezer: Arc::new(Deezer::open(Mode::Direct { per_second: 1 })?),
+            max_upload_bytes: 1024,
+            public_url: None,
+        })
+    }
+
+    async fn call(
+        router: &axum::Router,
+        path: &str,
+    ) -> Result<(StatusCode, String), Box<dyn std::error::Error>> {
+        let request = Request::builder().uri(path).body(Body::empty())?;
+        let response = router.clone().oneshot(request).await?;
+        let status = response.status();
+        let bytes = axum::body::to_bytes(response.into_body(), 64 * 1024).await?;
+        Ok((status, String::from_utf8(bytes.to_vec())?))
+    }
+
+    #[test]
+    fn package_files_are_gzipped_on_request() -> Result<(), Box<dyn std::error::Error>> {
+        let root = tempfile::tempdir()?;
+        let data = root.path().join("data");
+        let package = "a".repeat(64 * 1024);
+        let router = routes(app(&data)?, None);
+        std::fs::write(data.join("harmony").join("abc123.duckdb"), &package)?;
+
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()?;
+        let result = runtime.block_on(async {
+            let request = Request::builder()
+                .uri("/files/abc123.duckdb")
+                .header(header::ACCEPT_ENCODING, "gzip")
+                .body(Body::empty())?;
+            let response = router.clone().oneshot(request).await?;
+            assert_eq!(response.status(), StatusCode::OK);
+            assert_eq!(response.headers()[header::CONTENT_ENCODING], "gzip");
+            let gzipped = axum::body::to_bytes(response.into_body(), package.len()).await?;
+            assert!(gzipped.len() < package.len() / 10, "{}", gzipped.len());
+
+            let plain = call(&router, "/files/abc123.duckdb").await?;
+            assert_eq!(plain, (StatusCode::OK, package.clone()));
+            Ok(())
+        });
+        drop(runtime);
+        drop(router);
+        result
+    }
+
+    #[test]
+    fn static_dir_serves_pages_assets_and_keeps_api_routes()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let root = tempfile::tempdir()?;
+        let public = root.path().join("public");
+        std::fs::create_dir_all(public.join("assets"))?;
+        std::fs::write(public.join(SPA_SHELL_FILE), "shell")?;
+        std::fs::write(public.join("index.html"), "landing")?;
+        std::fs::write(public.join("assets").join("app.js"), "js")?;
+        std::fs::write(public.join("assets").join("app.js.br"), "js-br")?;
+
+        // `Deezer` owns a blocking runtime. Drop it only after this runtime ends.
+        let router = routes(app(&root.path().join("data"))?, Some(&public));
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()?;
+        let result = runtime.block_on(async {
+            let page = call(&router, "/").await?;
+            assert_eq!(page, (StatusCode::OK, "landing".to_owned()));
+
+            let nested = call(&router, "/app/pkg").await?;
+            assert_eq!(nested, (StatusCode::OK, "shell".to_owned()));
+
+            let asset = call(&router, "/assets/app.js").await?;
+            assert_eq!(asset, (StatusCode::OK, "js".to_owned()));
+
+            let request = Request::builder()
+                .uri("/assets/app.js")
+                .header(header::ACCEPT_ENCODING, "br")
+                .body(Body::empty())?;
+            let response = router.clone().oneshot(request).await?;
+            let headers = response.headers();
+            assert_eq!(headers[header::CONTENT_ENCODING], "br");
+            assert_eq!(
+                headers[header::CACHE_CONTROL],
+                "public, max-age=31536000, immutable"
+            );
+
+            let stale = call(&router, "/assets/old.js").await?;
+            assert_eq!(stale.0, StatusCode::NOT_FOUND);
+
+            let health = call(&router, "/health").await?;
+            assert_eq!(health, (StatusCode::OK, "ok".to_owned()));
+
+            let config = call(&router, "/api/v1/config").await?;
+            assert_eq!(config.0, StatusCode::OK);
+            assert!(config.1.contains("max_upload_bytes"), "{}", config.1);
+
+            let missing = call(&router, "/api/v1/missing").await?;
+            assert_eq!(missing, (StatusCode::NOT_FOUND, "not found".to_owned()));
+            Ok(())
+        });
+        drop(runtime);
+        drop(router);
+        result
+    }
+}

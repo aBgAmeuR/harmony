@@ -1,9 +1,9 @@
 {
-	"name": "@repo/tsconfig",
-	"version": "0.0.0",
-	"private": true,
-	"publishConfig": {
-		"access": "public"
-	}
+  "name": "@harmony/tsconfig",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./base.json": "./base.json",
+    "./react.json": "./react.json"
+  }
 }
-

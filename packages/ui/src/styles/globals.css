@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@harmony/tailwind/theme.css";
+
+@source "../../../apps/**/*.{ts,tsx}";
+@source "../../../charts/src/**/*.{ts,tsx}";
+@source "../../../components/**/*.{ts,tsx}";
+@source "../**/*.{ts,tsx}";

@@ -1,11 +1,23 @@
 {
-	"biome.enabled": true,
-	"eslint.enable": true,
-	"editor.defaultFormatter": "biomejs.biome",
-	"editor.formatOnPaste": false,
-	"editor.formatOnSave": true,
-	"editor.codeActionsOnSave": {
-		"quickfix.biome": "always",
-		"source.organizeImports.biome": "always"
-	},
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "never",
+    "source.format.oxc": "always",
+    "source.fixAll.oxc": "always"
+  },
+  "editor.formatOnSave": false,
+  "editor.formatOnSaveMode": "file",
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "oxc.typeAware": true,
+  "oxc.fmt.configPath": "tooling/oxfmt/oxfmt.json",
+  "oxc.configPath": "tooling/oxlint/oxlint.json",
+  "[javascript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "rust-analyzer.linkedProjects": ["apps/server/Cargo.toml"]
 }
