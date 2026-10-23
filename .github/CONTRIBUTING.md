@@ -88,9 +88,9 @@ Also:
 ## Commit messages
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org/), for
-example `fix: serve the demo package file`. Every push to `v3` runs
-semantic-release, and every type except `deploy` publishes a new beta release,
-`docs` and `chore` included. Details are in [`docs/DEPLOY.md`](../docs/DEPLOY.md#versioning).
+example `fix: serve the demo package file`. Every push to `master` runs
+semantic-release: `feat` publishes a minor release, `fix` and `perf` a patch, and
+other types nothing. Details are in [`docs/DEPLOY.md`](../docs/DEPLOY.md#versioning).
 Add `!` after the type or a `BREAKING CHANGE:` footer for breaking changes.
 
 ## Working with AI agents

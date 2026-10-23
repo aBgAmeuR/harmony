@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Harmony is in beta. Only the latest `v3.0.0-beta.N` release and the `v3` branch
+Only the latest stable release (the `latest` image tag) and the `master` branch
 receive security fixes.
 
 ## Report a vulnerability

@@ -1,7 +1,7 @@
 name: Release
 on:
   push:
-    branches: [v3]
+    branches: [master]
 
 env:
   IMAGE: ghcr.io/abgameur/harmony
@@ -73,10 +73,12 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.IMAGE }}
-          flavor: latest=true
+          flavor: latest=false
           tags: |
             type=semver,pattern={{raw}},value=${{ needs.version.outputs.tag }}
-            type=ref,event=branch
+            type=semver,pattern=v{{major}}.{{minor}},value=${{ needs.version.outputs.tag }}
+            type=semver,pattern=v{{major}},value=${{ needs.version.outputs.tag }}
+            type=raw,value=latest
 
       - name: Build and push by digest
         id: build
@@ -137,20 +139,19 @@ jobs:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: index
         with:
           images: ${{ env.IMAGE }}
-          flavor: latest=true
+          flavor: latest=false
           tags: |
             type=semver,pattern={{raw}},value=${{ needs.version.outputs.tag }}
-            type=ref,event=branch
+            type=semver,pattern=v{{major}}.{{minor}},value=${{ needs.version.outputs.tag }}
+            type=semver,pattern=v{{major}},value=${{ needs.version.outputs.tag }}
+            type=raw,value=latest
 
       - name: Create and push the manifest list
         working-directory: ${{ runner.temp }}/digests
-        env:
-          TAG: ${{ needs.version.outputs.tag }}
         run: |
+          mapfile -t tags < <(jq -r '.tags[] | "--tag=" + .' <<< "$DOCKER_METADATA_OUTPUT_JSON")
           mapfile -t annotations < <(jq -r '.annotations[] | "--annotation=" + .' <<< "$DOCKER_METADATA_OUTPUT_JSON")
           docker buildx imagetools create \
-            -t "${IMAGE}:${TAG}" \
-            -t "${IMAGE}:v3" \
-            -t "${IMAGE}:latest" \
+            "${tags[@]}" \
             "${annotations[@]}" \
             $(printf "${IMAGE}@sha256:%s " *)

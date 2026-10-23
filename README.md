@@ -15,8 +15,6 @@ a single DuckDB file built for your upload.
 
 There is no Spotify login. Harmony only reads the export you give it.
 
-> Harmony v3 is in beta. Releases are tagged `v3.0.0-beta.N`.
-
 ## Get your data
 
 Request your **Extended streaming history** from the
