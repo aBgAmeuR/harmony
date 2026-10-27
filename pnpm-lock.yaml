@@ -205,8 +205,8 @@ catalogs:
       version: 21.2.0
   icons:
     '@hugeicons/core-free-icons':
-      specifier: ^1.2.1
-      version: 1.2.1
+      specifier: ^4.3.5
+      version: 4.3.5
     '@hugeicons/react':
       specifier: ^1.1.10
       version: 1.1.10
@@ -314,7 +314,7 @@ catalogs:
       version: 10.0.2
     react-resizable-panels:
       specifier: ^4.14.4
-      version: 4.15.0
+      version: 4.14.8
     shadcn:
       specifier: ^4.21.4
       version: 4.22.1
@@ -512,7 +512,7 @@ importers:
     dependencies:
       '@hugeicons/core-free-icons':
         specifier: catalog:icons
-        version: 1.2.1
+        version: 4.3.5
       '@hugeicons/react':
         specifier: catalog:icons
         version: 1.1.10(react@19.3.1)
@@ -567,7 +567,7 @@ importers:
         version: 19.3.1(react@19.3.1)
       react-resizable-panels:
         specifier: catalog:ui
-        version: 4.15.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        version: 4.14.8(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       shadcn:
         specifier: catalog:ui
         version: 4.22.1(supports-color@8.1.1)
@@ -918,8 +918,8 @@ packages:
     peerDependencies:
       hono: ^4
 
-  '@hugeicons/core-free-icons@1.2.1':
-    resolution: {integrity: sha512-ho0QdGMkgL+kt+QsZocCsKvJou1rfyVQWARrxIhNLi+9tCKayUUtD9jlHgioaRphmskSl84TxrDm9Ae0G4Uu1g==}
+  '@hugeicons/core-free-icons@4.3.5':
+    resolution: {integrity: sha512-Sv+NjHRPnQk+yZsGCMcGznCHdTfJR9PMMOEKcJYAQU4gy90dmlc9PwdtvYOImBZIjiheMsTLL5eMn2DmHxUiUg==}
 
   '@hugeicons/react@1.1.10':
     resolution: {integrity: sha512-9tAsd92yMVVGP+E+d8cM+wc0VnXuYZHNbWQi7TOe8k2neawmhiaFmVFbzyruejhOMa197/LbgvSED32ayUo3ZA==}
@@ -4305,8 +4305,8 @@ packages:
       '@types/react':
         optional: true
 
-  react-resizable-panels@4.15.0:
-    resolution: {integrity: sha512-DRjF1E8QHg4j5n6RcpxDoeP0C15T0w+dlEE9eyooGCwOE8rPPxfXt4OfhJjEuezzCG/JjRwh5ZHLVkakUJF+dA==}
+  react-resizable-panels@4.14.8:
+    resolution: {integrity: sha512-kVot7JCIZct85ZY87vww95R7tI25VSTjHpEAIIy2YcsOtbtwG6l1+vDD6TCYgmgE/JSp0ADqNooHn97Y6dMOFw==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
@@ -5522,7 +5522,7 @@ snapshots:
     dependencies:
       hono: 4.12.26
 
-  '@hugeicons/core-free-icons@1.2.1': {}
+  '@hugeicons/core-free-icons@4.3.5': {}
 
   '@hugeicons/react@1.1.10(react@19.3.1)':
     dependencies:
@@ -8723,7 +8723,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.3.0
 
-  react-resizable-panels@4.15.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  react-resizable-panels@4.14.8(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
