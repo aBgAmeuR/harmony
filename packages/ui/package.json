@@ -17,7 +17,6 @@
     "class-variance-authority": "catalog:tailwind",
     "clsx": "catalog:tailwind",
     "cmdk": "catalog:ui",
-    "date-fns": "catalog:ui",
     "embla-carousel-react": "catalog:ui",
     "input-otp": "catalog:ui",
     "next-themes": "catalog:ui",

@@ -1,0 +1,68 @@
+import { DialogFooter } from "@harmony/ui/components/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@harmony/ui/components/tabs";
+import { useState } from "react";
+
+import type { DateRangeMode } from "@/shared/scope";
+
+import { DateRangeBoundsProvider } from "./date-range-bounds-context";
+import { DateRangeCustomTab } from "./date-range-custom-tab";
+import { DateRangeDialogFooter } from "./date-range-dialog-footer";
+import { DateRangeDraftProvider, useDateRangeDraftContext } from "./date-range-draft-context";
+import { DateRangeMonthTab } from "./date-range-month-tab";
+import { DateRangeSparkline } from "./date-range-sparkline";
+import { DateRangeYearTab } from "./date-range-year-tab";
+
+const DateRangeActiveTab = () => {
+  const { draft } = useDateRangeDraftContext();
+
+  switch (draft.mode) {
+    case "month":
+      return <DateRangeMonthTab />;
+    case "year":
+      return <DateRangeYearTab />;
+    case "custom":
+      return <DateRangeCustomTab />;
+  }
+};
+
+const DateRangeDialogBody = ({ open }: { open: boolean }) => {
+  const { draft, setMode } = useDateRangeDraftContext();
+  const [monthlyListenLabels, setMonthlyListenLabels] = useState<string[]>();
+
+  return (
+    <DateRangeBoundsProvider monthlyListenLabels={monthlyListenLabels}>
+      <Tabs value={draft.mode} onValueChange={(value) => setMode(value as DateRangeMode)}>
+        <div className="border-b bg-muted/50 px-3.5 py-1.5">
+          <TabsList className="w-full bg-transparent p-0.5">
+            <TabsTrigger value="month" className="dark:data-active:bg-background">
+              Month
+            </TabsTrigger>
+            <TabsTrigger value="year" className="dark:data-active:bg-background">
+              Year
+            </TabsTrigger>
+            <TabsTrigger value="custom" className="dark:data-active:bg-background">
+              Custom
+            </TabsTrigger>
+          </TabsList>
+        </div>
+        <div className="border-b px-4 py-2">
+          <DateRangeSparkline open={open} onDataLoaded={setMonthlyListenLabels} />
+        </div>
+        <div className="px-4 py-2">
+          <DateRangeActiveTab />
+        </div>
+      </Tabs>
+      <DialogFooter className="m-0">
+        <DateRangeDialogFooter />
+      </DialogFooter>
+    </DateRangeBoundsProvider>
+  );
+};
+
+// The dialog's content, loaded on first open (or hover): the calendar and date code stay out
+// of the page bundles.
+export const DateRangePanel = ({ open, onClose }: { open: boolean; onClose: () => void }) => (
+  <DateRangeDraftProvider open={open} onClose={onClose}>
+    <DateRangeDialogBody open={open} />
+  </DateRangeDraftProvider>
+);

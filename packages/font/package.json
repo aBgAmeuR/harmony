@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./spotify-mix.css": "./src/spotify-mix.css"
+    "./spotify-mix.css": "./src/spotify-mix.css",
+    "./regular.woff2": "./src/fonts/SpotifyMix-Regular.woff2"
   }
 }

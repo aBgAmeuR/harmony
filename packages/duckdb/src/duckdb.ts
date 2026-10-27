@@ -47,6 +47,23 @@ export const getDuckDBInstance = async () => {
   return initPromise;
 };
 
+type SaveDataNavigator = Navigator & { connection?: { saveData?: boolean } };
+
+export const prefetchDuckDB = async () => {
+  if (typeof document === "undefined") return;
+  if ((navigator as SaveDataNavigator).connection?.saveData) return;
+
+  const duckdb = await import("@duckdb/duckdb-wasm");
+  const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
+  for (const href of [bundle.mainWorker, bundle.mainModule]) {
+    if (!href || document.querySelector(`link[rel="prefetch"][href="${href}"]`)) continue;
+    const link = document.createElement("link");
+    link.rel = "prefetch";
+    link.href = href;
+    document.head.append(link);
+  }
+};
+
 export async function fetchPackageDatabase(packageId: string, url: string) {
   const response = await fetch(url);
   if (!response.ok) {

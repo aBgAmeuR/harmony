@@ -1,8 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
+import { Suspense, lazy } from "react";
 
-import { InteractionsTable } from "@/entities/interaction";
 import { interactionQueries } from "@/entities/interaction";
 import { usePeriod } from "@/shared/scope";
+
+const InteractionsTable = lazy(() =>
+  import("@/entities/interaction/ui/interactions-table").then((m) => ({
+    default: m.InteractionsTable,
+  })),
+);
 
 type InteractionsProps = {
   trackId: number;
@@ -18,7 +24,9 @@ export const Interactions = ({ trackId, enabled }: InteractionsProps) => {
 
   return (
     <div className="h-full min-h-0">
-      <InteractionsTable interactions={data ?? []} enabled={enabled} />
+      <Suspense>
+        <InteractionsTable interactions={data ?? []} enabled={enabled} />
+      </Suspense>
     </div>
   );
 };

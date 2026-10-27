@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import { packageQueries } from "@/entities/package";
+import { packageQueries } from "@/entities/package/api";
 
 const periodQuery = packageQueries.period.queryOptions();
 

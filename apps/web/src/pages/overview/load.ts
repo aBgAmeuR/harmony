@@ -1,7 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 
 import { clampRange } from "@/data/overview/range";
-import { packageQueries } from "@/entities/package";
+import { packageQueries } from "@/entities/package/api";
 import { buildInstantRangeQuery, useDateRangeStore } from "@/shared/scope";
 import { overviewQueries } from "@/widgets/overview/api";
 

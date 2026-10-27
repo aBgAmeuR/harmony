@@ -9,8 +9,6 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@bprogress/core": "catalog:ui",
-    "@bprogress/react": "catalog:ui",
     "@harmony/charts": "workspace:*",
     "@harmony/duckdb": "workspace:*",
     "@harmony/font": "workspace:*",
@@ -18,11 +16,8 @@
     "@harmony/ui": "workspace:*",
     "@harmony/upload": "workspace:*",
     "@tailwindcss/vite": "catalog:tailwind",
-    "@tanstack/react-form": "catalog:tanstack",
     "@tanstack/react-query": "catalog:tanstack",
-    "@tanstack/react-query-devtools": "catalog:tanstack",
     "@tanstack/react-router": "catalog:tanstack",
-    "@tanstack/react-router-with-query": "catalog:tanstack",
     "@tanstack/react-start": "catalog:tanstack",
     "@tanstack/react-table": "catalog:tanstack",
     "@tanstack/react-virtual": "catalog:tanstack",
@@ -35,7 +30,7 @@
   },
   "devDependencies": {
     "@harmony/tsconfig": "workspace:*",
-    "@tanstack/react-router-devtools": "catalog:tanstack",
+    "@tanstack/redact": "catalog:react",
     "@testing-library/dom": "catalog:test",
     "@testing-library/react": "catalog:test",
     "@types/react": "catalog:react",
@@ -45,7 +40,6 @@
     "oxc-transform-react": "catalog:react",
     "typescript": "catalog:build",
     "vite": "catalog:build",
-    "vite-plugin-checker": "catalog:build",
-    "web-vitals": "catalog:app"
+    "vite-plugin-checker": "catalog:build"
   }
 }

@@ -1,5 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { redact } from "@tanstack/redact/vite";
 import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { createLogger, defineConfig, type Logger } from "vite";
@@ -37,9 +38,29 @@ export default defineConfig(({ command, isPreview }) => ({
       },
     }),
     viteReact({ compiler: true }),
+    redact({ features: { activity: false, fragmentRefs: false } }),
     // Dev server only: in build and preview (used by the SPA prerender) its workers keep Node alive.
     command === "serve" && !isPreview ? checker({ oxlint: true }) : null,
   ],
+  environments: {
+    client: {
+      build: {
+        rolldownOptions: {
+          output: {
+            codeSplitting: {
+              groups: [
+                {
+                  name: "react",
+                  test: /[\\/]node_modules[\\/](react|react-dom|scheduler|@tanstack[\\/]redact)[\\/]/,
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+  },
+  ssr: { noExternal: true },
   preview: {
     host: "127.0.0.1",
   },
