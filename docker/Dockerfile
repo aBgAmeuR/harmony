@@ -43,8 +43,10 @@ FROM docker.io/library/node:24.13.1-slim@sha256:a81a03dd965b4052269a57fac8570040
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN corepack enable
 WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm fetch --frozen-lockfile
 COPY . .
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --offline
 ARG HARMONY_VERSION=dev
 ENV VITE_APP_VERSION=$HARMONY_VERSION
 # The SPA prerender fetches a local preview server that listens on 127.0.0.1.
