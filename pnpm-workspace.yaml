@@ -67,7 +67,7 @@ catalogs:
     vite-plugin-checker: ^0.14.5
 
   lint:
-    oxfmt: ^0.72.0
+    oxfmt: ^0.74.0
     oxlint: ^1.87.0
     oxlint-tsgolint: ^7.0.2004
 
