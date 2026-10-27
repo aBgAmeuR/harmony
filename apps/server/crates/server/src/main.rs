@@ -21,7 +21,7 @@ use domain::ports::Store;
 use http::HttpError;
 use serde::Serialize;
 use tokio::sync::{Notify, watch};
-use tower_http::compression::CompressionLayer;
+use tower_http::compression::{Compression, CompressionLayer};
 use tower_http::services::{ServeDir, ServeFile};
 
 use crate::config::{Config, Files, LogFormat, Lookup, SPA_SHELL_FILE};
@@ -181,7 +181,8 @@ fn routes(app: App, static_dir: Option<&std::path::Path>) -> Router {
         Some(dir) => router
             .route("/api/{*rest}", any(api_not_found))
             .nest_service("/assets", assets(&dir.join("assets")))
-            .fallback_service(spa(dir)),
+            // Prerendered HTML has no precompressed sibling: compress it on the fly.
+            .fallback_service(Compression::new(spa(dir))),
         None => router,
     };
     router.with_state(app)
@@ -507,6 +508,7 @@ mod tests {
         std::fs::create_dir_all(public.join("assets"))?;
         std::fs::write(public.join(SPA_SHELL_FILE), "shell")?;
         std::fs::write(public.join("index.html"), "landing")?;
+        std::fs::write(public.join("page.html"), "<p>page</p>".repeat(64))?;
         std::fs::write(public.join("assets").join("app.js"), "js")?;
         std::fs::write(public.join("assets").join("app.js.br"), "js-br")?;
 
@@ -536,6 +538,13 @@ mod tests {
                 headers[header::CACHE_CONTROL],
                 "public, max-age=31536000, immutable"
             );
+
+            let request = Request::builder()
+                .uri("/page.html")
+                .header(header::ACCEPT_ENCODING, "gzip")
+                .body(Body::empty())?;
+            let response = router.clone().oneshot(request).await?;
+            assert_eq!(response.headers()[header::CONTENT_ENCODING], "gzip");
 
             let stale = call(&router, "/assets/old.js").await?;
             assert_eq!(stale.0, StatusCode::NOT_FOUND);

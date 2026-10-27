@@ -1,8 +1,10 @@
-import { db, DuckDBFetchError, DuckDBPackageNotFoundError } from "@harmony/duckdb";
+import { db, DuckDBFetchError, DuckDBPackageNotFoundError, prefetchDuckDB } from "@harmony/duckdb";
 
 export type OpenErrorKind = "missing" | "fetch" | "other";
 
 export const openFn = (packageId: string) => db.init(packageId, `/files/${packageId}.duckdb`);
+
+export const prefetchEngine = () => void prefetchDuckDB().catch(() => undefined);
 
 export const openErrorFn = (error: unknown): Error => {
   if (error instanceof Error) return error;

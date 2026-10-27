@@ -1,3 +1,5 @@
+import { TooltipProvider } from "@harmony/ui/components/tooltip";
+
 import {
   Upload,
   UploadDeployStep,
@@ -8,16 +10,18 @@ import {
 
 export const UploadPage = () => {
   return (
-    <Upload.Provider>
-      <Upload.Frame>
-        <Upload.Nav />
-        <Upload.Stack>
-          <UploadPackageStep />
-          <UploadFilesStep />
-          <UploadDeployStep />
-          <UploadStatsStep />
-        </Upload.Stack>
-      </Upload.Frame>
-    </Upload.Provider>
+    <TooltipProvider>
+      <Upload.Provider>
+        <Upload.Frame>
+          <Upload.Nav />
+          <Upload.Stack>
+            <UploadPackageStep />
+            <UploadFilesStep />
+            <UploadDeployStep />
+            <UploadStatsStep />
+          </Upload.Stack>
+        </Upload.Frame>
+      </Upload.Provider>
+    </TooltipProvider>
   );
 };

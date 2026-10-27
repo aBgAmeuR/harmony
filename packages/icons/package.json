@@ -12,7 +12,6 @@
   "dependencies": {
     "@hugeicons/core-free-icons": "catalog:icons",
     "@hugeicons/react": "catalog:icons",
-    "@hugeicons/react-native": "catalog:icons",
     "react": "catalog:react"
   },
   "devDependencies": {

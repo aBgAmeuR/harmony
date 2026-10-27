@@ -11,6 +11,7 @@ import { UploadError, type PipelineRunStatus } from "@harmony/upload";
 import { usePipeline } from "@harmony/upload/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { prefetchEngine } from "@/data/packages/open";
 import { format } from "@/utils/format";
 
 import { useUpload } from "../context";
@@ -67,6 +68,7 @@ export const UploadDeployStep = () => {
     }
 
     pipeline.connect();
+    prefetchEngine();
 
     return () => {
       pipeline.disconnect();
@@ -147,12 +149,14 @@ export const UploadDeployStep = () => {
     setLocalPublicId(publicId);
   }, [publicId, deployAttempt]);
 
+  const ticking = isDeploying || pipelineState.runStatus === "running";
   useEffect(() => {
+    if (!ticking) return;
     const t = window.setInterval(() => {
       setNowTs(Date.now());
     }, 100);
     return () => window.clearInterval(t);
-  }, []);
+  }, [ticking]);
 
   const canRetry =
     pipelineState.runStatus === "error" && Boolean(file) && selection.length > 0 && !isDeploying;

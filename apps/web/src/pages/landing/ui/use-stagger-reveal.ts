@@ -20,8 +20,7 @@ export const useStaggerReveal = <T extends HTMLElement = HTMLElement>({
   rootMargin = "0px 0px -8% 0px",
 }: UseStaggerRevealOptions = {}) => {
   const ref = useRef<T>(null);
-  const [isShown, setIsShown] = useState(false);
-  // Reduced motion shows everything at once, with no reveal to wait for.
+  const [isShown, setIsShown] = useState(true);
   const prefersReducedMotion = useSyncExternalStore(
     subscribeReducedMotion,
     getReducedMotion,
@@ -38,9 +37,13 @@ export const useStaggerReveal = <T extends HTMLElement = HTMLElement>({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        setIsShown(true);
-        observer.disconnect();
+        if (!entry) return;
+        if (entry.isIntersecting) {
+          setIsShown(true);
+          observer.disconnect();
+        } else if (entry.boundingClientRect.top >= window.innerHeight) {
+          setIsShown(false);
+        }
       },
       { threshold, rootMargin },
     );

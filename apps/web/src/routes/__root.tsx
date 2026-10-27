@@ -1,5 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 
+import fontUrl from "@harmony/font/regular.woff2?url";
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 
 import { Providers } from "@/app/providers";
@@ -18,8 +19,6 @@ const RootDocument = () => (
     <body className="grid h-svh grid-rows-[auto_1fr] antialiased">
       <Providers>
         <Outlet />
-
-        {/* <TanStackRouterDevtools position="bottom-left" /> */}
         <Scripts />
       </Providers>
     </body>
@@ -46,6 +45,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "preload", href: fontUrl, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
     ],
   }),
 

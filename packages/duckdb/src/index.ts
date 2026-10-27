@@ -10,6 +10,7 @@ export {
   DuckDBNotInitializedError,
   DuckDBPackageNotFoundError,
 } from "./error";
+export { prefetchDuckDB } from "./duckdb";
 
 type TimedQueryResult<T> = {
   rows: T[];
@@ -46,11 +47,13 @@ export const db = {
   },
   async query<T>(query: string): Promise<T[]> {
     const { rows, queryMs, toArrayMs } = await executeTimedQuery<T>(getConnection(), query);
-    console.log({
-      durationToArrayMs: toArrayMs.toFixed(2) + "ms",
-      durationMs: queryMs.toFixed(2) + "ms",
-      query,
-    });
+    if (import.meta.env.DEV) {
+      console.log({
+        durationToArrayMs: toArrayMs.toFixed(2) + "ms",
+        durationMs: queryMs.toFixed(2) + "ms",
+        query,
+      });
+    }
     return rows;
   },
   status: () => useDbStore.getState().status,

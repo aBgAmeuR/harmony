@@ -1,6 +1,5 @@
 @import "@harmony/font/spotify-mix.css";
 @import "@harmony/ui/globals.css";
-@import "@bprogress/core/css";
 
 @theme {
   --animate-rise-in: riseIn 360ms cubic-bezier(0.23, 1, 0.32, 1) both;
