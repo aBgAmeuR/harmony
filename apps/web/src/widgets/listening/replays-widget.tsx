@@ -9,7 +9,6 @@ import {
   ruleX,
   scaleLinear,
 } from "@harmony/charts/v4";
-import { Icon, RepeatIcon } from "@harmony/icons";
 import { Card } from "@harmony/ui/components/card";
 import { Skeleton } from "@harmony/ui/components/skeleton";
 import { useQuery } from "@tanstack/react-query";
@@ -100,7 +99,7 @@ const StandingSteps = ({ stages }: { stages: TrackEngagementStage[] }) => {
       <Chart
         definition={definition}
         ariaLabel={stages.map((stage) => `${stage.label}: ${tracks(stage.value)}`).join(", ")}
-        aspectRatio={3.4}
+        aspectRatio={4}
       />
       <div className="grid text-xs text-muted-foreground" style={columns}>
         {stages.map((stage) => (
@@ -128,7 +127,6 @@ export const ReplaysWidget = () => {
   const unique = stages[0]?.value ?? 0;
   const twice = stages[1]?.value ?? 0;
   const favorites = stages[4]?.value ?? 0;
-  const once = unique - twice;
   const rate = unique > 0 ? twice / unique : 0;
 
   if (isPending) {
@@ -154,7 +152,7 @@ export const ReplaysWidget = () => {
           "No listening in this period."
         )}
       </Section.Text>
-      {unique > 0 ? (
+      {/* {unique > 0 ? (
         <div className="mt-3 flex items-center gap-3 rounded-lg bg-primary/10 px-4 py-3 text-sm">
           <Icon icon={RepeatIcon} className="shrink-0 text-primary" />
           <p className="text-pretty [&_strong]:font-semibold">
@@ -168,12 +166,12 @@ export const ReplaysWidget = () => {
                 : "You mostly move on to new music."}
           </p>
         </div>
-      ) : null}
+      ) : null} */}
       <Card
         size="xs"
         className="mt-3 grid gap-0 divide-y md:grid-cols-[2fr_5fr] md:divide-x md:divide-y-0"
       >
-        <div className="flex flex-col justify-center gap-1.5 p-6">
+        <div className="flex flex-col justify-center gap-1.5 p-4">
           <span className="text-xs text-muted-foreground">Replay rate</span>
           <span className="flex items-baseline gap-0.5 tabular-nums">
             {unique > 0 ? (
@@ -193,7 +191,7 @@ export const ReplaysWidget = () => {
             of your tracks came back for a second play
           </span>
         </div>
-        <div className="p-6">
+        <div className="p-4">
           <StandingSteps stages={stages} />
         </div>
       </Card>
