@@ -57,7 +57,7 @@ sha2 = "0.10"
 opentelemetry = "0.31"
 tracing-opentelemetry = "0.32.1"
 axum-tracing-opentelemetry = "0.33.1"
-init-tracing-opentelemetry = { version = "0.37.0", features = [
+init-tracing-opentelemetry = { version = "0.43.0", features = [
   "otlp",
   "tracing_subscriber_ext",
   "metrics",
