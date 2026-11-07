@@ -7,6 +7,7 @@ import { HowYouListenWidget } from "@/widgets/listening/how-you-listen-widget";
 import { ListeningLede } from "@/widgets/listening/lede";
 import { ListeningTimeWidget } from "@/widgets/listening/listening-time-widget";
 import { MonthlyActivityWidget } from "@/widgets/listening/monthly-activity-widget";
+import { ReleaseYearWidget } from "@/widgets/listening/release-year-widget";
 import { ReplaysWidget } from "@/widgets/listening/replays-widget";
 import { RhythmWidget } from "@/widgets/listening/rhythm-widget";
 import { TotalStreamsWidget } from "@/widgets/listening/total-streams-widget";
@@ -22,7 +23,7 @@ export const ListeningPage = () => {
           <DateRangeFilter />
         </Toolbar.End>
       </Pane.Header>
-      <Pane.Body width="column" className="space-y-8">
+      <Pane.Body width="column" className="space-y-16">
         <div className="space-y-2">
           <ListeningLede />
           <Grid cols={4}>
@@ -35,6 +36,7 @@ export const ListeningPage = () => {
         <MonthlyActivityWidget />
         <RhythmWidget />
         <HowYouListenWidget />
+        <ReleaseYearWidget />
         <WhatYouListenWidget />
         <ReplaysWidget />
       </Pane.Body>
