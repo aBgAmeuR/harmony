@@ -20,7 +20,7 @@ type PackageMetaRow = {
   created_at: string;
   started_at: string;
   total_duration_ms: number;
-  steps: unknown;
+  steps: string;
 };
 
 export const metaFn = async (): Promise<PackageOverview> => {
@@ -51,15 +51,6 @@ export const metaFn = async (): Promise<PackageOverview> => {
     createdAt: row.created_at,
     startedAt: row.started_at,
     totalDurationMs: row.total_duration_ms,
-    steps: readSteps(row.steps),
+    steps: parsePipelineSteps(JSON.parse(row.steps)),
   };
-};
-
-const readSteps = (value: unknown): PipelineStep[] => {
-  const parsed = typeof value === "string" ? readJson(value) : value;
-  return parsePipelineSteps(parsed);
-};
-
-const readJson = (value: string): unknown => {
-  return JSON.parse(value) as unknown;
 };

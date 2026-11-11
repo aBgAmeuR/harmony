@@ -1990,11 +1990,9 @@ name = "pipeline"
 version = "0.1.0"
 dependencies = [
  "adapters",
- "base64",
  "chrono",
  "domain",
  "duckdb",
- "image",
  "regex",
  "serde_json",
  "tempfile",

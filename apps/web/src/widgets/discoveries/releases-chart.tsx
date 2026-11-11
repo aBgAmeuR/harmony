@@ -21,9 +21,9 @@ import {
 } from "@harmony/charts/v4";
 import { useMemo, useState } from "react";
 
-import type { ArtistRelease, WeeklyActivityPoint } from "@/data/discoveries/types";
+import { seriesOf } from "@/entities/measure";
 
-import { seriesOf } from "@/shared/lib/chart-series";
+import type { ReleaseMark, WeekPoint } from "./api";
 
 const SERIES = seriesOf("playtime");
 
@@ -31,8 +31,8 @@ const shortTitle = (album: string) =>
   album.length > 22 ? `${album.slice(0, 20).trimEnd()}…` : album;
 
 type ChartProps = {
-  weekly: WeeklyActivityPoint[];
-  releases: ArtistRelease[];
+  weekly: WeekPoint[];
+  releases: ReleaseMark[];
 };
 
 // Weeks shown in the main chart, picked with the brush of the overview below it.
@@ -47,7 +47,7 @@ const useWeekRange = (weeks: readonly string[]) => {
 };
 
 // The weekly line with a dashed rule on each release that falls in those weeks.
-const releasesDefinition = (rows: WeeklyActivityPoint[], releases: ArtistRelease[]) => {
+const releasesDefinition = (rows: WeekPoint[], releases: ReleaseMark[]) => {
   const shown = new Set(rows.map((row) => row.name));
   const marks = releases.filter((release) => shown.has(release.periodLabel));
   const top = Math.max(0, ...rows.map((row) => row.value));

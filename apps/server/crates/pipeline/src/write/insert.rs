@@ -81,7 +81,7 @@ fn interactions(conn: &duckdb::Connection, catalog: &Catalog) -> Result<(), Writ
     for listen in catalog.listens() {
         let play = listen.play();
         let ms = fit(play.ms())?;
-        let at = play.at().format("%Y-%m-%d %H:%M:%S%.6f").to_string();
+        let at = play.at().format(super::TIMESTAMP).to_string();
         appender.append_row((
             at,
             play.platform().as_str(),

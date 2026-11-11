@@ -1,16 +1,9 @@
-import { previousRange, type Range } from "@/data/overview/range";
-import { toSqlDate } from "@/data/sql/date-range";
+import { isoDay, previousRange, type Range } from "@/shared/lib/date";
+import { format } from "@/shared/lib/format";
 
 // Relative change vs the previous range, null when there is nothing to compare to.
 export const delta = (current: number, previous: number): number | null =>
   previous > 0 ? (current - previous) / previous : null;
-
-export const shortDate = (value: string): string =>
-  new Date(`${value}T00:00:00`).toLocaleDateString("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
 
 export const rangeLabel = (from: string, to: string): string => {
   const sameYear = from.slice(0, 4) === to.slice(0, 4);
@@ -19,7 +12,7 @@ export const rangeLabel = (from: string, to: string): string => {
     month: "short",
     year: sameYear ? undefined : "numeric",
   });
-  return `${start} - ${shortDate(to)}`;
+  return `${start} - ${format.date(to)}`;
 };
 
 const parts = (value: string): [number, number, number] => {
@@ -60,7 +53,7 @@ export const periodWord = (from: Date, to: Date): string => {
 export const periodNames = (full: Range): { current: string; previous: string } => {
   const previous = previousRange(full, full);
   return {
-    current: compareLabel(toSqlDate(full.from), toSqlDate(full.to)),
-    previous: compareLabel(toSqlDate(previous.from), toSqlDate(previous.to)),
+    current: compareLabel(isoDay(full.from), isoDay(full.to)),
+    previous: compareLabel(isoDay(previous.from), isoDay(previous.to)),
   };
 };

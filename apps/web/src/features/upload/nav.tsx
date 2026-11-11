@@ -2,7 +2,7 @@ import { Button } from "@harmony/ui/components/button";
 import { cn } from "@harmony/ui/lib/utils";
 
 import { useUpload } from "./context";
-import { STEP_CONFIG, STEP_ORDER, stepIndex, type Step } from "./types";
+import { minStep, STEP_LABELS, STEP_ORDER, stepIndex } from "./types";
 
 export const UploadNav = () => {
   const {
@@ -11,7 +11,7 @@ export const UploadNav = () => {
   } = useUpload();
 
   const current = stepIndex(step);
-  const minNavigable = locked ? stepIndex("deploy") : stepIndex("package");
+  const minNavigable = minStep(locked);
 
   return (
     <div className="relative">
@@ -28,7 +28,7 @@ export const UploadNav = () => {
               type="button"
               disabled={isDisabled}
               onClick={() => {
-                if (!isDisabled) goTo(id as Step);
+                if (!isDisabled) goTo(id);
               }}
               variant="ghost"
               className={cn("w-full justify-start", isDisabled && "text-muted-foreground/40")}
@@ -41,7 +41,7 @@ export const UploadNav = () => {
                   !isDisabled && "bg-foreground",
                 )}
               />
-              {STEP_CONFIG[id].label}
+              {STEP_LABELS[id]}
             </Button>
           );
         })}

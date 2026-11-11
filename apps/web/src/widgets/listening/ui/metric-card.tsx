@@ -4,58 +4,45 @@ import { Card } from "@harmony/ui/components/card";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
-import type { ListeningHabitTrendPoint } from "@/data/listening/types";
-import type { Kind } from "@/utils/format";
-
-import { calendarDaySpan } from "@/data/sql/period-range";
+import { measures } from "@/data/measures";
 import { DataDialog, FigureViews } from "@/features/data-figure";
+import { parseDay } from "@/shared/lib/date";
 import { Spark } from "@/shared/primitives/spark";
 import { Stat } from "@/shared/primitives/stat";
 import { useScope } from "@/shared/scope";
 
-import { listeningQueries } from "../api";
+import type { Point } from "../api";
+
+import { listeningQueries, type MetricId } from "../api";
 import { SeriesChart } from "./series-chart";
 
-type ListeningMetricQuery = (typeof listeningQueries)[
-  | "listeningTime"
-  | "totalStreams"
-  | "activeDays"
-  | "uniqueTracks"];
+type MetricCardProps = { measure: MetricId };
 
-type MetricCardProps = {
-  label: string;
-  kind?: Kind;
-  query: ListeningMetricQuery;
-};
-
-const NO_TREND: ListeningHabitTrendPoint[] = [];
+const NO_TREND: Point[] = [];
 
 const VIEWS = [
   { value: "bars", label: "Bars", icon: ChartColumnIcon },
   { value: "area", label: "Area", icon: ChartLineData01Icon },
 ];
 
-// Trend dates are midnight UTC, so they are read in UTC.
-const bucketLabel = (date: Date, unit: "day" | "month") =>
-  date.toLocaleDateString(
+const bucketLabel = (start: string, unit: "day" | "week" | "month") =>
+  parseDay(start).toLocaleDateString(
     "en-US",
-    unit === "day"
-      ? { month: "short", day: "numeric", timeZone: "UTC" }
-      : { month: "short", year: "numeric", timeZone: "UTC" },
+    unit === "month" ? { month: "short", year: "numeric" } : { month: "short", day: "numeric" },
   );
 
 // A metric with its trend, which opens larger.
-export const MetricCard = ({ label, kind = "count", query }: MetricCardProps) => {
-  const filter = useScope();
-  const { data } = useQuery(query.queryOptions(filter));
+export const MetricCard = ({ measure }: MetricCardProps) => {
+  const { label, kind } = measures[measure];
+  const scope = useScope();
+  const { data } = useQuery(listeningQueries.metric({ scope, measure }));
   const [open, setOpen] = useState(false);
   const [view, setView] = useState("bars");
 
   const trend = data?.trend ?? NO_TREND;
-  // The trend is bucketed like the listening queries: by day under a month, by month above.
-  const unit = calendarDaySpan(filter.from, filter.to) < 31 ? "day" : "month";
+  const unit = data?.unit ?? "day";
   const points = useMemo(
-    () => trend.map((point) => ({ name: bucketLabel(point.date, unit), value: point.value })),
+    () => trend.map((point) => ({ name: bucketLabel(point.start, unit), value: point.value })),
     [trend, unit],
   );
 

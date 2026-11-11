@@ -22,7 +22,6 @@ export type UploadActions = {
   back: () => void;
   goTo: (step: Step) => void;
   deploy: () => void;
-  retry: () => void;
   reset: () => void;
   reportPublicId: (publicId: string) => void;
   reportPhase: (phase: UploadPhase) => void;

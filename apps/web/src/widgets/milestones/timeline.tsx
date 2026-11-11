@@ -9,13 +9,14 @@ import {
 import { cn } from "@harmony/ui/lib/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { TimelineEvent } from "@/data/milestones/types";
-
+import { format } from "@/shared/lib/format";
 import { Art } from "@/shared/primitives/art";
 import { Empty } from "@/shared/primitives/empty";
 import { Section } from "@/shared/primitives/section";
 
-import { formatMilestoneDate, yearOf } from "./format";
+import type { TimelineEvent } from "./api";
+
+import { yearOf } from "./format";
 
 const TimelineSpine = ({ isFirst, isLast }: { isFirst: boolean; isLast: boolean }) => {
   const hideLine = isFirst && isLast;
@@ -145,7 +146,7 @@ export const MilestonesTimeline = ({ rows, isPending = false }: MilestonesTimeli
             {rows.map((event, index) => {
               const year = yearOf(event.date);
               const dateValue = event.date.slice(0, 10);
-              const dateLabel = formatMilestoneDate(event.date);
+              const dateLabel = format.date(event.date);
 
               return (
                 <li key={event.id} className="flex w-52 shrink-0 snap-start flex-col pb-3">

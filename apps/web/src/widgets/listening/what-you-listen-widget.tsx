@@ -17,13 +17,13 @@ import { cn } from "@harmony/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
-import type { GenreSegment, ReleaseYearPoint } from "@/data/listening/types";
-
+import { seriesOf } from "@/entities/measure";
 import { DataFigure } from "@/features/data-figure";
-import { seriesOf } from "@/shared/lib/chart-series";
+import { format } from "@/shared/lib/format";
 import { Section } from "@/shared/primitives/section";
 import { useScope } from "@/shared/scope";
-import { format } from "@/utils/format";
+
+import type { GenreSegment, ReleaseYearPoint } from "./api";
 
 import { listeningQueries } from "./api";
 import { SectionPending } from "./ui/section-pending";
@@ -40,7 +40,7 @@ const YEAR_VIEWS = [
 
 // The busiest years are drawn bright.
 const BRIGHT_YEARS = 4;
-const BRIGHT = "var(--chart-1)";
+const BRIGHT = colors.primary;
 const DIM = "var(--chart-4)";
 // Room above the tallest bar for the median label.
 const HEADROOM = 1.15;
@@ -364,10 +364,10 @@ const Genres = ({ genres }: { genres: GenreSegment[] }) => {
 export const WhatYouListenWidget = () => {
   const filter = useScope();
   const { data: rows = NO_YEARS, isPending: yearsPending } = useQuery(
-    listeningQueries.releaseYear.queryOptions(filter),
+    listeningQueries.releaseYear(filter),
   );
   const { data: genres = NO_GENRES, isPending: genresPending } = useQuery(
-    listeningQueries.genres.queryOptions(filter),
+    listeningQueries.genres(filter),
   );
 
   const years = useMemo(() => fillYears(rows), [rows]);

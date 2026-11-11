@@ -1,7 +1,7 @@
-import type { ListeningStyleMetric, PlatformPoint } from "@/data/listening/types";
+import type { PlatformPoint, StyleMetric } from "@/widgets/listening/api";
 
 // The demo package's 2026 plays, as `listeningStyleFn` and `platformsFn` return them.
-export const STYLE: ListeningStyleMetric[] = [
+export const STYLE: StyleMetric[] = [
   { key: "finished", label: "Finished", value: 0.875 },
   { key: "skipped", label: "Skipped", value: 0.0905 },
   { key: "shuffle", label: "Shuffle", value: 0.1934 },

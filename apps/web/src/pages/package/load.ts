@@ -1,12 +1,10 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import { packageQueries } from "@/entities/package/api";
+import { packageQueries } from "@/entities/package";
 
-const periodQuery = packageQueries.period.queryOptions();
-
-export const loadPackage = async (queryClient: QueryClient, packageId: string) => {
+export const loadPackage = async (queryClient: QueryClient) => {
   await Promise.all([
-    queryClient.ensureQueryData(packageQueries.meta.queryOptions(packageId)),
-    queryClient.ensureQueryData(periodQuery),
+    queryClient.ensureQueryData(packageQueries.meta()),
+    queryClient.ensureQueryData(packageQueries.period()),
   ]);
 };

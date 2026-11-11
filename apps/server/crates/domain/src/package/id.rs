@@ -18,6 +18,21 @@ pub enum IdError {
 }
 
 impl Id {
+    /// The folder of every package file, in a local directory or a bucket.
+    pub const FOLDER: &'static str = "harmony";
+
+    /// `{id}.duckdb`, the name of the file in `/files/{name}` too.
+    #[must_use]
+    pub fn file_name(self) -> String {
+        format!("{}.duckdb", self.as_str())
+    }
+
+    /// `harmony/{id}.duckdb`, where the file is stored.
+    #[must_use]
+    pub fn object_key(self) -> String {
+        format!("{}/{}", Self::FOLDER, self.file_name())
+    }
+
     /// # Errors
     ///
     /// [`IdError::Length`] when `value` is not 6 bytes.

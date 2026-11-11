@@ -1,11 +1,12 @@
 import {
-  Chart,
-  IntensityLegend,
   cell,
+  Chart,
   chartBase,
+  colors,
   defineChart,
   edgeTickLabels,
   intensityColor,
+  IntensityLegend,
   intensityLevel,
   pointTooltip,
   polar,
@@ -21,13 +22,13 @@ import { cn } from "@harmony/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
-import type { Rhythm } from "@/data/listening/types";
-
+import { measures } from "@/data/measures";
 import { FigureViews } from "@/features/data-figure";
-import { measure } from "@/shared/lib/measure";
+import { format } from "@/shared/lib/format";
 import { Section } from "@/shared/primitives/section";
 import { useScope } from "@/shared/scope";
-import { format } from "@/utils/format";
+
+import type { Rhythm } from "./api";
 
 import { listeningQueries } from "./api";
 import { SectionPending } from "./ui/section-pending";
@@ -45,7 +46,7 @@ const VIEWS = [
 ];
 
 // Tonal greens: the busiest bar, then the group that carries the listening, then the rest.
-const PEAK = "var(--chart-1)";
+const PEAK = colors.primary;
 const MAIN = "var(--chart-2)";
 const DIM = "var(--chart-4)";
 
@@ -140,7 +141,7 @@ const Heatmap = ({ grid }: { grid: number[][] }) => {
       focusRing: false,
       tooltip: pointTooltip((c: Cell) => ({
         title: `${c.day} ${c.hour}`,
-        label: measure.playtime.label,
+        label: measures.playtime.label,
         value: format.as(c.value, "minutes"),
       })),
     });
@@ -197,7 +198,7 @@ const HourClock = ({ hours, part }: { hours: number[]; part: Part }) => {
       ],
       tooltip: pointTooltip((bar: HourBar) => ({
         title: bar.hour,
-        label: measure.playtime.label,
+        label: measures.playtime.label,
         value: format.as(bar.value, "minutes"),
       })),
     });
@@ -316,7 +317,7 @@ const NO_RHYTHM: Rhythm = { grid: [], days: [], hours: [] };
 // Which hours of the day and which days of the week carry the listening.
 export const RhythmWidget = () => {
   const filter = useScope();
-  const { data = NO_RHYTHM, isPending } = useQuery(listeningQueries.rhythm.queryOptions(filter));
+  const { data = NO_RHYTHM, isPending } = useQuery(listeningQueries.rhythm(filter));
   const [view, setView] = useState("clock");
 
   const total = sum(data.hours);

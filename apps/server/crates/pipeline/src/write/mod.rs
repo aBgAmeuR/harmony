@@ -13,6 +13,9 @@ use domain::fail::Fail;
 use domain::package::Package;
 use domain::stage::Stage;
 
+/// How timestamps are written for `DuckDB` to cast to `TIMESTAMP`.
+const TIMESTAMP: &str = "%Y-%m-%d %H:%M:%S%.6f";
+
 /// `write` could not build the database file.
 #[derive(Debug, thiserror::Error)]
 pub enum WriteError {
@@ -37,12 +40,6 @@ impl From<WriteError> for Fail {
     }
 }
 
-/// Create the file, apply the schema, insert rows, then write `package_meta`.
-///
-/// # Errors
-///
-/// [`WriteError::Duck`] when `DuckDB` rejects the file, the schema, or a row.
-/// [`WriteError::Fit`] when a number does not fit the integer column.
 /// Apply the schema and insert rows. `note` writes `package_meta` afterwards.
 ///
 /// # Errors

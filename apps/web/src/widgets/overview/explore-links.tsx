@@ -3,8 +3,8 @@ import { buttonVariants } from "@harmony/ui/components/button";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
+import { format } from "@/shared/lib/format";
 import { Section } from "@/shared/primitives/section";
-import { format } from "@/utils/format";
 
 import { overviewQueries } from "./api";
 import { useRanges } from "./use-range";
@@ -12,17 +12,18 @@ import { useRanges } from "./use-range";
 // Where to go after the summary.
 export const ExploreLinks = () => {
   const { range, full } = useRanges();
-  const { data } = useQuery(overviewQueries.kpis.queryOptions(range, full));
+  const { data } = useQuery(overviewQueries.kpis({ range, full }));
   const artists = data?.current.totals.artists ?? 0;
 
   const links = [
     {
-      to: "./artists",
+      to: "./explorer",
+      search: { base: "artists" },
       icon: UserGroup02Icon,
       label: artists > 0 ? `Browse all ${format.count(artists)} artists` : "Browse your artists",
     },
-    { to: "./discoveries", icon: Compass01Icon, label: "See what you discovered" },
-    { to: "./milestones", icon: Award01Icon, label: "Look back at your milestones" },
+    { to: "./discoveries", search: {}, icon: Compass01Icon, label: "See what you discovered" },
+    { to: "./milestones", search: {}, icon: Award01Icon, label: "Look back at your milestones" },
   ] as const;
 
   return (
@@ -34,6 +35,7 @@ export const ExploreLinks = () => {
             key={link.to}
             from="/app/$packageId"
             to={link.to}
+            search={link.search}
             preload="intent"
             className={buttonVariants({ variant: "outline" })}
           >

@@ -1,6 +1,6 @@
 use adapters::memory::Memory;
 use domain::catalog::{Catalog, Id};
-use domain::matching::Guess;
+use domain::matching::{Guess, Match};
 use domain::observe::{Progress, Report};
 use domain::package::Id as PackageId;
 use domain::play::{History, Play, PlayError, RawPlay};
@@ -77,9 +77,7 @@ fn run_asks_find_once_for_a_repeated_pair() -> Result<(), Fixture> {
     );
 
     let matched = drive(history(plays)?, &lookup);
-    assert!(
-        matches!(matched, Ok(ref matched) if matched.hits().len() == 2 && matched.missed() == 0)
-    );
+    assert!(matches!(matched.map(Match::into_hits), Ok((hits, 0)) if hits.len() == 2));
     assert_eq!(lookup.finds(), 1);
     Ok(())
 }
@@ -92,7 +90,7 @@ fn run_counts_a_miss() -> Result<(), Fixture> {
     );
 
     let matched = drive(history(vec![play("Ken Carson", "Me N My Kup")?])?, &lookup);
-    assert!(matches!(matched, Ok(matched) if matched.hits().is_empty() && matched.missed() == 1));
+    assert!(matches!(matched.map(Match::into_hits), Ok((hits, 1)) if hits.is_empty()));
     Ok(())
 }
 

@@ -56,12 +56,17 @@ impl Store {
         }
     }
 
-    /// Reserve a free id, store a queued job, and return the package view.
+    /// Reserve a free id, store a queued job, and return the package view. `announce` runs with
+    /// the id before a worker can claim the job, so its progress exists before the first note.
     ///
     /// # Errors
     ///
     /// [`OpenError::Taken`] when every generated id is already stored.
-    pub fn open(&self, source: Source) -> Result<Package, OpenError> {
+    pub fn open(
+        &self,
+        source: Source,
+        announce: impl FnOnce(package::Id),
+    ) -> Result<Package, OpenError> {
         let Ok(mut inner) = self.inner.lock() else {
             return Err(OpenError::Taken);
         };
@@ -77,6 +82,7 @@ impl Store {
             inner
                 .slots
                 .insert(id, Slot::Queued(Job::queue(id, name, size, at, source)));
+            announce(id);
             inner.queue.push_back(id);
             return Ok(package);
         }
@@ -100,13 +106,6 @@ impl Store {
             Some(Slot::Running(package) | Slot::Settled(package)) => Ok(package.clone()),
             None => Err(Missing),
         }
-    }
-
-    #[must_use]
-    pub fn contains(&self, id: package::Id) -> bool {
-        self.inner
-            .lock()
-            .is_ok_and(|inner| inner.slots.contains_key(&id))
     }
 
     /// Take the oldest queued job and mark its slot running.
@@ -197,7 +196,7 @@ mod tests {
     #[test]
     fn claim_then_done_settles_a_ready_package() -> Result<(), Fixture> {
         let store = Store::new();
-        let opened = store.open(source()?)?;
+        let opened = store.open(source()?, |_| ())?;
         assert_eq!(store.counts(), (1, 0));
         assert_eq!(store.get(opened.id())?.state(), State::Queued);
 
@@ -222,7 +221,7 @@ mod tests {
     #[test]
     fn fail_records_the_stage_message() -> Result<(), Fixture> {
         let store = Store::new();
-        let opened = store.open(source()?)?;
+        let opened = store.open(source()?, |_| ())?;
         let job = store.claim().ok_or(Fixture::Missing(super::Missing))?;
         let (_source, pending) = job.split();
         store.fail(

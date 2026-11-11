@@ -11,6 +11,12 @@ pub trait Lookup {
     ///
     /// [`LookupError`] when the catalog cannot be loaded.
     fn load(&self, ids: &[catalog::Id]) -> Result<Catalog, LookupError>;
+
+    /// Requests sent since the lookup was opened, retries included.
+    fn calls(&self) -> u64;
+
+    /// Requests sent again after a refusal or a failure.
+    fn retries(&self) -> u64;
 }
 
 /// A search or a load failed. The caller picks the pipeline stage.

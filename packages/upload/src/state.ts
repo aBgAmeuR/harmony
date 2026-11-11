@@ -1,5 +1,6 @@
 import type { PipelineEvent, PipelineState, PipelineStep, StepId } from "./types";
 
+// The step ids and labels the server defines in `crates/domain/src/stage.rs`.
 export const STEP_ORDER: StepId[] = [
   "extract_archive",
   "parse_interactions",
@@ -20,19 +21,12 @@ export const STEP_LABELS: Record<StepId, string> = {
   persist_interactions: "Save interactions",
 };
 
-export function createInitialPipelineState(): PipelineState {
-  return {
-    runStatus: "idle",
-    seq: -1,
-    steps: STEP_ORDER.map((id) => ({
-      id,
-      label: STEP_LABELS[id],
-      status: "pending",
-    })),
-  };
-}
-
-export const INITIAL_PIPELINE_STATE: PipelineState = createInitialPipelineState();
+// Before the first event: every step pending.
+export const INITIAL_PIPELINE_STATE: PipelineState = {
+  runStatus: "idle",
+  seq: -1,
+  steps: STEP_ORDER.map((id) => ({ id, label: STEP_LABELS[id], status: "pending" })),
+};
 
 export function reducePipelineEvent(state: PipelineState, event: PipelineEvent): PipelineState {
   if (event.seq <= state.seq) {

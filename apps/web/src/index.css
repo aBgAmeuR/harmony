@@ -1,6 +1,9 @@
 @import "@harmony/font/spotify-mix.css";
 @import "@harmony/ui/globals.css";
 
+/* Workspace packages are outside the app root: Tailwind scans the ones the app renders. */
+@source "../../../packages/charts/src/**/*.{ts,tsx}";
+
 @theme {
   --animate-rise-in: riseIn 360ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-grow-x: growX 800ms 120ms cubic-bezier(0.23, 1, 0.32, 1) both;

@@ -7,16 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@harmony/ui/components/card";
-import { UploadError, type PipelineRunStatus } from "@harmony/upload";
+import { createPipeline, deploy as upload, type PipelineRunStatus } from "@harmony/upload";
 import { usePipeline } from "@harmony/upload/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { prefetchEngine } from "@/data/packages/open";
-import { format } from "@/utils/format";
+import { Pipeline } from "@/entities/package";
+import { format } from "@/shared/lib/format";
 
 import { useUpload } from "../context";
-import { uploadClient } from "../lib/client";
-import { UploadPipeline } from "../pipeline";
 
 const getIsoMs = (iso?: string): number | null => {
   if (!iso) return null;
@@ -39,28 +38,16 @@ const formatRunStatus = (status: PipelineRunStatus): string => {
 
 export const UploadDeployStep = () => {
   const {
-    state: { file, selection, publicId, deployAttempt, error: contextError },
-    actions: { next, retry, reset, reportPublicId, reportPhase, reportError },
+    state: { file, selection, publicId, deployAttempt, error, phase },
+    actions: { next, deploy, reset, reportPublicId, reportPhase, reportError },
   } = useUpload();
 
   const [nowTs, setNowTs] = useState(() => Date.now());
-  const [localPublicId, setLocalPublicId] = useState<string | null>(publicId);
-  const [deployError, setDeployError] = useState<string | null>(null);
   const [isDeploying, setIsDeploying] = useState(false);
-  const resumeAppliedRef = useRef(false);
   const lastAttemptRef = useRef(0);
 
-  const [prevPublicId, setPrevPublicId] = useState(publicId);
-  if (publicId !== prevPublicId) {
-    setPrevPublicId(publicId);
-    setLocalPublicId(publicId);
-  }
-
   // Creating a pipeline has no side effects; the effect owns the SSE connection.
-  const pipeline = useMemo(
-    () => (localPublicId ? uploadClient.pipeline(localPublicId) : null),
-    [localPublicId],
-  );
+  const pipeline = useMemo(() => (publicId ? createPipeline(publicId) : null), [publicId]);
 
   useEffect(() => {
     if (!pipeline) {
@@ -96,35 +83,21 @@ export const UploadDeployStep = () => {
     if (!file || selection.length === 0) return;
 
     lastAttemptRef.current = deployAttempt;
-    resumeAppliedRef.current = false;
 
     let cancelled = false;
 
     const runDeploy = async () => {
       setIsDeploying(true);
       reportPhase("deploying");
-      setDeployError(null);
       reportError(null);
-      setLocalPublicId(null);
 
       try {
-        const result = await uploadClient.deploy({
-          file,
-          selectedFiles: selection,
-        });
+        const result = await upload({ file, selectedFiles: selection });
         if (cancelled) return;
-        setLocalPublicId(result.publicId);
         reportPublicId(result.publicId);
       } catch (err) {
         if (cancelled) return;
-        const message =
-          err instanceof UploadError
-            ? err.message
-            : err instanceof Error
-              ? err.message
-              : "Unable to deploy package.";
-        setDeployError(message);
-        reportError(message);
+        reportError(err instanceof Error ? err.message : "Unable to deploy package.");
         reportPhase("error");
       } finally {
         if (!cancelled) {
@@ -140,15 +113,6 @@ export const UploadDeployStep = () => {
     };
   }, [deployAttempt, file, selection, reportPublicId, reportPhase, reportError]);
 
-  useEffect(() => {
-    if (!publicId || resumeAppliedRef.current || deployAttempt > 0) {
-      return;
-    }
-
-    resumeAppliedRef.current = true;
-    setLocalPublicId(publicId);
-  }, [publicId, deployAttempt]);
-
   const ticking = isDeploying || pipelineState.runStatus === "running";
   useEffect(() => {
     if (!ticking) return;
@@ -158,11 +122,14 @@ export const UploadDeployStep = () => {
     return () => window.clearInterval(t);
   }, [ticking]);
 
+  // The upload itself or the pipeline after it may have failed.
   const canRetry =
-    pipelineState.runStatus === "error" && Boolean(file) && selection.length > 0 && !isDeploying;
+    (pipelineState.runStatus === "error" || phase === "error") &&
+    Boolean(file) &&
+    selection.length > 0 &&
+    !isDeploying;
   const canContinue = pipelineState.runStatus === "done";
-  const errorMessage =
-    pipelineState.error ?? deployError ?? connectionError ?? contextError ?? null;
+  const errorMessage = pipelineState.error ?? connectionError ?? error ?? null;
 
   const startMs = getIsoMs(pipelineState.startedAt);
   const endMs = getIsoMs(pipelineState.endedAt) ?? nowTs;
@@ -203,7 +170,7 @@ export const UploadDeployStep = () => {
           </div>
         </div>
 
-        <UploadPipeline steps={pipelineState.steps} nowTs={nowTs} />
+        <Pipeline steps={pipelineState.steps} now={nowTs} className="bg-transparent" />
         {pipelineState.stats ? (
           <p className="text-xs text-muted-foreground">
             {pipelineState.stats.calls.toLocaleString()} lookups •{" "}
@@ -218,7 +185,7 @@ export const UploadDeployStep = () => {
           <Button variant="destructive" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button variant="ghost" disabled={!canRetry} onClick={retry}>
+          <Button variant="ghost" disabled={!canRetry} onClick={deploy}>
             Retry deploy
           </Button>
         </div>

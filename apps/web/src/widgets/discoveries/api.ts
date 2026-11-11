@@ -1,25 +1,41 @@
-import { queryOptions } from "@tanstack/react-query";
-
 import type { Scope } from "@/shared/scope";
 
-import { artistReleasesFn } from "@/data/discoveries/artist-releases";
-import { weeklyActivityFn } from "@/data/discoveries/weekly-activity";
+import { series } from "@/data/aggregate";
+import { scopeFilter } from "@/data/filter";
+import { releasesFn, type Release } from "@/data/releases";
+import { addDays, parseDay } from "@/shared/lib/date";
+import { query } from "@/shared/lib/query";
+
+export type WeekPoint = { name: string; value: number };
+
+// A release, placed on the week it came out.
+export type ReleaseMark = Release & { periodLabel: string };
+
+const weekLabel = (date: Date): string =>
+  `${String(date.getDate()).padStart(2, "0")} ${date.toLocaleDateString("en-US", { month: "short" })} ${date.getFullYear()}`;
+
+const weekOf = (date: Date): Date => addDays(date, -((date.getDay() + 6) % 7));
+
+// Minutes of the artist per week (from Monday), empty weeks included.
+const weeklyFn = async (scope: Scope): Promise<WeekPoint[]> => {
+  if (scope.artistId === undefined) return [];
+  const { points } = await series(scopeFilter(scope), ["playtime"], "week");
+  return points.map((point) => ({
+    name: weekLabel(parseDay(point.key)),
+    value: Math.round(point.playtime),
+  }));
+};
+
+const releasesOfFn = async ({ artistId, from, to }: Scope): Promise<ReleaseMark[]> => {
+  if (artistId === undefined) return [];
+  const releases = await releasesFn({ artistId, from, to });
+  return releases.map((release) => ({
+    ...release,
+    periodLabel: weekLabel(weekOf(parseDay(release.releaseDate))),
+  }));
+};
 
 export const discoveryQueries = {
-  weeklyActivity: {
-    queryOptions: (filter: Scope) =>
-      queryOptions({
-        queryKey: ["discoveries", "weekly-activity", filter],
-        queryFn: () => weeklyActivityFn(filter),
-        enabled: filter.artistId != null,
-      }),
-  },
-  artistReleases: {
-    queryOptions: (filter: Scope) =>
-      queryOptions({
-        queryKey: ["discoveries", "artist-releases", filter],
-        queryFn: () => artistReleasesFn(filter),
-        enabled: filter.artistId != null,
-      }),
-  },
+  weekly: query("discoveries-weekly", weeklyFn),
+  releases: query("discoveries-releases", releasesOfFn),
 };

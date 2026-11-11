@@ -1,65 +1,164 @@
-import { queryOptions } from "@tanstack/react-query";
+import { aggregate, series, totals, unitFor } from "@/data/aggregate";
+import { listFn } from "@/data/bases";
+import { itemFn } from "@/data/items";
+import { streakFn } from "@/data/streak";
+import { behaviorFn, vsAverageFn } from "@/data/track";
+import { rangeDays, type Range } from "@/shared/lib/date";
+import { platformLabel, toDate } from "@/shared/lib/format";
+import { query } from "@/shared/lib/query";
 
-import { toSqlDate } from "@/data/sql/date-range";
-import { trackBehavioralFn } from "@/data/tracks/behavioral";
-import { trackDevicesFn } from "@/data/tracks/devices";
-import { getTrackFn } from "@/data/tracks/get";
-import { trackHistoryFn } from "@/data/tracks/history";
-import { trackListeningFn } from "@/data/tracks/listening";
-import { trackOverviewFn } from "@/data/tracks/overview";
-import { trackVsAverageFn } from "@/data/tracks/vs-average";
+type TrackRange = { trackId: number; range: Range };
 
-type TrackRangeArgs = { trackId: number; from: Date; to: Date };
+const ofTrack = ({ trackId, range }: TrackRange) => ({
+  ...range,
+  rules: [{ field: "track", op: "is", value: trackId }] as const,
+});
+
+const overviewFn = (args: TrackRange) =>
+  totals(ofTrack(args), ["streams", "playtime", "completion", "skipRate"]);
+
+type TrackHistory = {
+  longestStreakDays: number;
+  longestStreakStart: string | null;
+  firstPlayed: string | null;
+  lastPlayed: string | null;
+  firstPlayedOnRelease: boolean;
+};
+
+const historyFn = async (args: TrackRange): Promise<TrackHistory> => {
+  const filter = ofTrack(args);
+  const [streak, bounds, item] = await Promise.all([
+    streakFn(filter),
+    totals(filter, ["firstPlayed", "lastPlayed"]),
+    itemFn({ kind: "track", id: args.trackId }),
+  ]);
+  return {
+    longestStreakDays: streak.longestDays,
+    longestStreakStart: streak.longestStart,
+    firstPlayed: bounds.firstPlayed,
+    lastPlayed: bounds.lastPlayed,
+    firstPlayedOnRelease:
+      bounds.firstPlayed !== null && bounds.firstPlayed.slice(0, 10) === item?.releaseDate,
+  };
+};
+
+export type ChartPoint = { name: string; value: number };
+
+export type DayPart = {
+  key: "morning" | "afternoon" | "evening" | "night";
+  label: string;
+  // Fraction of the plays, between 0 and 1.
+  share: number;
+};
+
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+
+const DAY_PARTS = [
+  { key: "morning", label: "Morning", from: 5, to: 12 },
+  { key: "afternoon", label: "Afternoon", from: 12, to: 17 },
+  { key: "evening", label: "Evening", from: 17, to: 21 },
+] as const;
+
+const dayPartOf = (hour: number): DayPart["key"] =>
+  DAY_PARTS.find((part) => hour >= part.from && hour < part.to)?.key ?? "night";
+
+// Minutes per bucket of the period, plays per weekday and per part of the day, in local time.
+const listeningFn = async (args: TrackRange) => {
+  const filter = ofTrack(args);
+  const unit = unitFor(rangeDays(args.range));
+  const [trend, hours] = await Promise.all([
+    series(filter, ["playtime"], unit),
+    aggregate({ by: "hour", measures: ["streams"], filter }),
+  ]);
+
+  const weekly = WEEKDAYS.map((name) => ({ name, value: 0 }));
+  const parts = new Map<DayPart["key"], number>();
+  let total = 0;
+  for (const row of hours) {
+    const date = new Date(row.key * 1000);
+    const day = weekly[(date.getDay() + 6) % 7];
+    if (day) day.value += row.streams;
+    const part = dayPartOf(date.getHours());
+    parts.set(part, (parts.get(part) ?? 0) + row.streams);
+    total += row.streams;
+  }
+
+  const label = (start: string) =>
+    toDate(start).toLocaleDateString(
+      "en-US",
+      unit === "month" ? { month: "short", year: "numeric" } : { day: "2-digit", month: "short" },
+    );
+
+  return {
+    monthly: trend.points.map((point) => ({
+      name: label(point.key),
+      value: Math.round(point.playtime),
+    })),
+    weekly,
+    dayParts: [...DAY_PARTS, { key: "night", label: "Night" } as const].map(
+      ({ key, label: name }) => ({
+        key,
+        label: name,
+        share: total > 0 ? (parts.get(key) ?? 0) / total : 0,
+      }),
+    ),
+  };
+};
+
+type DeviceShare = { label: string; share: number };
+
+// The two main platforms of the track, the rest as "Others".
+const devicesFn = async (args: TrackRange): Promise<DeviceShare[]> => {
+  const rows = await aggregate<"streams", string>({
+    by: "platform",
+    measures: ["streams"],
+    filter: ofTrack(args),
+  });
+  const total = rows.reduce((sum, row) => sum + row.streams, 0);
+  if (total === 0) return [];
+  const shares = rows
+    .sort((a, b) => b.streams - a.streams || a.key.localeCompare(b.key))
+    .map((row) => ({ label: platformLabel(row.key), share: row.streams / total }));
+  if (shares.length <= 2) return shares;
+  const rest = shares.slice(2).reduce((sum, device) => sum + device.share, 0);
+  return [...shares.slice(0, 2), { label: "Others", share: rest }];
+};
+
+export type Interaction = {
+  timestamp: string;
+  platform: string;
+  msPlayed: number;
+  shuffle: boolean;
+  skipped: boolean;
+  offline: boolean;
+};
+
+// Every play of the track in the period, newest first.
+const interactionsFn = async (args: TrackRange): Promise<Interaction[]> => {
+  const { rows } = await listFn({
+    base: "plays",
+    filter: ofTrack(args),
+    sort: "played",
+    desc: true,
+    limit: 100_000,
+  });
+  return rows.map((row) => ({
+    timestamp: String(row.played),
+    platform: String(row.platform ?? "other"),
+    msPlayed: Math.round(Number(row.playtime) * 60000),
+    shuffle: row.shuffle === true,
+    skipped: row.skipped === true,
+    offline: row.offline === true,
+  }));
+};
 
 export const trackQueries = {
-  get: {
-    queryOptions: (trackId: number | null) =>
-      queryOptions({
-        queryKey: ["tracks", "get", trackId],
-        queryFn: () => (trackId ? getTrackFn(trackId) : null),
-        enabled: trackId !== null,
-      }),
-  },
-  overview: {
-    queryOptions: ({ trackId, from, to }: TrackRangeArgs) =>
-      queryOptions({
-        queryKey: ["tracks", "overview", { trackId, from: toSqlDate(from), to: toSqlDate(to) }],
-        queryFn: () => trackOverviewFn({ trackId, from, to }),
-      }),
-  },
-  history: {
-    queryOptions: ({ trackId, from, to }: TrackRangeArgs) =>
-      queryOptions({
-        queryKey: ["tracks", "history", { trackId, from: toSqlDate(from), to: toSqlDate(to) }],
-        queryFn: () => trackHistoryFn({ trackId, from, to }),
-      }),
-  },
-  listening: {
-    queryOptions: ({ trackId, from, to }: TrackRangeArgs) =>
-      queryOptions({
-        queryKey: ["tracks", "listening", { trackId, from: toSqlDate(from), to: toSqlDate(to) }],
-        queryFn: () => trackListeningFn({ trackId, from, to }),
-      }),
-  },
-  behavioral: {
-    queryOptions: ({ trackId, from, to }: TrackRangeArgs) =>
-      queryOptions({
-        queryKey: ["tracks", "behavioral", { trackId, from: toSqlDate(from), to: toSqlDate(to) }],
-        queryFn: () => trackBehavioralFn({ trackId, from, to }),
-      }),
-  },
-  vsAverage: {
-    queryOptions: ({ trackId, from, to }: TrackRangeArgs) =>
-      queryOptions({
-        queryKey: ["tracks", "vs-average", { trackId, from: toSqlDate(from), to: toSqlDate(to) }],
-        queryFn: () => trackVsAverageFn({ trackId, from, to }),
-      }),
-  },
-  devices: {
-    queryOptions: ({ trackId, from, to }: TrackRangeArgs) =>
-      queryOptions({
-        queryKey: ["tracks", "devices", { trackId, from: toSqlDate(from), to: toSqlDate(to) }],
-        queryFn: () => trackDevicesFn({ trackId, from, to }),
-      }),
-  },
+  get: query("track", (trackId: number) => itemFn({ kind: "track", id: trackId })),
+  overview: query("track-overview", overviewFn),
+  history: query("track-history", historyFn),
+  listening: query("track-listening", listeningFn),
+  behavior: query("track-behavior", behaviorFn),
+  vsAverage: query("track-vs-average", vsAverageFn),
+  devices: query("track-devices", devicesFn),
+  interactions: query("track-interactions", interactionsFn),
 };

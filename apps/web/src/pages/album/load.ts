@@ -1,8 +1,10 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import { albumQueries } from "@/entities/album";
+import { readScope } from "@/shared/scope";
+import { itemQueries, loadItem } from "@/widgets/item/api";
 
-// Starts the query without blocking the navigation: the page handles its loading state.
 export const loadAlbum = (queryClient: QueryClient, albumId: number) => {
-  void queryClient.prefetchQuery(albumQueries.get.queryOptions(albumId));
+  loadItem(queryClient, { kind: "album", id: albumId });
+  const { from, to } = readScope();
+  void queryClient.prefetchQuery(itemQueries.albumTracks({ albumId, range: { from, to } }));
 };

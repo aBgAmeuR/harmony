@@ -1,16 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { format } from "@/shared/lib/format";
 import { Empty } from "@/shared/primitives/empty";
 import { Media } from "@/shared/primitives/media";
 import { Section } from "@/shared/primitives/section";
 import { useScope } from "@/shared/scope";
 
 import { milestoneQueries } from "./api";
-import { formatMilestoneDate } from "./format";
 
 export const FirstsWidget = () => {
   const filter = useScope();
-  const { data = [], isPending } = useQuery(milestoneQueries.firsts.queryOptions(filter));
+  const { data = [], isPending } = useQuery(milestoneQueries.firsts(filter));
 
   return (
     <Section aria-labelledby="discoveries-that-stayed">
@@ -32,7 +32,7 @@ export const FirstsWidget = () => {
                 <Media.Art src={row.image} alt={row.name} />
                 <Media.Body>
                   <Media.Title className="font-normal">{row.name}</Media.Title>
-                  <Media.Sub>{formatMilestoneDate(row.date)}</Media.Sub>
+                  <Media.Sub>{format.date(row.date)}</Media.Sub>
                 </Media.Body>
                 <Media.End className="text-sm font-medium text-primary">#{row.laterRank}</Media.End>
               </Media>

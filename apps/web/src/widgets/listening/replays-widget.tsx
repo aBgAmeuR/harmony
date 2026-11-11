@@ -1,7 +1,8 @@
 import {
-  Chart,
   areaY,
+  Chart,
   chartBase,
+  colors,
   curves,
   decorative,
   defineChart,
@@ -15,25 +16,25 @@ import { Skeleton } from "@harmony/ui/components/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import type { TrackEngagementStage } from "@/data/listening/types";
-
+import { format, parts } from "@/shared/lib/format";
 import { Section } from "@/shared/primitives/section";
 import { useScope } from "@/shared/scope";
-import { format, parts } from "@/utils/format";
+
+import type { ReplayStage } from "./api";
 
 import { listeningQueries } from "./api";
 import { SectionPending } from "./ui/section-pending";
 
-const NO_STAGES: TrackEngagementStage[] = [];
+const NO_STAGES: ReplayStage[] = [];
 
 const LABELS = ["All", "2+ plays", "5+ plays", "20+ plays", "50+ plays"];
 
-const LINE = "var(--chart-1)";
+const LINE = colors.primary;
 
 const tracks = (count: number) => `${format.count(count)} ${count === 1 ? "track" : "tracks"}`;
 
 // Tracks still played at each play count, as steps: each count holds until the next one.
-const StandingSteps = ({ stages }: { stages: TrackEngagementStage[] }) => {
+const StandingSteps = ({ stages }: { stages: ReplayStage[] }) => {
   const columns = { gridTemplateColumns: `repeat(${Math.max(stages.length, 1)}, minmax(0, 1fr))` };
 
   const definition = useMemo(() => {
@@ -116,9 +117,7 @@ const StandingSteps = ({ stages }: { stages: TrackEngagementStage[] }) => {
 // How many tracks came back for a second, fifth, twentieth and fiftieth play.
 export const ReplaysWidget = () => {
   const filter = useScope();
-  const { data = NO_STAGES, isPending } = useQuery(
-    listeningQueries.trackEngagement.queryOptions(filter),
-  );
+  const { data = NO_STAGES, isPending } = useQuery(listeningQueries.replays(filter));
 
   // The same stages with the page's wording.
   const stages = useMemo(

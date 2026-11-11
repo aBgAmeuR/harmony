@@ -1,18 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import type { ListeningSessions, ListeningStreak, TimelineEvent } from "@/data/milestones/types";
+import type { Sessions } from "@/data/milestones";
+import type { Streak } from "@/data/streak";
 
+import { format } from "@/shared/lib/format";
 import { useScope } from "@/shared/scope";
 
+import type { TimelineEvent } from "./api";
+
 import { milestoneQueries } from "./api";
-import { formatCount, sessionDurationParts } from "./format";
+import { sessionDurationParts } from "./format";
 import { MilestonesTimeline } from "./timeline";
 
 const withRecordEvents = (
   events: TimelineEvent[],
-  streak: ListeningStreak | undefined,
-  sessions: ListeningSessions | undefined,
+  streak: Streak | undefined,
+  sessions: Sessions | undefined,
 ): TimelineEvent[] => {
   const extra: TimelineEvent[] = [];
 
@@ -33,7 +37,7 @@ const withRecordEvents = (
       id: `streak-${streak.longestEnd}`,
       date: streak.longestEnd,
       label: "Longest streak",
-      entity: `${formatCount(streak.longestDays)} days of daily listening`,
+      entity: `${format.count(streak.longestDays)} days of daily listening`,
       subtitle: "",
       image: null,
     });
@@ -46,9 +50,9 @@ const withRecordEvents = (
 
 export const TimelineWidget = () => {
   const filter = useScope();
-  const { data: events = [], isPending } = useQuery(milestoneQueries.timeline.queryOptions(filter));
-  const { data: streak } = useQuery(milestoneQueries.streak.queryOptions(filter));
-  const { data: sessions } = useQuery(milestoneQueries.sessions.queryOptions(filter));
+  const { data: events = [], isPending } = useQuery(milestoneQueries.timeline(filter));
+  const { data: streak } = useQuery(milestoneQueries.streak(filter));
+  const { data: sessions } = useQuery(milestoneQueries.sessions(filter));
 
   const rows = useMemo(
     () => withRecordEvents(events, streak, sessions),

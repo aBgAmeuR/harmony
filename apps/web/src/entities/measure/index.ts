@@ -1,0 +1,1 @@
+export { seriesOf } from "./series";

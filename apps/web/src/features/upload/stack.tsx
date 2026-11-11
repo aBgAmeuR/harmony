@@ -2,7 +2,7 @@ import { cn } from "@harmony/ui/lib/utils";
 import { Children, useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { useUpload } from "./context";
-import { CARD_TOP_PX, stepIndex } from "./types";
+import { CARD_TOP_PX, minStep, stepIndex } from "./types";
 
 const PEEK_BOTTOM_PX = 75;
 
@@ -40,7 +40,7 @@ export const UploadStack = ({ children }: UploadStackProps) => {
   } = useUpload();
 
   const current = stepIndex(step);
-  const minNavigable = locked ? stepIndex("deploy") : stepIndex("package");
+  const minNavigable = minStep(locked);
   const slots = Children.toArray(children);
   const [heights, setHeights] = useState<Record<number, number>>({});
 

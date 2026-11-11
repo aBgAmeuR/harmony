@@ -70,7 +70,7 @@ export const useDateRangeStore = create<DateRangeState>()(
   persist(
     (set, get) => ({
       mode: "year",
-      cursorMs: new Date(new Date().getFullYear(), 1).getTime(),
+      cursorMs: new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime(),
       customFrom: new Date(new Date().getFullYear(), 0, 1).toISOString(),
       customTo: new Date(new Date().getFullYear(), 11, 31).toISOString(),
       setMode: (mode) => set({ mode }),
@@ -97,3 +97,13 @@ export const useDateRangeStore = create<DateRangeState>()(
     },
   ),
 );
+
+// Shows one day, month or year, as picking it in the period filter would.
+export const showPeriod = (grain: "day" | "month" | "year", date: Date): void => {
+  const { setMode, setCursor, setCustomRange } = useDateRangeStore.getState();
+  setCursor(date);
+  if (grain === "day") {
+    setMode("custom");
+    setCustomRange(date.toISOString(), date.toISOString());
+  } else setMode(grain);
+};

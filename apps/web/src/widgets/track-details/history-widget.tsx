@@ -3,11 +3,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/
 import { useQuery } from "@tanstack/react-query";
 
 import { trackQueries } from "@/entities/track";
+import { format } from "@/shared/lib/format";
 import { Grid } from "@/shared/primitives/grid";
 import { Section } from "@/shared/primitives/section";
 import { Stat } from "@/shared/primitives/stat";
 import { usePeriod } from "@/shared/scope";
-import { format } from "@/utils/format";
 
 type HistoryWidgetProps = {
   trackId: number;
@@ -26,7 +26,7 @@ const formatStreakStart = (value: string | null | undefined): string | undefined
 
 export const HistoryWidget = ({ trackId }: HistoryWidgetProps) => {
   const { from, to } = usePeriod();
-  const { data } = useQuery(trackQueries.history.queryOptions({ trackId, from, to }));
+  const { data } = useQuery(trackQueries.history({ trackId, range: { from, to } }));
 
   const rows = [
     {

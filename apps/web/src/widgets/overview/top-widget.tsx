@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
-import type { RankBy, RankRow } from "@/data/rank";
+import type { TopRow } from "@/data/bases";
 
 import { FigureViews } from "@/features/data-figure";
 import { Art } from "@/shared/primitives/art";
@@ -16,56 +16,46 @@ import { Rank } from "@/shared/primitives/rank";
 import { Section } from "@/shared/primitives/section";
 import { Table } from "@/shared/primitives/table";
 
-import { overviewQueries } from "./api";
+import { overviewQueries, TOP } from "./api";
 import { useRanges } from "./use-range";
 
+type By = "tracks" | "albums" | "artists";
+
 const TABS = [
-  { value: "track", label: "Tracks" },
-  { value: "album", label: "Albums" },
-  { value: "artist", label: "Artists" },
+  { value: "tracks", label: "Tracks" },
+  { value: "albums", label: "Albums" },
+  { value: "artists", label: "Artists" },
 ];
 
-const isBy = (value: string): value is RankBy =>
-  value === "track" || value === "album" || value === "artist";
+const isBy = (value: string): value is By =>
+  value === "tracks" || value === "albums" || value === "artists";
 
 const config = {
-  track: {
-    noun: "track",
-    to: "./tracks",
-    all: "View all tracks",
-    open: "Track details",
-    query: overviewQueries.topTracks,
-  },
-  album: {
-    noun: "album",
-    to: "./albums",
-    all: "View all albums",
-    open: "Album page",
-    query: overviewQueries.topAlbums,
-  },
-  artist: {
-    noun: "artist",
-    to: "./artists",
-    all: "View all artists",
-    open: "Artist profile",
-    query: overviewQueries.topArtists,
-  },
+  tracks: { noun: "track", all: "View all tracks", open: "Track details" },
+  albums: { noun: "album", all: "View all albums", open: "Album page" },
+  artists: { noun: "artist", all: "View all artists", open: "Artist profile" },
 } as const;
 
 type TopWidgetProps = {
   // The track open in the side panel.
   selectedId?: number;
-  onOpen: (by: RankBy, row: RankRow) => void;
+  onOpen: (by: By, row: TopRow) => void;
 };
 
 // The number one large, then the top five with their listening time against the leader's.
 export const TopWidget = ({ selectedId, onOpen }: TopWidgetProps) => {
-  const [by, setBy] = useState<RankBy>("track");
+  const [by, setBy] = useState<By>("tracks");
   const { range } = useRanges();
-  const { to, all, open, noun, query } = config[by];
-  const { data = [], isPending } = useQuery(query.queryOptions(range));
-  const { data: artists = [] } = useQuery(overviewQueries.topArtists.queryOptions(range));
-  const { data: tracks = [] } = useQuery(overviewQueries.topTracks.queryOptions(range));
+  const { all, open, noun } = config[by];
+  const { data = [], isPending } = useQuery(
+    overviewQueries.top({ base: by, filter: range, limit: TOP }),
+  );
+  const { data: artists = [] } = useQuery(
+    overviewQueries.top({ base: "artists", filter: range, limit: TOP }),
+  );
+  const { data: tracks = [] } = useQuery(
+    overviewQueries.top({ base: "tracks", filter: range, limit: TOP }),
+  );
 
   const leader = data[0];
   const most = Math.max(0, ...data.map((row) => row.playtime));
@@ -148,7 +138,7 @@ export const TopWidget = ({ selectedId, onOpen }: TopWidgetProps) => {
                 {data.map((row, index) => (
                   <Table.Row
                     key={row.id}
-                    selected={by === "track" && row.id === selectedId}
+                    selected={by === "tracks" && row.id === selectedId}
                     onSelect={() => onOpen(by, row)}
                   >
                     <Table.Cell className="text-center">
@@ -186,7 +176,8 @@ export const TopWidget = ({ selectedId, onOpen }: TopWidgetProps) => {
             </Table>
             <Link
               from="/app/$packageId"
-              to={to}
+              to="./explorer"
+              search={{ base: by }}
               preload="intent"
               className="flex w-fit items-center gap-1 px-2 text-xs text-primary transition-colors hover:text-foreground"
             >

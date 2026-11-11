@@ -7,39 +7,30 @@ type StreamHandlers = {
   onError: (message: string) => void;
 };
 
-function parsePipelineEvent(data: string): PipelineEvent {
-  return parsePipelineSnapshot(readJson(data));
-}
-
-function readJson(data: string): unknown {
-  return JSON.parse(data) as unknown;
-}
-
-export function connectPipelineStream(streamUrl: string, handlers: StreamHandlers): () => void {
-  const source = new EventSource(streamUrl);
+// The server sends `pipeline` events, each one a full snapshot of the run.
+export const connectPipelineStream = (url: string, handlers: StreamHandlers): (() => void) => {
+  const source = new EventSource(url);
   let closed = false;
 
-  const handleMessage = (event: MessageEvent<string>) => {
+  const onMessage = (event: MessageEvent<string>) => {
+    let parsed: PipelineEvent;
     try {
-      handlers.onEvent(parsePipelineEvent(event.data));
-    } catch {
-      handlers.onError("Invalid pipeline event");
-    }
-  };
-
-  source.addEventListener("pipeline", handleMessage);
-  source.addEventListener("message", handleMessage);
-  source.onerror = () => {
-    if (closed) {
+      parsed = parsePipelineSnapshot(JSON.parse(event.data));
+    } catch (error) {
+      handlers.onError(`Invalid pipeline event: ${String(error)}`);
       return;
     }
-    handlers.onError("Pipeline stream disconnected");
+    handlers.onEvent(parsed);
+  };
+
+  source.addEventListener("pipeline", onMessage);
+  source.onerror = () => {
+    if (!closed) handlers.onError("Pipeline stream disconnected");
   };
 
   return () => {
     closed = true;
-    source.removeEventListener("pipeline", handleMessage);
-    source.removeEventListener("message", handleMessage);
+    source.removeEventListener("pipeline", onMessage);
     source.close();
   };
-}
+};

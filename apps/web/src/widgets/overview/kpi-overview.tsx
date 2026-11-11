@@ -24,15 +24,15 @@ import { Tabs, TabsList, TabsTrigger } from "@harmony/ui/components/tabs";
 import { Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 
-import type { Overview, Totals } from "@/data/overview/kpis";
-import type { Unit } from "@/data/overview/range";
-import type { Kind } from "@/utils/format";
+import type { Unit } from "@/data/aggregate";
+import type { Overview, Totals } from "@/data/overview";
+import type { Kind } from "@/shared/lib/format";
 
+import { measures } from "@/data/measures";
 import { FigureViews } from "@/features/data-figure";
-import { measure } from "@/shared/lib/measure";
+import { format } from "@/shared/lib/format";
 import { Delta } from "@/shared/primitives/delta";
 import { Stat } from "@/shared/primitives/stat";
-import { format } from "@/utils/format";
 
 import { delta } from "./format";
 
@@ -47,14 +47,14 @@ type MetricDef = {
   // Raw units in one chart unit: the chart plots minutes as hours, the tooltip formats raw values.
   unit: number;
   // The page that tells more, and the words of its link.
-  to: "./listening" | "./artists" | "./milestones";
+  to: "./listening" | "./explorer" | "./milestones";
   more: string;
 };
 
 const metrics: MetricDef[] = [
   {
     key: "minutes",
-    ...measure.playtime,
+    ...measures.playtime,
     hint: (t) => `That is ${(t.minutes / 1440).toFixed(1)} days of non-stop music.`,
     unit: 60,
     to: "./listening",
@@ -62,7 +62,7 @@ const metrics: MetricDef[] = [
   },
   {
     key: "streams",
-    ...measure.streams,
+    ...measures.streams,
     hint: (t) => `${format.count(t.streams / Math.max(t.days, 1))} streams per active day.`,
     unit: 1,
     to: "./listening",
@@ -70,15 +70,15 @@ const metrics: MetricDef[] = [
   },
   {
     key: "artists",
-    ...measure.artists,
+    ...measures.artists,
     hint: (t) => `Across ${format.count(t.tracks)} distinct tracks.`,
     unit: 1,
-    to: "./artists",
+    to: "./explorer",
     more: "Browse your artists",
   },
   {
     key: "days",
-    ...measure.days,
+    ...measures.days,
     hint: (t, days) => `You listened on ${format.count(t.days)} of ${format.count(days)} days.`,
     unit: 1,
     to: "./milestones",
@@ -95,7 +95,7 @@ const UNITS = [
 const isUnit = (value: string): value is Unit =>
   value === "day" || value === "week" || value === "month";
 
-const CURRENT = "var(--chart-1)";
+const CURRENT = colors.primary;
 const PREVIOUS = "color-mix(in srgb, var(--muted-foreground) 55%, transparent)";
 
 const peakIndex = (values: number[]): number =>
@@ -344,6 +344,7 @@ export const KpiOverview = ({
               from="/app/$packageId"
               to={def.to}
               params={{ packageId }}
+              search={def.to === "./explorer" ? { base: "artists" } : {}}
               preload="intent"
               className="flex items-center gap-1 text-primary transition-colors hover:text-foreground"
             >

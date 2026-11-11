@@ -20,27 +20,20 @@ pub fn watch(progress: &Progress, id: &str) -> Result<Receiver<Event>, HttpError
     progress.watch(id).ok_or(HttpError::Missing)
 }
 
-/// One SSE message on the `pipeline` event name.
-///
-/// # Errors
-///
-/// [`serde_json::Error`] when the snapshot cannot be written as JSON.
-pub fn frame(event: &Event) -> Result<String, serde_json::Error> {
-    let data = serde_json::to_string(event)?;
-    Ok(format!("event: pipeline\ndata: {data}\n\n"))
-}
+/// The SSE event name of every snapshot, part of the public stream contract.
+pub const EVENT: &str = "pipeline";
 
 #[cfg(test)]
 mod tests {
     use std::time::Duration;
 
-    use super::{frame, watch};
+    use super::watch;
     use crate::error::HttpError;
     use domain::observe::Progress;
     use domain::package::{Id, IdError};
 
     #[test]
-    fn watch_frames_the_idle_snapshot() -> Result<(), Fixture> {
+    fn watch_sends_the_idle_snapshot() -> Result<(), Fixture> {
         let progress = Progress::new();
         let id = Id::parse("Ab3xYz")?;
         progress.open(id);
@@ -48,12 +41,7 @@ mod tests {
         let event = rx
             .recv_timeout(Duration::from_millis(200))
             .map_err(|_| Fixture::Quiet)?;
-        let text = frame(&event)?;
-        let data = text
-            .strip_prefix("event: pipeline\ndata: ")
-            .and_then(|body| body.strip_suffix("\n\n"))
-            .ok_or(Fixture::Quiet)?;
-        let value: serde_json::Value = serde_json::from_str(data)?;
+        let value = serde_json::to_value(&event)?;
 
         assert_eq!(
             value.get("type").and_then(serde_json::Value::as_str),

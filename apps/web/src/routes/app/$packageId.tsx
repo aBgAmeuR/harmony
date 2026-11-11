@@ -7,8 +7,8 @@ import { AppPending } from "@/pages/app/pending";
 
 export const Route = createFileRoute("/app/$packageId")({
   ssr: false,
-  loader: async ({ params }) => {
-    await loadApp(params.packageId);
+  loader: async ({ context: { queryClient }, params }) => {
+    await loadApp(queryClient, params.packageId);
   },
   component: AppLayout,
   pendingComponent: AppPending,

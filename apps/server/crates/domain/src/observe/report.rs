@@ -26,19 +26,14 @@ impl Report {
         self.metrics.push(metric);
     }
 
-    pub const fn tally(&mut self, calls: u64, retries: u64, misses: u64) {
+    /// The lookup requests the package took.
+    pub const fn count_requests(&mut self, calls: u64, retries: u64) {
         self.calls = calls;
         self.retries = retries;
-        self.misses = misses;
     }
 
     pub const fn set_misses(&mut self, misses: u64) {
         self.misses = misses;
-    }
-
-    #[must_use]
-    pub fn metrics(&self) -> &[Metric] {
-        &self.metrics
     }
 
     #[must_use]
@@ -81,7 +76,8 @@ mod tests {
         let mut report = Report::new();
         report.push(Metric::new(Stage::Extract, 10, 2, 2, 0));
         report.push(Metric::new(Stage::Parse, 5, 2, 1, 1));
-        report.tally(4, 1, 3);
+        report.count_requests(4, 1);
+        report.set_misses(3);
 
         assert_eq!(report.ms(), 15);
         assert_eq!(report.calls(), 4);

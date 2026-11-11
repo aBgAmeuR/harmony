@@ -10,8 +10,11 @@ import {
 import { Checkbox } from "@harmony/ui/components/checkbox";
 import { ScrollArea } from "@harmony/ui/components/scroll-area";
 import { cn } from "@harmony/ui/lib/utils";
+import { isHistoryFile, normalizePath } from "@harmony/upload";
 import { unzipSync } from "fflate";
 import { type CSSProperties, useEffect, useState } from "react";
+
+import { format } from "@/shared/lib/format";
 
 import { useUpload } from "../context";
 
@@ -19,21 +22,6 @@ type ArchiveJsonFile = {
   path: string;
   name: string;
   size: string;
-};
-
-const archiveJsonPattern =
-  /Spotify Extended Streaming History\/Streaming_History_Audio_(\d{4}(-\d{4})?)(?:_(\d+))?\.json/;
-
-const normalizeArchivePath = (path: string): string => {
-  return path.replace(/\\/g, "/");
-};
-
-const formatBytes = (bytes: number): string => {
-  if (bytes < 1024) return `${bytes} B`;
-  const kb = bytes / 1024;
-  if (kb < 1024) return `${kb.toFixed(1)} KB`;
-  const mb = kb / 1024;
-  return `${mb.toFixed(1)} MB`;
 };
 
 export const UploadFilesStep = () => {
@@ -54,7 +42,7 @@ export const UploadFilesStep = () => {
       setError(null);
 
       if (!file) {
-        // Keep resume selection after refresh (File cannot survive sessionStorage).
+        // A File does not survive a reload, only its name is in the session.
         setError("No package selected. Please go back and upload a .zip file.");
         return;
       }
@@ -65,11 +53,11 @@ export const UploadFilesStep = () => {
         const archiveEntries = unzipSync(bytes);
 
         const extracted = Object.entries(archiveEntries)
-          .filter(([filename]) => archiveJsonPattern.test(normalizeArchivePath(filename)))
+          .filter(([filename]) => isHistoryFile(filename))
           .map(([filename, content]) => ({
-            path: normalizeArchivePath(filename),
+            path: normalizePath(filename),
             name: filename.split("/").pop() ?? filename,
-            size: formatBytes((content as Uint8Array).byteLength),
+            size: format.bytes(content.byteLength),
           }));
 
         if (cancelled) return;

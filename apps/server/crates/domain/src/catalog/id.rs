@@ -1,6 +1,6 @@
 //! Deezer track, album, or artist id.
 
-/// Catalog id. `Lookup::find` and `Lookup::load` are the callers.
+/// Catalog id, as Deezer numbers it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Id(u32);
 

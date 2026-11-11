@@ -2,11 +2,17 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/
 import { useQuery } from "@tanstack/react-query";
 
 import { trackQueries } from "@/entities/track";
+import { format } from "@/shared/lib/format";
 import { Grid } from "@/shared/primitives/grid";
 import { Meter } from "@/shared/primitives/meter";
 import { Section } from "@/shared/primitives/section";
 import { usePeriod } from "@/shared/scope";
-import { format } from "@/utils/format";
+
+const RETENTION_COLORS = {
+  complete: "bg-primary",
+  partial: "bg-chart-3",
+  "quick-skips": "bg-destructive",
+} as const;
 
 type BehavioralWidgetProps = {
   trackId: number;
@@ -21,7 +27,7 @@ const formatTrackTime = (ms: number): string => {
 
 export const BehavioralWidget = ({ trackId }: BehavioralWidgetProps) => {
   const { from, to } = usePeriod();
-  const { data } = useQuery(trackQueries.behavioral.queryOptions({ trackId, from, to }));
+  const { data } = useQuery(trackQueries.behavior({ trackId, range: { from, to } }));
 
   const retention = data?.retention ?? [];
   const completeShare = data?.completeShare ?? 0;
@@ -49,7 +55,7 @@ export const BehavioralWidget = ({ trackId }: BehavioralWidgetProps) => {
                 key={segment.key}
                 value={segment.share}
                 label={`${segment.label} · ${format.as(segment.share, "percent")}`}
-                className={segment.colorClass}
+                className={RETENTION_COLORS[segment.key]}
               />
             ))}
           </Meter>

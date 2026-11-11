@@ -1,23 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 
-import type { WeeklyActivityPoint } from "@/data/discoveries/types";
-
 import { ArtistsSelect } from "@/features/pick-artist";
+import { format } from "@/shared/lib/format";
 import { Lede } from "@/shared/primitives/lede";
 import { useArtistStore, useScope } from "@/shared/scope";
-import { format } from "@/utils/format";
+
+import type { WeekPoint } from "./api";
 
 import { discoveryQueries } from "./api";
 
 export const DiscoveriesLede = () => {
   const filter = useScope();
   const artist = useArtistStore((s) => s.artist);
-  const { data: releases } = useQuery(discoveryQueries.artistReleases.queryOptions(filter));
-  const { data: weeks = [] } = useQuery(discoveryQueries.weeklyActivity.queryOptions(filter));
+  const { data: releases } = useQuery(discoveryQueries.releases(filter));
+  const { data: weeks = [] } = useQuery(discoveryQueries.weekly(filter));
 
   // Releases come oldest first.
   const latest = releases?.at(-1);
-  const peak = weeks.reduce<WeeklyActivityPoint | undefined>(
+  const peak = weeks.reduce<WeekPoint | undefined>(
     (best, week) => (week.value > (best?.value ?? 0) ? week : best),
     undefined,
   );

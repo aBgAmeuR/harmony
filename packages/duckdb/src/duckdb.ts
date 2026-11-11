@@ -29,6 +29,7 @@ export const getDuckDBInstance = async () => {
   if (dbInstance) return dbInstance;
   if (initPromise) return initPromise;
 
+  // A failed start is not cached: the next open tries again.
   initPromise = (async () => {
     // Loaded lazily: the server must never evaluate the package (its Node entry throws on import).
     const duckdb = await import("@duckdb/duckdb-wasm");
@@ -42,7 +43,10 @@ export const getDuckDBInstance = async () => {
 
     dbInstance = db;
     return db;
-  })();
+  })().catch((error: unknown) => {
+    initPromise = null;
+    throw error;
+  });
 
   return initPromise;
 };

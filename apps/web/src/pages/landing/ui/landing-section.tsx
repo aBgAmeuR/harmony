@@ -50,16 +50,6 @@ const Body = ({ className, ...props }: ComponentProps<"div">) => (
   <div className={cn("t-stagger-line t-stagger-line--3 mt-4", className)} {...props} />
 );
 
-const Caption = ({ className, ...props }: ComponentProps<"p">) => (
-  <p
-    className={cn(
-      "t-stagger-line t-stagger-line--4 mt-4 text-xs text-pretty text-muted-foreground/70",
-      className,
-    )}
-    {...props}
-  />
-);
-
 // A name or a value that should stand out in a sentence.
 const Em = ({ className, ...props }: ComponentProps<"span">) => (
   <span className={cn("font-medium text-foreground", className)} {...props} />
@@ -76,7 +66,6 @@ export const LandingSection = Object.assign(Root, {
   Title,
   Text,
   Body,
-  Caption,
   Em,
   ExternalLink,
 });

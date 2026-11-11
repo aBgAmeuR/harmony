@@ -20,6 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { artistQueries } from "@/entities/artist";
+import { format } from "@/shared/lib/format";
 import { Art } from "@/shared/primitives/art";
 import { periodLabel, useArtistStore, useDateRangeStore, usePeriod } from "@/shared/scope";
 
@@ -37,9 +38,6 @@ type Group = {
 };
 
 const ALL: Option = { id: 0, name: "All artists", image: null };
-
-const minutes = (value: number): string =>
-  value >= 1000 ? `${(value / 60).toFixed(value >= 6000 ? 0 : 1)} h` : `${value} min`;
 
 const isTyping = (target: EventTarget | null): boolean =>
   target instanceof HTMLElement &&
@@ -61,7 +59,7 @@ export const ArtistsSelect = ({ placeholder, className, hotkey = false }: Artist
   const [query, setQuery] = useState("");
 
   const { data: found = [], isLoading } = useQuery({
-    ...artistQueries.search.queryOptions({ query, from, to }),
+    ...artistQueries.top({ from, to, search: query }),
     enabled: open,
   });
 
@@ -147,7 +145,7 @@ export const ArtistsSelect = ({ placeholder, className, hotkey = false }: Artist
                       <span className="truncate">{option.name}</span>
                       {option.playtime !== undefined ? (
                         <span className="ml-auto pr-5 text-muted-foreground tabular-nums">
-                          {minutes(option.playtime)}
+                          {format.as(option.playtime, "minutes")}
                         </span>
                       ) : null}
                     </ComboboxItem>

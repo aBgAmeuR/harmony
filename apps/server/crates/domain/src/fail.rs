@@ -1,8 +1,8 @@
-//! Terminal pipeline error. Built only from `impl From` of a stage error.
+//! Terminal pipeline error, the step it stopped at and why.
 
 use crate::stage::Stage;
 
-/// One failed step. Logged once, then copied onto the package.
+/// One failed step, copied onto the package and shown in the progress snapshot.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 #[error("{stage}: {message}")]
 pub struct Fail {
@@ -11,7 +11,6 @@ pub struct Fail {
 }
 
 impl Fail {
-    /// Single constructor. Stage errors call this from `From`, never with a struct literal.
     #[must_use]
     pub fn new(stage: Stage, message: String) -> Self {
         Self { stage, message }

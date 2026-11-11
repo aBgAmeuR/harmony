@@ -3,7 +3,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
-import type { Unit } from "@/data/overview/range";
+import type { Unit } from "@/data/aggregate";
 
 import { Empty } from "@/shared/primitives/empty";
 
@@ -18,7 +18,7 @@ export const KpiChartWidget = () => {
   const { range, full } = useRanges();
   const [picked, setPicked] = useState<Unit | undefined>(undefined);
   const { data } = useQuery({
-    ...overviewQueries.kpis.queryOptions(range, full, picked),
+    ...overviewQueries.kpis({ range, full, unit: picked }),
     // The previous unit stays on screen while the next one loads.
     placeholderData: keepPreviousData,
   });

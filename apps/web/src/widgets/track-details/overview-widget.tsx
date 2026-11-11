@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { measures } from "@/data/measures";
 import { trackQueries } from "@/entities/track";
-import { measure } from "@/shared/lib/measure";
 import { Grid } from "@/shared/primitives/grid";
 import { Section } from "@/shared/primitives/section";
 import { Stat } from "@/shared/primitives/stat";
@@ -13,13 +13,13 @@ type OverviewWidgetProps = {
 
 export const OverviewWidget = ({ trackId }: OverviewWidgetProps) => {
   const { from, to } = usePeriod();
-  const { data } = useQuery(trackQueries.overview.queryOptions({ trackId, from, to }));
+  const { data } = useQuery(trackQueries.overview({ trackId, range: { from, to } }));
 
   const stats = [
-    { ...measure.streams, value: data?.streams },
-    { ...measure.playtime, value: data?.timeListenedMin },
-    { ...measure.completion, value: data?.avgCompletion },
-    { ...measure.skipRate, value: data?.skipRate },
+    { ...measures.streams, value: data?.streams },
+    { ...measures.playtime, value: data?.playtime },
+    { ...measures.completion, value: data?.completion },
+    { ...measures.skipRate, value: data?.skipRate },
   ];
 
   return (

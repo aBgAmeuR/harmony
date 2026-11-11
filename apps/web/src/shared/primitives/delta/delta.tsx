@@ -9,8 +9,6 @@ const labels = {
     const text = pct.toFixed(pct >= 100 ? 0 : 1).replace(/\.0$/, "");
     return `${value > 0 ? "+" : value < 0 ? "-" : ""}${text}%`;
   },
-  // Places gained (positive) or lost in a ranking.
-  places: (value: number) => `${value > 0 ? "▲" : "▼"}${Math.abs(value)}`,
   // A multiplier compared to 1: 1.4 is "1.4x".
   ratio: (value: number) => `${value.toLocaleString("en-US", { maximumFractionDigits: 1 })}x`,
 } as const;
@@ -46,7 +44,7 @@ export const Delta = ({
       )}
       {...props}
     >
-      {value === null || (kind === "places" && value === 0) ? "-" : labels[kind](value)}
+      {value === null ? "-" : labels[kind](value)}
     </span>
   );
 };

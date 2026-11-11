@@ -11,20 +11,20 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import type { ListeningChartPoint, ListeningDayPart } from "@/data/tracks/listening";
+import type { ChartPoint, DayPart } from "@/entities/track/api";
 
+import { seriesOf } from "@/entities/measure";
 import { trackQueries } from "@/entities/track";
-import { seriesOf } from "@/shared/lib/chart-series";
+import { format } from "@/shared/lib/format";
 import { Grid } from "@/shared/primitives/grid";
 import { Meter } from "@/shared/primitives/meter";
 import { Section } from "@/shared/primitives/section";
 import { usePeriod } from "@/shared/scope";
-import { format } from "@/utils/format";
 
 const SERIES = seriesOf("playtime", "var(--chart-2)");
 
 // Listening time per bucket, the same chart for months and weeks.
-const columns = (rows: readonly ListeningChartPoint[]) =>
+const columns = (rows: readonly ChartPoint[]) =>
   defineChart({
     ...chartBase,
     marks: [
@@ -41,12 +41,12 @@ type ListeningWidgetProps = {
 
 export const ListeningWidget = ({ trackId }: ListeningWidgetProps) => {
   const { from, to } = usePeriod();
-  const { data } = useQuery(trackQueries.listening.queryOptions({ trackId, from, to }));
+  const { data } = useQuery(trackQueries.listening({ trackId, range: { from, to } }));
 
   const monthly = useMemo(() => columns(data?.monthly ?? []), [data?.monthly]);
   const weekly = useMemo(() => columns(data?.weekly ?? []), [data?.weekly]);
   const dayParts = data?.dayParts ?? [];
-  const peakDayPart = dayParts.reduce<ListeningDayPart | null>(
+  const peakDayPart = dayParts.reduce<DayPart | null>(
     (peak, part) => (!peak || part.share > peak.share ? part : peak),
     null,
   );

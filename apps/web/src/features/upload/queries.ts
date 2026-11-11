@@ -1,10 +1,5 @@
-import { queryOptions } from "@tanstack/react-query";
+import { serverConfig } from "@harmony/upload";
 
-import { uploadClient } from "./lib/client";
+import { query } from "@/shared/lib/query";
 
-export const uploadQueries = {
-  serverConfig: queryOptions({
-    queryKey: ["upload", "server-config"],
-    queryFn: () => uploadClient.serverConfig(),
-  }),
-};
+export const serverConfigQuery = query("upload-config", serverConfig);

@@ -1,60 +1,29 @@
-import type {
-  DeployInput,
-  DeployResult,
-  ServerConfig,
-  ServerConfigBody,
-  UploadConfig,
-  UploadResponseBody,
-} from "./types";
+import type { DeployInput, DeployResult, ServerConfig } from "./types";
 
 import { UploadError } from "./errors";
-import { Pipeline } from "./pipeline";
 
-export class UploadClient {
-  constructor(private readonly config: UploadConfig) {}
-
-  async deploy(input: DeployInput): Promise<DeployResult> {
-    const formData = new FormData();
-    formData.append("file", input.file);
-
-    if (input.selectedFiles.length > 0) {
-      const normalized = input.selectedFiles.map((path) => path.replace(/\\/g, "/"));
-      formData.append("selected_files", JSON.stringify(normalized));
-    }
-
-    const response = await fetch(this.url("/api/v1/packages"), {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const message = await response.text().catch(() => "Upload failed");
-      throw new UploadError(message || "Upload failed", response.status);
-    }
-
-    const body = (await response.json()) as UploadResponseBody;
-    return { publicId: body.public_id };
+// The API is served from the same origin as the app (Vite proxies it in development).
+export const deploy = async ({ file, selectedFiles }: DeployInput): Promise<DeployResult> => {
+  const form = new FormData();
+  form.append("file", file);
+  if (selectedFiles.length > 0) {
+    form.append("selected_files", JSON.stringify(selectedFiles));
   }
 
-  async serverConfig(): Promise<ServerConfig> {
-    const response = await fetch(this.url("/api/v1/config"));
-    if (!response.ok) {
-      throw new UploadError("Failed to load server config", response.status);
-    }
-    const body = (await response.json()) as ServerConfigBody;
-    return { maxUploadBytes: body.max_upload_bytes };
+  const response = await fetch("/api/v1/packages", { method: "POST", body: form });
+  if (!response.ok) {
+    throw new UploadError((await response.text()) || "Upload failed", response.status);
   }
+  const body = (await response.json()) as { public_id: string };
+  return { publicId: body.public_id };
+};
 
-  pipeline(publicId: string): Pipeline {
-    return new Pipeline(this, publicId);
-  }
+export const serverConfig = async (): Promise<ServerConfig> => {
+  const response = await fetch("/api/v1/config");
+  if (!response.ok) throw new UploadError("Failed to load server config", response.status);
+  const body = (await response.json()) as { max_upload_bytes: number };
+  return { maxUploadBytes: body.max_upload_bytes };
+};
 
-  streamUrl(publicId: string): string {
-    return this.url(`/api/v1/packages/${encodeURIComponent(publicId)}/stream`);
-  }
-
-  private url(path: string): string {
-    const baseUrl = this.config.baseUrl.replace(/\/$/, "");
-    return `${baseUrl}${path}`;
-  }
-}
+export const streamUrl = (publicId: string): string =>
+  `/api/v1/packages/${encodeURIComponent(publicId)}/stream`;

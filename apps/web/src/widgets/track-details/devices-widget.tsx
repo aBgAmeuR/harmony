@@ -13,9 +13,9 @@ type DevicesWidgetProps = {
 
 export const DevicesWidget = ({ trackId }: DevicesWidgetProps) => {
   const { from, to } = usePeriod();
-  const { data } = useQuery(trackQueries.devices.queryOptions({ trackId, from, to }));
+  const { data } = useQuery(trackQueries.devices({ trackId, range: { from, to } }));
 
-  const devices = data?.devices ?? [];
+  const devices = data ?? [];
 
   return (
     <Section size="sm">

@@ -1,6 +1,5 @@
 import type { ComponentProps } from "react";
 
-import { ArrowRightIcon, Icon } from "@harmony/icons";
 import { cn } from "@harmony/ui/lib/utils";
 
 const Root = ({ className, ...props }: ComponentProps<"div">) => (
@@ -11,7 +10,6 @@ const Root = ({ className, ...props }: ComponentProps<"div">) => (
   />
 );
 
-// Pushed to the end of the row.
 const End = ({ className, ...props }: ComponentProps<"div">) => (
   <div
     data-slot="toolbar-end"
@@ -20,12 +18,4 @@ const End = ({ className, ...props }: ComponentProps<"div">) => (
   />
 );
 
-const Sep = ({ className }: { className?: string }) => (
-  <Icon
-    icon={ArrowRightIcon}
-    aria-hidden
-    className={cn("size-4 pt-0.5 text-muted-foreground", className)}
-  />
-);
-
-export const Toolbar = Object.assign(Root, { End, Sep });
+export const Toolbar = Object.assign(Root, { End });

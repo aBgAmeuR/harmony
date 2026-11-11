@@ -7,7 +7,6 @@ use domain::artifact::Artifact;
 use domain::package;
 use domain::ports::{Blob, GetError, PutError};
 
-const OBJECTS: &str = "harmony";
 const STAGING: &str = ".staging";
 
 static PART: AtomicU64 = AtomicU64::new(0);
@@ -27,7 +26,7 @@ impl Fs {
     /// [`PutError`] when the directory cannot be created or written.
     pub fn open(root: impl Into<PathBuf>) -> Result<Self, PutError> {
         let root = root.into();
-        std::fs::create_dir_all(root.join(OBJECTS))
+        std::fs::create_dir_all(root.join(package::Id::FOLDER))
             .map_err(|err| PutError::new(format!("failed to create {}: {err}", root.display())))?;
         let staging = root.join(STAGING);
         std::fs::create_dir_all(&staging).map_err(|err| {
@@ -42,7 +41,7 @@ impl Fs {
     }
 
     fn object(&self, id: package::Id) -> PathBuf {
-        self.root.join(OBJECTS).join(format!("{id}.duckdb"))
+        self.root.join(id.object_key())
     }
 }
 

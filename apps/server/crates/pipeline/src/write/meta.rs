@@ -1,10 +1,10 @@
-//! One `package_meta` row. `status` is `completed`. `steps` is the progress snapshot.
+//! One `package_meta` row of a ready package. `steps` is the progress snapshot.
 
 use chrono::{DateTime, Utc};
-use domain::package::Package;
+use domain::package::{Package, State};
 use duckdb::params;
 
-use super::WriteError;
+use super::{TIMESTAMP, WriteError};
 
 const INSERT_META: &str = include_str!("sql/insert_meta.sql");
 
@@ -23,6 +23,7 @@ pub fn row(
             package.id().as_str(),
             package.name(),
             size,
+            State::Ready.as_str(),
             stamp(package.at()),
             stamp(started),
             duration,
@@ -33,5 +34,5 @@ pub fn row(
 }
 
 fn stamp(value: DateTime<Utc>) -> String {
-    value.format("%Y-%m-%d %H:%M:%S%.6f").to_string()
+    value.format(TIMESTAMP).to_string()
 }

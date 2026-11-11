@@ -1,26 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
 
-import type { ListeningStreak } from "@/data/milestones/types";
+import type { Streak } from "@/data/streak";
 
+import { format } from "@/shared/lib/format";
 import { Grid } from "@/shared/primitives/grid";
 import { Section } from "@/shared/primitives/section";
 import { Stat } from "@/shared/primitives/stat";
 import { useScope } from "@/shared/scope";
 
 import { milestoneQueries } from "./api";
-import { formatCount, formatMilestoneDate } from "./format";
 
-const streakCaption = (streak: ListeningStreak | undefined): string => {
+const streakCaption = (streak: Streak | undefined): string => {
   if (!streak || streak.longestDays < 2 || !streak.longestStart || !streak.longestEnd) {
     return "Listen on consecutive days to build one";
   }
-  return `${formatMilestoneDate(streak.longestStart)} to ${formatMilestoneDate(streak.longestEnd)}`;
+  return `${format.date(streak.longestStart)} to ${format.date(streak.longestEnd)}`;
 };
 
 export const SessionsStreaksWidget = () => {
   const filter = useScope();
-  const { data: streak } = useQuery(milestoneQueries.streak.queryOptions(filter));
-  const { data: sessions } = useQuery(milestoneQueries.sessions.queryOptions(filter));
+  const { data: streak } = useQuery(milestoneQueries.streak(filter));
+  const { data: sessions } = useQuery(milestoneQueries.sessions(filter));
 
   const hasStreak = streak !== undefined && streak.longestDays >= 2;
   const hasSessions = sessions !== undefined && sessions.sessions > 0;
@@ -35,21 +35,19 @@ export const SessionsStreaksWidget = () => {
           <Stat.Label>Average session</Stat.Label>
           <Stat.Value value={hasSessions ? sessions.avgMinutes : null} kind="minutes" />
           <Stat.Hint className="text-pretty">
-            {hasSessions ? `on ${formatCount(sessions.sessions)} sessions` : noSessions}
+            {hasSessions ? `on ${format.count(sessions.sessions)} sessions` : noSessions}
           </Stat.Hint>
         </Stat>
         <Stat className="p-0">
           <Stat.Label>Longest session</Stat.Label>
           <Stat.Value value={hasSessions ? sessions.longestMinutes : null} kind="minutes" />
           <Stat.Hint className="text-pretty">
-            {hasSessions && sessions.longestStart
-              ? formatMilestoneDate(sessions.longestStart)
-              : noSessions}
+            {hasSessions && sessions.longestStart ? format.date(sessions.longestStart) : noSessions}
           </Stat.Hint>
         </Stat>
         <Stat className="p-0">
           <Stat.Label>Longest listening streak</Stat.Label>
-          <Stat.Value>{hasStreak ? `${formatCount(streak.longestDays)} days` : "-"}</Stat.Value>
+          <Stat.Value>{hasStreak ? `${format.count(streak.longestDays)} days` : "-"}</Stat.Value>
           <Stat.Hint className="text-pretty">
             {streak === undefined ? "…" : streakCaption(hasStreak ? streak : undefined)}
           </Stat.Hint>

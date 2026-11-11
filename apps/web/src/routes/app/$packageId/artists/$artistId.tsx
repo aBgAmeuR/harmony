@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { parseTrack } from "@/entities/track";
+import { parseTrack } from "@/features/track-panel";
 import { loadArtist } from "@/pages/artist/load";
 import { ArtistPage } from "@/pages/artist/page";
 

@@ -6,24 +6,15 @@ export type UploadPhase = "idle" | "deploying" | "running" | "done" | "error";
 
 export const CARD_TOP_PX = 180;
 
-export const STEP_CONFIG: Record<Step, { label: string; description: string }> = {
-  package: {
-    label: "Choose Package",
-    description: "Upload your .zip file",
-  },
-  files: {
-    label: "Select Files",
-    description: "Choose JSON configuration files",
-  },
-  deploy: {
-    label: "Deploy",
-    description: "Deploy to server",
-  },
-  stats: {
-    label: "Package Stats",
-    description: "View package analytics",
-  },
+export const STEP_LABELS: Record<Step, string> = {
+  package: "Choose Package",
+  files: "Select Files",
+  deploy: "Deploy",
+  stats: "Package Stats",
 };
+
+// Once the upload has started, its earlier steps can no longer be revisited.
+export const minStep = (locked: boolean): number => stepIndex(locked ? "deploy" : "package");
 
 export const stepIndex = (step: Step): number => {
   return STEP_ORDER.indexOf(step);

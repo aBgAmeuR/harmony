@@ -5,7 +5,7 @@ import { packageQueries } from "@/entities/package";
 import { buildYearRange, parsePeriodBounds } from "@/features/filter-period/lib";
 
 export const useDateRangeBounds = (monthlyListenLabels?: string[]) => {
-  const { data: period } = useQuery(packageQueries.period.queryOptions());
+  const { data: period } = useQuery(packageQueries.period());
 
   const { minDate, maxDate } = useMemo(() => parsePeriodBounds(period), [period]);
 

@@ -11,5 +11,5 @@ pub use config::{Limits, config};
 pub use error::HttpError;
 pub use file::{Body, file};
 pub use health::health;
-pub use open::{Opened, Upload, body_limit, open, source};
-pub use watch::{frame, watch};
+pub use open::{Upload, body_limit, source};
+pub use watch::{EVENT, watch};
