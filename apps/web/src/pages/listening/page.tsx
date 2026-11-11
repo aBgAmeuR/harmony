@@ -2,6 +2,7 @@ import { Grid } from "@/shared/primitives/grid";
 import { HowYouListenWidget } from "@/widgets/listening/how-you-listen-widget";
 import { ListeningLede } from "@/widgets/listening/lede";
 import { MonthlyActivityWidget } from "@/widgets/listening/monthly-activity-widget";
+import { ReleaseYearWidget } from "@/widgets/listening/release-year-widget";
 import { ReplaysWidget } from "@/widgets/listening/replays-widget";
 import { RhythmWidget } from "@/widgets/listening/rhythm-widget";
 import { MetricCard } from "@/widgets/listening/ui/metric-card";
@@ -22,6 +23,7 @@ export const ListeningPage = () => (
     <MonthlyActivityWidget />
     <RhythmWidget />
     <HowYouListenWidget />
+    <ReleaseYearWidget />
     <WhatYouListenWidget />
     <ReplaysWidget />
   </Page>
