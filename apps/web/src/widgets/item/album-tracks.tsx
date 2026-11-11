@@ -15,8 +15,6 @@ type TracksProps = {
   onOpen: (track: AlbumTrack) => void;
 };
 
-// Every known track of the album in album order, with a bar of the time listened. Tracks that were
-// not played in the period stay in the list, dimmed.
 export const AlbumTracks = ({ tracks, selectedId, onOpen }: TracksProps) => {
   const max = Math.max(1, ...tracks.map((track) => track.playtime));
 

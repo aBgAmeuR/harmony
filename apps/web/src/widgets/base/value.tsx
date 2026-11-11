@@ -5,7 +5,6 @@ import { Num, type numSizes } from "@/shared/primitives/num";
 
 type ValueProps = { row: ListRow; name: string; prop: Prop; size?: keyof typeof numSizes };
 
-// One property of a row, in the format of its kind.
 export const Value = ({ row, name, prop, size }: ValueProps) => {
   const value = row[name];
   if (value === null || value === undefined)
@@ -17,5 +16,5 @@ export const Value = ({ row, name, prop, size }: ValueProps) => {
   return <Num value={Number(value)} kind={prop.kind} size={size} />;
 };
 
-export const isNumeric = (prop: Prop): boolean =>
+export const isNumeric = (prop: Prop) =>
   prop.kind !== "flag" && prop.kind !== "date" && prop.kind !== "text";

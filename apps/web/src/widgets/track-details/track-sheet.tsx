@@ -63,7 +63,6 @@ const TrackBody = ({ trackId, track }: { trackId: number; track: Item }) => {
 };
 
 const TrackView = ({ trackId, track }: { trackId: number; track: Item }) => {
-  // Each track opens on its overview.
   const [interactionsFor, setInteractionsFor] = useState<number | null>(null);
   const showInteractions = interactionsFor === trackId;
   const setShowInteractions = (show: boolean) => setInteractionsFor(show ? trackId : null);
@@ -133,7 +132,6 @@ const TrackView = ({ trackId, track }: { trackId: number; track: Item }) => {
   );
 };
 
-// The track named by the `track` search param, in a sheet over the page.
 export const TrackSheet = () => {
   const { trackId, setTrack } = useTrackPanel();
   // The last track stays shown while the sheet slides out.

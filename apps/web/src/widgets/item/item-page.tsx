@@ -32,7 +32,6 @@ const BASE_OF = { artist: "artists", album: "albums", genre: "genres", track: "t
 
 type ItemBaseProps = { title: string; item: ItemRef; initial: ViewState & { base: BaseId } };
 
-// A base of the package narrowed to the item, such as the tracks of an artist. Its view is local.
 export const ItemBase = ({ title, item, initial }: ItemBaseProps) => {
   const [state, setState] = useState<ViewState>(initial);
   const { trackId } = useTrackPanel();
@@ -57,7 +56,6 @@ export const ItemBase = ({ title, item, initial }: ItemBaseProps) => {
 
 type ItemPageProps = { item: ItemRef; children?: ReactNode };
 
-// The page of an artist, an album or a genre: what it is, how much it was played, then its bases.
 export const ItemPage = ({ item, children }: ItemPageProps) => {
   const { packageId = "" } = useParams({ strict: false });
   const period = usePeriod();
@@ -135,7 +133,6 @@ export const ItemPage = ({ item, children }: ItemPageProps) => {
           ) : null}
         </Media.Body>
         <Media.End>
-          {/* The Explorer opens on the item's tracks, with the rule as a chip to edit or remove. */}
           <Link
             to="/app/$packageId/explorer"
             params={{ packageId }}

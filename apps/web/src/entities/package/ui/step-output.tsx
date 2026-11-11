@@ -4,7 +4,7 @@ import { Cancel01Icon, Icon, Tick02Icon } from "@harmony/icons";
 import { Badge } from "@harmony/ui/components/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/tooltip";
 
-const STEP_COUNTS: Record<StepId, { read: string; keep: string; drop: string }> = {
+const STEP_COUNTS = {
   extract_archive: { read: "scanned", keep: "files", drop: "skipped" },
   parse_interactions: { read: "files", keep: "plays", drop: "dropped" },
   normalize_interactions: { read: "plays", keep: "kept", drop: "rejected" },
@@ -12,9 +12,8 @@ const STEP_COUNTS: Record<StepId, { read: string; keep: string; drop: string }> 
   enrich_tracks: { read: "tracks", keep: "kept", drop: "dropped" },
   enrich_albums: { read: "albums", keep: "kept", drop: "dropped" },
   persist_interactions: { read: "listens", keep: "saved", drop: "dropped" },
-};
+} as const;
 
-// What a pipeline step kept and dropped, with the full counts in a tooltip.
 export const StepOutput = ({ output, stepId }: { output?: Output; stepId: StepId }) => {
   if (!output) {
     return null;

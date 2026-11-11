@@ -26,11 +26,9 @@ type BaseViewProps = {
   state: ViewState;
   // `replace` swaps the history entry instead of adding one, for fast changes such as typing.
   onChange: (patch: ViewState, replace?: boolean) => void;
-  // The base shown when the state names none.
   fallback?: ExplorerBaseId;
   // Rules set by the page, such as the artist of an artist page. They are not shown as chips.
   fixed?: readonly Rule[];
-  // A full page: the base menu, keyboard navigation and a taller list.
   page?: boolean;
   limit?: number;
   selectedId?: number | string;
@@ -87,7 +85,6 @@ export const BaseView = ({
     setPrevQ(view.q);
     setText(view.q);
   }
-  // The search stays folded into its icon until it is used.
   const [searching, setSearching] = useState(false);
   const searchOpen = searching || text !== "";
   useEffect(() => {
@@ -96,7 +93,6 @@ export const BaseView = ({
     return () => window.clearTimeout(timer);
   }, [text, view.q, onChange]);
 
-  // Scrolling to the end grows the list, until the view changes.
   const [more, setMore] = useState({ key: "", limit: first });
   const signature = JSON.stringify(listQuery(view, period, 0, fixed));
   const limit = more.key === signature ? more.limit : first;
@@ -121,7 +117,6 @@ export const BaseView = ({
   }, [active]);
 
   const openRow = (row: ListRow) => open(view.base.opens, row);
-  // The open track, on the bases whose rows open a track.
   const selectedOf = (row: ListRow) =>
     view.base.opens === "track" && selectedId !== undefined && (row.track ?? row.id) === selectedId;
 
@@ -141,7 +136,6 @@ export const BaseView = ({
     onEscape: () => setCursor({ signature, index: -1 }),
   });
 
-  // The search and the view menu, at the end of the line.
   const tools = (
     <div className="ml-auto flex shrink-0 items-center gap-1">
       {searchOpen ? (
@@ -193,7 +187,6 @@ export const BaseView = ({
     </div>
   );
 
-  // The query, read left to right: the order of the rows, then which plays and rows count.
   const queryLine = (
     <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
       <SortChip view={view} onChange={onChange} />

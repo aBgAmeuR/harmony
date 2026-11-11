@@ -18,7 +18,7 @@ type BehavioralWidgetProps = {
   trackId: number;
 };
 
-const formatTrackTime = (ms: number): string => {
+const formatTrackTime = (ms: number) => {
   const totalSeconds = Math.round(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;

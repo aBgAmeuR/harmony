@@ -32,7 +32,7 @@ export const NextMilestonesWidget = () => {
                   <span>{target}</span>
                 </p>
                 <Meter value={bar.progress} max={1} size="sm" label={label} />
-                <p className="text-end text-[10px] text-muted-foreground">
+                <p className="text-end text-micro text-muted-foreground">
                   {formatBarCurrent(bar)} / {format.count(bar.target)}
                 </p>
               </div>

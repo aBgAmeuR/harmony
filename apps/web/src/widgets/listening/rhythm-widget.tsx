@@ -37,7 +37,6 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 const SHORT_DAYS = DAYS.map((day) => day.slice(0, 3));
 const hourLabel = (hour: number) => `${String(hour).padStart(2, "0")}:00`;
 const HOURS = Array.from({ length: 24 }, (_, hour) => hourLabel(hour));
-// Every third hour is labelled on the heatmap axis.
 const HOUR_TICKS = HOURS.filter((_, hour) => hour % 3 === 0);
 
 const VIEWS = [
@@ -45,16 +44,13 @@ const VIEWS = [
   { value: "heatmap", label: "Heatmap" },
 ];
 
-// Tonal greens: the busiest bar, then the group that carries the listening, then the rest.
 const PEAK = colors.primary;
 const MAIN = "var(--chart-2)";
 const DIM = "var(--chart-4)";
 
-// Inner radius of the dial, as a share of its outer radius.
 const INNER = 0.5;
 // Quiet hours keep a stub of this share of the busiest one, so the dial stays whole.
 const STUB = 0.04;
-// Height of the tallest weekday bar, in pixels.
 const BAR_HEIGHT = 112;
 
 const DIAL_LABELS = [
@@ -64,7 +60,6 @@ const DIAL_LABELS = [
   { text: "18", className: "top-1/2 left-0 -translate-y-1/2" },
 ];
 
-// Parts of the day, by their first hour.
 const PARTS = [
   { label: "Night", phrase: "at night", from: 0 },
   { label: "Morning", phrase: "in the morning", from: 6 },
@@ -76,11 +71,10 @@ type Part = (typeof PARTS)[number] & { share: number };
 
 const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 
-const peakOf = (values: number[]): number =>
+const peakOf = (values: number[]) =>
   values.reduce((best, value, i) => (value > (values[best] ?? 0) ? i : best), 0);
 
-// The part of the day with the most listening, and its share.
-const peakPart = (hours: number[]): Part => {
+const peakPart = (hours: number[]) => {
   const total = sum(hours);
   const parts = PARTS.map((part) => ({
     ...part,
@@ -89,15 +83,14 @@ const peakPart = (hours: number[]): Part => {
   return parts.reduce((best, part) => (part.share > best.share ? part : best));
 };
 
-// How much busier an average weekend day is than an average weekday, negative when quieter.
-const weekendLift = (days: number[]): number | null => {
+const weekendLift = (days: number[]) => {
   const weekday = sum(days.slice(0, 5)) / 5;
   const weekend = sum(days.slice(5)) / 2;
   return weekday > 0 ? (weekend - weekday) / weekday : null;
 };
 
 // Time on a bar label, where room is short: "12 h 36", "142 h", "45 min".
-const shortTime = (minutes: number): string => {
+const shortTime = (minutes: number) => {
   const total = Math.round(minutes);
   if (total < 60) return `${total} min`;
   const hours = Math.floor(total / 60);
@@ -107,11 +100,10 @@ const shortTime = (minutes: number): string => {
 
 type Cell = { day: string; hour: string; value: number };
 
-// Minutes by weekday and hour, brighter where you listen most.
 const Heatmap = ({ grid }: { grid: number[][] }) => {
   const definition = useMemo(() => {
     const cells = grid.flatMap((hours, d) =>
-      hours.map((value, h): Cell => ({ day: SHORT_DAYS[d] ?? "", hour: HOURS[h] ?? "", value })),
+      hours.map((value, h) => ({ day: SHORT_DAYS[d] ?? "", hour: HOURS[h] ?? "", value })),
     );
     const max = Math.max(0, ...cells.map((c) => c.value));
     return defineChart({
@@ -157,14 +149,13 @@ const Heatmap = ({ grid }: { grid: number[][] }) => {
 
 type HourBar = { hour: string; value: number; shown: number; fill: string };
 
-// Listening by hour on a 24-hour dial, midnight on top and noon at the bottom.
 const HourClock = ({ hours, part }: { hours: number[]; part: Part }) => {
   const peak = peakOf(hours);
   const total = sum(hours);
 
   const definition = useMemo(() => {
     const max = Math.max(0, ...hours);
-    const bars = hours.map((value, index): HourBar => ({
+    const bars = hours.map((value, index) => ({
       hour: HOURS[index] ?? "",
       value,
       shown: Math.max(value, max * STUB),
@@ -217,7 +208,7 @@ const HourClock = ({ hours, part }: { hours: number[]; part: Part }) => {
             key={label.text}
             aria-hidden
             className={cn(
-              "pointer-events-none absolute text-[10px] text-muted-foreground tabular-nums",
+              "pointer-events-none absolute text-micro text-muted-foreground tabular-nums",
               label.className,
             )}
           >
@@ -228,7 +219,7 @@ const HourClock = ({ hours, part }: { hours: number[]; part: Part }) => {
           <span className="text-lg font-semibold tabular-nums">
             {total > 0 ? HOURS[peak] : "-"}
           </span>
-          <span className="text-[10px] text-muted-foreground">busiest hour</span>
+          <span className="text-micro text-muted-foreground">busiest hour</span>
         </div>
       </div>
       <figcaption className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -239,7 +230,6 @@ const HourClock = ({ hours, part }: { hours: number[]; part: Part }) => {
   );
 };
 
-// Listening by day of the week, with the weekday average against the weekend.
 const WeekdayBars = ({ days }: { days: number[] }) => {
   const max = Math.max(0, ...days);
   const busiest = peakOf(days);
@@ -259,7 +249,7 @@ const WeekdayBars = ({ days }: { days: number[] }) => {
           >
             <span
               className={cn(
-                "text-[10px] whitespace-nowrap text-muted-foreground tabular-nums",
+                "text-micro whitespace-nowrap text-muted-foreground tabular-nums",
                 i === busiest && "font-medium text-foreground",
               )}
             >
@@ -283,7 +273,7 @@ const WeekdayBars = ({ days }: { days: number[] }) => {
           </span>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-2 text-center text-[10px] text-muted-foreground tabular-nums">
+      <div className="grid grid-cols-7 gap-2 text-center text-micro text-muted-foreground tabular-nums">
         <div className="col-span-5 flex flex-col gap-1">
           <span aria-hidden className="h-1.5 border-x border-b border-border" />
           <span>
@@ -314,7 +304,6 @@ const Fact = ({ label, value, hint }: FactProps) => (
 
 const NO_RHYTHM: Rhythm = { grid: [], days: [], hours: [] };
 
-// Which hours of the day and which days of the week carry the listening.
 export const RhythmWidget = () => {
   const filter = useScope();
   const { data = NO_RHYTHM, isPending } = useQuery(listeningQueries.rhythm(filter));
@@ -323,7 +312,6 @@ export const RhythmWidget = () => {
   const total = sum(data.hours);
   const day = peakOf(data.days);
   const hour = peakOf(data.hours);
-  // Between midnight and 6 am.
   const night = total > 0 ? sum(data.hours.slice(0, 6)) / total : 0;
   const part = useMemo(() => peakPart(data.hours), [data.hours]);
   const lift = weekendLift(data.days);

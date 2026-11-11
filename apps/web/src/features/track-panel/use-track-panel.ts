@@ -7,7 +7,7 @@ export const useTrackPanel = () => {
   const search = useSearch({ strict: false });
   const navigate = useNavigate();
 
-  const trackId = parseTrack((search as Record<string, unknown>).track);
+  const trackId = parseTrack("track" in search ? search.track : undefined);
   const setTrack = (id: number | undefined) =>
     navigate({ to: ".", search: (prev) => ({ ...prev, track: id }), replace: true });
 

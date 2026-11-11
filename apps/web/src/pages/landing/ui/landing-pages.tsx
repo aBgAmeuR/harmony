@@ -51,7 +51,6 @@ const Tile = ({ title, text, to, children }: TileProps) => (
   </div>
 );
 
-// The Explorer table cut down to the top four artists and the time listened.
 const ExplorerTile = () => {
   const navigate = useNavigate();
   const max = Math.max(0, ...TOP_ARTISTS.map((row) => row.playtime));

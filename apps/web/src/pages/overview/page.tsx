@@ -1,5 +1,3 @@
-import type { TopRow } from "@/data/bases";
-
 import { useTrackPanel } from "@/features/track-panel";
 import { useOpen } from "@/widgets/base/open";
 import { ExploreLinks } from "@/widgets/overview/explore-links";
@@ -23,10 +21,7 @@ export const OverviewPage = () => {
         <KpiChartWidget />
       </div>
       <HighlightsWidget />
-      <TopWidget
-        selectedId={trackId}
-        onOpen={(by: keyof typeof OPENS, row: TopRow) => open(OPENS[by], row)}
-      />
+      <TopWidget selectedId={trackId} onOpen={(by, row) => open(OPENS[by], row)} />
       <ExploreLinks />
     </Page>
   );

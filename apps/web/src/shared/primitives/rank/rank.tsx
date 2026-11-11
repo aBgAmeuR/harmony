@@ -17,7 +17,6 @@ const medal = (n: number) => {
 
 type RankProps = ComponentProps<"span"> & {
   n: number;
-  // medal: gold, silver and bronze on the podium. plain: a muted number, such as a track number.
   variant?: "medal" | "plain";
 };
 

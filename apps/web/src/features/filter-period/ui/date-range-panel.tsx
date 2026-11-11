@@ -2,8 +2,6 @@ import { DialogFooter } from "@harmony/ui/components/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@harmony/ui/components/tabs";
 import { useState } from "react";
 
-import type { DateRangeMode } from "@/shared/scope";
-
 import { DateRangeBoundsProvider } from "./date-range-bounds-context";
 import { DateRangeCustomTab } from "./date-range-custom-tab";
 import { DateRangeDialogFooter } from "./date-range-dialog-footer";
@@ -31,7 +29,13 @@ const DateRangeDialogBody = ({ open }: { open: boolean }) => {
 
   return (
     <DateRangeBoundsProvider monthlyListenLabels={monthlyListenLabels}>
-      <Tabs value={draft.mode} onValueChange={(value) => setMode(value as DateRangeMode)}>
+      <Tabs
+        value={draft.mode}
+        onValueChange={(value) => {
+          const mode = (["month", "year", "custom"] as const).find((m) => m === value);
+          if (mode) setMode(mode);
+        }}
+      >
         <div className="border-b bg-muted/50 px-3.5 py-1.5">
           <TabsList className="w-full bg-transparent p-0.5">
             <TabsTrigger value="month" className="dark:data-active:bg-background">

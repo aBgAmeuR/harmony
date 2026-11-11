@@ -6,12 +6,10 @@ type DataDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
-  // The figure controls, next to the title.
   actions?: ReactNode;
   children: ReactNode;
 };
 
-// A figure shown large.
 export const DataDialog = ({ open, onOpenChange, title, actions, children }: DataDialogProps) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="gap-4 sm:max-w-4xl">

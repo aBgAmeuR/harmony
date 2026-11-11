@@ -13,7 +13,6 @@ import {
 import { isField } from "@/data/filter";
 import { previousRange } from "@/shared/lib/date";
 
-// A filter of a view: on a play field (artist, genre, shuffle…) or on a row property (streams…).
 // `label` is what the chip shows for an id value, such as the artist's name.
 export type ViewRule = { field: string; op: Op; value: string | number | boolean; label?: string };
 
@@ -33,7 +32,7 @@ export type ViewState = {
 
 const OPS: readonly Op[] = ["is", "not", "gt", "lt"];
 
-const oneOf = <T extends string>(values: readonly T[], value: unknown): T | undefined =>
+export const oneOf = <T extends string>(values: readonly T[], value: unknown) =>
   values.find((candidate) => candidate === value);
 
 const ruleOf = (value: unknown): ViewRule[] => {
@@ -47,7 +46,7 @@ const ruleOf = (value: unknown): ViewRule[] => {
   return [{ field, op: opOk, value: raw, label }];
 };
 
-export const parseView = (raw: Record<string, unknown>): ViewState => ({
+export const parseView = (raw: Record<string, unknown>) => ({
   base: oneOf(EXPLORER_BASES, raw.base),
   view: oneOf(["table", "gallery"] as const, raw.view),
   bars: raw.bars === false ? false : undefined,
@@ -58,7 +57,6 @@ export const parseView = (raw: Record<string, unknown>): ViewState => ({
   rules: Array.isArray(raw.rules) ? raw.rules.flatMap(ruleOf) : undefined,
 });
 
-// The view with every default filled in, for one base.
 export type View = {
   base: Base;
   view: ViewType;
@@ -70,7 +68,7 @@ export type View = {
   diffs: boolean;
 };
 
-export const resolveView = (state: ViewState, fallback: ExplorerBaseId = "artists"): View => {
+export const resolveView = (state: ViewState, fallback: ExplorerBaseId = "artists") => {
   const base = bases[state.base ?? fallback];
   const view = state.view && base.views.includes(state.view) ? state.view : "table";
   return {
@@ -87,7 +85,6 @@ export const resolveView = (state: ViewState, fallback: ExplorerBaseId = "artist
 
 export const PAGE_SIZE = 50;
 
-// The list query of a view. `fixed` rules come from the page (an artist page lists its tracks).
 export const listQuery = (
   view: View,
   period: Range,
@@ -114,7 +111,7 @@ export const listQuery = (
 
 // Another base keeps the view: its layout, sort and search, and the rules on plays. What the
 // base lacks, such as a gallery or a sorted property, falls back to its defaults.
-export const switchBase = (view: View, base: ExplorerBaseId): ViewState => {
+export const switchBase = (view: View, base: ExplorerBaseId) => {
   const next = bases[base];
   const rules = view.rules.filter((rule) => isField(rule.field));
   return {

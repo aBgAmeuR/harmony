@@ -3,7 +3,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Pane } from "@/shared/primitives/pane";
 import { BaseView } from "@/widgets/base/base-view";
 import { BaseMenu } from "@/widgets/base/controls";
-import { resolveView, switchBase } from "@/widgets/base/view";
+import { resolveView } from "@/widgets/base/view";
 import { Page } from "@/widgets/page/page";
 import { TrackSheet } from "@/widgets/track-details/track-sheet";
 
@@ -11,7 +11,6 @@ import type { ExplorerSearch } from "./search";
 
 const FROM = "/app/$packageId/explorer";
 
-// Every base of the package, picked next to the title, with its view kept in the URL.
 export const ExplorerPage = () => {
   const search = useSearch({ from: FROM });
   const navigate = useNavigate({ from: FROM });
@@ -26,7 +25,7 @@ export const ExplorerPage = () => {
       <span aria-hidden className="text-muted-foreground/60">
         /
       </span>
-      <BaseMenu view={view} onBase={(base) => void change(switchBase(view, base))} />
+      <BaseMenu view={view} onChange={change} />
     </div>
   );
 

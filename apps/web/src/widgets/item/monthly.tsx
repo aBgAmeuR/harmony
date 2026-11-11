@@ -33,7 +33,6 @@ type MonthlyProps = {
   rule: Rule;
 };
 
-// Listening of an item month by month. A bar is a way to zoom to its month.
 export const Monthly = ({ rule }: MonthlyProps) => {
   const mode = useDateRangeStore((s) => s.mode);
   const { from, to } = usePeriod();
@@ -59,7 +58,6 @@ export const Monthly = ({ rule }: MonthlyProps) => {
           x: "label",
           y: "value",
           z: () => "playtime",
-          // the months of the period stand out, the rest of the year stays as context
           fill: (row) => (row.active ? ACTIVE : DIMMED),
           radius: 2,
         }),

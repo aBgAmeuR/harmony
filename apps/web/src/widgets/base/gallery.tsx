@@ -17,10 +17,8 @@ type GalleryProps = {
 
 // Deezer serves its `/image` links at 120px by default: the gallery asks for the 500px picture.
 const DEEZER_IMAGE = /^https:\/\/api\.deezer\.com\/[a-z]+\/\d+\/image$/;
-const big = (src: string | null): string | null =>
-  src && DEEZER_IMAGE.test(src) ? `${src}?size=big` : src;
+const big = (src: string | null) => (src && DEEZER_IMAGE.test(src) ? `${src}?size=big` : src);
 
-// Covers in a grid, with the sorted property under each name.
 export const Gallery = ({ view, rows, selected, onOpen }: GalleryProps) => {
   const prop = view.base.props[view.sort];
   return (

@@ -5,12 +5,10 @@ import type { Range } from "@/shared/lib/date";
 import { playsFrom, type Rule } from "./filter";
 import { int, picture, text } from "./sql";
 
-// The resources that have a page (or a panel) of their own.
 type ItemKind = "artist" | "album" | "track" | "genre";
 
 export type ItemRef = { kind: ItemKind; id: number | string };
 
-// The plays of one item, as a filter rule.
 export const itemRule = ({ kind, id }: ItemRef): Rule => ({
   field: kind,
   op: "is",
@@ -26,7 +24,6 @@ export type Item = {
   image: string | null;
   artists: Named[];
   album: Named | null;
-  // Album details.
   type: string | null;
   releaseDate: string | null;
   trackCount: number | null;
@@ -48,7 +45,7 @@ const artistsOf = (list: string) => `
   LEFT JOIN unnest(${list}) WITH ORDINALITY AS u(artist_id, position) ON TRUE
   LEFT JOIN artists a ON a.id = u.artist_id`;
 
-const sqlOf = ({ kind, id }: ItemRef): string => {
+const sqlOf = ({ kind, id }: ItemRef) => {
   switch (kind) {
     case "artist":
       return `
@@ -86,8 +83,7 @@ const sqlOf = ({ kind, id }: ItemRef): string => {
   }
 };
 
-// What a page shows about an item, null when the package does not know it.
-export const itemFn = async (ref: ItemRef): Promise<Item | null> => {
+export const itemFn = async (ref: ItemRef) => {
   const rows = await db.query<ItemRow>(sqlOf(ref));
   const [first] = rows;
   if (!first) return null;
@@ -118,14 +114,7 @@ export type AlbumTrack = {
   playtime: number;
 };
 
-// Every track of the album known to the package in album order, played in the period or not.
-export const albumTracksFn = async ({
-  albumId,
-  range,
-}: {
-  albumId: number;
-  range: Range;
-}): Promise<AlbumTrack[]> =>
+export const albumTracksFn = async ({ albumId, range }: { albumId: number; range: Range }) =>
   await db.query<AlbumTrack>(`
     SELECT
       v.track_id AS id,

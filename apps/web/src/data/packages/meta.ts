@@ -23,7 +23,7 @@ type PackageMetaRow = {
   steps: string;
 };
 
-export const metaFn = async (): Promise<PackageOverview> => {
+export const metaFn = async () => {
   const rows = await db.query<PackageMetaRow>(`
     SELECT
       public_id,

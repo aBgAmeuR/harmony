@@ -31,7 +31,6 @@ const bucketLabel = (start: string, unit: "day" | "week" | "month") =>
     unit === "month" ? { month: "short", year: "numeric" } : { month: "short", day: "numeric" },
   );
 
-// A metric with its trend, which opens larger.
 export const MetricCard = ({ measure }: MetricCardProps) => {
   const { label, kind } = measures[measure];
   const scope = useScope();

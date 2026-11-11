@@ -22,15 +22,15 @@ export type TimelineEvent = {
   image: string | null;
 };
 
-const LABELS: Record<Mark["kind"], (threshold: number) => string> = {
+const LABELS = {
   hours: (n) => `${format.count(n)} hours listened`,
   streams: (n) => `${format.count(n)} streams reached`,
   artists: (n) => `${format.count(n)} unique artists`,
   tracks: (n) => `${format.count(n)} unique tracks`,
   first: () => "First listen",
-};
+} satisfies Record<Mark["kind"], (threshold: number) => string>;
 
-const timelineFn = async (scope: Scope): Promise<TimelineEvent[]> =>
+const timelineFn = async (scope: Scope) =>
   (await marksFn(scopeFilter(scope))).map((mark) => ({
     id: `${mark.kind}-${mark.threshold}-${mark.date}`,
     date: mark.date,

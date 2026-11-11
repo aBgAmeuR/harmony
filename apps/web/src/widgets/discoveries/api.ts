@@ -8,16 +8,14 @@ import { query } from "@/shared/lib/query";
 
 export type WeekPoint = { name: string; value: number };
 
-// A release, placed on the week it came out.
 export type ReleaseMark = Release & { periodLabel: string };
 
-const weekLabel = (date: Date): string =>
+const weekLabel = (date: Date) =>
   `${String(date.getDate()).padStart(2, "0")} ${date.toLocaleDateString("en-US", { month: "short" })} ${date.getFullYear()}`;
 
-const weekOf = (date: Date): Date => addDays(date, -((date.getDay() + 6) % 7));
+const weekOf = (date: Date) => addDays(date, -((date.getDay() + 6) % 7));
 
-// Minutes of the artist per week (from Monday), empty weeks included.
-const weeklyFn = async (scope: Scope): Promise<WeekPoint[]> => {
+const weeklyFn = async (scope: Scope) => {
   if (scope.artistId === undefined) return [];
   const { points } = await series(scopeFilter(scope), ["playtime"], "week");
   return points.map((point) => ({
@@ -26,7 +24,7 @@ const weeklyFn = async (scope: Scope): Promise<WeekPoint[]> => {
   }));
 };
 
-const releasesOfFn = async ({ artistId, from, to }: Scope): Promise<ReleaseMark[]> => {
+const releasesOfFn = async ({ artistId, from, to }: Scope) => {
   if (artistId === undefined) return [];
   const releases = await releasesFn({ artistId, from, to });
   return releases.map((release) => ({

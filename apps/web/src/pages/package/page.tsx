@@ -128,7 +128,7 @@ const PackageHeaderSection = ({ pkg, subtitle }: PackageHeaderProps) => {
   );
 };
 
-const missedTrackCount = (steps: PipelineStep[]): number | undefined => {
+const missedTrackCount = (steps: PipelineStep[]) => {
   return steps.find((step) => step.id === "resolve_tracks")?.output?.drop;
 };
 

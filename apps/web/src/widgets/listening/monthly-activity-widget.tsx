@@ -47,18 +47,16 @@ const UNITS = [
 const isUnit = (value: string): value is Unit =>
   value === "day" || value === "week" || value === "month";
 
-const WORDS: Record<Unit, { noun: string; plural: string; adjective: string; on: string }> = {
+const WORDS = {
   day: { noun: "day", plural: "days", adjective: "daily", on: "on" },
   week: { noun: "week", plural: "weeks", adjective: "weekly", on: "in" },
   month: { noun: "month", plural: "months", adjective: "monthly", on: "in" },
-};
+} as const;
 
 const LINE = colors.primary;
 // Above this many buckets, dots would crowd the line.
 const MAX_DOTS = 36;
-// Most labels the axis shows.
 const MAX_TICKS = 12;
-// Room above the peak for its badge.
 const HEADROOM = 1.3;
 
 const time = (minutes: number) => format.as(minutes, "minutes");
@@ -72,12 +70,9 @@ const monthDay = new Intl.DateTimeFormat("en-US", {
 });
 
 type Bucket = {
-  // Axis label, unique in the period.
   name: string;
-  // Name in a sentence: "July", "the week of Mar 3", "Mar 3".
   long: string;
   value: number;
-  // False after the newest play of the package: no data there yet.
   covered: boolean;
   series: "time";
 };
@@ -120,7 +115,6 @@ const summarize = (buckets: Bucket[]) => {
 
 type Spot = { left: number; top: number };
 
-// Moves an overlay onto the chart, or hides it when it has no place there.
 const place = (element: HTMLElement | null, spot: Spot | null) => {
   if (!element) return;
   element.style.visibility = spot ? "visible" : "hidden";
@@ -137,7 +131,6 @@ type OverTimeChartProps = {
   ariaLabel: string;
 };
 
-// An area over the period with its average and its peak. Buckets without data yet are hatched.
 const OverTimeChart = ({ buckets, covered, peak, average, ariaLabel }: OverTimeChartProps) => {
   const badge = useRef<HTMLDivElement>(null);
   const mean = useRef<HTMLSpanElement>(null);
@@ -220,7 +213,6 @@ const OverTimeChart = ({ buckets, covered, peak, average, ariaLabel }: OverTimeC
         y: {
           scale: scaleLinear().domain([0, Math.max(peak?.value ?? 0, average) * HEADROOM || 1]),
           grid: gridDown,
-          // Three grid lines, without labels.
           axis: { ...quietAxis<number>({ count: 3 }), tickLabels: false },
         },
       },
@@ -236,19 +228,19 @@ const OverTimeChart = ({ buckets, covered, peak, average, ariaLabel }: OverTimeC
         aria-hidden
         className="pointer-events-none invisible absolute z-10 border-l border-dashed border-border bg-[repeating-linear-gradient(135deg,var(--color-border)_0_1px,transparent_1px_6px)]"
       >
-        <span className="absolute top-1 left-2 text-[10px] text-muted-foreground">Not yet</span>
+        <span className="absolute top-1 left-2 text-micro text-muted-foreground">Not yet</span>
       </div>
       <span
         ref={mean}
         aria-hidden
-        className="pointer-events-none invisible absolute z-10 mt-[-2px] -translate-y-full rounded-sm bg-background/80 px-1 text-[10px] text-muted-foreground tabular-nums"
+        className="pointer-events-none invisible absolute z-10 -mt-0.5 -translate-y-full rounded-sm bg-background/80 px-1 text-micro text-muted-foreground tabular-nums"
       >
         Avg {time(average)}
       </span>
       <div
         ref={badge}
         aria-hidden
-        className="pointer-events-none invisible absolute z-10 -translate-x-1/2 -translate-y-[calc(100%+8px)] rounded-md border bg-popover px-1.5 py-0.5 text-[10px] whitespace-nowrap text-muted-foreground tabular-nums"
+        className="pointer-events-none invisible absolute z-10 -translate-x-1/2 -translate-y-[calc(100%+8px)] rounded-md border bg-popover px-1.5 py-0.5 text-micro whitespace-nowrap text-muted-foreground tabular-nums"
       >
         <span className="font-medium text-foreground">{time(peak?.value ?? 0)}</span> peak
       </div>
@@ -287,10 +279,8 @@ const Chip = ({ label, children }: { label: string; children: ReactNode }) => (
 
 const NO_POINTS: Point[] = [];
 
-// Listening time across the period, by day, week or month.
 export const MonthlyActivityWidget = () => {
   const filter = useScope();
-  // The period picks the unit until the listener picks one.
   const [picked, setPicked] = useState<Unit | null>(null);
   const unit = picked ?? unitFor(rangeDays(filter));
   const { data } = useQuery({
@@ -314,7 +304,7 @@ export const MonthlyActivityWidget = () => {
   if (!data) {
     return (
       <SectionPending title="Over time">
-        <Skeleton className="aspect-[3.2] rounded-lg" />
+        <Skeleton className="aspect-16/5 rounded-lg" />
         <Skeleton className="h-7 w-96 max-w-full rounded-full" />
       </SectionPending>
     );

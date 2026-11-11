@@ -44,7 +44,6 @@ const LABELS = [
   "Sep 24",
 ];
 
-// The first week of each month carries the month name.
 const TICKS = [
   "Jan",
   "",

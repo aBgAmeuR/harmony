@@ -1,7 +1,6 @@
 import { cn } from "@harmony/ui/lib/utils";
 import { Children, Fragment, type ComponentProps } from "react";
 
-// Inline details split by "·". Empty children are skipped.
 export const Meta = ({ className, children, ...props }: ComponentProps<"span">) => (
   <span
     data-slot="meta"

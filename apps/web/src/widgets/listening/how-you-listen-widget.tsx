@@ -8,7 +8,6 @@ import { listeningQueries } from "./api";
 import { HowYouListenCard, percent, shareOf } from "./how-you-listen";
 import { SectionPending } from "./ui/section-pending";
 
-// Loads the plays' styles and devices, then draws them with `HowYouListenCard`.
 export const HowYouListenWidget = () => {
   const filter = useScope();
   const { data: style = [], isPending: stylePending } = useQuery(listeningQueries.style(filter));

@@ -35,7 +35,6 @@ type ChartProps = {
   releases: ReleaseMark[];
 };
 
-// Weeks shown in the main chart, picked with the brush of the overview below it.
 const useWeekRange = (weeks: readonly string[]) => {
   const [picked, setPicked] = useState<BrushRange<string> | null>(null);
   const range = useMemo(() => {
@@ -46,7 +45,6 @@ const useWeekRange = (weeks: readonly string[]) => {
   return [range, setPicked] as const;
 };
 
-// The weekly line with a dashed rule on each release that falls in those weeks.
 const releasesDefinition = (rows: WeekPoint[], releases: ReleaseMark[]) => {
   const shown = new Set(rows.map((row) => row.name));
   const marks = releases.filter((release) => shown.has(release.periodLabel));
@@ -72,7 +70,6 @@ const releasesDefinition = (rows: WeekPoint[], releases: ReleaseMark[]) => {
         curve: curves.monotone,
         strokeWidth: 1.5,
       }),
-      // one dashed rule per album release, titled along its top
       decorative(
         ruleX(marks, {
           id: "releases",
@@ -106,7 +103,6 @@ const releasesDefinition = (rows: WeekPoint[], releases: ReleaseMark[]) => {
 
 type ReleasesLineProps = ChartProps & { aspectRatio?: number };
 
-// The weekly line and its release rules alone, without the brush.
 export const ReleasesLine = ({ weekly, releases, aspectRatio = 3 }: ReleasesLineProps) => {
   const definition = useMemo(() => releasesDefinition(weekly, releases), [weekly, releases]);
   return (
@@ -118,7 +114,6 @@ export const ReleasesLine = ({ weekly, releases, aspectRatio = 3 }: ReleasesLine
   );
 };
 
-// An artist's weekly listening with a dashed rule on each album release, and a brush to zoom.
 export const ListeningVsReleasesChart = ({ weekly, releases }: ChartProps) => {
   const weeks = useMemo(() => weekly.map((week) => week.name), [weekly]);
   const [range, setRange] = useWeekRange(weeks);

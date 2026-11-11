@@ -8,16 +8,12 @@ import type { FigureState, FigureView } from "../model/types";
 import { FigureViews } from "./figure-views";
 
 type DataFigureProps = {
-  // Caption above the figure.
   title: string;
-  // Ways to draw the figure, the first one is shown first.
   views?: FigureView[];
-  // The figure itself, drawn in the picked view.
   children: (state: FigureState) => ReactNode;
   className?: string;
 };
 
-// A chart or a list with a caption and a switch between its views.
 export const DataFigure = ({ title, views = [], children, className }: DataFigureProps) => {
   const [view, setView] = useState(views[0]?.value ?? "");
 

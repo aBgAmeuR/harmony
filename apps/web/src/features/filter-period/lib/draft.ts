@@ -5,7 +5,7 @@ import type { DateRangeDraft } from "./types";
 
 export { commitDateRangeDraft, snapshotDateRangeDraft };
 
-export const buildDraftRangePreview = (draft: DateRangeDraft): { from: Date; to: Date } | null => {
+export const buildDraftRangePreview = (draft: DateRangeDraft) => {
   try {
     return buildInstantRangeQuery(draft);
   } catch {
@@ -21,7 +21,7 @@ export const buildDraftRangePreview = (draft: DateRangeDraft): { from: Date; to:
   }
 };
 
-export const parseMonthLabel = (label: string): { year: number; month: number } | null => {
+export const parseMonthLabel = (label: string) => {
   const [yearStr, monthStr] = label.split("-");
   const year = Number.parseInt(yearStr ?? "", 10);
   const month = Number.parseInt(monthStr ?? "", 10);

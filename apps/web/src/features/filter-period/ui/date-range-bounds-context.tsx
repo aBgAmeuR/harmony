@@ -20,7 +20,7 @@ export const DateRangeBoundsProvider = ({
   return <DateRangeBoundsContext value={value}>{children}</DateRangeBoundsContext>;
 };
 
-export const useDateRangeBoundsContext = (): DateRangeBoundsContextValue => {
+export const useDateRangeBoundsContext = () => {
   const context = use(DateRangeBoundsContext);
   if (!context) {
     throw new Error("useDateRangeBoundsContext must be used within DateRangeBoundsProvider");

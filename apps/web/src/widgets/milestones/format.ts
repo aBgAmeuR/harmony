@@ -2,12 +2,9 @@ import type { NextMilestone } from "@/data/milestones";
 
 import { format, toDate } from "@/shared/lib/format";
 
-export const yearOf = (value: string): number => toDate(value).getFullYear();
+export const yearOf = (value: string) => toDate(value).getFullYear();
 
-export const sessionDurationParts = (
-  minutes: number,
-  unitStyle: "short" | "long" = "short",
-): { value: number; unit: string } => {
+export const sessionDurationParts = (minutes: number, unitStyle: "short" | "long" = "short") => {
   if (!Number.isFinite(minutes) || minutes <= 0) {
     return { value: 0, unit: unitStyle === "short" ? "min" : "minutes" };
   }
@@ -20,14 +17,14 @@ export const sessionDurationParts = (
   return { value: minutes, unit: minutes === 1 ? "minute" : "minutes" };
 };
 
-export const formatBarCurrent = (bar: NextMilestone): string => {
+export const formatBarCurrent = (bar: NextMilestone) => {
   if (bar.id === "hours") {
     return bar.current.toLocaleString("en-US", { maximumFractionDigits: 1 });
   }
   return format.count(bar.current);
 };
 
-export const nextMilestoneCopy = (bar: NextMilestone): { remaining: string; target: string } => {
+export const nextMilestoneCopy = (bar: NextMilestone) => {
   switch (bar.id) {
     case "hours":
       return {
@@ -52,7 +49,7 @@ export const nextMilestoneCopy = (bar: NextMilestone): { remaining: string; targ
   }
 };
 
-export const heroHeadline = (days: number, streams: number): string => {
+export const heroHeadline = (days: number, streams: number) => {
   const dayPart = days === 1 ? "1\u00a0listening day" : `${format.count(days)}\u00a0listening days`;
   const streamPart = streams === 1 ? "1\u00a0stream" : `${format.count(streams)}\u00a0streams`;
   return `${dayPart}, ${streamPart}.`;

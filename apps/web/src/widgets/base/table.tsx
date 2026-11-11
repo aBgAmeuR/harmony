@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { ListRow, Trends } from "@/data/bases";
 
@@ -32,7 +32,6 @@ const Trend = ({ data }: { data: number[] }) => {
   );
 };
 
-// One bar per period, the latest one brighter.
 const Bars = ({ data }: { data: number[] }) => {
   const max = Math.max(...data) || 1;
   const step = 100 / data.length;
@@ -56,7 +55,6 @@ const Bars = ({ data }: { data: number[] }) => {
   );
 };
 
-// The rank, with the places won or lost since the previous period under it.
 const Move = ({ row }: { row: ListRow }) => {
   if (row.prevRank === null) return <span className="text-muted-foreground">new</span>;
   const places = row.prevRank - row.rank;
@@ -77,7 +75,7 @@ const useShare = (view: View, rows: ListRow[]) => {
     return prop ? isNumeric(prop) : false;
   });
   const max = name ? Math.max(0, ...rows.map((row) => Number(row[name]) || 0)) : 0;
-  return (row: ListRow): CSSProperties | undefined => {
+  return (row: ListRow) => {
     if (!view.bars || !name || max === 0) return undefined;
     const share = Math.round(((Number(row[name]) || 0) / max) * 1000) / 10;
     return {
@@ -97,17 +95,13 @@ type BaseTableProps = {
 
 const MAIN = "playtime";
 
-// A ranking (artists, albums…) reads as a list: rank and move, the item, its trend, then its
-// time listened with the sorted value under it.
 export const BaseTable = ({ view, rows, trends, active, selected, onOpen }: BaseTableProps) => {
   const { base } = view;
   const pictured = base.views.includes("gallery");
   const trendKey = view.sort === "streams" ? "streams" : "playtime";
-  // Medals for the top rows only when they are sorted by a measure, highest first.
   const sorted = base.props[view.sort];
   const ranked = view.desc && sorted !== undefined && isNumeric(sorted);
   const share = useShare(view, rows);
-  // The time listened always shows, with the sorted value under it (streams by default).
   const below = sorted && view.sort !== MAIN ? view.sort : "streams";
   const main = base.props[MAIN];
   const sub = base.props[below];
@@ -126,7 +120,7 @@ export const BaseTable = ({ view, rows, trends, active, selected, onOpen }: Base
               style={share(row)}
             >
               <Table.Cell className="w-10 pl-4">
-                <div className="flex flex-col items-center gap-0.5 text-[10px] leading-none font-medium tabular-nums">
+                <div className="flex flex-col items-center gap-0.5 text-micro leading-none font-medium tabular-nums">
                   <Rank n={row.rank} variant={ranked ? "medal" : "plain"} />
                   {view.diffs ? <Move row={row} /> : null}
                 </div>

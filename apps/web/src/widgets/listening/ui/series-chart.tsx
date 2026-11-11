@@ -26,7 +26,6 @@ import type { Kind } from "@/shared/lib/format";
 
 import { format } from "@/shared/lib/format";
 
-// One bucket of the period.
 export type SeriesPoint = { name: string; value: number };
 
 type SeriesChartProps = {
@@ -34,9 +33,7 @@ type SeriesChartProps = {
   label: string;
   kind: Kind;
   view: "bars" | "area";
-  // Labelled buckets on the category axis, all of them when absent.
   ticks?: string[];
-  // Draws the value axis.
   axis?: boolean;
   aspectRatio: number;
   ariaLabel: string;
@@ -47,7 +44,6 @@ const CURRENT = colors.primary;
 const mean = (values: number[]) =>
   values.length > 0 ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
 
-// Bars or an area over the period, with the average line.
 export const SeriesChart = ({
   points,
   label,

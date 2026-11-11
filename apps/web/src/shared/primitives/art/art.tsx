@@ -10,7 +10,6 @@ const sizes = {
   lg: "size-12",
   xl: "size-16",
   "2xl": "size-20",
-  // As wide as its container, for grids of covers.
   fill: "aspect-square w-full",
 } as const;
 
@@ -24,7 +23,7 @@ const initialsSizes = {
   fill: "text-2xl",
 } as const;
 
-const initials = (name: string): string =>
+const initials = (name: string) =>
   name
     .split(/\s+/)
     .filter(Boolean)
@@ -36,13 +35,10 @@ type ArtProps = Omit<ComponentProps<"div">, "children"> & {
   src: string | null | undefined;
   alt: string;
   size?: keyof typeof sizes;
-  // Shown without an image: a note icon, or the initials of `alt`.
   fallback?: "icon" | "initials";
-  // glow: a blurred copy of the image behind it, for page heads.
   variant?: "flat" | "glow";
 };
 
-// A cover or a portrait.
 export const Art = ({
   src,
   alt,

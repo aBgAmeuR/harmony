@@ -13,13 +13,13 @@ type HistoryWidgetProps = {
   trackId: number;
 };
 
-const formatStreak = (days: number | undefined): string => {
+const formatStreak = (days: number | undefined) => {
   if (days === undefined) return "-";
   if (days === 1) return "1 day";
   return `${days} days`;
 };
 
-const formatStreakStart = (value: string | null | undefined): string | undefined => {
+const formatStreakStart = (value: string | null | undefined) => {
   if (!value) return undefined;
   return `Started ${format.date(value)}`;
 };

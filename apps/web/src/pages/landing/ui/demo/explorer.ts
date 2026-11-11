@@ -1,7 +1,6 @@
 type DemoRow = { id: number; name: string; image: string; playtime: number; rank: number };
 
-// The demo package's top four artists of 2026.
-const artist = (id: number, name: string, playtime: number, rank: number): DemoRow => ({
+const artist = (id: number, name: string, playtime: number, rank: number) => ({
   id,
   name,
   image: `/landing/covers/artist-${id}.webp`,

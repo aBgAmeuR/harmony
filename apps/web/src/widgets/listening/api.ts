@@ -12,16 +12,7 @@ export type MetricId = "playtime" | "streams" | "days" | "tracks";
 
 export type Point = { start: string; value: number };
 
-type Metric = { value: number; unit: Unit; trend: Point[] };
-
-// A total and its trend over the period.
-const metricFn = async ({
-  scope,
-  measure,
-}: {
-  scope: Scope;
-  measure: MetricId;
-}): Promise<Metric> => {
+const metricFn = async ({ scope, measure }: { scope: Scope; measure: MetricId }) => {
   const filter = scopeFilter(scope);
   const unit = unitFor(rangeDays(filter));
   const [total, trend] = await Promise.all([
@@ -45,10 +36,10 @@ export type OverTime = {
   last: string | null;
 };
 
-export const scopeKey = ({ from, to, artistId }: Scope): string =>
+export const scopeKey = ({ from, to, artistId }: Scope) =>
   `${isoDay(from)}|${isoDay(to)}|${artistId ?? ""}`;
 
-const overTimeFn = async ({ scope, unit }: { scope: Scope; unit: Unit }): Promise<OverTime> => {
+const overTimeFn = async ({ scope, unit }: { scope: Scope; unit: Unit }) => {
   const [trend, period] = await Promise.all([
     series(scopeFilter(scope), ["playtime"], unit),
     periodFn(),
@@ -64,7 +55,7 @@ const overTimeFn = async ({ scope, unit }: { scope: Scope; unit: Unit }): Promis
 // Minutes listened in local time: by weekday, Monday first, and by hour, midnight first.
 export type Rhythm = { grid: number[][]; days: number[]; hours: number[] };
 
-const rhythmFn = async (scope: Scope): Promise<Rhythm> => {
+const rhythmFn = async (scope: Scope) => {
   const rows = await aggregate({ by: "hour", measures: ["playtime"], filter: scopeFilter(scope) });
   const grid = Array.from({ length: 7 }, () => Array<number>(24).fill(0));
   for (const row of rows) {
@@ -84,7 +75,7 @@ const rhythmFn = async (scope: Scope): Promise<Rhythm> => {
 
 export type PlatformPoint = { label: string; value: number };
 
-const platformsFn = async (scope: Scope): Promise<PlatformPoint[]> => {
+const platformsFn = async (scope: Scope) => {
   const rows = await aggregate<"streams", string>({
     by: "platform",
     measures: ["streams"],
@@ -98,7 +89,6 @@ const platformsFn = async (scope: Scope): Promise<PlatformPoint[]> => {
 export type StyleMetric = {
   key: "finished" | "skipped" | "shuffle" | "offline";
   label: string;
-  // Share of the plays, between 0 and 1.
   value: number;
 };
 
@@ -109,7 +99,7 @@ const STYLES = [
   ["offline", "offlineRate", "Offline"],
 ] as const;
 
-const styleFn = async (scope: Scope): Promise<StyleMetric[]> => {
+const styleFn = async (scope: Scope) => {
   const total = await totals(
     scopeFilter(scope),
     STYLES.map(([, measure]) => measure),
@@ -127,8 +117,7 @@ const STAGES = [
   [50, "Favorites (50+)"],
 ] as const;
 
-// How many tracks were played at least once, twice, five times...
-const replaysFn = async (scope: Scope): Promise<ReplayStage[]> => {
+const replaysFn = async (scope: Scope) => {
   const rows = await aggregate({ by: "track", measures: ["streams"], filter: scopeFilter(scope) });
   return STAGES.map(([plays, label]) => ({
     label,
@@ -139,13 +128,12 @@ const replaysFn = async (scope: Scope): Promise<ReplayStage[]> => {
 export type ReleaseYearPoint = {
   name: string;
   value: number;
-  // The most played album released that year.
   album: string | null;
 };
 
 // Streams by the release year of their album. Some catalog dates are placeholders such as
 // year 10, so years before 1900 are left out.
-const releaseYearFn = async (scope: Scope): Promise<ReleaseYearPoint[]> => {
+const releaseYearFn = async (scope: Scope) => {
   const { rows } = await listFn({
     base: "albums",
     filter: scopeFilter(scope),
@@ -168,12 +156,10 @@ export type GenreSegment = {
   key: string;
   label: string;
   value: number;
-  // Share of the plays that have a genre, between 0 and 1.
   share: number;
 };
 
-// The five most played album genres.
-const genresFn = async (scope: Scope): Promise<GenreSegment[]> => {
+const genresFn = async (scope: Scope) => {
   const rows = await aggregate<"streams", string>({
     by: "genre",
     measures: ["streams"],

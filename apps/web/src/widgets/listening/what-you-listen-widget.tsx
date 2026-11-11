@@ -19,7 +19,6 @@ type GenreSlice = { key: string; label: string; share: number; paint: string };
 
 // Above this share, the top genre gets its own bar and the others are enlarged below it.
 const ZOOM_FROM = 0.6;
-// Paint of each genre from the most played, then of the genres outside the top five.
 const GENRE_PAINT = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4", "bg-chart-5"];
 const OTHER_PAINT = "bg-muted-foreground/40";
 
@@ -35,7 +34,6 @@ type GenreBarProps = {
   onHover: (key: string | null) => void;
 };
 
-// Genres as one bar of segments, each named below its segment with its share of all plays.
 const GenreBar = ({ slices, hovered, onHover }: GenreBarProps) => (
   <div className="flex gap-0.5">
     {slices.map((slice, i) => (
@@ -59,7 +57,7 @@ const GenreBar = ({ slices, hovered, onHover }: GenreBarProps) => (
           )}
         />
         <span className="truncate text-xs font-medium">{slice.label}</span>
-        <span className="-mt-1 text-[10px] text-muted-foreground tabular-nums">
+        <span className="-mt-1 text-micro text-muted-foreground tabular-nums">
           {percent(slice.share)}
         </span>
       </div>
@@ -67,8 +65,6 @@ const GenreBar = ({ slices, hovered, onHover }: GenreBarProps) => (
   </div>
 );
 
-// The top genres. When the first one takes most of the plays, it gets the whole bar and the
-// others, drawn small at its end, are enlarged below. Every share is of all plays.
 const Genres = ({ genres }: { genres: GenreSegment[] }) => {
   const [hovered, setHovered] = useState<string | null>(null);
   const rest = Math.max(0, 1 - genres.reduce((sum, genre) => sum + genre.share, 0));
@@ -112,7 +108,6 @@ const Genres = ({ genres }: { genres: GenreSegment[] }) => {
               <span className="truncate">{top.label}</span>
               <span className="tabular-nums">{percent(top.share)}</span>
             </div>
-            {/* The other genres in miniature, painted like their enlarged segments below. */}
             <div
               className="flex min-w-2 gap-px overflow-hidden rounded-r-md"
               style={{ flex: `${remaining} 1 0%` }}

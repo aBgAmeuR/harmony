@@ -69,7 +69,6 @@ export const UploadProvider = ({ children }: PropsWithChildren) => {
       });
     };
 
-    // A new upload of the chosen files, from the files step or as a retry.
     const deployed = (prev: UploadState): UploadState =>
       !prev.file || prev.selection.length === 0
         ? prev

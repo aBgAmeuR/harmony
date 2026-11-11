@@ -10,11 +10,10 @@ type KeysArgs = {
   onEscape: () => void;
 };
 
-const isTyping = (target: EventTarget | null): boolean =>
+const isTyping = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
   (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
 
-// j/k and the arrows move through the rows, Enter opens one, `/` jumps to the search.
 // `a` is handled by the artist menu itself. Nothing fires while typing or while a dialog is open.
 export const useRowKeys = (args: KeysArgs) => {
   const onKey = useEffectEvent((event: KeyboardEvent) => {

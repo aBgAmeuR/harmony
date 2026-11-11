@@ -9,9 +9,7 @@ const STREAM_RUNGS = [100, 1000, 5000, 10_000, 25_000, 50_000, 100_000] as const
 const ARTIST_RUNGS = [50, 100, 250, 500, 1000, 2500, 5000] as const;
 const TRACK_RUNGS = [100, 500, 1000, 5000, 10_000] as const;
 
-type Summary = { listeningDays: number; streams: number; rangeStart: string | null };
-
-export const summaryFn = async (filter: Filter): Promise<Summary> => {
+export const summaryFn = async (filter: Filter) => {
   const total = await totals(filter, ["days", "streams", "firstPlayed"]);
   return { listeningDays: total.days, streams: total.streams, rangeStart: total.firstPlayed };
 };
@@ -22,7 +20,6 @@ export type NextMilestone = {
   current: number;
   target: number;
   remaining: number;
-  // Progress to the target, between 0 and 1.
   progress: number;
   reached: boolean;
 };
@@ -32,7 +29,7 @@ const toBar = (
   label: string,
   current: number,
   ladder: readonly number[],
-): NextMilestone => {
+) => {
   const target = ladder.find((rung) => current < rung);
   const last = ladder.at(-1) ?? current;
   return {
@@ -46,7 +43,7 @@ const toBar = (
   };
 };
 
-export const nextMilestonesFn = async (filter: Filter): Promise<NextMilestone[]> => {
+export const nextMilestonesFn = async (filter: Filter) => {
   const total = await totals(filter, ["playtime", "streams", "artists", "tracks"]);
   const hours = Math.round((total.playtime / 60) * 10) / 10;
   return [
@@ -64,7 +61,7 @@ export type Sessions = {
   longestStart: string | null;
 };
 
-export const sessionStatsFn = async (filter: Filter): Promise<Sessions> => {
+export const sessionStatsFn = async (filter: Filter) => {
   const [row] = await db.query<Sessions>(`
     WITH sessions AS (${sessionsSql(filter)})
     SELECT
@@ -90,8 +87,7 @@ export type Mark = {
 
 const rungs = (values: readonly number[]) => values.map((n) => `(${n})`).join(", ");
 
-// The day each rung was crossed (hours, streams, distinct tracks and artists), and the first play.
-export const marksFn = async (filter: Filter): Promise<Mark[]> => {
+export const marksFn = async (filter: Filter) => {
   const plays = playsFrom(filter, { needs: ["track"] });
   return await db.query<Mark>(`
     WITH plays AS (SELECT i.ts, i.track_id, i.ms_played, t.artists ${plays}),
@@ -157,8 +153,7 @@ type Discovery = {
   laterRank: number;
 };
 
-// Artists first heard in the range that rank in its top 50, with 30 minutes at least.
-export const firstsFn = async (filter: Filter): Promise<Discovery[]> =>
+export const firstsFn = async (filter: Filter) =>
   await db.query<Discovery>(`
     WITH stats AS (
       SELECT u.artist_id, MIN(i.ts) AS first_ts, SUM(i.ms_played) AS ms

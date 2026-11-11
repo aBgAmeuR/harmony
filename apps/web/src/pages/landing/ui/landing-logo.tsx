@@ -23,7 +23,6 @@ const BARS = [
   },
 ] as const;
 
-/** Wordmark mark — bars bounce async while parent has `group/logo` + hover. */
 export const LandingLogo = ({ className }: LandingLogoProps) => {
   return (
     <svg

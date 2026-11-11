@@ -23,7 +23,6 @@ import { usePeriod } from "@/shared/scope";
 
 const SERIES = seriesOf("playtime", "var(--chart-2)");
 
-// Listening time per bucket, the same chart for months and weeks.
 const columns = (rows: readonly ChartPoint[]) =>
   defineChart({
     ...chartBase,

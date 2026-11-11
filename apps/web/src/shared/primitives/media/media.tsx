@@ -12,7 +12,6 @@ const SizeContext = createContext<Size>("sm");
 const artSizes = { sm: "md", lg: "xl", xl: "2xl" } as const;
 
 type MediaProps = ComponentProps<"div"> & {
-  // sm: a list row. lg: a featured item. xl: the head of a page.
   size?: Size;
 };
 
@@ -48,7 +47,6 @@ const titles = {
 
 const Title = ({ className, ...props }: ComponentProps<"p">) => {
   const size = useContext(SizeContext);
-  // The head of a page names the page.
   const Tag = size === "xl" ? "h1" : "p";
   return <Tag data-slot="media-title" className={cn(titles[size], className)} {...props} />;
 };

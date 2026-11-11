@@ -15,7 +15,6 @@ type Measure = {
 export const FINISHED =
   "NOT COALESCE(skipped, FALSE) AND ms_played >= GREATEST(duration * 800, 30000)";
 
-// The share of the track a play heard, capped at the whole track.
 export const COMPLETION = "LEAST(ms_played::DOUBLE / NULLIF(duration * 1000.0, 0), 1.0)";
 
 const rate = (condition: string) =>
@@ -63,14 +62,12 @@ const measureList = {
 
 export type MeasureId = keyof typeof measureList;
 
-// Precise per measure, so `measures.playtime.kind` is "minutes".
 export const measures = measureList;
 
 export const measure = (id: MeasureId): Measure => measures[id];
 
 type DateMeasure = "firstPlayed" | "lastPlayed";
 
-// The value of each measure in a result row.
 export type Values<M extends MeasureId> = {
   [K in M]: K extends DateMeasure ? string | null : number;
 };

@@ -21,7 +21,6 @@ export type By =
   | Grain
   | { bucket: Unit; origin: Date; count: number };
 
-// Albums the catalog does not know are grouped under this id.
 export const UNKNOWN_ALBUM = -1;
 
 // One rule for every chart over a period: days under a month, weeks under half a year, months above.
@@ -38,7 +37,7 @@ type Key = {
   date?: boolean;
 };
 
-const bucketIndex = (unit: Unit, origin: Date): string => {
+const bucketIndex = (unit: Unit, origin: Date) => {
   const from = day(origin);
   if (unit === "month") {
     return `date_diff('month', date_trunc('month', ${from})::DATE, date_trunc('month', i.ts)::DATE)::INTEGER`;
@@ -87,14 +86,13 @@ const keyOf = (by: By): Key => {
   }
 };
 
-const COLUMNS: Record<Join | "play", string> = {
+const COLUMNS = {
   play: "i.ts, i.platform, i.ms_played, i.shuffle, i.skipped, i.offline, i.track_id",
   track: "t.duration, t.album_id, t.artists",
   album: "al.genres, al.release_date, al.album_type",
-};
+} as const;
 
-// Every bucket of the period, so empty ones are returned too.
-const seriesOf = (by: By | undefined, filter: Filter): string | null => {
+const seriesOf = (by: By | undefined, filter: Filter) => {
   if (by === undefined) return null;
   if (typeof by === "object") return `SELECT range::INTEGER AS key FROM range(0, ${int(by.count)})`;
   if (!["day", "week", "month", "year"].includes(by) || !filter.from || !filter.to) return null;
@@ -111,15 +109,11 @@ type AggregateQuery<M extends MeasureId> = {
   by: By;
   measures: readonly M[];
   filter: Filter;
-  // Returns every bucket of a period, empty ones with zeros.
   fill?: boolean;
-  // Only these groups.
   keys?: readonly (number | string)[];
-  // Also splits each group by day, week or month of the period, in a `period` column.
   over?: Unit;
 };
 
-// One row per group: `key` and one column per measure.
 export const aggregateSql = <M extends MeasureId>({
   by,
   measures: ids,
@@ -127,7 +121,7 @@ export const aggregateSql = <M extends MeasureId>({
   fill = false,
   keys,
   over,
-}: AggregateQuery<M>): string => {
+}: AggregateQuery<M>) => {
   const key = keyOf(by);
   const needs = [key.needs, ...ids.map((id) => measure(id).needs)];
   const joined = new Set(needs.filter((need) => need !== undefined));
@@ -177,7 +171,6 @@ export const aggregateSql = <M extends MeasureId>({
       : []),
   ];
 
-  // Every requested group gets every bucket of the period.
   const grid =
     fill && over && keys
       ? `SELECT w.key, s.key AS period
@@ -187,7 +180,7 @@ export const aggregateSql = <M extends MeasureId>({
   const series = grid ?? (fill ? seriesOf(by, filter) : null);
   if (series) ctes.push(`series AS (${series})`);
 
-  const value = (id: M): string => {
+  const value = (id: M) => {
     const column = id === "artists" ? "art.artists" : `agg."${id}"`;
     return series && measure(id).kind !== "date"
       ? `COALESCE(${column}, 0) AS "${id}"`
@@ -215,13 +208,9 @@ export type Row<M extends MeasureId, K = number> = { key: K; period?: string } &
 
 export const aggregate = <M extends MeasureId, K extends number | string = number>(
   query: AggregateQuery<M>,
-): Promise<Row<M, K>[]> => db.query<Row<M, K>>(aggregateSql(query));
+) => db.query<Row<M, K>>(aggregateSql(query));
 
-// The measures over every play of the filter.
-export const totals = async <M extends MeasureId>(
-  filter: Filter,
-  ids: readonly M[],
-): Promise<Values<M>> => {
+export const totals = async <M extends MeasureId>(filter: Filter, ids: readonly M[]) => {
   // Without GROUP BY the aggregate always returns one row, zeros included.
   const [row] = await aggregate({ by: "all", measures: ids, filter });
   if (!row) throw new Error("totals returned no row");
@@ -230,12 +219,11 @@ export const totals = async <M extends MeasureId>(
 
 export type Series<M extends MeasureId> = { unit: Unit; points: Row<M, string>[] };
 
-// The measures per day, week or month of the filter's period, empty buckets included.
 export const series = async <M extends MeasureId>(
   filter: Filter & { from: Date; to: Date },
   ids: readonly M[],
   unit: Unit,
-): Promise<Series<M>> => ({
+) => ({
   unit,
   points: await aggregate<M, string>({ by: unit, measures: ids, filter, fill: true }),
 });

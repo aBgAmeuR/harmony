@@ -1,10 +1,8 @@
 import type { PackagePeriod } from "@/data/packages/period";
 
-import type { DateRangeBounds } from "./types";
-
 import { parsePeriodDate } from "./format";
 
-export const parsePeriodBounds = (period: PackagePeriod | null | undefined): DateRangeBounds => {
+export const parsePeriodBounds = (period: PackagePeriod | null | undefined) => {
   return {
     minDate: period?.startDate ? parsePeriodDate(period.startDate) : undefined,
     maxDate: period?.endDate ? parsePeriodDate(period.endDate) : undefined,
@@ -14,7 +12,7 @@ export const parsePeriodBounds = (period: PackagePeriod | null | undefined): Dat
 export const buildYearRange = (
   period: PackagePeriod | null | undefined,
   monthlyListenLabels?: string[],
-): number[] => {
+) => {
   if (period?.startDate && period?.endDate) {
     const startYear = parsePeriodDate(period.startDate).getFullYear();
     const endYear = parsePeriodDate(period.endDate).getFullYear();

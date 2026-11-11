@@ -79,11 +79,9 @@ const useHorizontalPager = (itemCount: number) => {
 
 type MilestonesTimelineProps = {
   rows: TimelineEvent[];
-  // While loading, the empty message stays hidden.
   isPending?: boolean;
 };
 
-// The milestones in date order on a horizontal strip, paged with the arrows.
 export const MilestonesTimeline = ({ rows, isPending = false }: MilestonesTimelineProps) => {
   const { ref, canPrev, canNext, page } = useHorizontalPager(rows.length);
   const showNav = canPrev || canNext;
@@ -180,7 +178,7 @@ export const MilestonesTimeline = ({ rows, isPending = false }: MilestonesTimeli
                         <div className="min-w-0">
                           <p className="truncate text-xs">{event.entity}</p>
                           {event.subtitle ? (
-                            <p className="truncate text-[10px] text-muted-foreground">
+                            <p className="truncate text-micro text-muted-foreground">
                               {event.subtitle}
                             </p>
                           ) : null}

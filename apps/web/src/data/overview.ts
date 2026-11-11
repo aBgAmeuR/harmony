@@ -45,13 +45,13 @@ const overviewUnit = (range: Range): Unit => {
   return days <= 800 ? "week" : "month";
 };
 
-const bucketCount = (range: Range, unit: Unit): number => {
+const bucketCount = (range: Range, unit: Unit) => {
   if (unit === "day") return rangeDays(range);
   if (unit === "week") return Math.ceil(rangeDays(range) / 7);
   return monthCount(range);
 };
 
-const shortMonth = (date: Date): string => date.toLocaleDateString("en-US", { month: "short" });
+const shortMonth = (date: Date) => date.toLocaleDateString("en-US", { month: "short" });
 
 // Positional buckets, so the current and previous ranges line up index by index.
 const bucketLabels = ({ from }: Range, unit: Unit, count: number) => {
@@ -69,7 +69,6 @@ const bucketLabels = ({ from }: Range, unit: Unit, count: number) => {
       ...(withYear ? { year: "numeric" } : {}),
     }),
   );
-  // Weekly charts name each month once, on its first week.
   const ticks =
     unit === "week"
       ? starts.map((date, n) =>
@@ -79,7 +78,7 @@ const bucketLabels = ({ from }: Range, unit: Unit, count: number) => {
   return { labels, ticks };
 };
 
-const windowFn = async (range: Range, unit: Unit, count: number): Promise<Window> => {
+const windowFn = async (range: Range, unit: Unit, count: number) => {
   const [total, rows] = await Promise.all([
     totals(range, MEASURES),
     aggregate({
@@ -118,7 +117,7 @@ export const overviewFn = async ({
   range: Range;
   full: Range;
   unit?: Unit;
-}): Promise<Overview> => {
+}) => {
   const unit = picked ?? overviewUnit(range);
   const count = bucketCount(range, unit);
   const previous = previousRange(range, full);
@@ -137,7 +136,6 @@ export const overviewFn = async ({
 
 export type Highlights = {
   peakDay: { date: string; minutes: number; streams: number } | null;
-  // Minutes of every day in the month of the peak day, days without plays included.
   peakMonth: { date: string; minutes: number }[];
   streak: { days: number; start: string | null; end: string | null };
   // null when the range starts with the package, where every artist would count as new
@@ -150,8 +148,7 @@ export type Highlights = {
   } | null;
 };
 
-// Artists whose first play ever falls in the range.
-const newArtistsFn = async ({ from, to }: Range): Promise<number | null> => {
+const newArtistsFn = async ({ from, to }: Range) => {
   const [row] = await db.query<{ value: number | null }>(`
     WITH firsts AS (
       SELECT MIN(CAST(i.ts AS DATE)) AS first_day
@@ -168,7 +165,7 @@ const newArtistsFn = async ({ from, to }: Range): Promise<number | null> => {
   return row?.value ?? null;
 };
 
-export const highlightsFn = async (range: Range): Promise<Highlights> => {
+export const highlightsFn = async (range: Range) => {
   const [days, streak, newArtists, [top]] = await Promise.all([
     aggregate<"playtime" | "streams", string>({
       by: "day",

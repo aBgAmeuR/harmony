@@ -4,9 +4,8 @@ import {
   ArrowUp02Icon,
   GridViewIcon,
   Icon,
-  SlidersHorizontalIcon,
   ListViewIcon,
-  type IconSvgElement,
+  SlidersHorizontalIcon,
 } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
 import {
@@ -20,19 +19,31 @@ import {
   DropdownMenuTrigger,
 } from "@harmony/ui/components/dropdown-menu";
 
-import { bases, EXPLORER_BASES, type ExplorerBaseId, type ViewType } from "@/data/bases";
+import { bases, EXPLORER_BASES } from "@/data/bases";
 
-import type { View, ViewState } from "./view";
+import { oneOf, switchBase, type View, type ViewState } from "./view";
 
-type ControlProps = { view: View; onChange: (patch: ViewState) => void };
+type Props = { view: View; onChange: (patch: ViewState) => void };
 
-export const BaseMenu = ({
-  view,
-  onBase,
-}: {
-  view: View;
-  onBase: (base: ExplorerBaseId) => void;
-}) => (
+const LAYOUTS = {
+  table: { label: "List", icon: ListViewIcon },
+  gallery: { label: "Gallery", icon: GridViewIcon },
+} as const;
+
+const SECTIONS = ["Listening", "Behaviour", "Dates", "Other"] as const;
+
+const SECTION_OF = {
+  count: "Listening",
+  compact: "Listening",
+  minutes: "Listening",
+  ratio: "Listening",
+  percent: "Behaviour",
+  date: "Dates",
+  text: "Other",
+  flag: "Other",
+} as const;
+
+export const BaseMenu = ({ view, onChange }: Props) => (
   <DropdownMenu>
     <DropdownMenuTrigger
       render={
@@ -48,7 +59,10 @@ export const BaseMenu = ({
     <DropdownMenuContent align="start" className="w-40">
       <DropdownMenuRadioGroup
         value={view.base.id}
-        onValueChange={(base: ExplorerBaseId) => onBase(base)}
+        onValueChange={(value) => {
+          const base = oneOf(EXPLORER_BASES, value);
+          if (base) onChange(switchBase(view, base));
+        }}
       >
         {EXPLORER_BASES.map((id) => (
           <DropdownMenuRadioItem key={id} value={id}>
@@ -60,131 +74,96 @@ export const BaseMenu = ({
   </DropdownMenu>
 );
 
-const LAYOUTS: Record<ViewType, { label: string; icon: IconSvgElement }> = {
-  table: { label: "List", icon: ListViewIcon },
-  gallery: { label: "Gallery", icon: GridViewIcon },
-};
-
-type SortOption = { name: string; label: string };
-type SortSection = { label: string; options: SortOption[] };
-
-// The sorts of a base by what they measure. Rows are not sorted by name: search finds them.
-const sortSections = (view: View): SortSection[] => {
-  const sections: Record<string, SortOption[]> = {
-    Listening: [],
-    Behaviour: [],
-    Dates: [],
-    Other: [],
-  };
-  for (const [name, prop] of Object.entries(view.base.props)) {
-    const section =
-      prop.kind === "date"
-        ? "Dates"
-        : prop.kind === "percent"
-          ? "Behaviour"
-          : prop.kind === "text" || prop.kind === "flag"
-            ? "Other"
-            : "Listening";
-    sections[section]?.push({ name, label: prop.label });
-  }
-  return Object.entries(sections)
-    .filter(([, options]) => options.length > 0)
-    .map(([label, options]) => ({ label, options }));
-};
-
-const sortLabel = (view: View): string =>
-  sortSections(view)
-    .flatMap((section) => section.options)
-    .find((option) => option.name === view.sort)?.label ??
-  (view.sort === "name" ? "Name" : view.sort);
-
-// Dates read as newest and oldest, everything else as highest and lowest.
-const orderLabels = (view: View): [string, string] =>
-  view.base.props[view.sort]?.kind === "date"
-    ? ["Newest first", "Oldest first"]
-    : ["Highest first", "Lowest first"];
-
-// Two radio items side by side, the checked one raised.
-const SEGMENT =
-  "justify-center pr-2 data-checked:bg-background data-checked:text-foreground [&>[data-slot=dropdown-menu-radio-item-indicator]]:hidden";
-
-// A square with a big icon over its label, the checked one tinted green.
-const TILE =
-  "justify-center cursor-pointer gap-1 py-3 rounded-lg border border-border px-0 data-checked:border-primary/60 data-checked:bg-primary/10 data-checked:text-foreground [&>[data-slot=dropdown-menu-radio-item-indicator]]:hidden";
-
-// The sort of the rows: the order on top, then what they are sorted by, in sections.
-export const SortChip = ({ view, onChange }: ControlProps) => {
-  const [high, low] = orderLabels(view);
+export const SortChip = ({ view, onChange }: Props) => {
+  const props = Object.entries(view.base.props);
+  const sorted = view.base.props[view.sort];
+  const order =
+    sorted?.kind === "date"
+      ? { desc: "Newest first", asc: "Oldest first" }
+      : { desc: "Highest first", asc: "Lowest first" };
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={<Button variant="ghost" aria-label={`Sorted by ${sortLabel(view)}`} />}
-      >
+      <DropdownMenuTrigger render={<Button variant="ghost" />}>
         <Icon icon={view.desc ? ArrowDown02Icon : ArrowUp02Icon} />
-        {sortLabel(view)}
+        {sorted?.label}
         <Icon icon={ArrowDown01Icon} className="text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-52">
         <DropdownMenuRadioGroup
           value={view.desc ? "desc" : "asc"}
-          onValueChange={(dir: string) => onChange({ desc: dir === "desc" })}
+          onValueChange={(dir) => onChange({ desc: dir === "desc" })}
           className="mb-1 grid grid-cols-2 gap-0.5 rounded-md bg-muted p-0.5 text-muted-foreground"
         >
-          <DropdownMenuRadioItem value="desc" className={SEGMENT}>
-            {high}
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="asc" className={SEGMENT}>
-            {low}
-          </DropdownMenuRadioItem>
+          {Object.entries(order).map(([dir, label]) => (
+            <DropdownMenuRadioItem
+              key={dir}
+              value={dir}
+              variant="toggle"
+              className="justify-center data-checked:bg-background data-checked:text-foreground"
+            >
+              {label}
+            </DropdownMenuRadioItem>
+          ))}
         </DropdownMenuRadioGroup>
-        {sortSections(view).map((section) => (
-          <DropdownMenuRadioGroup
-            key={section.label}
-            value={view.sort}
-            onValueChange={(sort: string) => onChange({ sort })}
-          >
-            <DropdownMenuLabel>{section.label}</DropdownMenuLabel>
-            {section.options.map((option) => (
-              <DropdownMenuRadioItem key={option.name} value={option.name}>
-                {option.label}
-              </DropdownMenuRadioItem>
-            ))}
-          </DropdownMenuRadioGroup>
-        ))}
+        {SECTIONS.map((section) => {
+          const options = props.filter(([, prop]) => SECTION_OF[prop.kind] === section);
+          return (
+            options.length > 0 && (
+              <DropdownMenuRadioGroup
+                key={section}
+                value={view.sort}
+                onValueChange={(sort) =>
+                  onChange({ sort: oneOf(Object.keys(view.base.props), sort) })
+                }
+              >
+                <DropdownMenuLabel>{section}</DropdownMenuLabel>
+                {options.map(([name, prop]) => (
+                  <DropdownMenuRadioItem key={name} value={name}>
+                    {prop.label}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            )
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );
 };
 
-// How the rows are shown: the layout, then the bars and rank changes of a list.
-export const ViewMenu = ({ view, onChange }: ControlProps) => (
+export const ViewMenu = ({ view, onChange }: Props) => (
   <DropdownMenu>
     <DropdownMenuTrigger render={<Button variant="ghost" />}>
       <Icon icon={SlidersHorizontalIcon} />
       View
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" className="w-42">
-      {view.base.views.length > 1 ? (
+      {view.base.views.length > 1 && (
         <>
           <DropdownMenuRadioGroup
             value={view.view}
-            onValueChange={(next: ViewType) => onChange({ view: next })}
+            onValueChange={(value) => onChange({ view: oneOf(view.base.views, value) })}
             className="grid auto-cols-fr grid-flow-col gap-1 text-muted-foreground"
           >
             {view.base.views.map((type) => (
-              <DropdownMenuRadioItem key={type} value={type} className={TILE}>
-                <Icon icon={LAYOUTS[type].icon} className="size-3!" />
+              <DropdownMenuRadioItem
+                key={type}
+                value={type}
+                variant="toggle"
+                className="cursor-pointer justify-center gap-1 rounded-lg border border-border px-0 py-3 data-checked:border-primary/60 data-checked:bg-primary/10 data-checked:text-foreground"
+              >
+                <Icon icon={LAYOUTS[type].icon} className="size-3" />
                 {LAYOUTS[type].label}
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
           <DropdownMenuSeparator />
         </>
-      ) : null}
+      )}
       <DropdownMenuCheckboxItem
         disabled={view.view !== "table"}
         checked={view.bars}
-        onCheckedChange={(on: boolean) => onChange({ bars: on ? undefined : false })}
+        onCheckedChange={(on) => onChange({ bars: on ? undefined : false })}
         className="cursor-pointer"
       >
         Bars behind rows
@@ -192,7 +171,7 @@ export const ViewMenu = ({ view, onChange }: ControlProps) => (
       <DropdownMenuCheckboxItem
         disabled={view.view !== "table"}
         checked={view.diffs}
-        onCheckedChange={(on: boolean) => onChange({ diffs: on ? undefined : false })}
+        onCheckedChange={(on) => onChange({ diffs: on ? undefined : false })}
         className="cursor-pointer"
       >
         Rank changes

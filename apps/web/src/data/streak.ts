@@ -3,7 +3,6 @@ import { db } from "@harmony/duckdb";
 import { playsFrom, type Filter } from "./filter";
 
 export type Streak = {
-  // Days in a row up to the last day with a play.
   currentDays: number;
   longestDays: number;
   longestStart: string | null;
@@ -18,7 +17,7 @@ type StreakRow = {
 };
 
 // Days in a row with at least one play. Ties go to the earliest streak.
-export const streakFn = async (filter: Filter): Promise<Streak> => {
+export const streakFn = async (filter: Filter) => {
   const [row] = await db.query<StreakRow>(`
     WITH play_days AS (
       SELECT DISTINCT CAST(i.ts AS DATE) AS play_date
