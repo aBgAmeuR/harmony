@@ -44,7 +44,7 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm fetch --frozen-lockfile
+RUN pnpm fetch
 COPY . .
 RUN pnpm install --frozen-lockfile --offline
 ARG HARMONY_VERSION=dev
