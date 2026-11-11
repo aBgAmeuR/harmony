@@ -28,7 +28,6 @@ type Option = {
   id: number;
   name: string;
   image: string | null;
-  // Minutes listened in the period, absent for the "All artists" entry.
   playtime?: number;
 };
 
@@ -39,15 +38,13 @@ type Group = {
 
 const ALL: Option = { id: 0, name: "All artists", image: null };
 
-const isTyping = (target: EventTarget | null): boolean =>
+const isTyping = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
   (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
 
 type ArtistsSelectProps = {
-  // Replaces the "Artist · All artists" label while no artist is picked.
   placeholder?: string;
   className?: string;
-  // Opens the menu on the `a` key.
   hotkey?: boolean;
 };
 
@@ -63,7 +60,6 @@ export const ArtistsSelect = ({ placeholder, className, hotkey = false }: Artist
     enabled: open,
   });
 
-  // `a` opens the menu from anywhere but a field.
   useEffect(() => {
     if (!hotkey) return;
     const onKey = (event: KeyboardEvent) => {
@@ -90,14 +86,14 @@ export const ArtistsSelect = ({ placeholder, className, hotkey = false }: Artist
       open={open}
       items={groups}
       value={artist ?? ALL}
-      onValueChange={(next: Option | null) => {
+      onValueChange={(next) => {
         setArtist(next && next.id !== ALL.id ? next : null);
         setOpen(false);
       }}
       inputValue={query}
       onInputValueChange={setQuery}
-      itemToStringLabel={(option: Option) => option.name}
-      isItemEqualToValue={(a: Option, b: Option) => a.id === b.id}
+      itemToStringLabel={(option) => option.name}
+      isItemEqualToValue={(a, b) => a.id === b.id}
       filter={null}
       onOpenChange={(next) => {
         setOpen(next);

@@ -12,7 +12,6 @@ import { periodNames } from "./format";
 import { KpiOverview } from "./kpi-overview";
 import { useRanges } from "./use-range";
 
-// Loads the period's totals and curves, then draws them with `KpiOverview`.
 export const KpiChartWidget = () => {
   const { packageId } = useParams({ from: "/app/$packageId" });
   const { range, full } = useRanges();

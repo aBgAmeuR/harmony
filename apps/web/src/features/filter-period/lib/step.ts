@@ -1,6 +1,6 @@
 import { buildInstantRangeQuery, type DateRangeMode } from "@/shared/scope";
 
-export const getSteppedCursorMs = (cursorMs: number, mode: DateRangeMode, dir: -1 | 1): number => {
+export const getSteppedCursorMs = (cursorMs: number, mode: DateRangeMode, dir: -1 | 1) => {
   const d = new Date(cursorMs);
   if (mode === "month") d.setMonth(d.getMonth() + dir);
   else d.setFullYear(d.getFullYear() + dir);
@@ -13,7 +13,7 @@ export const canStepInDirection = (
   dir: -1 | 1,
   minDate?: Date,
   maxDate?: Date,
-): boolean => {
+) => {
   if (mode === "custom") return false;
   if (!minDate && !maxDate) return true;
 

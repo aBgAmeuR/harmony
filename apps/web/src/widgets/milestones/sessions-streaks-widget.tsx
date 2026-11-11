@@ -10,7 +10,7 @@ import { useScope } from "@/shared/scope";
 
 import { milestoneQueries } from "./api";
 
-const streakCaption = (streak: Streak | undefined): string => {
+const streakCaption = (streak: Streak | undefined) => {
   if (!streak || streak.longestDays < 2 || !streak.longestStart || !streak.longestEnd) {
     return "Listen on consecutive days to build one";
   }

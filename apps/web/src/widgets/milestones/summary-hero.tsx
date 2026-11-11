@@ -13,7 +13,6 @@ export const SummaryHero = () => {
   const { data } = useQuery(milestoneQueries.summary(filter));
   const { data: bars = [] } = useQuery(milestoneQueries.next(filter));
 
-  // The mark closest to being reached.
   const next = bars.filter((bar) => !bar.reached).sort((a, b) => b.progress - a.progress)[0];
   const copy = next ? nextMilestoneCopy(next) : null;
 

@@ -34,20 +34,16 @@ const YEAR_VIEWS = [
   { value: "decades", label: "Decades" },
 ];
 
-// The busiest years are drawn bright.
 const BRIGHT_YEARS = 4;
 const BRIGHT = "var(--chart-1)";
 const DIM = "var(--chart-4)";
-// Room above the tallest bar for the median label.
 const HEADROOM = 1.15;
 // On long spans, the oldest years up to this share of the plays join one "Older" bar.
 const OLDER_SHARE = 0.03;
 const OLDER = "Older";
-// Years kept apart from "Older", at least.
 const MIN_YEARS = 12;
 
-// Every year from the oldest to the newest, so gaps show as empty columns.
-const fillYears = (rows: ReleaseYearPoint[]): ReleaseYearPoint[] => {
+const fillYears = (rows: ReleaseYearPoint[]) => {
   const byYear = new Map(rows.map((row) => [Number(row.name), row]));
   const years = [...byYear.keys()];
   if (years.length === 0) return [];
@@ -61,7 +57,7 @@ const fillYears = (rows: ReleaseYearPoint[]): ReleaseYearPoint[] => {
 };
 
 // Folds the long tail of old years into one "Older" bar, so the busy years get the room.
-const foldOlder = (years: ReleaseYearPoint[]): ReleaseYearPoint[] => {
+const foldOlder = (years: ReleaseYearPoint[]) => {
   if (years.length <= MIN_YEARS + 4) return years;
   const total = years.reduce((sum, year) => sum + year.value, 0);
   let seen = 0;
@@ -78,8 +74,7 @@ const foldOlder = (years: ReleaseYearPoint[]): ReleaseYearPoint[] => {
 
 const decadeOf = (year: string) => `${Math.floor(Number(year) / 10) * 10}s`;
 
-// Streams summed by decade, "1990s".
-const toDecades = (years: ReleaseYearPoint[]): ReleaseYearPoint[] => {
+const toDecades = (years: ReleaseYearPoint[]) => {
   const byDecade = new Map<string, number>();
   for (const year of years) {
     const decade = decadeOf(year.name);
@@ -89,7 +84,7 @@ const toDecades = (years: ReleaseYearPoint[]): ReleaseYearPoint[] => {
 };
 
 // The newest year such that half of the plays are of music released that year or later.
-const halfSince = (years: ReleaseYearPoint[]): string | undefined => {
+const halfSince = (years: ReleaseYearPoint[]) => {
   const total = years.reduce((sum, year) => sum + year.value, 0);
   let seen = 0;
   for (const year of [...years].reverse()) {
@@ -99,11 +94,8 @@ const halfSince = (years: ReleaseYearPoint[]): string | undefined => {
   return undefined;
 };
 
-type YearBar = ReleaseYearPoint & { bright: boolean };
-
 type ReleaseChartProps = { years: ReleaseYearPoint[]; median?: string; decades: boolean };
 
-// Bars by year or decade, the busiest ones bright, with the median year marked.
 const ReleaseChart = ({ years, median, decades }: ReleaseChartProps) => {
   const definition = useMemo(() => {
     const bars = decades ? toDecades(years) : foldOlder(years);
@@ -115,10 +107,9 @@ const ReleaseChart = ({ years, median, decades }: ReleaseChartProps) => {
         .slice(0, decades ? 1 : BRIGHT_YEARS)
         .map((bar) => bar.name),
     );
-    const rows = bars.map((bar): YearBar => ({ ...bar, bright: busiest.has(bar.name) }));
+    const rows = bars.map((bar) => ({ ...bar, bright: busiest.has(bar.name) }));
     const top = Math.max(0, ...rows.map((row) => row.value)) * HEADROOM || 1;
     const mark = median && (decades ? decadeOf(median) : median);
-    // Every year on short spans, then every fifth or tenth.
     const every = names.length > 30 ? 10 : names.length > 16 ? 5 : 1;
     const ticks = decades
       ? names
@@ -132,7 +123,6 @@ const ReleaseChart = ({ years, median, decades }: ReleaseChartProps) => {
         : undefined,
       names,
     );
-    // The median label sits on the roomier side of its line.
     const late = mark !== undefined && names.indexOf(mark) > names.length / 2;
     const albums = new Map(rows.map((row) => [row.name, row.album]));
 
@@ -187,7 +177,6 @@ const ReleaseChart = ({ years, median, decades }: ReleaseChartProps) => {
         },
         y: { scale: scaleLinear().domain([0, top]), axis: false },
       },
-      // The tooltip names the top album of the inspected year.
       ...columnTooltip(SERIES, { title: (name) => albums.get(name) ?? name }),
     });
   }, [years, median, decades]);
@@ -201,7 +190,6 @@ const ReleaseChart = ({ years, median, decades }: ReleaseChartProps) => {
   );
 };
 
-// When the music you play came out.
 export const ReleaseYearWidget = () => {
   const filter = useScope();
   const { data: rows = NO_YEARS, isPending } = useQuery(listeningQueries.releaseYear(filter));
@@ -212,7 +200,7 @@ export const ReleaseYearWidget = () => {
   if (isPending) {
     return (
       <SectionPending title="When it came out">
-        <Skeleton className="aspect-[2.6] rounded-lg" />
+        <Skeleton className="aspect-13/5 rounded-lg" />
       </SectionPending>
     );
   }

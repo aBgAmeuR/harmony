@@ -12,7 +12,7 @@ type PackagePeriodRow = {
   days: number;
 };
 
-export const periodFn = async (): Promise<PackagePeriod | null> => {
+export const periodFn = async () => {
   const rows = await db.query<PackagePeriodRow>(`
     SELECT
       MIN(CAST(i.ts AS DATE))::VARCHAR AS start_date,

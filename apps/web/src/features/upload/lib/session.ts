@@ -7,7 +7,7 @@ export type UploadSession = {
 
 const STORAGE_KEY = "harmony:upload-session:v1";
 
-export const loadUploadSession = (): UploadSession | null => {
+export const loadUploadSession = () => {
   if (typeof window === "undefined") return null;
 
   try {
@@ -42,7 +42,7 @@ export const loadUploadSession = (): UploadSession | null => {
   }
 };
 
-export const saveUploadSession = (session: UploadSession): void => {
+export const saveUploadSession = (session: UploadSession) => {
   if (typeof window === "undefined") return;
 
   try {
@@ -52,7 +52,7 @@ export const saveUploadSession = (session: UploadSession): void => {
   }
 };
 
-export const clearUploadSession = (): void => {
+export const clearUploadSession = () => {
   if (typeof window === "undefined") return;
 
   try {
@@ -65,7 +65,7 @@ export const clearUploadSession = (): void => {
 let pendingClearTimer: ReturnType<typeof setTimeout> | null = null;
 
 /** Schedule clear after leave; cancelled if Provider remounts (Strict Mode / soft nav). */
-export const scheduleSessionClear = (delayMs = 100): void => {
+export const scheduleSessionClear = (delayMs = 100) => {
   cancelPendingSessionClear();
   pendingClearTimer = setTimeout(() => {
     pendingClearTimer = null;
@@ -73,7 +73,7 @@ export const scheduleSessionClear = (delayMs = 100): void => {
   }, delayMs);
 };
 
-export const cancelPendingSessionClear = (): void => {
+export const cancelPendingSessionClear = () => {
   if (pendingClearTimer === null) return;
   clearTimeout(pendingClearTimer);
   pendingClearTimer = null;

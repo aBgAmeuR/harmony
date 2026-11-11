@@ -7,16 +7,13 @@ import { Pane } from "@/shared/primitives/pane";
 import { Toolbar } from "@/shared/primitives/toolbar";
 
 type PageProps = {
-  // A title, or breadcrumbs for item pages.
   title: ReactNode;
   width?: "column" | "full";
   className?: string;
-  // Rendered after the body, such as the track panel.
   aside?: ReactNode;
   children: ReactNode;
 };
 
-// The frame of every package page: the title and the period filter, then the scrolling body.
 export const Page = ({ title, width = "column", className, aside, children }: PageProps) => (
   <Pane>
     <Pane.Header>

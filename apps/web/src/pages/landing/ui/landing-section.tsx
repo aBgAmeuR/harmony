@@ -4,7 +4,6 @@ import { cn } from "@harmony/ui/lib/utils";
 
 import { useStaggerReveal } from "./use-stagger-reveal";
 
-// The column every landing block sits in.
 export const COLUMN = "mx-auto w-full max-w-lg";
 
 // App widgets are laid out for a wider column: past phone width they are drawn at 75%, so
@@ -13,8 +12,6 @@ export const COLUMN = "mx-auto w-full max-w-lg";
 // they undo the zoom to land on the pointer.
 export const SHRINK = "sm:[zoom:0.75] sm:[&_[data-ts-chart-tooltip-portal]]:[zoom:calc(4/3)]";
 
-// A landing block, read top to bottom: a short title, one sentence, then a
-// list or an example. The parts fade in one after another on scroll.
 const Root = ({ className, ...props }: ComponentProps<"section">) => {
   const { ref, isShown } = useStaggerReveal<HTMLElement>();
   return (
@@ -50,12 +47,10 @@ const Body = ({ className, ...props }: ComponentProps<"div">) => (
   <div className={cn("t-stagger-line t-stagger-line--3 mt-4", className)} {...props} />
 );
 
-// A name or a value that should stand out in a sentence.
 const Em = ({ className, ...props }: ComponentProps<"span">) => (
   <span className={cn("font-medium text-foreground", className)} {...props} />
 );
 
-// Inline link, green like the rest of Harmony's link accents.
 export const LINK = "rounded-sm text-primary underline-offset-2 hover:underline";
 
 const ExternalLink = ({ className, ...props }: ComponentProps<"a">) => (

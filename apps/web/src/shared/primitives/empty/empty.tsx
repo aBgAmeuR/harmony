@@ -3,11 +3,9 @@ import type { ComponentProps } from "react";
 import { cn } from "@harmony/ui/lib/utils";
 
 type EmptyProps = ComponentProps<"div"> & {
-  // framed: in its own box, where the content would have been one.
   variant?: "plain" | "framed";
 };
 
-// Says why there is nothing to show, with an optional way out as a child.
 export const Empty = ({ variant = "plain", className, ...props }: EmptyProps) => (
   <div
     data-slot="empty"

@@ -17,13 +17,13 @@ import { format } from "@/shared/lib/format";
 
 import { useUpload } from "../context";
 
-const getIsoMs = (iso?: string): number | null => {
+const getIsoMs = (iso?: string) => {
   if (!iso) return null;
   const ms = new Date(iso).getTime();
   return Number.isNaN(ms) ? null : ms;
 };
 
-const formatRunStatus = (status: PipelineRunStatus): string => {
+const formatRunStatus = (status: PipelineRunStatus) => {
   switch (status) {
     case "done":
       return "Completed";
@@ -122,7 +122,6 @@ export const UploadDeployStep = () => {
     return () => window.clearInterval(t);
   }, [ticking]);
 
-  // The upload itself or the pipeline after it may have failed.
   const canRetry =
     (pipelineState.runStatus === "error" || phase === "error") &&
     Boolean(file) &&

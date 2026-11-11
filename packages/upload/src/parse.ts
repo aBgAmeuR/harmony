@@ -38,10 +38,11 @@ export function parsePipelineSnapshot(value: unknown): PipelineEvent {
   };
 }
 
-// The steps stored in `package_meta.steps`.
+// `package_meta.steps` holds the final progress snapshot, or `[]` when the server had none.
 export function parsePipelineSteps(value: unknown): PipelineStep[] {
-  if (!Array.isArray(value)) throw new Error("package metadata steps are missing");
-  return value.map(parseStep);
+  const steps = isRecord(value) ? value.steps : value;
+  if (!Array.isArray(steps)) throw new Error("package metadata steps are missing");
+  return steps.map(parseStep);
 }
 
 function parseStep(value: unknown): PipelineStep {

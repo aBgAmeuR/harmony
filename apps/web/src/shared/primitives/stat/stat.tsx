@@ -12,7 +12,6 @@ type Layout = "tile" | "row";
 const LayoutContext = createContext<Layout>("tile");
 
 type StatProps = ComponentProps<"div"> & {
-  // tile: label above the value. row: label on the left, value on the right.
   layout?: Layout;
 };
 
@@ -46,7 +45,6 @@ type ValueProps = {
   kind?: Kind;
   size?: keyof typeof numSizes;
   className?: string;
-  // Free text instead of a number, such as a date.
   children?: ReactNode;
 };
 
@@ -76,7 +74,6 @@ const Hint = ({ className, ...props }: ComponentProps<"span">) => (
   />
 );
 
-// Top right corner of a tile: an icon, a picture or a button.
 const Aside = ({ className, ...props }: ComponentProps<"div">) => (
   <div data-slot="stat-aside" className={cn("absolute top-2.5 right-3", className)} {...props} />
 );

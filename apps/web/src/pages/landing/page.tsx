@@ -9,7 +9,6 @@ import { LandingHero } from "./ui/landing-hero";
 
 const PAGES_ID = "landing-pages";
 
-// Resolves once the element nears the viewport, or at once when it is not in the page.
 const nearViewport = (id: string) =>
   new Promise<void>((resolve) => {
     const element = document.getElementById(id);

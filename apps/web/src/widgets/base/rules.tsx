@@ -43,13 +43,12 @@ const kindOf = (base: Base, field: string): Kind => {
   return base.props[field]?.kind === "percent" ? "percent" : "number";
 };
 
-const labelOf = (base: Base, field: string): string =>
+const labelOf = (base: Base, field: string) =>
   isField(field) ? fields[field].label : (base.props[field]?.label ?? field);
 
-const OP_WORD: Record<Op, string> = { is: "is", not: "is not", gt: ">", lt: "<" };
+const OP_WORD = { is: "is", not: "is not", gt: ">", lt: "<" } as const;
 
-// "Artist is Daft Punk", "Streams > 10", "Not shuffle".
-const ruleText = (base: Base, rule: ViewRule): string => {
+const ruleText = (base: Base, rule: ViewRule) => {
   const label = labelOf(base, rule.field);
   const kind = kindOf(base, rule.field);
   if (kind === "flag") return rule.op === "not" ? `Not ${label.toLowerCase()}` : label;
@@ -66,7 +65,6 @@ type FormProps = {
   base: Base;
   field: string;
   rule?: ViewRule;
-  // The plays the view counts: values are listed from these.
   scope: Filter;
   onSave: (rule: ViewRule) => void;
 };
@@ -191,12 +189,10 @@ const RuleForm = ({ base, field, rule, scope, onSave }: FormProps) => {
 type RulesProps = {
   base: Base;
   rules: readonly ViewRule[];
-  // The plays the view counts: values are listed from these.
   scope: Filter;
   onRules: (rules: ViewRule[]) => void;
 };
 
-// The filter chips of a view: one per rule, each editable in place, plus "Filter" to add one.
 export const Rules = ({ base, rules, scope, onRules }: RulesProps) => {
   const [adding, setAdding] = useState<string | null>(null);
   const [open, setOpen] = useState(false);

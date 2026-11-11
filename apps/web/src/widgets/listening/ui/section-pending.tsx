@@ -10,7 +10,6 @@ type SectionPendingProps = {
   children: ReactNode;
 };
 
-// A section while its data loads: its title, a line for its sentence, then its blocks.
 export const SectionPending = ({ title, children }: SectionPendingProps) => (
   <Section size="md">
     <Section.Title>{title}</Section.Title>

@@ -36,12 +36,12 @@ export const buildInstantRangeQuery = ({
   return { from: new Date(y, 0, 1), to: new Date(y, 11, 31) };
 };
 
-export const snapshotDateRangeDraft = (): DateRangeDraft => {
+export const snapshotDateRangeDraft = () => {
   const { mode, cursorMs, customFrom, customTo } = useDateRangeStore.getState();
   return { mode, cursorMs, customFrom, customTo };
 };
 
-export const commitDateRangeDraft = (draft: DateRangeDraft): void => {
+export const commitDateRangeDraft = (draft: DateRangeDraft) => {
   const { setMode, setCursor, setCustomRange } = useDateRangeStore.getState();
   setMode(draft.mode);
   setCursor(new Date(draft.cursorMs));
@@ -98,8 +98,7 @@ export const useDateRangeStore = create<DateRangeState>()(
   ),
 );
 
-// Shows one day, month or year, as picking it in the period filter would.
-export const showPeriod = (grain: "day" | "month" | "year", date: Date): void => {
+export const showPeriod = (grain: "day" | "month" | "year", date: Date) => {
   const { setMode, setCursor, setCustomRange } = useDateRangeStore.getState();
   setCursor(date);
   if (grain === "day") {

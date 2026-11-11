@@ -32,14 +32,12 @@ const LINE = colors.primary;
 
 const tracks = (count: number) => `${format.count(count)} ${count === 1 ? "track" : "tracks"}`;
 
-// Tracks still played at each play count, as steps: each count holds until the next one.
 const StandingSteps = ({ stages }: { stages: ReplayStage[] }) => {
   const columns = { gridTemplateColumns: `repeat(${Math.max(stages.length, 1)}, minmax(0, 1fr))` };
 
   const definition = useMemo(() => {
     const count = stages.length;
     const last = stages.at(-1);
-    // The last count holds to the right edge.
     const points = [
       ...stages.map((stage, i) => ({ x: i, value: stage.value })),
       ...(last ? [{ x: count, value: last.value }] : []),
@@ -113,12 +111,10 @@ const StandingSteps = ({ stages }: { stages: ReplayStage[] }) => {
   );
 };
 
-// How many tracks came back for a second, fifth, twentieth and fiftieth play.
 export const ReplaysWidget = () => {
   const filter = useScope();
   const { data = NO_STAGES, isPending } = useQuery(listeningQueries.replays(filter));
 
-  // The same stages with the page's wording.
   const stages = useMemo(
     () => data.map((stage, i) => ({ ...stage, label: LABELS[i] ?? stage.label })),
     [data],

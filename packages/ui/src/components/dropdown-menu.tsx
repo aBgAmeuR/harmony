@@ -183,28 +183,34 @@ function DropdownMenuRadioItem({
   className,
   children,
   inset,
+  variant = "default",
   ...props
 }: MenuPrimitive.RadioItem.Props & {
   inset?: boolean;
+  variant?: "default" | "toggle";
 }) {
   return (
     <MenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
       data-inset={inset}
+      data-variant={variant}
       className={cn(
-        "relative flex min-h-7 cursor-default items-center gap-2 rounded-md py-1.5 pr-8 pl-2 text-xs outline-hidden select-none focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground data-inset:pl-7.5 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
+        "relative flex min-h-7 cursor-default items-center gap-2 rounded-md py-1.5 text-xs outline-hidden select-none focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground data-inset:pl-7.5 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
+        variant === "default" ? "pr-8 pl-2" : "px-2",
         className,
       )}
       {...props}
     >
-      <span
-        className="pointer-events-none absolute right-2 flex items-center justify-center"
-        data-slot="dropdown-menu-radio-item-indicator"
-      >
-        <MenuPrimitive.RadioItemIndicator>
-          <Icon icon={Tick02Icon} strokeWidth={2} />
-        </MenuPrimitive.RadioItemIndicator>
-      </span>
+      {variant === "default" && (
+        <span
+          className="pointer-events-none absolute right-2 flex items-center justify-center"
+          data-slot="dropdown-menu-radio-item-indicator"
+        >
+          <MenuPrimitive.RadioItemIndicator>
+            <Icon icon={Tick02Icon} strokeWidth={2} />
+          </MenuPrimitive.RadioItemIndicator>
+        </span>
+      )}
       {children}
     </MenuPrimitive.RadioItem>
   );

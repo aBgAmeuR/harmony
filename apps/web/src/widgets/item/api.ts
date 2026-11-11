@@ -25,7 +25,6 @@ export const monthlySpan = (mode: DateRangeMode, from: Date, to: Date) =>
     ? { from, to }
     : { from: new Date(from.getFullYear(), 0, 1), to: new Date(from.getFullYear(), 11, 31) };
 
-// Starts what the top of an item page shows, without blocking the navigation.
 export const loadItem = (queryClient: QueryClient, item: ItemRef) => {
   const { from, to } = readScope();
   const rules = [itemRule(item)];

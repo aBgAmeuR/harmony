@@ -17,7 +17,7 @@ const withRecordEvents = (
   events: TimelineEvent[],
   streak: Streak | undefined,
   sessions: Sessions | undefined,
-): TimelineEvent[] => {
+) => {
   const extra: TimelineEvent[] = [];
 
   if (sessions && sessions.longestMinutes > 0 && sessions.longestStart) {

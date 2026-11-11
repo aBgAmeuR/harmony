@@ -2,7 +2,6 @@ import type { Scope } from "@/shared/scope";
 
 import { day, int, num, text, where } from "./sql";
 
-// Tables a play can be joined to: `t` (tracks) and `al` (albums, through the track).
 export type Join = "track" | "album";
 
 type FieldType = "id" | "number" | "text" | "list" | "flag";
@@ -47,13 +46,13 @@ export type Rule = { field: FieldId; op: Op; value: string | number | boolean };
 // The plays a figure counts: a period (none means the whole history) and rules on fields.
 export type Filter = { from?: Date; to?: Date; rules?: readonly Rule[] };
 
-const literal = (type: FieldType, value: Rule["value"]): string => {
+const literal = (type: FieldType, value: Rule["value"]) => {
   if (type === "text") return text(String(value));
   if (type === "number") return num(Number(value));
   return int(Number(value));
 };
 
-const condition = ({ field, op, value }: Rule): string => {
+const condition = ({ field, op, value }: Rule) => {
   const { type, sql } = fields[field];
   if (type === "flag") return (op === "not") === Boolean(value) ? `NOT ${sql}` : sql;
   if (type === "list") {
@@ -65,13 +64,13 @@ const condition = ({ field, op, value }: Rule): string => {
   return `${sql} ${symbol} ${literal(type, value)}`;
 };
 
-const filterNeeds = (filter: Filter): Join[] =>
+const filterNeeds = (filter: Filter) =>
   (filter.rules ?? []).flatMap((rule) => {
     const { needs } = fields[rule.field];
     return needs ? [needs] : [];
   });
 
-const filterConditions = ({ from, to, rules = [] }: Filter): string[] => [
+const filterConditions = ({ from, to, rules = [] }: Filter) => [
   ...(from ? [`CAST(i.ts AS DATE) >= ${day(from)}`] : []),
   ...(to ? [`CAST(i.ts AS DATE) <= ${day(to)}`] : []),
   ...rules.map(condition),
@@ -79,16 +78,14 @@ const filterConditions = ({ from, to, rules = [] }: Filter): string[] => [
 
 type FromOptions = {
   needs?: readonly (Join | undefined)[];
-  // Extra joins on the play row, such as an unnest.
   joins?: string;
   conditions?: readonly string[];
 };
 
-// The FROM clause over plays `i`, joined to what the filter and `needs` read.
 export const playsFrom = (
   filter: Filter,
   { needs = [], joins = "", conditions = [] }: FromOptions = {},
-): string => {
+) => {
   const all = new Set([...needs, ...filterNeeds(filter)]);
   return `
     FROM interactions i
@@ -98,7 +95,6 @@ export const playsFrom = (
     ${where([...filterConditions(filter), ...conditions])}`;
 };
 
-// The global scope of the app (period and picked artist) as a filter.
 export const scopeFilter = ({ from, to, artistId }: Scope): Filter & { from: Date; to: Date } => ({
   from,
   to,

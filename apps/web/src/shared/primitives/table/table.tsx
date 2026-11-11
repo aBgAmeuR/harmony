@@ -11,7 +11,6 @@ import {
 import { cn } from "@harmony/ui/lib/utils";
 
 type TableProps = ComponentProps<"table"> & {
-  // framed: inside a rounded border, for short lists in a page.
   variant?: "flush" | "framed";
 };
 

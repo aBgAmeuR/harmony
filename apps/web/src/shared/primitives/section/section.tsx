@@ -3,8 +3,6 @@ import type { ComponentProps } from "react";
 import { cn } from "@harmony/ui/lib/utils";
 
 type SectionProps = ComponentProps<"section"> & {
-  // sm: a quiet label above a box, md: a titled block, lg: a chapter of a page, set apart by a
-  // hairline above it.
   size?: "sm" | "md" | "lg";
 };
 
@@ -39,7 +37,6 @@ const Title = ({ className, ...props }: ComponentProps<"h2">) => (
   />
 );
 
-// One or two sentences under the title that say what the block shows. `strong` stands out.
 const Text = ({ className, ...props }: ComponentProps<"p">) => (
   <p
     data-slot="section-text"

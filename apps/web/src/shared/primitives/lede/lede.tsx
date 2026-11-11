@@ -3,12 +3,10 @@ import type { ComponentProps } from "react";
 import { Skeleton } from "@harmony/ui/components/skeleton";
 import { cn } from "@harmony/ui/lib/utils";
 
-// The few sentences that open a page, before its charts.
 const Root = ({ className, ...props }: ComponentProps<"header">) => (
   <header data-slot="lede" className={cn("flex min-w-0 flex-col gap-1", className)} {...props} />
 );
 
-// A quiet line above the title: the page filters, a date.
 const Kicker = ({ className, ...props }: ComponentProps<"div">) => (
   <div
     data-slot="lede-kicker"
@@ -33,12 +31,10 @@ const Text = ({ className, ...props }: ComponentProps<"p">) => (
   />
 );
 
-// A name or a number that should stand out in a sentence.
 const Em = ({ className, ...props }: ComponentProps<"span">) => (
   <span data-slot="lede-em" className={cn("font-medium text-foreground", className)} {...props} />
 );
 
-// Stands in for the title and the text while the data loads.
 const Pending = () => (
   <>
     <Skeleton className="h-7 w-2/3" />

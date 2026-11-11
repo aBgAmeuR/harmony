@@ -36,7 +36,7 @@ export type UploadContextValue = {
 
 export const UploadContext = createContext<UploadContextValue | null>(null);
 
-export const useUpload = (): UploadContextValue => {
+export const useUpload = () => {
   const value = use(UploadContext);
   if (!value) {
     throw new Error("useUpload must be used within Upload.Provider");

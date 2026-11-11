@@ -23,13 +23,11 @@ type MomentProps = {
   label: string;
   value: ReactNode;
   hint?: ReactNode;
-  // The page that tells more, and its name on the link.
   to: "./listening" | "./milestones" | "./discoveries" | "./explorer";
   more: string;
   children: ReactNode;
 };
 
-// One moment of the period: what happened, a small picture of it, and where to read more.
 const Moment = ({ label, value, hint, to, more, children }: MomentProps) => (
   <Card size="xs" className="gap-0">
     <div className="flex flex-1 flex-col gap-4 p-4">
@@ -55,10 +53,8 @@ const Moment = ({ label, value, hint, to, more, children }: MomentProps) => (
   </Card>
 );
 
-// The month of the peak day as a calendar, Monday first, brighter where you listened more.
 const PeakMonth = ({ days, peak }: { days: Highlights["peakMonth"]; peak: string }) => {
   const first = days[0] ? parseDay(days[0].date) : null;
-  // Empty cells before the first day, so each column is one weekday.
   const offset = first ? (first.getDay() + 6) % 7 : 0;
   const max = Math.max(0, ...days.map((day) => day.minutes));
 
@@ -88,16 +84,13 @@ const time = (date: Date | string) => (typeof date === "string" ? parseDay(date)
 const monthName = (date: Date) => date.toLocaleDateString("en-US", { month: "short" });
 
 const DAY = 86_400_000;
-// Month names under the timeline.
 const MONTH_LABELS = 5;
 
 type StreakLineProps = { range: Range; start: string; end: string };
 
-// The period as a track with a small line per week, the streak drawn over it.
 const StreakLine = ({ range, start, end }: StreakLineProps) => {
   const from = time(range.from);
   const span = Math.max(time(range.to) - from + DAY, DAY);
-  // One small line per week of the period.
   const weeks = Math.max(1, Math.ceil(span / (7 * DAY)));
   const left = Math.max(0, (time(start) - from) / span);
   const width = Math.min(1 - left, Math.max(0.01, (time(end) - time(start) + DAY) / span));
@@ -120,7 +113,7 @@ const StreakLine = ({ range, start, end }: StreakLineProps) => {
           style={{ left: `${left * 100}%`, width: `${width * 100}%` }}
         />
       </div>
-      <div className="flex justify-between text-[10px] text-muted-foreground">
+      <div className="flex justify-between text-micro text-muted-foreground">
         {labels.map((label, i) => (
           <span key={i}>{label}</span>
         ))}
@@ -131,7 +124,6 @@ const StreakLine = ({ range, start, end }: StreakLineProps) => {
 
 const DOTS = 40;
 
-// The share of new artists as dots out of forty.
 const NewDots = ({ share }: { share: number }) => {
   const filled = Math.round(share * DOTS);
   return (
@@ -150,7 +142,6 @@ const NewDots = ({ share }: { share: number }) => {
   );
 };
 
-// Four moments of the period, each one a way into a page with the details.
 export const HighlightsWidget = () => {
   const { range, full } = useRanges();
   const { data } = useQuery(overviewQueries.highlights(range));
@@ -164,7 +155,6 @@ export const HighlightsWidget = () => {
       <Section.Text>Four moments from this period, each one a way into the details.</Section.Text>
       {!data ? (
         <div className="mt-3 grid gap-3 md:grid-cols-2">
-          {/* The cards with a picture run taller than the ones below them. */}
           {["h-58", "h-58", "h-49", "h-49"].map((height, i) => (
             <Skeleton key={i} className={cn("rounded-lg", height)} />
           ))}

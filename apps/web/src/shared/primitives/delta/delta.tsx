@@ -4,20 +4,19 @@ import { cn } from "@harmony/ui/lib/utils";
 
 const labels = {
   // Relative change, as a fraction: 0.124 is "+12.4%".
-  percent: (value: number) => {
-    const pct = Math.abs(value * 100);
-    const text = pct.toFixed(pct >= 100 ? 0 : 1).replace(/\.0$/, "");
-    return `${value > 0 ? "+" : value < 0 ? "-" : ""}${text}%`;
-  },
+  percent: (value: number) =>
+    `${(value * 100).toLocaleString("en-US", {
+      maximumFractionDigits: Math.abs(value) >= 1 ? 0 : 1,
+      signDisplay: "exceptZero",
+      useGrouping: false,
+    })}%`,
   // A multiplier compared to 1: 1.4 is "1.4x".
   ratio: (value: number) => `${value.toLocaleString("en-US", { maximumFractionDigits: 1 })}x`,
 } as const;
 
 type DeltaProps = Omit<ComponentProps<"span">, "children"> & {
-  // Empty when there is nothing to compare to.
   value: number | null;
   kind?: keyof typeof labels;
-  // muted: gray whatever the sign, for a change that is not in focus.
   tone?: "auto" | "muted";
 };
 
@@ -34,12 +33,9 @@ export const Delta = ({
     <span
       data-slot="delta"
       className={cn(
-        "inline-flex items-center text-xs font-medium tabular-nums",
-        tone === "muted" || sign === 0
-          ? "text-muted-foreground"
-          : sign > 0
-            ? "text-chart-1"
-            : "text-destructive",
+        "inline-flex items-center text-xs font-medium text-muted-foreground tabular-nums",
+        tone === "auto" && sign > 0 && "text-chart-1",
+        tone === "auto" && sign < 0 && "text-destructive",
         className,
       )}
       {...props}

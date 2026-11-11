@@ -17,7 +17,6 @@ type MeterProps = Omit<ComponentProps<"div">, "children"> & {
   size?: keyof typeof sizes;
   // Makes the bar a labelled meter for assistive tech, it is decorative without one.
   label?: string;
-  // Meter.Seg elements, laid side by side by their value.
   children?: ReactNode;
 };
 
@@ -70,9 +69,7 @@ const Root = ({
 };
 
 type SegProps = Omit<ComponentProps<"button">, "children"> & {
-  // Any scale, segments share the width by their values.
   value: number;
-  // Shown in the tooltip.
   label: string;
 };
 

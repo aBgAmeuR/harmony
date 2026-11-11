@@ -38,7 +38,6 @@ type SparkProps = Omit<ComponentProps<"svg">, "children"> & {
   data: number[];
 };
 
-// A tiny decorative trend line, sized by its container.
 export const Spark = ({ data, className, ...props }: SparkProps) => {
   const id = useId();
   if (data.length === 0) return null;

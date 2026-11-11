@@ -145,7 +145,7 @@ export const DateRangeDraftProvider = ({
   return <DateRangeDraftContext value={value}>{children}</DateRangeDraftContext>;
 };
 
-export const useDateRangeDraftContext = (): DateRangeDraftContextValue => {
+export const useDateRangeDraftContext = () => {
   const context = use(DateRangeDraftContext);
   if (!context) {
     throw new Error("useDateRangeDraftContext must be used within DateRangeDraftProvider");

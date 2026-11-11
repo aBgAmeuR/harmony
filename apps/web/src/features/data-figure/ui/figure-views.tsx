@@ -11,7 +11,6 @@ type FigureViewsProps = {
   onChange: (view: string) => void;
 };
 
-// Switches how a figure is drawn: icons when the views have one, labels otherwise.
 export const FigureViews = ({ views, value, onChange }: FigureViewsProps) => (
   <Tabs value={value} onValueChange={(next) => onChange(String(next))}>
     <TabsList className="p-0.5 group-data-horizontal/tabs:h-7">

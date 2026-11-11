@@ -28,12 +28,10 @@ const Progress = ({ progress }: { progress: NonNullable<PipelineStep["progress"]
 
 type PipelineProps = {
   steps: PipelineStep[];
-  // While the run is live: running steps count their time up to now.
   now?: number;
   className?: string;
 };
 
-// The steps of a package run, live during the upload, from `package_meta` afterwards.
 export const Pipeline = ({ steps, now, className }: PipelineProps) => (
   <Steps className={className}>
     {steps.map((step) => (

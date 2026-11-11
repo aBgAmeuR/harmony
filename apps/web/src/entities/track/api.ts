@@ -17,15 +17,7 @@ const ofTrack = ({ trackId, range }: TrackRange) => ({
 const overviewFn = (args: TrackRange) =>
   totals(ofTrack(args), ["streams", "playtime", "completion", "skipRate"]);
 
-type TrackHistory = {
-  longestStreakDays: number;
-  longestStreakStart: string | null;
-  firstPlayed: string | null;
-  lastPlayed: string | null;
-  firstPlayedOnRelease: boolean;
-};
-
-const historyFn = async (args: TrackRange): Promise<TrackHistory> => {
+const historyFn = async (args: TrackRange) => {
   const filter = ofTrack(args);
   const [streak, bounds, item] = await Promise.all([
     streakFn(filter),
@@ -47,7 +39,6 @@ export type ChartPoint = { name: string; value: number };
 export type DayPart = {
   key: "morning" | "afternoon" | "evening" | "night";
   label: string;
-  // Fraction of the plays, between 0 and 1.
   share: number;
 };
 
@@ -59,7 +50,7 @@ const DAY_PARTS = [
   { key: "evening", label: "Evening", from: 17, to: 21 },
 ] as const;
 
-const dayPartOf = (hour: number): DayPart["key"] =>
+const dayPartOf = (hour: number) =>
   DAY_PARTS.find((part) => hour >= part.from && hour < part.to)?.key ?? "night";
 
 // Minutes per bucket of the period, plays per weekday and per part of the day, in local time.
@@ -105,10 +96,7 @@ const listeningFn = async (args: TrackRange) => {
   };
 };
 
-type DeviceShare = { label: string; share: number };
-
-// The two main platforms of the track, the rest as "Others".
-const devicesFn = async (args: TrackRange): Promise<DeviceShare[]> => {
+const devicesFn = async (args: TrackRange) => {
   const rows = await aggregate<"streams", string>({
     by: "platform",
     measures: ["streams"],
@@ -133,8 +121,7 @@ export type Interaction = {
   offline: boolean;
 };
 
-// Every play of the track in the period, newest first.
-const interactionsFn = async (args: TrackRange): Promise<Interaction[]> => {
+const interactionsFn = async (args: TrackRange) => {
   const { rows } = await listFn({
     base: "plays",
     filter: ofTrack(args),

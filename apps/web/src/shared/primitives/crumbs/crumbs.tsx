@@ -10,7 +10,6 @@ import {
 } from "@harmony/ui/components/breadcrumb";
 import { Children, Fragment } from "react";
 
-// The way back to the pages above this one. Separators are added between the items.
 const Root = ({ children }: { children: ReactNode }) => (
   <Breadcrumb data-slot="crumbs">
     <BreadcrumbList className="text-sm">
@@ -24,14 +23,12 @@ const Root = ({ children }: { children: ReactNode }) => (
   </Breadcrumb>
 );
 
-// A page above, linked through `render`, such as <Link to="..." />.
 const Item = (props: ComponentProps<typeof BreadcrumbLink>) => (
   <BreadcrumbItem>
     <BreadcrumbLink {...props} />
   </BreadcrumbItem>
 );
 
-// The page you are on.
 const Here = ({ children }: { children: ReactNode }) => (
   <BreadcrumbItem>
     <BreadcrumbPage className="font-semibold tracking-tight">{children}</BreadcrumbPage>

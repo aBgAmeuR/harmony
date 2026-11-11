@@ -1,11 +1,10 @@
 import { isoDay, previousRange, type Range } from "@/shared/lib/date";
 import { format } from "@/shared/lib/format";
 
-// Relative change vs the previous range, null when there is nothing to compare to.
-export const delta = (current: number, previous: number): number | null =>
+export const delta = (current: number, previous: number) =>
   previous > 0 ? (current - previous) / previous : null;
 
-export const rangeLabel = (from: string, to: string): string => {
+export const rangeLabel = (from: string, to: string) => {
   const sameYear = from.slice(0, 4) === to.slice(0, 4);
   const start = new Date(`${from}T00:00:00`).toLocaleDateString("en-US", {
     day: "numeric",
@@ -20,8 +19,7 @@ const parts = (value: string): [number, number, number] => {
   return [year ?? 0, month ?? 1, day ?? 1];
 };
 
-// Short name for the compared range: "2025", "Feb 2024", otherwise the dates.
-export const compareLabel = (from: string, to: string): string => {
+export const compareLabel = (from: string, to: string) => {
   const [fy, fm, fd] = parts(from);
   const [ty, tm, td] = parts(to);
   const lastDay = new Date(ty, tm, 0).getDate();
@@ -38,8 +36,7 @@ export const compareLabel = (from: string, to: string): string => {
   return rangeLabel(from, to);
 };
 
-// "this year" / "this month" when the range is exactly that, otherwise "in this period".
-export const periodWord = (from: Date, to: Date): string => {
+export const periodWord = (from: Date, to: Date) => {
   const lastDay = new Date(to.getFullYear(), to.getMonth() + 1, 0).getDate();
   if (from.getDate() !== 1 || to.getDate() !== lastDay) return "in this period";
   if (from.getFullYear() === to.getFullYear()) {
@@ -49,8 +46,7 @@ export const periodWord = (from: Date, to: Date): string => {
   return "in this period";
 };
 
-// Names of the picked period and of the one it is compared with, such as "2026" and "2025".
-export const periodNames = (full: Range): { current: string; previous: string } => {
+export const periodNames = (full: Range) => {
   const previous = previousRange(full, full);
   return {
     current: compareLabel(isoDay(full.from), isoDay(full.to)),

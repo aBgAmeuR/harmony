@@ -9,15 +9,7 @@ import { int } from "./sql";
 export type Retention = {
   key: "complete" | "partial" | "quick-skips";
   label: string;
-  // Fraction of the plays, between 0 and 1.
   share: number;
-};
-
-type Behavior = {
-  retention: Retention[];
-  completeShare: number;
-  avgSkipMs: number | null;
-  trackDurationMs: number;
 };
 
 type BehaviorRow = {
@@ -30,13 +22,7 @@ type BehaviorRow = {
 };
 
 // How plays of a track end: heard through, cut short, or skipped within the first minute.
-export const behaviorFn = async ({
-  trackId,
-  range,
-}: {
-  trackId: number;
-  range: Range;
-}): Promise<Behavior> => {
+export const behaviorFn = async ({ trackId, range }: { trackId: number; range: Range }) => {
   const [row] = await db.query<BehaviorRow>(`
     WITH classified AS (
       SELECT ms_played, skipped, duration,
@@ -71,23 +57,14 @@ export const behaviorFn = async ({
   };
 };
 
-type VsAverage = { label: string; multiplier: number }[];
-
 type VsRow = { streams: number | null; completion: number | null; replay: number | null };
 
-const rounded = (value: number | null | undefined): number =>
+const rounded = (value: number | null | undefined) =>
   value === null || value === undefined || !Number.isFinite(value)
     ? 0
     : Math.round(value * 10) / 10;
 
-// The track against the average track of the period: streams, completion and plays per day.
-export const vsAverageFn = async ({
-  trackId,
-  range,
-}: {
-  trackId: number;
-  range: Range;
-}): Promise<VsAverage> => {
+export const vsAverageFn = async ({ trackId, range }: { trackId: number; range: Range }) => {
   const [row] = await db.query<VsRow>(`
     WITH stats AS (
       SELECT track_id,

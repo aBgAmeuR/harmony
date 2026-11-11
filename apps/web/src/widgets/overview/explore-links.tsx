@@ -9,7 +9,6 @@ import { Section } from "@/shared/primitives/section";
 import { overviewQueries } from "./api";
 import { useRanges } from "./use-range";
 
-// Where to go after the summary.
 export const ExploreLinks = () => {
   const { range, full } = useRanges();
   const { data } = useQuery(overviewQueries.kpis({ range, full }));

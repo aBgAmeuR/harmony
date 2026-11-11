@@ -6,26 +6,26 @@ import { CARD_TOP_PX, minStep, stepIndex } from "./types";
 
 const PEEK_BOTTOM_PX = 75;
 
-const parkTransform = (cardHeight: number): string => {
+const parkTransform = (cardHeight: number) => {
   const ty = Math.round(PEEK_BOTTOM_PX - CARD_TOP_PX - cardHeight * 0.925);
   return `translateY(${ty}px) scale(0.85)`;
 };
 
-const cardTransform = (i: number, current: number, heights: Record<number, number>): string => {
+const cardTransform = (i: number, current: number, heights: Record<number, number>) => {
   if (i < current - 1) return "translateY(-210%)";
   if (i === current - 1) return parkTransform(heights[i] ?? 360);
   if (i === current) return "translateY(0px)";
   return "translateY(210%)";
 };
 
-const cardOpacity = (i: number, current: number): number => {
+const cardOpacity = (i: number, current: number) => {
   if (i < current - 1) return 0;
   if (i === current - 1) return 0.5;
   if (i === current) return 1;
   return 0;
 };
 
-const cardZIndex = (i: number, current: number): number => {
+const cardZIndex = (i: number, current: number) => {
   return i === current ? 30 : 0;
 };
 

@@ -25,7 +25,6 @@ const Title = ({ className, ...props }: ComponentProps<"h1">) => (
 
 const widths = {
   full: "",
-  // One centered reading column, the same on every page.
   column: "mx-auto max-w-3xl px-4 pt-4 pb-12",
 } as const;
 

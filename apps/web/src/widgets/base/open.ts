@@ -5,7 +5,6 @@ import type { ListRow, Opens } from "@/data/bases";
 import { UNKNOWN_ALBUM } from "@/data/aggregate";
 import { useTrackPanel } from "@/features/track-panel";
 
-// Opens what a row stands for: an item page or the track panel.
 export const useOpen = () => {
   const { packageId = "" } = useParams({ strict: false });
   const navigate = useNavigate();

@@ -42,11 +42,9 @@ type MetricDef = {
   key: Key;
   label: string;
   kind: Kind;
-  // One sentence under the chart.
   hint: (totals: Totals, days: number) => string;
   // Raw units in one chart unit: the chart plots minutes as hours, the tooltip formats raw values.
   unit: number;
-  // The page that tells more, and the words of its link.
   to: "./listening" | "./explorer" | "./milestones";
   more: string;
 };
@@ -98,7 +96,7 @@ const isUnit = (value: string): value is Unit =>
 const CURRENT = colors.primary;
 const PREVIOUS = "color-mix(in srgb, var(--muted-foreground) 55%, transparent)";
 
-const peakIndex = (values: number[]): number =>
+const peakIndex = (values: number[]) =>
   values.reduce((best, value, i) => (value > (values[best] ?? 0) ? i : best), 0);
 
 type Names = { current: string; previous: string };
@@ -109,7 +107,6 @@ type KpiChartProps = {
   names: Names;
 };
 
-// The period as an area, the one before as a dashed line, and the peak marked.
 const buildChart = ({ data, def, names }: KpiChartProps) => {
   const wide = data.labels.map((label, i) => ({
     label,
@@ -125,14 +122,12 @@ const buildChart = ({ data, def, names }: KpiChartProps) => {
   const peak = current[peakIndex(current.map((row) => row.value))];
   const peaks = peak && peak.value > 0 ? [peak] : [];
 
-  // Same text as everywhere else in the app: "51 h 12 m", "1,204".
   const value = (v: number) => format.as(v * def.unit, def.kind);
   const series: Series = {
     current: { label: names.current, color: CURRENT, format: value },
     previous: { label: names.previous, color: PREVIOUS, format: value },
   };
 
-  // Weekly buckets only label the first week of each month.
   const tickByLabel = new Map(data.labels.map((label, i) => [label, data.ticks[i] ?? ""]));
   const ticks =
     data.unit === "week"
@@ -197,7 +192,6 @@ const buildChart = ({ data, def, names }: KpiChartProps) => {
   });
 };
 
-// Room the peak badge needs above its point, in pixels.
 const BADGE_ROOM = 30;
 
 const KpiChart = ({ data, def, names }: KpiChartProps) => {
@@ -214,7 +208,7 @@ const KpiChart = ({ data, def, names }: KpiChartProps) => {
       <div
         ref={badge}
         aria-hidden
-        className="pointer-events-none invisible absolute z-10 rounded-md border bg-popover px-1.5 py-0.5 text-[10px] whitespace-nowrap text-muted-foreground tabular-nums"
+        className="pointer-events-none invisible absolute z-10 rounded-md border bg-popover px-1.5 py-0.5 text-micro whitespace-nowrap text-muted-foreground tabular-nums"
       >
         <span className="font-medium text-foreground">{value}</span> peak
       </div>
@@ -233,7 +227,6 @@ const KpiChart = ({ data, def, names }: KpiChartProps) => {
           const top = y.map((values[index] ?? 0) / def.unit);
           // Too close to the top, the badge goes under the point instead of being cut.
           const below = top - BADGE_ROOM < scene.chart.y;
-          // Centered on the point, but kept inside the plot at both ends.
           const plot = scene.chart;
           const width = element.offsetWidth;
           const left = Math.min(
@@ -271,7 +264,6 @@ type KpiOverviewProps = {
   onUnitChange?: (unit: Unit) => void;
 };
 
-// The four totals of the period as tabs, each opening its curve against the period before.
 export const KpiOverview = ({
   data,
   names,
@@ -284,7 +276,13 @@ export const KpiOverview = ({
 
   return (
     <section className="flex min-w-0 flex-col gap-2">
-      <Tabs value={key} onValueChange={(next: Key) => setKey(next)}>
+      <Tabs
+        value={key}
+        onValueChange={(next) => {
+          const metric = metrics.find((m) => m.key === next);
+          if (metric) setKey(metric.key);
+        }}
+      >
         <TabsList
           variant="line"
           className="grid h-auto w-full grid-cols-2 gap-2 p-0 group-data-horizontal/tabs:h-auto lg:grid-cols-4"

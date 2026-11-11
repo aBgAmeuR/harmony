@@ -18,7 +18,7 @@ import { format } from "@/shared/lib/format";
 import { useUpload } from "../context";
 import { serverConfigQuery } from "../queries";
 
-const isZipFile = (file: File): boolean => {
+const isZipFile = (file: File) => {
   return file.name.toLowerCase().endsWith(".zip");
 };
 

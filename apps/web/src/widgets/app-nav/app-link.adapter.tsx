@@ -2,7 +2,7 @@ import { Link, useMatchRoute } from "@tanstack/react-router";
 
 import type { NavLinkAdapter } from "./types/link-adapter";
 
-const toRelative = (href: string): string => {
+const toRelative = (href: string) => {
   if (href === "/") return ".";
   if (href.startsWith("/")) return `.${href}`;
   return href;

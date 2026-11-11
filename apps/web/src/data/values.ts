@@ -15,7 +15,6 @@ const LISTED: Partial<Record<FieldId, BaseId>> = {
   genre: "genres",
 };
 
-// The values a filter on `field` can take, most played first, matching `search`.
 export const valuesFn = async ({
   field,
   search = "",
@@ -24,7 +23,7 @@ export const valuesFn = async ({
   field: FieldId;
   search?: string;
   filter: Filter;
-}): Promise<Value[]> => {
+}) => {
   const base = LISTED[field];
   if (base) {
     const { rows } = await listFn({

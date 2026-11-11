@@ -21,7 +21,6 @@ export type Prop = {
 
 export type ViewType = "table" | "gallery";
 
-// What a row opens: a page or the track panel.
 export type Opens = "track" | "album" | "artist" | "genre";
 
 const BASE_IDS = ["artists", "tracks", "albums", "genres", "plays"] as const;
@@ -39,13 +38,12 @@ export type Base = {
   props: Record<string, Prop>;
   views: readonly ViewType[];
   defaults: { sort: string; desc: boolean };
-  // What the rows group plays by, for bases ranked against the previous period, with trends.
   by?: By;
   opens: Opens;
   source: (filter: Filter) => string;
 };
 
-const measureProps = (ids: readonly MeasureId[]): Record<string, Prop> =>
+const measureProps = (ids: readonly MeasureId[]) =>
   Object.fromEntries(ids.map((id) => [id, { label: measure(id).label, kind: measure(id).kind }]));
 
 const grouped = (by: By, ids: readonly MeasureId[], filter: Filter) =>
@@ -176,7 +174,7 @@ const plays: Base = {
 const SESSION_GAP_SECONDS = 30 * 60;
 
 // Sessions of two plays at least.
-export const sessionsSql = (filter: Filter): string => `
+export const sessionsSql = (filter: Filter) => `
   WITH ordered AS (
     SELECT i.ts, i.ms_played, i.track_id,
       LAG(i.ts) OVER (ORDER BY i.ts, i.ms_played) AS prev_ts
@@ -198,13 +196,13 @@ export const sessionsSql = (filter: Filter): string => `
   GROUP BY session
   HAVING COUNT(*) >= 2`;
 
-export const bases: Record<BaseId, Base> = {
+export const bases = {
   artists,
   tracks,
   albums,
   genres,
   plays,
-};
+} as const;
 
 // A filter on a row property, such as "streams > 10". Play fields go into the filter instead.
 export type Condition = { prop: string; op: Op; value: string | number | boolean };
@@ -217,7 +215,6 @@ export type ListQuery = {
   sort: string;
   desc: boolean;
   limit: number;
-  // The period ranks are compared with.
   previous?: Filter;
 };
 
@@ -229,7 +226,6 @@ export type ListRow = {
   cover: string | null;
   rank: number;
   prevRank: number | null;
-  // The track a play row opens.
   track?: number;
   [prop: string]: string | number | boolean | null | undefined;
 };
@@ -239,7 +235,7 @@ export type List = { base: BaseId; rows: ListRow[]; total: number };
 
 const KINDS_NUMERIC = new Set<PropKind>(["count", "compact", "percent", "minutes", "ratio"]);
 
-const conditionSql = (base: Base, { prop, op, value }: Condition): string | null => {
+const conditionSql = (base: Base, { prop, op, value }: Condition) => {
   const def = Object.hasOwn(base.props, prop) ? base.props[prop] : undefined;
   if (!def) return null;
   const column = `"${prop}"`;
@@ -248,10 +244,10 @@ const conditionSql = (base: Base, { prop, op, value }: Condition): string | null
   return `${column} ${{ is: "=", not: "<>", gt: ">", lt: "<" }[op]} ${literal}`;
 };
 
-const sortColumn = (base: Base, sort: string): string =>
+const sortColumn = (base: Base, sort: string) =>
   sort === "name" || sort === "id" || Object.hasOwn(base.props, sort) ? `"${sort}"` : "id";
 
-const rankedSql = (base: Base, filter: Filter, query: ListQuery): string => {
+const rankedSql = (base: Base, filter: Filter, query: ListQuery) => {
   const conditions = (query.conditions ?? []).flatMap((c) => conditionSql(base, c) ?? []);
   const direction = query.desc ? "DESC" : "ASC";
   return `
@@ -262,7 +258,7 @@ const rankedSql = (base: Base, filter: Filter, query: ListQuery): string => {
     ${where(conditions)}`;
 };
 
-const listSql = (query: ListQuery): string => {
+const listSql = (query: ListQuery) => {
   const base = bases[query.base];
   const term = query.search?.trim() ?? "";
   const previous = query.previous && base.by ? query.previous : null;
@@ -288,7 +284,6 @@ type TrendPoint = { period: string; playtime: number; streams: number };
 
 export type Trends = { base: BaseId; unit: Unit; points: Record<string, TrendPoint[]> };
 
-// Playtime and streams of each row per day, week or month of the period.
 export const trendsFn = async ({
   base,
   ids,
@@ -297,7 +292,7 @@ export const trendsFn = async ({
   base: BaseId;
   ids: readonly (number | string)[];
   filter: Filter & { from: Date; to: Date };
-}): Promise<Trends> => {
+}) => {
   const { by } = bases[base];
   const unit = unitFor(rangeDays(filter));
   if (!by || ids.length === 0) return { base, unit, points: {} };
@@ -327,7 +322,6 @@ export type TopRow = {
   playtime: number;
 };
 
-// The most played artists, tracks or albums of a filter, for short top lists and pickers.
 export const topFn = async ({
   base,
   filter,
@@ -340,7 +334,7 @@ export const topFn = async ({
   sort?: "playtime" | "streams";
   limit: number;
   search?: string;
-}): Promise<TopRow[]> => {
+}) => {
   const { rows } = await listFn({ base, filter, sort, desc: true, limit, search });
   return rows.map((row) => ({
     id: Number(row.id),

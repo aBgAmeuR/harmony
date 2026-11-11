@@ -40,7 +40,6 @@ type ItemProps = ComponentProps<"div"> & {
   status: Status;
 };
 
-// A step row, led by its status icon. Extra details, such as badges, go in as children.
 const Item = ({ status, className, children, ...props }: ItemProps) => (
   <div
     data-slot="steps-item"
@@ -73,7 +72,6 @@ const Label = ({ className, ...props }: ComponentProps<"span">) => (
 type TimeProps = {
   start?: string;
   end?: string;
-  // Clock of a running step, which has no end yet.
   now?: number;
 };
 

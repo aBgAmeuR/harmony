@@ -37,12 +37,10 @@ const config = {
 } as const;
 
 type TopWidgetProps = {
-  // The track open in the side panel.
   selectedId?: number;
   onOpen: (by: By, row: TopRow) => void;
 };
 
-// The number one large, then the top five with their listening time against the leader's.
 export const TopWidget = ({ selectedId, onOpen }: TopWidgetProps) => {
   const [by, setBy] = useState<By>("tracks");
   const { range } = useRanges();
