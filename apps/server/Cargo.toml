@@ -38,7 +38,7 @@ chrono = { version = "0.4.44", features = ["serde"] }
 
 # Pipeline / upload
 dashmap = "6"
-rand = "0.9"
+rand = "0.10"
 zip = "8.6"
 regex = "1.12"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
