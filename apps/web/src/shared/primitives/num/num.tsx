@@ -2,11 +2,15 @@ import type { ComponentProps } from "react";
 
 import { cn } from "@harmony/ui/lib/utils";
 
-import { parts, type Kind } from "@/utils/format";
+import { parts, type Kind } from "@/shared/lib/format";
 
 export const numSizes = {
+  // Secondary figures under a main one, such as the streams under the time listened.
+  "2xs": { value: "text-[11px] font-normal", unit: "text-[11px]" },
   xs: { value: "text-xs font-medium", unit: "text-xs" },
   sm: { value: "text-xs font-semibold", unit: "text-xs" },
+  // The main figure of a list row, between sm and md.
+  "sm+": { value: "text-[13px] font-semibold", unit: "text-xs" },
   md: { value: "text-sm font-semibold", unit: "text-xs" },
   lg: { value: "text-lg font-semibold", unit: "text-sm" },
   xl: {

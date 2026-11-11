@@ -70,9 +70,9 @@ fn run_keeps_a_cleaned_play_and_drops_a_short_one() -> Result<(), zip::result::Z
     let Ok(history) = history else {
         return Err(zip::result::ZipError::FileNotFound);
     };
-    assert_eq!(history.len(), 1);
-    assert!(!history.is_empty());
-    let play = history.plays().first();
+    let plays = history.into_plays();
+    assert_eq!(plays.len(), 1);
+    let play = plays.first();
     assert!(matches!(
         play,
         Some(play) if play.title() == "Song" && play.artist() == "Artist" && play.ms() == 45_000 && play.shuffle()
@@ -95,7 +95,7 @@ fn run_keeps_audio_history_without_a_part_index() -> Result<(), zip::result::Zip
     let Ok(history) = history else {
         return Err(zip::result::ZipError::FileNotFound);
     };
-    assert_eq!(history.len(), 3);
+    assert_eq!(history.into_plays().len(), 3);
     Ok(())
 }
 
@@ -116,7 +116,7 @@ fn run_honors_a_non_empty_selection() -> Result<(), zip::result::ZipError> {
     let Ok(history) = history else {
         return Err(zip::result::ZipError::FileNotFound);
     };
-    assert!(matches!(history.plays().first(), Some(play) if play.title() == "Dropped"));
+    assert!(matches!(history.into_plays().first(), Some(play) if play.title() == "Dropped"));
     Ok(())
 }
 

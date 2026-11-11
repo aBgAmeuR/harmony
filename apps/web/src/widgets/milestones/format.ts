@@ -1,50 +1,8 @@
-import type { NextMilestone } from "@/data/milestones/types";
+import type { NextMilestone } from "@/data/milestones";
 
-import { format } from "@/utils/format";
+import { format, toDate } from "@/shared/lib/format";
 
-const dateFormat = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
-const longDateFormat = new Intl.DateTimeFormat("en-US", {
-  month: "long",
-  day: "numeric",
-  year: "numeric",
-});
-
-export const formatCount = format.count;
-
-const parseMilestoneDate = (value: string | Date): Date | null => {
-  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
-  const ymd = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
-  if (ymd) {
-    const date = new Date(Number(ymd[1]), Number(ymd[2]) - 1, Number(ymd[3]));
-    return Number.isNaN(date.getTime()) ? null : date;
-  }
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-};
-
-export const formatMilestoneDate = (value: string | Date | null | undefined): string => {
-  if (!value) return "-";
-  const date = parseMilestoneDate(value);
-  if (!date) return "-";
-  return dateFormat.format(date);
-};
-
-export const formatLongDate = (value: string | Date | null | undefined): string => {
-  if (!value) return "-";
-  const date = parseMilestoneDate(value);
-  if (!date) return "-";
-  return longDateFormat.format(date);
-};
-
-export const yearOf = (value: string): number | null => {
-  const date = parseMilestoneDate(value);
-  return date ? date.getFullYear() : null;
-};
+export const yearOf = (value: string): number => toDate(value).getFullYear();
 
 export const sessionDurationParts = (
   minutes: number,
@@ -66,7 +24,7 @@ export const formatBarCurrent = (bar: NextMilestone): string => {
   if (bar.id === "hours") {
     return bar.current.toLocaleString("en-US", { maximumFractionDigits: 1 });
   }
-  return formatCount(bar.current);
+  return format.count(bar.current);
 };
 
 export const nextMilestoneCopy = (bar: NextMilestone): { remaining: string; target: string } => {
@@ -74,28 +32,28 @@ export const nextMilestoneCopy = (bar: NextMilestone): { remaining: string; targ
     case "hours":
       return {
         remaining: `${bar.remaining.toLocaleString("en-US", { maximumFractionDigits: 1 })} h`,
-        target: `${formatCount(bar.target)} h`,
+        target: `${format.count(bar.target)} h`,
       };
     case "streams":
       return {
-        remaining: `${formatCount(bar.remaining)} streams`,
-        target: `${formatCount(bar.target)} streams`,
+        remaining: `${format.count(bar.remaining)} streams`,
+        target: `${format.count(bar.target)} streams`,
       };
     case "artists":
       return {
-        remaining: `${formatCount(bar.remaining)} artists`,
-        target: `${formatCount(bar.target)} unique`,
+        remaining: `${format.count(bar.remaining)} artists`,
+        target: `${format.count(bar.target)} unique`,
       };
     case "tracks":
       return {
-        remaining: `${formatCount(bar.remaining)} tracks`,
-        target: `${formatCount(bar.target)} unique tracks`,
+        remaining: `${format.count(bar.remaining)} tracks`,
+        target: `${format.count(bar.target)} unique tracks`,
       };
   }
 };
 
 export const heroHeadline = (days: number, streams: number): string => {
-  const dayPart = days === 1 ? "1\u00a0listening day" : `${formatCount(days)}\u00a0listening days`;
-  const streamPart = streams === 1 ? "1\u00a0stream" : `${formatCount(streams)}\u00a0streams`;
+  const dayPart = days === 1 ? "1\u00a0listening day" : `${format.count(days)}\u00a0listening days`;
+  const streamPart = streams === 1 ? "1\u00a0stream" : `${format.count(streams)}\u00a0streams`;
   return `${dayPart}, ${streamPart}.`;
 };

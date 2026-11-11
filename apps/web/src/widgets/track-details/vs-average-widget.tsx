@@ -13,9 +13,9 @@ type VsAverageWidgetProps = {
 
 export const VsAverageWidget = ({ trackId }: VsAverageWidgetProps) => {
   const { from, to } = usePeriod();
-  const { data } = useQuery(trackQueries.vsAverage.queryOptions({ trackId, from, to }));
+  const { data } = useQuery(trackQueries.vsAverage({ trackId, range: { from, to } }));
 
-  const rows = data?.rows ?? [
+  const rows = data ?? [
     { label: "Streams", multiplier: 0 },
     { label: "Completion", multiplier: 0 },
     { label: "Replay rate", multiplier: 0 },

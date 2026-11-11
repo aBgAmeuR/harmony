@@ -10,6 +10,8 @@ const sizes = {
   lg: "size-12",
   xl: "size-16",
   "2xl": "size-20",
+  // As wide as its container, for grids of covers.
+  fill: "aspect-square w-full",
 } as const;
 
 const initialsSizes = {
@@ -19,6 +21,7 @@ const initialsSizes = {
   lg: "text-sm",
   xl: "text-lg",
   "2xl": "text-lg",
+  fill: "text-2xl",
 } as const;
 
 const initials = (name: string): string =>

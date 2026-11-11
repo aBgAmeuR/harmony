@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Suspense, lazy } from "react";
 
-import { interactionQueries } from "@/entities/interaction";
+import { trackQueries } from "@/entities/track";
 import { usePeriod } from "@/shared/scope";
 
 const InteractionsTable = lazy(() =>
-  import("@/entities/interaction/ui/interactions-table").then((m) => ({
+  import("./interactions-table").then((m) => ({
     default: m.InteractionsTable,
   })),
 );
@@ -16,9 +16,9 @@ type InteractionsProps = {
 };
 
 export const Interactions = ({ trackId, enabled }: InteractionsProps) => {
-  const { from, to } = usePeriod();
+  const range = usePeriod();
   const { data } = useQuery({
-    ...interactionQueries.track.queryOptions({ trackId, from, to }),
+    ...trackQueries.interactions({ trackId, range }),
     enabled,
   });
 

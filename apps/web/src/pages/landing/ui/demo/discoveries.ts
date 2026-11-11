@@ -1,4 +1,4 @@
-import type { ArtistRelease, WeeklyActivityPoint } from "@/data/discoveries/types";
+import type { ReleaseMark, WeekPoint } from "@/widgets/discoveries/api";
 
 // Ken Carson on the demo package from April to September 2026, as `weeklyActivityFn` and
 // `artistReleasesFn` return it.
@@ -38,12 +38,12 @@ const MINUTES = [
   113, 69, 101, 0, 0,
 ];
 
-export const WEEKLY: WeeklyActivityPoint[] = WEEKS.map((name, i) => ({
+export const WEEKLY: WeekPoint[] = WEEKS.map((name, i) => ({
   name,
   value: MINUTES[i] ?? 0,
 }));
 
-export const RELEASES: ArtistRelease[] = [
+export const RELEASES: ReleaseMark[] = [
   { album: "xperiment", releaseDate: "2026-07-03", periodLabel: "29 Jun 2026", image: null },
   { album: "Possession", releaseDate: "2026-07-10", periodLabel: "06 Jul 2026", image: null },
   {

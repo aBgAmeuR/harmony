@@ -2,16 +2,12 @@ import { db, DuckDBFetchError, DuckDBPackageNotFoundError, prefetchDuckDB } from
 
 export type OpenErrorKind = "missing" | "fetch" | "other";
 
-export const openFn = (packageId: string) => db.init(packageId, `/files/${packageId}.duckdb`);
+export const openFn = (packageId: string) => db.open(packageId);
 
+// A hint to the browser to fetch the engine early: if it fails, opening a package fetches it.
 export const prefetchEngine = () => void prefetchDuckDB().catch(() => undefined);
 
-export const openErrorFn = (error: unknown): Error => {
-  if (error instanceof Error) return error;
-  return db.error() ?? new Error(String(error));
-};
-
-export const openErrorKind = (error: Error): OpenErrorKind => {
+export const openErrorKind = (error: unknown): OpenErrorKind => {
   if (error instanceof DuckDBPackageNotFoundError) return "missing";
   if (error instanceof DuckDBFetchError) return "fetch";
   return "other";

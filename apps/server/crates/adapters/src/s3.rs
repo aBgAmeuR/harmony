@@ -54,7 +54,7 @@ impl S3 {
     }
 
     fn key(id: package::Id) -> String {
-        format!("harmony/{id}.duckdb")
+        id.object_key()
     }
 
     fn cache(id: package::Id) -> PathBuf {

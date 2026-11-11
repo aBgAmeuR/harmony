@@ -1,87 +1,62 @@
-import type { UploadClient } from "./client";
 import type { PipelineEvent, PipelineState } from "./types";
 
-import { createInitialPipelineState, reducePipelineEvent } from "./state";
+import { streamUrl } from "./client";
+import { INITIAL_PIPELINE_STATE, reducePipelineEvent } from "./state";
 import { connectPipelineStream } from "./stream";
 
-export class Pipeline {
-  private readonly listeners = new Set<() => void>();
-  private state: PipelineState = createInitialPipelineState();
-  private connectionError: string | null = null;
-  private disconnectStream: (() => void) | null = null;
-  private connected = false;
+// What the UI shows of a run. A new object on every change, so React sees each one.
+export type PipelineSnapshot = { state: PipelineState; connectionError: string | null };
 
-  constructor(
-    private readonly client: UploadClient,
-    readonly publicId: string,
-  ) {}
+export const INITIAL_SNAPSHOT: PipelineSnapshot = {
+  state: INITIAL_PIPELINE_STATE,
+  connectionError: null,
+};
 
-  connect(): this {
-    if (this.connected) {
-      return this;
+// The live progress of one package, fed by the server's event stream.
+export const createPipeline = (publicId: string) => {
+  const listeners = new Set<() => void>();
+  let snapshot = INITIAL_SNAPSHOT;
+  let disconnect: (() => void) | null = null;
+
+  const set = (next: PipelineSnapshot) => {
+    snapshot = next;
+    for (const listener of listeners) listener();
+  };
+
+  const finished = () =>
+    snapshot.state.runStatus === "done" || snapshot.state.runStatus === "error";
+
+  const onEvent = (event: PipelineEvent) => {
+    const state = reducePipelineEvent(snapshot.state, event);
+    // Any event means the stream is back, even a repeat of the last snapshot.
+    if (state !== snapshot.state || snapshot.connectionError !== null) {
+      set({ state, connectionError: null });
     }
+    if (finished()) stop();
+  };
 
-    this.connected = true;
-    this.connectionError = null;
+  const onError = (message: string) => {
+    if (finished() || snapshot.connectionError === message) return;
+    set({ ...snapshot, connectionError: message });
+  };
 
-    const streamUrl = this.client.streamUrl(this.publicId);
-    this.disconnectStream = connectPipelineStream(streamUrl, {
-      onEvent: (event) => this.handleEvent(event),
-      onError: (message) => this.handleConnectionError(message),
-    });
+  const stop = () => {
+    disconnect?.();
+    disconnect = null;
+  };
 
-    return this;
-  }
+  return {
+    publicId,
+    connect: () => {
+      disconnect ??= connectPipelineStream(streamUrl(publicId), { onEvent, onError });
+    },
+    disconnect: stop,
+    getSnapshot: () => snapshot,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  };
+};
 
-  disconnect(): void {
-    this.disconnectStream?.();
-    this.disconnectStream = null;
-    this.connected = false;
-  }
-
-  getState(): Readonly<PipelineState> {
-    return this.state;
-  }
-
-  getConnectionError(): string | null {
-    return this.connectionError;
-  }
-
-  subscribe(listener: () => void): () => void {
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
-  }
-
-  private handleEvent(event: PipelineEvent): void {
-    const nextState = reducePipelineEvent(this.state, event);
-    if (nextState !== this.state) {
-      this.state = nextState;
-      this.connectionError = null;
-      this.emit();
-    }
-
-    if (nextState.runStatus === "done" || nextState.runStatus === "error") {
-      this.disconnect();
-    }
-  }
-
-  private handleConnectionError(message: string): void {
-    if (
-      this.state.runStatus === "done" ||
-      this.state.runStatus === "error" ||
-      this.connectionError === message
-    ) {
-      return;
-    }
-    this.connectionError = message;
-    this.emit();
-  }
-
-  private emit(): void {
-    for (const listener of this.listeners) {
-      listener();
-    }
-  }
-}
+export type Pipeline = ReturnType<typeof createPipeline>;

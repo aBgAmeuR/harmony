@@ -16,12 +16,12 @@ import { Skeleton } from "@harmony/ui/components/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import type { ReleaseYearPoint } from "@/data/listening/types";
-
+import { seriesOf } from "@/entities/measure";
 import { DataFigure } from "@/features/data-figure";
-import { seriesOf } from "@/shared/lib/chart-series";
 import { Section } from "@/shared/primitives/section";
 import { useScope } from "@/shared/scope";
+
+import type { ReleaseYearPoint } from "./api";
 
 import { listeningQueries } from "./api";
 import { SectionPending } from "./ui/section-pending";
@@ -204,9 +204,7 @@ const ReleaseChart = ({ years, median, decades }: ReleaseChartProps) => {
 // When the music you play came out.
 export const ReleaseYearWidget = () => {
   const filter = useScope();
-  const { data: rows = NO_YEARS, isPending } = useQuery(
-    listeningQueries.releaseYear.queryOptions(filter),
-  );
+  const { data: rows = NO_YEARS, isPending } = useQuery(listeningQueries.releaseYear(filter));
 
   const years = useMemo(() => fillYears(rows), [rows]);
   const since = halfSince(years);

@@ -38,7 +38,7 @@ pub fn file(blob: &impl Blob, name: &str, public_url: Option<&str>) -> Result<Bo
         Err(IdError::Length | IdError::Alphabet) => return Err(HttpError::Missing),
     };
     if let Some(root) = public_root(public_url) {
-        return Ok(Body::Redirect(format!("{root}/{}.duckdb", id.as_str())));
+        return Ok(Body::Redirect(format!("{root}/{}", id.file_name())));
     }
     match blob.get(id) {
         Ok(artifact) => Ok(Body::File(artifact)),

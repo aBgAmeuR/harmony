@@ -1,7 +1,6 @@
 //! Turn hits into a catalog of listens. A missing album or image does not fail the job.
 
 mod albums;
-mod thumbnail;
 mod tracks;
 
 use std::time::Instant;
@@ -14,8 +13,6 @@ use domain::ports::{Lookup, LookupError};
 use domain::stage::Stage;
 
 use crate::live::{self, Live};
-
-pub use thumbnail::data_url;
 
 /// `load` failed while filling tracks or albums.
 #[derive(Debug, thiserror::Error)]

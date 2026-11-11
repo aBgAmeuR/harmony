@@ -1,6 +1,6 @@
 //! Types the pipeline consumes and produces.
 //!
-//! `pipeline`, `adapters`, and `http` depend on this crate. It depends on none of them.
+//! Every other crate depends on this one. It depends on none of them.
 
 pub mod artifact;
 pub mod catalog;

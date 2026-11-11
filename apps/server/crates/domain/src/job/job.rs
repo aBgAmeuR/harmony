@@ -116,7 +116,7 @@ impl Pending {
         self.wall
     }
 
-    /// Fields `package_meta` stores. The SQL writes `completed` itself.
+    /// Fields `package_meta` stores, with the ready status.
     #[must_use]
     pub fn package(&self) -> Package {
         Package::new(self.id, self.name.clone(), self.size, self.at)

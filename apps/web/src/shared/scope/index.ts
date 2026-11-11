@@ -2,6 +2,7 @@ export { useArtistStore, type PickedArtist } from "./artist";
 export {
   buildInstantRangeQuery,
   commitDateRangeDraft,
+  showPeriod,
   snapshotDateRangeDraft,
   useDateRangeStore,
   usePeriod,

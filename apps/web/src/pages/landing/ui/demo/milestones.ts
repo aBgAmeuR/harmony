@@ -1,4 +1,4 @@
-import type { TimelineEvent } from "@/data/milestones/types";
+import type { TimelineEvent } from "@/widgets/milestones/api";
 
 const cover = (id: string) => `/landing/covers/m-${id}.webp`;
 

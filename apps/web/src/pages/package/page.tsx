@@ -32,18 +32,15 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/tooltip";
 import { cn } from "@harmony/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { Pipeline } from "@/entities/package";
 import { packageQueries } from "@/entities/package";
+import { format } from "@/shared/lib/format";
 import { Grid } from "@/shared/primitives/grid";
 import { Pane } from "@/shared/primitives/pane";
 import { Section } from "@/shared/primitives/section";
 import { Stat } from "@/shared/primitives/stat";
-import { format } from "@/utils/format";
-
-const periodQuery = packageQueries.period.queryOptions();
 
 type PackageHeaderProps = {
   pkg: { fileName: string; status: string; id: string };
@@ -136,9 +133,8 @@ const missedTrackCount = (steps: PipelineStep[]): number | undefined => {
 };
 
 export const PackagePage = () => {
-  const { packageId } = useParams({ from: "/app/$packageId/package" });
-  const { data } = useQuery(packageQueries.meta.queryOptions(packageId));
-  const { data: period } = useQuery(periodQuery);
+  const { data } = useQuery(packageQueries.meta());
+  const { data: period } = useQuery(packageQueries.period());
 
   if (!data) return null;
 
@@ -194,15 +190,6 @@ export const PackagePage = () => {
           <Section.Title>Pipeline</Section.Title>
           <Pipeline steps={data.steps} />
         </Section>
-
-        {/* {details?.failure ? (
-        <section className="space-y-2">
-          <h2 className="mb-3 text-xs font-semibold text-destructive">Failure</h2>
-          <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
-            {details.failure.message}
-          </div>
-        </section>
-      ) : null} */}
 
         <PackageHeaderSection
           pkg={{

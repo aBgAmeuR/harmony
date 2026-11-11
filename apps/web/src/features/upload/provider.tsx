@@ -8,7 +8,7 @@ import {
   saveUploadSession,
   scheduleSessionClear,
 } from "./lib/session";
-import { stepAt, stepIndex, type Step, type UploadPhase } from "./types";
+import { minStep, stepAt, stepIndex, type Step, type UploadPhase } from "./types";
 
 const DEFAULT_CARD_HEIGHT = 360;
 
@@ -58,33 +58,30 @@ export const UploadProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   const actions = useMemo<UploadActions>(() => {
-    const minStep = (locked: boolean): Step => (locked ? "deploy" : "package");
-
     const goTo = (step: Step) => {
       setState((prev) => {
         const current = stepIndex(prev.step);
         const target = stepIndex(step);
-        const min = stepIndex(minStep(prev.locked));
+        const min = minStep(prev.locked);
         if (target > current) return prev;
         if (target < min) return prev;
         return { ...prev, step };
       });
     };
 
-    const startDeploy = () => {
-      setState((prev) => {
-        if (!prev.file || prev.selection.length === 0) return prev;
-        return {
-          ...prev,
-          step: "deploy",
-          locked: true,
-          publicId: null,
-          phase: "idle",
-          error: null,
-          deployAttempt: prev.deployAttempt + 1,
-        };
-      });
-    };
+    // A new upload of the chosen files, from the files step or as a retry.
+    const deployed = (prev: UploadState): UploadState =>
+      !prev.file || prev.selection.length === 0
+        ? prev
+        : {
+            ...prev,
+            step: "deploy",
+            locked: true,
+            publicId: null,
+            phase: "idle",
+            error: null,
+            deployAttempt: prev.deployAttempt + 1,
+          };
 
     return {
       setFile: (file) => {
@@ -107,18 +104,7 @@ export const UploadProvider = ({ children }: PropsWithChildren) => {
           const nextStep = stepAt(current + 1);
           if (!nextStep) return prev;
 
-          if (prev.step === "files" && nextStep === "deploy") {
-            if (!prev.file || prev.selection.length === 0) return prev;
-            return {
-              ...prev,
-              step: "deploy",
-              locked: true,
-              publicId: null,
-              phase: "idle",
-              error: null,
-              deployAttempt: prev.deployAttempt + 1,
-            };
-          }
+          if (nextStep === "deploy") return deployed(prev);
 
           if (prev.step === "deploy" && nextStep === "stats") {
             clearUploadSession();
@@ -140,7 +126,7 @@ export const UploadProvider = ({ children }: PropsWithChildren) => {
       back: () => {
         setState((prev) => {
           const current = stepIndex(prev.step);
-          const min = stepIndex(minStep(prev.locked));
+          const min = minStep(prev.locked);
           if (current <= min) return prev;
           const prevStep = stepAt(current - 1);
           if (!prevStep) return prev;
@@ -150,9 +136,7 @@ export const UploadProvider = ({ children }: PropsWithChildren) => {
 
       goTo,
 
-      deploy: startDeploy,
-
-      retry: startDeploy,
+      deploy: () => setState(deployed),
 
       reset: () => {
         clearUploadSession();

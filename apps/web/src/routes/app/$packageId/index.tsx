@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { parseTrack } from "@/entities/track";
+import { parseTrack } from "@/features/track-panel";
 import { loadOverview } from "@/pages/overview/load";
 import { OverviewPage } from "@/pages/overview/page";
 

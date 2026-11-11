@@ -11,8 +11,6 @@ pub enum HttpError {
     Files(String),
     #[error(transparent)]
     Zip(#[from] SourceError),
-    #[error("could not allocate a package id")]
-    Taken,
     #[error("not found")]
     Missing,
 }
@@ -22,7 +20,7 @@ impl HttpError {
     #[must_use]
     pub const fn status(&self) -> u16 {
         match self {
-            Self::NoFile | Self::Files(_) | Self::Zip(_) | Self::Taken => 400,
+            Self::NoFile | Self::Files(_) | Self::Zip(_) => 400,
             Self::Missing => 404,
         }
     }

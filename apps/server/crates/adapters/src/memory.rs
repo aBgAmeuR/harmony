@@ -1,4 +1,4 @@
-//! In-memory [`Lookup`](domain::ports::Lookup). `find` uses the same 0.8 rule as Deezer will.
+//! In-memory [`Lookup`](domain::ports::Lookup) for tests. `find` picks with the same rule as Deezer.
 
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -83,6 +83,15 @@ impl Lookup for Memory {
         }
         let artists = artists_for(&self.catalog, &tracks, &albums);
         Ok(Catalog::new(artists, albums, tracks, Vec::new()))
+    }
+
+    // Searches only: loads are not counted.
+    fn calls(&self) -> u64 {
+        self.finds()
+    }
+
+    fn retries(&self) -> u64 {
+        0
     }
 }
 

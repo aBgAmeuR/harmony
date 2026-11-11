@@ -3,10 +3,11 @@ import type { ReactNode } from "react";
 import { ClientOnly, Link, useNavigate } from "@tanstack/react-router";
 
 import { Media } from "@/shared/primitives/media";
+import { Meter } from "@/shared/primitives/meter";
+import { Num } from "@/shared/primitives/num";
 import { Rank } from "@/shared/primitives/rank";
 import { Table } from "@/shared/primitives/table";
 import { ReleasesLine } from "@/widgets/discoveries/releases-chart";
-import { Measure } from "@/widgets/explorer/table";
 import { ListeningShares } from "@/widgets/listening/how-you-listen";
 import { MilestonesTimeline } from "@/widgets/milestones/timeline";
 import { KpiOverview } from "@/widgets/overview/kpi-overview";
@@ -87,7 +88,10 @@ const ExplorerTile = () => {
               </Media>
             </Table.Cell>
             <Table.Cell className="pr-3">
-              <Measure row={row} sort="playtime" value="playtime" max={max} />
+              <div className="flex flex-col items-end gap-1">
+                <Num value={row.playtime} kind="minutes" />
+                <Meter value={row.playtime} max={max} size="xs" />
+              </div>
             </Table.Cell>
           </Table.Row>
         ))}

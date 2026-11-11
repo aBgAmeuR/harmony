@@ -41,11 +41,6 @@ export const appNav = {
       href: "/listening",
       icon: Chart03Icon,
     },
-    // {
-    //   title: "Personality",
-    //   href: "#",
-    //   icon: SparklesIcon,
-    // },
     {
       title: "Discoveries",
       href: "/discoveries",

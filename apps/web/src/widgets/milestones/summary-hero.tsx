@@ -1,19 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { ArtistsSelect } from "@/features/pick-artist";
+import { format } from "@/shared/lib/format";
 import { Lede } from "@/shared/primitives/lede";
 import { useScope } from "@/shared/scope";
 
 import { milestoneQueries } from "./api";
-import { formatLongDate, heroHeadline, nextMilestoneCopy } from "./format";
+import { heroHeadline, nextMilestoneCopy } from "./format";
 
 export const SummaryHero = () => {
   const filter = useScope();
-  const { data } = useQuery(milestoneQueries.summary.queryOptions(filter));
-  const { data: bars = [] } = useQuery(milestoneQueries.nextMilestones.queryOptions(filter));
+  const { data } = useQuery(milestoneQueries.summary(filter));
+  const { data: bars = [] } = useQuery(milestoneQueries.next(filter));
 
   // The mark closest to being reached.
-  const next = bars.filter((bar) => !bar.reached).sort((a, b) => b.percent - a.percent)[0];
+  const next = bars.filter((bar) => !bar.reached).sort((a, b) => b.progress - a.progress)[0];
   const copy = next ? nextMilestoneCopy(next) : null;
 
   return (
@@ -22,7 +23,7 @@ export const SummaryHero = () => {
         <ArtistsSelect />
         {data ? (
           <span>
-            {data.rangeStart ? `Since ${formatLongDate(data.rangeStart)}` : "Since the first play"}
+            {data.rangeStart ? `Since ${format.longDate(data.rangeStart)}` : "Since the first play"}
           </span>
         ) : null}
       </Lede.Kicker>

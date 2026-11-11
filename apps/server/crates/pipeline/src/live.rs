@@ -51,26 +51,6 @@ impl<'a> Live<'a> {
     pub fn set_misses(&mut self, misses: u64) {
         self.report.set_misses(misses);
     }
-
-    #[must_use]
-    pub const fn calls(&self) -> u64 {
-        self.report.calls()
-    }
-
-    #[must_use]
-    pub const fn retries(&self) -> u64 {
-        self.report.retries()
-    }
-
-    #[must_use]
-    pub const fn misses(&self) -> u64 {
-        self.report.misses()
-    }
-
-    #[must_use]
-    pub fn ms(&self) -> u64 {
-        self.report.ms()
-    }
 }
 
 pub(crate) fn millis(started: Instant) -> u64 {

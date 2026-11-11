@@ -147,11 +147,6 @@ impl Progress {
         }
     }
 
-    #[must_use]
-    pub fn interval(&self) -> Duration {
-        self.inner.interval
-    }
-
     pub fn open(&self, id: package::Id) {
         let Ok(mut runs) = self.inner.runs.lock() else {
             return;
@@ -439,11 +434,6 @@ mod tests {
     }
 
     #[test]
-    fn the_default_interval_is_one_second() {
-        assert_eq!(Progress::new().interval(), Duration::from_secs(1));
-    }
-
-    #[test]
     fn open_is_an_idle_snapshot_of_seven_steps() -> Result<(), Fixture> {
         let progress = Progress::new();
         let id = id()?;
@@ -559,7 +549,8 @@ mod tests {
         progress.open(id);
         let mut report = Report::new();
         report.push(Metric::new(Stage::Extract, 4, 1, 1, 0));
-        report.tally(8, 1, 2);
+        report.count_requests(8, 1);
+        report.set_misses(2);
         progress.push(id, Note::Done(report));
         let value = serde_json::to_value(progress.get(id).ok_or(Fixture::Missing)?)?;
 

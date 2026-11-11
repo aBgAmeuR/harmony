@@ -23,6 +23,7 @@ import { Route as AppPackageIdAlbumsIndexRouteImport } from './routes/app/$packa
 import { Route as AppPackageIdAlbumsAlbumIdRouteImport } from './routes/app/$packageId/albums/$albumId'
 import { Route as AppPackageIdArtistsIndexRouteImport } from './routes/app/$packageId/artists/index'
 import { Route as AppPackageIdArtistsArtistIdRouteImport } from './routes/app/$packageId/artists/$artistId'
+import { Route as AppPackageIdGenresGenreRouteImport } from './routes/app/$packageId/genres/$genre'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -97,6 +98,11 @@ const AppPackageIdArtistsArtistIdRoute =
     path: '/artists/$artistId',
     getParentRoute: () => AppPackageIdRoute,
   } as any)
+const AppPackageIdGenresGenreRoute = AppPackageIdGenresGenreRouteImport.update({
+  id: '/genres/$genre',
+  path: '/genres/$genre',
+  getParentRoute: () => AppPackageIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/app/$packageId/': typeof AppPackageIdIndexRoute
   '/app/$packageId/albums/$albumId': typeof AppPackageIdAlbumsAlbumIdRoute
   '/app/$packageId/artists/$artistId': typeof AppPackageIdArtistsArtistIdRoute
+  '/app/$packageId/genres/$genre': typeof AppPackageIdGenresGenreRoute
   '/app/$packageId/albums/': typeof AppPackageIdAlbumsIndexRoute
   '/app/$packageId/artists/': typeof AppPackageIdArtistsIndexRoute
 }
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/app/$packageId': typeof AppPackageIdIndexRoute
   '/app/$packageId/albums/$albumId': typeof AppPackageIdAlbumsAlbumIdRoute
   '/app/$packageId/artists/$artistId': typeof AppPackageIdArtistsArtistIdRoute
+  '/app/$packageId/genres/$genre': typeof AppPackageIdGenresGenreRoute
   '/app/$packageId/albums': typeof AppPackageIdAlbumsIndexRoute
   '/app/$packageId/artists': typeof AppPackageIdArtistsIndexRoute
 }
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/app/$packageId/': typeof AppPackageIdIndexRoute
   '/app/$packageId/albums/$albumId': typeof AppPackageIdAlbumsAlbumIdRoute
   '/app/$packageId/artists/$artistId': typeof AppPackageIdArtistsArtistIdRoute
+  '/app/$packageId/genres/$genre': typeof AppPackageIdGenresGenreRoute
   '/app/$packageId/albums/': typeof AppPackageIdAlbumsIndexRoute
   '/app/$packageId/artists/': typeof AppPackageIdArtistsIndexRoute
 }
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/app/$packageId/'
     | '/app/$packageId/albums/$albumId'
     | '/app/$packageId/artists/$artistId'
+    | '/app/$packageId/genres/$genre'
     | '/app/$packageId/albums/'
     | '/app/$packageId/artists/'
   fileRoutesByTo: FileRoutesByTo
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/app/$packageId'
     | '/app/$packageId/albums/$albumId'
     | '/app/$packageId/artists/$artistId'
+    | '/app/$packageId/genres/$genre'
     | '/app/$packageId/albums'
     | '/app/$packageId/artists'
   id:
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '/app/$packageId/'
     | '/app/$packageId/albums/$albumId'
     | '/app/$packageId/artists/$artistId'
+    | '/app/$packageId/genres/$genre'
     | '/app/$packageId/albums/'
     | '/app/$packageId/artists/'
   fileRoutesById: FileRoutesById
@@ -302,6 +314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPackageIdArtistsArtistIdRouteImport
       parentRoute: typeof AppPackageIdRoute
     }
+    '/app/$packageId/genres/$genre': {
+      id: '/app/$packageId/genres/$genre'
+      path: '/genres/$genre'
+      fullPath: '/app/$packageId/genres/$genre'
+      preLoaderRoute: typeof AppPackageIdGenresGenreRouteImport
+      parentRoute: typeof AppPackageIdRoute
+    }
   }
 }
 
@@ -315,6 +334,7 @@ interface AppPackageIdRouteChildren {
   AppPackageIdIndexRoute: typeof AppPackageIdIndexRoute
   AppPackageIdAlbumsAlbumIdRoute: typeof AppPackageIdAlbumsAlbumIdRoute
   AppPackageIdArtistsArtistIdRoute: typeof AppPackageIdArtistsArtistIdRoute
+  AppPackageIdGenresGenreRoute: typeof AppPackageIdGenresGenreRoute
   AppPackageIdAlbumsIndexRoute: typeof AppPackageIdAlbumsIndexRoute
   AppPackageIdArtistsIndexRoute: typeof AppPackageIdArtistsIndexRoute
 }
@@ -329,6 +349,7 @@ const AppPackageIdRouteChildren: AppPackageIdRouteChildren = {
   AppPackageIdIndexRoute: AppPackageIdIndexRoute,
   AppPackageIdAlbumsAlbumIdRoute: AppPackageIdAlbumsAlbumIdRoute,
   AppPackageIdArtistsArtistIdRoute: AppPackageIdArtistsArtistIdRoute,
+  AppPackageIdGenresGenreRoute: AppPackageIdGenresGenreRoute,
   AppPackageIdAlbumsIndexRoute: AppPackageIdAlbumsIndexRoute,
   AppPackageIdArtistsIndexRoute: AppPackageIdArtistsIndexRoute,
 }

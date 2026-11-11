@@ -22,9 +22,9 @@ import {
 } from "@harmony/charts/v4";
 import { useMemo } from "react";
 
-import type { Kind } from "@/utils/format";
+import type { Kind } from "@/shared/lib/format";
 
-import { format } from "@/utils/format";
+import { format } from "@/shared/lib/format";
 
 // One bucket of the period.
 export type SeriesPoint = { name: string; value: number };
@@ -42,7 +42,7 @@ type SeriesChartProps = {
   ariaLabel: string;
 };
 
-const CURRENT = "var(--chart-1)";
+const CURRENT = colors.primary;
 
 const mean = (values: number[]) =>
   values.length > 0 ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;

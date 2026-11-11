@@ -3,13 +3,14 @@ import { Button } from "@harmony/ui/components/button";
 import { Sheet, SheetClose, SheetContent, SheetTitle } from "@harmony/ui/components/sheet";
 import { Spinner } from "@harmony/ui/components/spinner";
 import { cn } from "@harmony/ui/lib/utils";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 
-import type { TrackDetails } from "@/data/tracks/get";
+import type { Item } from "@/data/items";
 
 import { trackQueries } from "@/entities/track";
+import { useTrackPanel } from "@/features/track-panel";
 import { Empty } from "@/shared/primitives/empty";
 import { Media } from "@/shared/primitives/media";
 import { Meta } from "@/shared/primitives/meta";
@@ -19,9 +20,8 @@ import { usePeriod } from "@/shared/scope";
 
 import { Interactions } from "./interactions";
 import { Overview } from "./overview";
-import { useTrackPanel } from "./use-track-panel";
 
-const TrackLinks = ({ track }: { track: TrackDetails }) => {
+const TrackLinks = ({ track }: { track: Item }) => {
   const { packageId } = useParams({ strict: false });
   if (!packageId) return null;
 
@@ -37,13 +37,13 @@ const TrackLinks = ({ track }: { track: TrackDetails }) => {
           {artist.name}
         </Link>
       ))}
-      {track.albumId !== null && track.albumName ? (
+      {track.album ? (
         <Link
           to="/app/$packageId/albums/$albumId"
-          params={{ packageId, albumId: String(track.albumId) }}
+          params={{ packageId, albumId: String(track.album.id) }}
           className="truncate underline-offset-2 hover:text-foreground hover:underline"
         >
-          {track.albumName}
+          {track.album.name}
         </Link>
       ) : null}
     </Meta>
@@ -51,22 +51,22 @@ const TrackLinks = ({ track }: { track: TrackDetails }) => {
 };
 
 // Nothing to chart when the track was not played in the period: say so instead of showing zeros.
-const TrackBody = ({ track }: { track: TrackDetails }) => {
+const TrackBody = ({ trackId, track }: { trackId: number; track: Item }) => {
   const { from, to } = usePeriod();
-  const { data } = useQuery(trackQueries.overview.queryOptions({ trackId: track.id, from, to }));
+  const { data } = useQuery(trackQueries.overview({ trackId, range: { from, to } }));
 
   if (data && data.streams === 0) {
     return <Empty className="py-8">“{track.name}” was not played in this period.</Empty>;
   }
 
-  return <Overview trackId={track.id} />;
+  return <Overview trackId={trackId} />;
 };
 
-const TrackDetailsView = ({ track }: { track: TrackDetails }) => {
+const TrackView = ({ trackId, track }: { trackId: number; track: Item }) => {
   // Each track opens on its overview.
   const [interactionsFor, setInteractionsFor] = useState<number | null>(null);
-  const showInteractions = interactionsFor === track.id;
-  const setShowInteractions = (show: boolean) => setInteractionsFor(show ? track.id : null);
+  const showInteractions = interactionsFor === trackId;
+  const setShowInteractions = (show: boolean) => setInteractionsFor(show ? trackId : null);
 
   return (
     <Pane className="h-full">
@@ -111,7 +111,7 @@ const TrackDetailsView = ({ track }: { track: TrackDetails }) => {
               </Media.Body>
             </Media>
             <Pane.Body className="px-4 pt-3">
-              <TrackBody track={track} />
+              <TrackBody trackId={trackId} track={track} />
             </Pane.Body>
             <div className="shrink-0 border-t border-border px-4 py-2">
               <Button
@@ -125,7 +125,7 @@ const TrackDetailsView = ({ track }: { track: TrackDetails }) => {
             </div>
           </div>
           <div className="w-1/2 overflow-hidden">
-            <Interactions trackId={track.id} enabled={showInteractions} />
+            <Interactions trackId={trackId} enabled={showInteractions} />
           </div>
         </div>
       </div>
@@ -137,15 +137,21 @@ const TrackDetailsView = ({ track }: { track: TrackDetails }) => {
 export const TrackSheet = () => {
   const { trackId, setTrack } = useTrackPanel();
   // The last track stays shown while the sheet slides out.
+  const [shown, setShown] = useState(trackId);
+  if (trackId !== undefined && trackId !== shown) setShown(trackId);
   const { data: track } = useQuery({
-    ...trackQueries.get.queryOptions(trackId ?? null),
-    placeholderData: keepPreviousData,
+    ...trackQueries.get(shown ?? 0),
+    enabled: shown !== undefined,
   });
 
   return (
     <Sheet open={trackId !== undefined} onOpenChange={(open) => !open && setTrack(undefined)}>
       <SheetContent side="right" showCloseButton={false}>
-        {track ? <TrackDetailsView track={track} /> : <TrackLoading />}
+        {track && shown !== undefined ? (
+          <TrackView trackId={shown} track={track} />
+        ) : (
+          <TrackLoading />
+        )}
       </SheetContent>
     </Sheet>
   );

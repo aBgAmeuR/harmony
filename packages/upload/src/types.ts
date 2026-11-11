@@ -62,10 +62,6 @@ export type PipelineEvent = {
   stats?: PipelineStats;
 };
 
-export type UploadConfig = {
-  baseUrl: string;
-};
-
 export type DeployInput = {
   file: File;
   selectedFiles: string[];
@@ -73,15 +69,6 @@ export type DeployInput = {
 
 export type DeployResult = {
   publicId: string;
-};
-
-export type UploadResponseBody = {
-  public_id: string;
-  status: string;
-};
-
-export type ServerConfigBody = {
-  max_upload_bytes: number;
 };
 
 export type ServerConfig = {

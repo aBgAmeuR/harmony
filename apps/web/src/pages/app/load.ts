@@ -1,12 +1,8 @@
-import { queryClient } from "@/app/query-client";
+import type { QueryClient } from "@tanstack/react-query";
+
 import { openFn } from "@/data/packages/open";
 
-let loadedPackageId: string | null = null;
-
-export const loadApp = async (packageId: string) => {
-  await openFn(packageId);
-
-  // Query keys are not scoped by package
-  if (loadedPackageId !== null && loadedPackageId !== packageId) queryClient.clear();
-  loadedPackageId = packageId;
+// Query keys do not name the package, so results of the previous one are dropped.
+export const loadApp = async (queryClient: QueryClient, packageId: string) => {
+  if (await openFn(packageId)) queryClient.clear();
 };

@@ -38,14 +38,10 @@ export function parsePipelineSnapshot(value: unknown): PipelineEvent {
   };
 }
 
+// The steps stored in `package_meta.steps`.
 export function parsePipelineSteps(value: unknown): PipelineStep[] {
-  if (Array.isArray(value)) {
-    return value.map(parseStep);
-  }
-  if (!isRecord(value) || !Array.isArray(value.steps)) {
-    throw new Error("package metadata steps are missing");
-  }
-  return value.steps.map(parseStep);
+  if (!Array.isArray(value)) throw new Error("package metadata steps are missing");
+  return value.map(parseStep);
 }
 
 function parseStep(value: unknown): PipelineStep {

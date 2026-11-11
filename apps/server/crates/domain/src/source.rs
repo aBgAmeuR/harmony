@@ -100,11 +100,6 @@ impl Source {
     }
 
     #[must_use]
-    pub fn files(&self) -> &Selection {
-        &self.files
-    }
-
-    #[must_use]
     pub fn into_parts(self) -> (String, Vec<u8>, Selection) {
         (self.name, self.bytes, self.files)
     }
@@ -125,7 +120,7 @@ mod tests {
 
         assert_eq!(source.name(), "history.zip");
         assert_eq!(source.bytes().len(), 8);
-        assert_eq!(source.files(), &Selection::All);
+        assert_eq!(source.into_parts().2, Selection::All);
         Ok(())
     }
 

@@ -2,15 +2,15 @@ import { Card } from "@harmony/ui/components/card";
 import { cn } from "@harmony/ui/lib/utils";
 import { useState } from "react";
 
-import type { ListeningStyleMetric, PlatformPoint } from "@/data/listening/types";
+import { format } from "@/shared/lib/format";
 
-import { format } from "@/utils/format";
+import type { PlatformPoint, StyleMetric } from "./api";
 
 export const percent = (value: number) => format.as(value, "percent");
 const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 
 // Share of the plays for one style metric, 0 when it is missing.
-export const shareOf = (style: ListeningStyleMetric[], key: ListeningStyleMetric["key"]) =>
+export const shareOf = (style: StyleMetric[], key: StyleMetric["key"]) =>
   style.find((metric) => metric.key === key)?.value ?? 0;
 
 type OutcomeKey = "finished" | "partial" | "skipped";
@@ -186,7 +186,7 @@ const DeviceBar = ({ devices }: { devices: Device[] }) => (
 );
 
 type ListeningSharesProps = {
-  style: ListeningStyleMetric[];
+  style: StyleMetric[];
   platforms: PlatformPoint[];
   className?: string;
 };
@@ -203,7 +203,7 @@ export const ListeningShares = ({ style, platforms, className }: ListeningShares
 );
 
 type HowYouListenCardProps = {
-  style: ListeningStyleMetric[];
+  style: StyleMetric[];
   platforms: PlatformPoint[];
   className?: string;
 };

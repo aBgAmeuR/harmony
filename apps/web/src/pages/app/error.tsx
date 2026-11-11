@@ -2,7 +2,7 @@ import { Alert02Icon, Icon, RefreshIcon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
 import { Link, type ErrorComponentProps } from "@tanstack/react-router";
 
-import { openErrorFn, openErrorKind, type OpenErrorKind } from "@/data/packages/open";
+import { openErrorKind, type OpenErrorKind } from "@/data/packages/open";
 
 import { AppFooter } from "./footer";
 
@@ -26,11 +26,10 @@ const contents = {
 } satisfies Record<OpenErrorKind, { title: string; description: string; showUpload: boolean }>;
 
 export const AppError = ({ error }: ErrorComponentProps) => {
-  const resolved = openErrorFn(error);
-  const kind = openErrorKind(resolved);
+  const kind = openErrorKind(error);
   const { title, showUpload } = contents[kind];
-  const description =
-    kind === "other" && resolved.message ? resolved.message : contents[kind].description;
+  const message = error instanceof Error ? error.message : "";
+  const description = kind === "other" && message ? message : contents[kind].description;
 
   return (
     <div className="relative flex min-h-screen items-center justify-center px-6">

@@ -1,4 +1,4 @@
-import type { Overview } from "@/data/overview/kpis";
+import type { Overview } from "@/data/overview";
 
 // The demo package's Overview for Jan 1 - Sep 25, 2026, by week, as `overviewFn` returns it.
 // Kept static so the landing renders the real widget without loading a database.
@@ -92,7 +92,6 @@ export const OVERVIEW_SAMPLE: Overview = {
   days: 268,
   labels: LABELS,
   ticks: TICKS,
-  prevLabels: LABELS,
   current: {
     from: "2026-01-01",
     to: "2026-09-25",

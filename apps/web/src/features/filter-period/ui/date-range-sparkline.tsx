@@ -3,11 +3,8 @@ import { cn } from "@harmony/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { memo, useEffect, useMemo } from "react";
 
-import type { MonthlyListen } from "@/data/interactions/types";
-
-import { interactionQueries } from "@/entities/interaction";
-import { isDateInRange } from "@/features/filter-period/lib";
-
+import { monthlyQuery, type MonthlyListen } from "../api";
+import { isDateInRange } from "../lib";
 import { useDateRangeDraftContext } from "./date-range-draft-context";
 
 type SparklineBarProps = {
@@ -40,7 +37,7 @@ export const DateRangeSparkline = ({ open, onDataLoaded }: DateRangeSparklinePro
   const { draftRange, selectMonthFromLabel } = useDateRangeDraftContext();
 
   const { data: monthlyListens, isLoading } = useQuery({
-    ...interactionQueries.monthlyListens.queryOptions(),
+    ...monthlyQuery(),
     enabled: open,
   });
 

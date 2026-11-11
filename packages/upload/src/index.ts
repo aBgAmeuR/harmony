@@ -1,28 +1,5 @@
-export { UploadClient } from "./client";
-export { UploadError } from "./errors";
-export { parsePipelineSnapshot, parsePipelineSteps } from "./parse";
-export { Pipeline } from "./pipeline";
-export {
-  createInitialPipelineState,
-  INITIAL_PIPELINE_STATE,
-  reducePipelineEvent,
-  STEP_LABELS,
-  STEP_ORDER,
-} from "./state";
-export type {
-  DeployInput,
-  DeployResult,
-  PipelineEvent,
-  PipelineRunStatus,
-  PipelineState,
-  PipelineStats,
-  PipelineStep,
-  ServerConfig,
-  ServerConfigBody,
-  StepId,
-  StepOutput,
-  StepProgress,
-  StepStatus,
-  UploadConfig,
-  UploadResponseBody,
-} from "./types";
+export { deploy, serverConfig } from "./client";
+export { isHistoryFile, normalizePath } from "./files";
+export { parsePipelineSteps } from "./parse";
+export { createPipeline, type Pipeline } from "./pipeline";
+export type { PipelineRunStatus, PipelineStep, StepId, StepOutput } from "./types";

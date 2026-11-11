@@ -1,2 +1,1 @@
-export { trackQueries } from "./api";
-export { parseTrack } from "./search";
+export { trackQueries, type Interaction } from "./api";

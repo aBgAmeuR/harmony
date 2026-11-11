@@ -183,17 +183,21 @@ pub(crate) struct Input {
 #[error("{0}")]
 pub(crate) struct ConfigError(String);
 
-fn parse_port(value: Option<&str>, problems: &mut Vec<String>) -> Option<u16> {
+/// `PORT`, 3000 when unset. The health probe reads it the same way.
+pub(crate) fn port_of(value: Option<&str>) -> Result<u16, String> {
     let Some(raw) = non_blank(value) else {
-        return Some(3000);
+        return Ok(3000);
     };
     match raw.trim().parse::<u16>() {
-        Ok(port) if port > 0 => Some(port),
-        _ => {
-            problems.push(format!("PORT is invalid: {}", raw.trim()));
-            None
-        }
+        Ok(port) if port > 0 => Ok(port),
+        _ => Err(format!("PORT is invalid: {}", raw.trim())),
     }
+}
+
+fn parse_port(value: Option<&str>, problems: &mut Vec<String>) -> Option<u16> {
+    port_of(value)
+        .map_err(|problem| problems.push(problem))
+        .ok()
 }
 
 fn parse_files(input: &Input, problems: &mut Vec<String>) -> Option<Files> {

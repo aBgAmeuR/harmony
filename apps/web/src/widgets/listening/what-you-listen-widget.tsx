@@ -3,11 +3,11 @@ import { cn } from "@harmony/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
-import type { GenreSegment } from "@/data/listening/types";
-
+import { format } from "@/shared/lib/format";
 import { Section } from "@/shared/primitives/section";
 import { useScope } from "@/shared/scope";
-import { format } from "@/utils/format";
+
+import type { GenreSegment } from "./api";
 
 import { listeningQueries } from "./api";
 import { SectionPending } from "./ui/section-pending";
@@ -174,9 +174,7 @@ const Genres = ({ genres }: { genres: GenreSegment[] }) => {
 
 export const WhatYouListenWidget = () => {
   const filter = useScope();
-  const { data: genres = NO_GENRES, isPending } = useQuery(
-    listeningQueries.genres.queryOptions(filter),
-  );
+  const { data: genres = NO_GENRES, isPending } = useQuery(listeningQueries.genres(filter));
   const genre = genres[0];
 
   if (isPending) {

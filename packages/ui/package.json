@@ -14,24 +14,17 @@
   },
   "dependencies": {
     "@base-ui/react": "catalog:ui",
+    "@harmony/icons": "workspace:*",
     "class-variance-authority": "catalog:tailwind",
     "clsx": "catalog:tailwind",
-    "cmdk": "catalog:ui",
-    "embla-carousel-react": "catalog:ui",
-    "input-otp": "catalog:ui",
-    "next-themes": "catalog:ui",
     "react": "catalog:react",
     "react-day-picker": "catalog:ui",
     "react-dom": "catalog:react",
-    "react-resizable-panels": "catalog:ui",
     "shadcn": "catalog:ui",
-    "sonner": "catalog:ui",
     "tailwind-merge": "catalog:tailwind",
-    "tw-animate-css": "catalog:tailwind",
-    "vaul": "catalog:ui"
+    "tw-animate-css": "catalog:tailwind"
   },
   "devDependencies": {
-    "@harmony/icons": "workspace:*",
     "@harmony/tailwind": "workspace:*",
     "@harmony/tsconfig": "workspace:*",
     "@tailwindcss/vite": "catalog:tailwind",

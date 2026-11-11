@@ -11,8 +11,7 @@
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "catalog:duckdb",
-    "apache-arrow": "catalog:duckdb",
-    "zustand": "catalog:app"
+    "apache-arrow": "catalog:duckdb"
   },
   "devDependencies": {
     "@harmony/tsconfig": "workspace:*",

@@ -1,4 +1,4 @@
-//! One worker. `open` wakes it. It claims a job, runs the pipeline, then puts the file.
+//! One worker. An upload wakes it. It claims a job, runs the pipeline, then puts the file.
 
 use std::sync::Arc;
 
@@ -38,7 +38,6 @@ impl Blob for Shelf {
     }
 }
 
-/// Shared by the routes and the worker.
 #[derive(Clone)]
 pub(crate) struct App {
     pub(crate) store: Arc<Store>,
@@ -64,19 +63,13 @@ pub(crate) async fn listen(app: App, mut stop: watch::Receiver<bool>) {
                         break;
                     }
                     let app = app.clone();
-                    let calls_at = app.deezer.calls();
-                    let retries_at = app.deezer.retries();
                     let handle = tokio::task::spawn_blocking(move || {
-                        let calls = app.deezer.calls().saturating_sub(calls_at);
-                        let retries = app.deezer.retries().saturating_sub(retries_at);
                         run_job(
                             app.store.as_ref(),
                             app.progress.as_ref(),
                             app.blob.as_ref(),
                             app.deezer.as_ref(),
                             job,
-                            calls,
-                            retries,
                         );
                     });
                     if handle.await.is_err() {
@@ -94,21 +87,26 @@ pub(crate) fn run_job(
     blob: &impl Blob,
     lookup: &(impl domain::ports::Lookup + Sync),
     job: Job<Running>,
-    calls: u64,
-    retries: u64,
 ) {
     let id = job.id();
+    // The lookup is shared across packages. One worker runs one job at a time, so this job's
+    // requests are the difference.
+    let (calls, retries) = (lookup.calls(), lookup.retries());
     let (source, pending) = job.split();
     let stamp = Stamp::new(pending.wall(), pending.began());
     let mut report = Report::new();
-    let path = std::env::temp_dir().join(format!("harmony-{id}.duckdb"));
+    // Not the S3 download cache, which uses `harmony-{id}.duckdb` in the same directory.
+    let path = std::env::temp_dir().join(format!("harmony-build-{id}.duckdb"));
     let outcome = {
         let mut live = Live::new(id, progress, &mut report);
         pipeline::run(source, &pending.package(), &stamp, &mut live, lookup, &path)
     };
     match outcome {
         Ok(artifact) => {
-            report.tally(calls, retries, report.misses());
+            report.count_requests(
+                lookup.calls().saturating_sub(calls),
+                lookup.retries().saturating_sub(retries),
+            );
             finish(store, progress, blob, pending, artifact, report);
         }
         Err(fail) => {
@@ -171,9 +169,8 @@ mod tests {
             Selection::All,
             1000,
         )?;
-        let opened = store.open(source)?;
         let progress = Progress::new();
-        progress.open(opened.id());
+        let opened = store.open(source, |id| progress.open(id))?;
         let job = store.claim().ok_or(Fixture::Missing)?;
         let lookup = Memory::ready(
             Vec::new(),
@@ -182,7 +179,7 @@ mod tests {
         let root = tempfile::tempdir().map_err(|_| Fixture::Missing)?;
         let blob = Fs::open(root.path())?;
 
-        run_job(&store, &progress, &blob, &lookup, job, 0, 0);
+        run_job(&store, &progress, &blob, &lookup, job);
 
         let settled = store.get(opened.id())?;
         assert_eq!(settled.state(), State::Failed);

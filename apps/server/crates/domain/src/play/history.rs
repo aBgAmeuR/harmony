@@ -19,21 +19,6 @@ impl History {
     }
 
     #[must_use]
-    pub fn plays(&self) -> &[Play] {
-        self.plays.as_slice()
-    }
-
-    #[must_use]
-    pub fn len(&self) -> usize {
-        self.plays.as_slice().len()
-    }
-
-    #[must_use]
-    pub fn is_empty(&self) -> bool {
-        self.plays.as_slice().is_empty()
-    }
-
-    #[must_use]
     pub fn into_plays(self) -> Vec<Play> {
         self.plays.into_vec()
     }

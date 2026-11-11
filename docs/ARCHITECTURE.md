@@ -45,75 +45,111 @@ with one extra layer, `data/`, that owns every DuckDB query. A layer imports onl
 from the layers below it.
 
 ```text
-routes/      TanStack file routes: head, loader, component → a page
+routes/      TanStack file routes: search validation, loader, component → a page
    ↓
 app/         providers, query client
    ↓
 pages/       one folder per route: page.tsx (composition) + load.ts (prefetch)
    ↓
-widgets/     self-contained blocks of a page (listening, milestones, track-details, app-nav…)
+widgets/     blocks used by pages: base (Notion-like views), item (item pages), page (shell),
+             app-nav, track-details, and the sections of each insight page
    ↓
-features/    user actions with their own state: filter-period, pick-artist, upload
+features/    user actions with their own state: filter-period, pick-artist, track-panel, upload,
+             data-figure (view switch and expand dialog of a figure)
    ↓
-entities/    business nouns: artist, track, album, package, interaction
+entities/    business nouns: artist, track, package, measure (chart series of a measure)
    ↓
-data/        SQL on DuckDB WASM, no React, no TanStack Query
+data/        the analytics engine: SQL on DuckDB WASM, no React
    ↓
-shared/      primitives (design system blocks) and scope (global filter state)
+shared/      primitives, lib (date, format, query) and scope (global filter state)
 ```
 
-### Data layer
+### Analytics engine
 
-Only `data/` imports `@harmony/duckdb`.
+Only `data/` imports `@harmony/duckdb`. Everything the app counts goes through it:
 
 ```text
-widget / page      useQuery(trackQueries.top.queryOptions(scope))
-      ↓
-entities/*/api.ts  queryOptions: query key + queryFn         (TanStack Query)
-widgets/*/api.ts   same, for aggregates that belong to a widget
-      ↓
-data/**/*Fn.ts     (params) => Promise<Row[]>, SQL string    (DuckDB WASM)
-      ↓
-@harmony/duckdb    package file loaded from /files/{id}.duckdb
+data/filter.ts    Filter = { from?, to?, rules[] }. A rule is a play field (artist, album artist,
+                  album, track, genre, platform, album type, release year, shuffle, skipped,
+                  offline) with is / not / > / <. `playsFrom` builds the FROM over
+                  `interactions i`, joining `tracks t` and `albums al` only when read.
+data/measures.ts  The only definition of each measure: streams, playtime (minutes), tracks,
+                  albums, artists, active days, skip / shuffle / offline / finished rates,
+                  completion, first and last play. Label and format kind included.
+data/aggregate.ts aggregate({ by, measures, filter }): one row per artist, track, album, genre,
+                  platform, release year, hour, day / week / month / year, or positional bucket.
+                  `fill` returns empty buckets, `over` splits each group by period.
+                  `totals` and `series` are the two common shapes. `unitFor` is the bucket rule.
+data/bases.ts     The bases (see below), their list query and trends.
+data/*.ts         Analyses that need their own SQL, built on `playsFrom`: overview, streak,
+                  milestones, items, track, releases, values (filter pickers), packages.
 ```
 
-- Every function in `data/` that runs a query ends with `Fn` (`rankFn`, `periodFn`).
-- `data/rank.ts` serves the artist, track and album rankings: `rankFn({ by, scope, sort, limit })`.
-- Query keys stay stable. They include the `Scope` they were built from.
+A widget never writes SQL: it builds query options with `query(name, fn)` from
+`shared/lib/query.ts`, whose key is the name plus the arguments (dates as days). A
+loader and a component that pass the same arguments share one cache entry. Keys do not
+name the package: the app loader clears the cache when another package opens.
+
+### Bases and views
+
+Every resource is a base with its own properties, like a Notion database:
+
+| Base    | Rows                                | Opens       |
+| ------- | ----------------------------------- | ----------- |
+| Artists | artists heard in the period         | artist page |
+| Tracks  | tracks, with album and release year | track panel |
+| Albums  | albums, with type and release year  | album page  |
+| Genres  | album genres                        | genre page  |
+| Plays   | every play                          | track panel |
+
+The Explorer shows the first four; Plays only feeds the track panel's history.
+
+`widgets/base/BaseView` shows a base as a ranked list or a gallery, in the period of the
+header. A list row has its rank and its change since the previous period, the item, a
+trend in bars, then the time listened with the sorted value under it; bars behind the
+rows and the rank changes can be turned off. A view can filter on play fields and on row
+properties (chips), search and sort. The Explorer picks the base next to the page title
+and keeps the view in the URL (`base`, `view`, `sort`, `desc`, `rules`, `q`, `bars`,
+`diffs`); switching base keeps what the new base supports. Item pages embed bases with a
+local view and a fixed rule (an artist page lists that artist's tracks and albums).
 
 ### Global scope
 
-`shared/scope` holds the state every query depends on:
+`shared/scope` holds the period and the picked artist:
 
 ```text
 Scope = { from: Date, to: Date, artistId?: number }
 
 features/filter-period ──writes──▶ period store   (localStorage "harmony:date-range")
 features/pick-artist   ──writes──▶ artist store   (localStorage "harmony-selected-artist")
+showPeriod(grain, day) ──writes──▶ period store   (a month or a year opened from a chart)
                                         │
                   useScope() / readScope() ◀── widgets, pages, loaders
 ```
 
-The period is a global filter kept in `localStorage`, not in the URL.
-`readScope()` is for loaders, `useScope()` for components.
+The period is a global filter kept in `localStorage`, not in the URL. `scopeFilter`
+turns a scope into a `Filter`. Listening, Milestones and Discoveries apply the picked
+artist; Overview and item pages use the period only; bases filter on artists with chips.
 
 ### Primitives
 
 `shared/primitives` holds composable blocks that know the product look but not the
 business: they never fetch and never import an entity.
 
-| Primitive | Parts                                                                  |
-| --------- | ---------------------------------------------------------------------- |
-| `Metric`  | `Metric.Value`, `Metric.Unit`                                          |
-| `Stat`    | value + unit, built on `Metric`                                        |
-| `Catalog` | `Head`, `Body`, `Col`, `Row`, `Cell`, `Pos`, `Item` (+ `CatalogTable`) |
-| `Pane`    | `Frame`, `Header`, `Title`, `Sep`, `Actions`, `Scroll`                 |
-| `Cover`   | image with fallback and optional blur                                  |
-| `Rank`    | position badge                                                         |
-| `Trend`   | sparkline                                                              |
+| Primitive | Parts                                      |
+| --------- | ------------------------------------------ |
+| `Pane`    | `Header`, `Title`, `Body`                  |
+| `Table`   | `Head`, `Col`, `Body`, `Row`, `Cell`       |
+| `Media`   | `Art`, `Body`, `Title`, `Sub`, `End`       |
+| `Section` | `Head`, `Title`, `Text`, `Action`          |
+| `Stat`    | `Label`, `Value`, `Hint`, `Aside`          |
+| `Meter`   | `Seg`                                      |
+| `Steps`   | `Item`, `Label`, `Time`                    |
+| `Lede`    | `Kicker`, `Title`, `Text`, `Em`, `Pending` |
 
-Others: `Icons`, `Loader`, `Pipeline`, `ViewModeToggle`. Entities map their data to
-primitives (an `ArtistRow` composes `Catalog.Item`), not the other way round.
+Others: `Art`, `Crumbs`, `Delta`, `Empty`, `Grid`, `Icons`, `Meta`, `Num`, `Rank`,
+`Spark`, `Toolbar`. Entities and widgets map their data to primitives, not the other
+way round.
 
 ### Conventions
 
@@ -122,7 +158,8 @@ primitives (an `ArtistRow` composes `Catalog.Item`), not the other way round.
   prerender (a chunk cycle between tslib and `@harmony/charts`).
 - Inside a slice, import siblings with relative paths. Across slices, use `@/`.
 - Routes stay thin. A new page is `pages/{name}/page.tsx` and `load.ts`, plus a route
-  file that wires `loader` and `component`.
+  file that wires `loader` and `component`, inside `widgets/page` `Page`.
+- Percentages are fractions between 0 and 1. Minutes stay unrounded until displayed.
 - Code style: `type` instead of `interface` (except `declare module` augmentation),
   `const name = () =>` instead of `function`, named exports only, Tailwind classes
   from `DESIGN.md` only.

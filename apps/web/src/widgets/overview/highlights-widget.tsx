@@ -8,15 +8,15 @@ import { cn } from "@harmony/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
-import type { Highlights } from "@/data/overview/highlights";
-import type { Range } from "@/data/overview/range";
+import type { Highlights } from "@/data/overview";
+import type { Range } from "@/shared/lib/date";
 
+import { parseDay } from "@/shared/lib/date";
+import { format } from "@/shared/lib/format";
 import { Art } from "@/shared/primitives/art";
 import { Section } from "@/shared/primitives/section";
-import { format } from "@/utils/format";
 
 import { overviewQueries } from "./api";
-import { shortDate } from "./format";
 import { useRanges } from "./use-range";
 
 type MomentProps = {
@@ -24,7 +24,7 @@ type MomentProps = {
   value: ReactNode;
   hint?: ReactNode;
   // The page that tells more, and its name on the link.
-  to: "./listening" | "./milestones" | "./discoveries" | "./tracks";
+  to: "./listening" | "./milestones" | "./discoveries" | "./explorer";
   more: string;
   children: ReactNode;
 };
@@ -45,6 +45,7 @@ const Moment = ({ label, value, hint, to, more, children }: MomentProps) => (
     <Link
       from="/app/$packageId"
       to={to}
+      search={to === "./explorer" ? { base: "tracks" } : {}}
       preload="intent"
       className="flex items-center justify-between border-t px-4 py-2.5 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
     >
@@ -56,7 +57,7 @@ const Moment = ({ label, value, hint, to, more, children }: MomentProps) => (
 
 // The month of the peak day as a calendar, Monday first, brighter where you listened more.
 const PeakMonth = ({ days, peak }: { days: Highlights["peakMonth"]; peak: string }) => {
-  const first = days[0] ? new Date(`${days[0].date}T00:00:00`) : null;
+  const first = days[0] ? parseDay(days[0].date) : null;
   // Empty cells before the first day, so each column is one weekday.
   const offset = first ? (first.getDay() + 6) % 7 : 0;
   const max = Math.max(0, ...days.map((day) => day.minutes));
@@ -73,7 +74,7 @@ const PeakMonth = ({ days, peak }: { days: Highlights["peakMonth"]; peak: string
       {days.map((day) => (
         <span
           key={day.date}
-          title={`${shortDate(day.date)} · ${format.as(day.minutes, "minutes")}`}
+          title={`${format.date(day.date)} · ${format.as(day.minutes, "minutes")}`}
           className={cn("h-3.5 rounded-sm", day.date === peak && "ring-2 ring-foreground")}
           style={{ backgroundColor: intensity(day.minutes, max) }}
         />
@@ -82,8 +83,7 @@ const PeakMonth = ({ days, peak }: { days: Highlights["peakMonth"]; peak: string
   );
 };
 
-const time = (date: Date | string) =>
-  (typeof date === "string" ? new Date(`${date}T00:00:00`) : date).getTime();
+const time = (date: Date | string) => (typeof date === "string" ? parseDay(date) : date).getTime();
 
 const monthName = (date: Date) => date.toLocaleDateString("en-US", { month: "short" });
 
@@ -153,8 +153,8 @@ const NewDots = ({ share }: { share: number }) => {
 // Four moments of the period, each one a way into a page with the details.
 export const HighlightsWidget = () => {
   const { range, full } = useRanges();
-  const { data } = useQuery(overviewQueries.highlights.queryOptions(range));
-  const { data: kpis } = useQuery(overviewQueries.kpis.queryOptions(range, full));
+  const { data } = useQuery(overviewQueries.highlights(range));
+  const { data: kpis } = useQuery(overviewQueries.kpis({ range, full }));
 
   const artists = kpis?.current.totals.artists ?? 0;
 
@@ -173,7 +173,7 @@ export const HighlightsWidget = () => {
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <Moment
             label="Peak day"
-            value={data.peakDay ? shortDate(data.peakDay.date) : "-"}
+            value={data.peakDay ? format.date(data.peakDay.date) : "-"}
             hint={
               data.peakDay
                 ? `${format.as(data.peakDay.minutes, "minutes")} · ${format.count(data.peakDay.streams)} streams`
@@ -190,7 +190,7 @@ export const HighlightsWidget = () => {
             value={`${format.count(data.streak.days)} days in a row`}
             hint={
               data.streak.start && data.streak.end
-                ? `${shortDate(data.streak.start)} - ${shortDate(data.streak.end)}`
+                ? `${format.date(data.streak.start)} - ${format.date(data.streak.end)}`
                 : null
             }
             to="./milestones"
@@ -225,7 +225,7 @@ export const HighlightsWidget = () => {
             label="Most replayed"
             value={data.replayed?.name ?? "-"}
             hint={data.replayed?.description}
-            to="./tracks"
+            to="./explorer"
             more="All your tracks"
           >
             {data.replayed ? (

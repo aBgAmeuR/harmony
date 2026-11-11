@@ -11,11 +11,9 @@ import { SectionPending } from "./ui/section-pending";
 // Loads the plays' styles and devices, then draws them with `HowYouListenCard`.
 export const HowYouListenWidget = () => {
   const filter = useScope();
-  const { data: style = [], isPending: stylePending } = useQuery(
-    listeningQueries.listeningStyle.queryOptions(filter),
-  );
+  const { data: style = [], isPending: stylePending } = useQuery(listeningQueries.style(filter));
   const { data: platforms = [], isPending: platformsPending } = useQuery(
-    listeningQueries.platforms.queryOptions(filter),
+    listeningQueries.platforms(filter),
   );
 
   if (stylePending || platformsPending) {

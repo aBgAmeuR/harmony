@@ -13,18 +13,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 
+import { format } from "@/shared/lib/format";
+
 import { useUpload } from "../context";
-import { uploadQueries } from "../queries";
-
-const DEFAULT_MAX_ZIP_SIZE = 50 * 1024 * 1024;
-
-const formatBytes = (bytes: number): string => {
-  if (bytes < 1024) return `${bytes} B`;
-  const kb = bytes / 1024;
-  if (kb < 1024) return `${kb.toFixed(1)} KB`;
-  const mb = kb / 1024;
-  return `${mb.toFixed(1)} MB`;
-};
+import { serverConfigQuery } from "../queries";
 
 const isZipFile = (file: File): boolean => {
   return file.name.toLowerCase().endsWith(".zip");
@@ -35,8 +27,9 @@ export const UploadPackageStep = () => {
     state: { file },
     actions: { setFile, next },
   } = useUpload();
-  const { data: serverConfig } = useQuery(uploadQueries.serverConfig);
-  const maxZipSize = serverConfig?.maxUploadBytes ?? DEFAULT_MAX_ZIP_SIZE;
+  // Until the limit is known, the server is the one to refuse a file too large.
+  const { data: serverConfig } = useQuery(serverConfigQuery());
+  const maxZipSize = serverConfig?.maxUploadBytes;
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -48,8 +41,8 @@ export const UploadPackageStep = () => {
       setError("Please upload a .zip file.");
       return;
     }
-    if (nextFile.size > maxZipSize) {
-      setError(`File is too large. Maximum allowed size is ${formatBytes(maxZipSize)}.`);
+    if (maxZipSize !== undefined && nextFile.size > maxZipSize) {
+      setError(`File is too large. Maximum allowed size is ${format.bytes(maxZipSize)}.`);
       return;
     }
     setError(null);
@@ -122,8 +115,8 @@ export const UploadPackageStep = () => {
                 </span>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Supports <span className="font-mono">.zip</span> files up to{" "}
-                {formatBytes(maxZipSize)}
+                Supports <span className="font-mono">.zip</span> files
+                {maxZipSize !== undefined ? ` up to ${format.bytes(maxZipSize)}` : null}
               </p>
             </div>
           </Button>
@@ -133,7 +126,7 @@ export const UploadPackageStep = () => {
           {file ? (
             <div className="flex min-w-0 items-center gap-1 rounded-lg border px-3 py-1">
               <p className="flex-1 truncate text-sm font-medium text-foreground">{file.name}</p>
-              <p className="font-mono text-xs text-muted-foreground">{formatBytes(file.size)}</p>
+              <p className="font-mono text-xs text-muted-foreground">{format.bytes(file.size)}</p>
               <Button
                 type="button"
                 variant="ghost"

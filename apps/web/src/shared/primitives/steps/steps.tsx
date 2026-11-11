@@ -4,7 +4,7 @@ import { Icon, Cancel01Icon, Loading03Icon, Tick02Icon } from "@harmony/icons";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/tooltip";
 import { cn } from "@harmony/ui/lib/utils";
 
-import { format } from "@/utils/format";
+import { format } from "@/shared/lib/format";
 
 type Status = "pending" | "running" | "done" | "error";
 

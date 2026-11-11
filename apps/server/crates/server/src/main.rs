@@ -262,11 +262,10 @@ async fn upload(State(app): State<App>, mut multipart: Multipart) -> Response {
         Ok(source) => source,
         Err(err) => return http_error(&err),
     };
-    let package = match app.store.open(source) {
+    let package = match app.store.open(source, |id| app.progress.open(id)) {
         Ok(package) => package,
         Err(err) => return text(StatusCode::BAD_REQUEST, err.to_string()),
     };
-    app.progress.open(package.id());
     app.wake.notify_one();
     (
         StatusCode::ACCEPTED,
@@ -331,7 +330,7 @@ fn events(
         let (rx, next) = joined;
         let event = next?;
         let data = serde_json::to_string(&event).ok()?;
-        let sse = Event::default().event("pipeline").data(data);
+        let sse = Event::default().event(http::EVENT).data(data);
         Some((Ok(sse), rx))
     })
 }
@@ -417,16 +416,10 @@ async fn probe() -> Result<(), String> {
 }
 
 fn health_url(port: Option<&str>) -> Result<String, String> {
-    let port = match port.map(str::trim) {
-        None | Some("") => 3000,
-        Some(value) => value
-            .parse::<u16>()
-            .map_err(|_| format!("PORT is invalid: {value}"))?,
-    };
-    if port == 0 {
-        return Err("PORT is invalid: 0".to_owned());
-    }
-    Ok(format!("http://127.0.0.1:{port}/health"))
+    Ok(format!(
+        "http://127.0.0.1:{}/health",
+        config::port_of(port)?
+    ))
 }
 
 #[cfg(test)]

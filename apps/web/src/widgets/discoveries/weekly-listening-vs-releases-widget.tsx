@@ -10,18 +10,18 @@ import {
 } from "@harmony/ui/components/empty";
 import { useQuery } from "@tanstack/react-query";
 
-import type { ArtistRelease, WeeklyActivityPoint } from "@/data/discoveries/types";
-
 import { artistQueries } from "@/entities/artist";
 import { ArtistsSelect } from "@/features/pick-artist";
 import { useScope } from "@/shared/scope";
+
+import type { ReleaseMark, WeekPoint } from "./api";
 
 import { discoveryQueries } from "./api";
 import { ListeningVsReleasesChart } from "./releases-chart";
 
 // Stable empty lists, so charts are not rebuilt while the queries load.
-const NO_WEEKS: WeeklyActivityPoint[] = [];
-const NO_RELEASES: ArtistRelease[] = [];
+const NO_WEEKS: WeekPoint[] = [];
+const NO_RELEASES: ReleaseMark[] = [];
 
 const SelectArtistOverlay = () => {
   return (
@@ -52,16 +52,14 @@ export const WeeklyListeningVsReleasesWidget = () => {
   const hasArtist = filter.artistId != null;
 
   const { data: artists = [] } = useQuery({
-    ...artistQueries.top.queryOptions(filter),
+    ...artistQueries.top(filter),
     enabled: !hasArtist,
   });
   const artistId = filter.artistId ?? artists[0]?.id;
 
-  const { data: weekly = NO_WEEKS } = useQuery(
-    discoveryQueries.weeklyActivity.queryOptions({ ...filter, artistId }),
-  );
+  const { data: weekly = NO_WEEKS } = useQuery(discoveryQueries.weekly({ ...filter, artistId }));
   const { data: releases = NO_RELEASES } = useQuery(
-    discoveryQueries.artistReleases.queryOptions({ ...filter, artistId }),
+    discoveryQueries.releases({ ...filter, artistId }),
   );
 
   return (

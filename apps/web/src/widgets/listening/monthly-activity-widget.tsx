@@ -20,19 +20,22 @@ import {
   type Series,
 } from "@harmony/charts/v4";
 import { Skeleton } from "@harmony/ui/components/skeleton";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState, type ReactNode } from "react";
 
-import type { OverTimePoint, OverTimeUnit } from "@/data/listening/types";
+import type { Unit } from "@/data/aggregate";
 
-import { overTimeUnitFor } from "@/data/listening/over-time";
+import { unitFor } from "@/data/aggregate";
+import { measures } from "@/data/measures";
 import { FigureViews } from "@/features/data-figure";
-import { measure } from "@/shared/lib/measure";
+import { rangeDays } from "@/shared/lib/date";
+import { format } from "@/shared/lib/format";
 import { Section } from "@/shared/primitives/section";
 import { useScope } from "@/shared/scope";
-import { format } from "@/utils/format";
 
-import { listeningQueries } from "./api";
+import type { OverTime, Point } from "./api";
+
+import { listeningQueries, scopeKey } from "./api";
 import { SectionPending } from "./ui/section-pending";
 
 const UNITS = [
@@ -41,17 +44,16 @@ const UNITS = [
   { value: "month", label: "Month" },
 ];
 
-const isUnit = (value: string): value is OverTimeUnit =>
+const isUnit = (value: string): value is Unit =>
   value === "day" || value === "week" || value === "month";
 
-const WORDS: Record<OverTimeUnit, { noun: string; plural: string; adjective: string; on: string }> =
-  {
-    day: { noun: "day", plural: "days", adjective: "daily", on: "on" },
-    week: { noun: "week", plural: "weeks", adjective: "weekly", on: "in" },
-    month: { noun: "month", plural: "months", adjective: "monthly", on: "in" },
-  };
+const WORDS: Record<Unit, { noun: string; plural: string; adjective: string; on: string }> = {
+  day: { noun: "day", plural: "days", adjective: "daily", on: "on" },
+  week: { noun: "week", plural: "weeks", adjective: "weekly", on: "in" },
+  month: { noun: "month", plural: "months", adjective: "monthly", on: "in" },
+};
 
-const LINE = "var(--chart-1)";
+const LINE = colors.primary;
 // Above this many buckets, dots would crowd the line.
 const MAX_DOTS = 36;
 // Most labels the axis shows.
@@ -81,12 +83,7 @@ type Bucket = {
 };
 
 // A period over several calendar years adds the year to the names, so they stay unique.
-const toBuckets = (
-  points: OverTimePoint[],
-  last: string | null,
-  unit: OverTimeUnit,
-  years: boolean,
-): Bucket[] =>
+const toBuckets = (points: Point[], last: string | null, unit: Unit, years: boolean): Bucket[] =>
   points.map((point) => {
     const date = new Date(`${point.start}T00:00:00Z`);
     const year = years ? ` ${date.getUTCFullYear()}` : "";
@@ -153,7 +150,7 @@ const OverTimeChart = ({ buckets, covered, peak, average, ariaLabel }: OverTimeC
     const future = new Set(buckets.filter((b) => !b.covered).map((b) => b.name));
     const every = Math.ceil(names.length / MAX_TICKS);
     const series: Series = {
-      time: { label: measure.playtime.label, color: LINE, format: time },
+      time: { label: measures.playtime.label, color: LINE, format: time },
     };
 
     return defineChart({
@@ -288,18 +285,19 @@ const Chip = ({ label, children }: { label: string; children: ReactNode }) => (
   </li>
 );
 
-const NO_POINTS: OverTimePoint[] = [];
+const NO_POINTS: Point[] = [];
 
 // Listening time across the period, by day, week or month.
 export const MonthlyActivityWidget = () => {
   const filter = useScope();
   // The period picks the unit until the listener picks one.
-  const [picked, setPicked] = useState<OverTimeUnit | null>(null);
-  const unit = picked ?? overTimeUnitFor(filter.from, filter.to);
+  const [picked, setPicked] = useState<Unit | null>(null);
+  const unit = picked ?? unitFor(rangeDays(filter));
   const { data } = useQuery({
-    ...listeningQueries.overTime.queryOptions(filter, unit),
-    // The previous unit stays on screen while the next one loads.
-    placeholderData: keepPreviousData,
+    ...listeningQueries.overTime({ scope: filter, unit }),
+    // The previous unit stays on screen while the next one loads, not another period's data.
+    placeholderData: (previous: OverTime | undefined) =>
+      previous?.scope === scopeKey(filter) ? previous : undefined,
   });
 
   // Words follow the data on screen, which lags the picked unit while it loads.
@@ -357,7 +355,7 @@ export const MonthlyActivityWidget = () => {
           covered={covered}
           peak={peak}
           average={average}
-          ariaLabel={`${measure.playtime.label} by ${words.noun}`}
+          ariaLabel={`${measures.playtime.label} by ${words.noun}`}
         />
         <ul className="flex flex-wrap gap-2">
           <Chip label={`Best ${words.noun}`}>

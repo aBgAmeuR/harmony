@@ -30,16 +30,6 @@ impl Deezer {
             http: client::Http::open(mode)?,
         })
     }
-
-    #[must_use]
-    pub fn calls(&self) -> u64 {
-        self.http.calls()
-    }
-
-    #[must_use]
-    pub fn retries(&self) -> u64 {
-        self.http.retries()
-    }
 }
 
 impl Lookup for Deezer {
@@ -83,6 +73,14 @@ impl Lookup for Deezer {
         let albums = load_albums(self, &album_ids, &mut artists, &mut small)?;
         apply_pictures(self, &small, &mut artists);
         Ok(Catalog::new(artists, albums, tracks, Vec::new()))
+    }
+
+    fn calls(&self) -> u64 {
+        self.http.calls()
+    }
+
+    fn retries(&self) -> u64 {
+        self.http.retries()
     }
 }
 

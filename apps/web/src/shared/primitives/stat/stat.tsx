@@ -3,7 +3,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@harmony/ui/lib/utils";
 import { createContext, useContext } from "react";
 
-import type { Kind } from "@/utils/format";
+import type { Kind } from "@/shared/lib/format";
 
 import { Num, numSizes } from "../num";
 

@@ -5,9 +5,9 @@ import { PackagePage } from "@/pages/package/page";
 
 export const Route = createFileRoute("/app/$packageId/package")({
   ssr: false,
-  loader: async ({ context: { queryClient }, parentMatchPromise, params }) => {
+  loader: async ({ context: { queryClient }, parentMatchPromise }) => {
     await parentMatchPromise;
-    await loadPackage(queryClient, params.packageId);
+    await loadPackage(queryClient);
   },
   component: PackagePage,
 });

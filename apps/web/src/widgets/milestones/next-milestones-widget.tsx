@@ -1,16 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { format } from "@/shared/lib/format";
 import { Empty } from "@/shared/primitives/empty";
 import { Meter } from "@/shared/primitives/meter";
 import { Section } from "@/shared/primitives/section";
 import { useScope } from "@/shared/scope";
 
 import { milestoneQueries } from "./api";
-import { formatBarCurrent, formatCount, nextMilestoneCopy } from "./format";
+import { formatBarCurrent, nextMilestoneCopy } from "./format";
 
 export const NextMilestonesWidget = () => {
   const filter = useScope();
-  const { data = [], isPending } = useQuery(milestoneQueries.nextMilestones.queryOptions(filter));
+  const { data = [], isPending } = useQuery(milestoneQueries.next(filter));
   const upcoming = data.filter((bar) => !bar.reached);
 
   return (
@@ -30,9 +31,9 @@ export const NextMilestonesWidget = () => {
                   {` left before `}
                   <span>{target}</span>
                 </p>
-                <Meter value={bar.percent} size="sm" label={label} />
+                <Meter value={bar.progress} max={1} size="sm" label={label} />
                 <p className="text-end text-[10px] text-muted-foreground">
-                  {formatBarCurrent(bar)} / {formatCount(bar.target)}
+                  {formatBarCurrent(bar)} / {format.count(bar.target)}
                 </p>
               </div>
             );
