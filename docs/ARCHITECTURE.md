@@ -51,13 +51,13 @@ app/         providers, query client
    ↓
 pages/       one folder per route: page.tsx (composition) + load.ts (prefetch)
    ↓
-widgets/     blocks used by pages: base (Notion-like views), item (item pages), page (shell),
-             app-nav, track-details, and the sections of each insight page
+widgets/     blocks used by pages: base (Notion-like views), details (detail panel), page (shell),
+             app-nav, and the sections of each insight page
    ↓
-features/    user actions with their own state: filter-period, pick-artist, track-panel, upload,
+features/    user actions with their own state: filter-period, pick-artist, detail-panel, upload,
              data-figure (view switch and expand dialog of a figure)
    ↓
-entities/    business nouns: artist, track, package, measure (chart series of a measure)
+entities/    business nouns: artist, package, measure (chart series of a measure)
    ↓
 data/        the analytics engine: SQL on DuckDB WASM, no React
    ↓
@@ -82,7 +82,7 @@ data/aggregate.ts aggregate({ by, measures, filter }): one row per artist, track
                   `totals` and `series` are the two common shapes. `unitFor` is the bucket rule.
 data/bases.ts     The bases (see below), their list query and trends.
 data/*.ts         Analyses that need their own SQL, built on `playsFrom`: overview, streak,
-                  milestones, items, track, releases, values (filter pickers), packages.
+                  milestones, items, details, releases, values (filter pickers), packages.
 ```
 
 A widget never writes SQL: it builds query options with `query(name, fn)` from
@@ -94,24 +94,42 @@ name the package: the app loader clears the cache when another package opens.
 
 Every resource is a base with its own properties, like a Notion database:
 
-| Base    | Rows                                | Opens       |
-| ------- | ----------------------------------- | ----------- |
-| Artists | artists heard in the period         | artist page |
-| Tracks  | tracks, with album and release year | track panel |
-| Albums  | albums, with type and release year  | album page  |
-| Genres  | album genres                        | genre page  |
-| Plays   | every play                          | track panel |
+| Base    | Rows                                | Opens          |
+| ------- | ----------------------------------- | -------------- |
+| Artists | artists heard in the period         | artist details |
+| Tracks  | tracks, with album and release year | track details  |
+| Albums  | albums, with type and release year  | album details  |
+| Genres  | album genres                        | genre details  |
+| Plays   | every play                          | track details  |
 
-The Explorer shows the first four; Plays only feeds the track panel's history.
+The Explorer shows the first four; Plays only feeds the Plays tab of the detail panel.
 
 `widgets/base/BaseView` shows a base as a ranked list or a gallery, in the period of the
 header. A list row has its rank and its change since the previous period, the item, a
 trend in bars, then the time listened with the sorted value under it; bars behind the
-rows and the rank changes can be turned off. A view can filter on play fields and on row
+rows can be turned on and the rank changes turned off. A view can filter on play fields and on row
 properties (chips), search and sort. The Explorer picks the base next to the page title
 and keeps the view in the URL (`base`, `view`, `sort`, `desc`, `rules`, `q`, `bars`,
-`diffs`); switching base keeps what the new base supports. Item pages embed bases with a
-local view and a fixed rule (an artist page lists that artist's tracks and albums).
+`diffs`); switching base keeps what the new base supports. The detail panel embeds bases
+with a local view and a fixed rule (an artist lists their tracks and albums).
+
+### Detail panel
+
+A row of any base opens its details in a resizable panel on the right of the page, which
+keeps its place. `widgets/page/Page` owns the layout, so every page has the panel; on a
+phone it is a sheet over the page. There are no artist, album or genre pages: their old
+routes redirect to the Explorer with the panel open.
+
+`features/detail-panel` keeps the open details in the `detail` search param as a trail,
+such as `artist-12.track-5`: a row of a page starts a new trail, a link inside the panel
+adds to it, the back arrow drops the last one. The panel shows the last detail. The
+header button closes the panel and brings the last trail back. The panel's width is kept
+in `localStorage` (`harmony-detail-width`).
+
+`widgets/details` holds the content, in tabs: an overview, the bases narrowed to the item
+(tracks, albums, artists) and every play. Its figures follow the period of the header,
+except the "All time" block. Queries are in `widgets/details/api.ts`, their SQL in
+`data/details.ts`.
 
 ### Global scope
 
@@ -129,7 +147,7 @@ showPeriod(grain, day) ──writes──▶ period store   (a month or a year o
 
 The period is a global filter kept in `localStorage`, not in the URL. `scopeFilter`
 turns a scope into a `Filter`. Listening, Milestones and Discoveries apply the picked
-artist; Overview and item pages use the period only; bases filter on artists with chips.
+artist; Overview and the detail panel use the period only; bases filter on artists with chips.
 
 ### Primitives
 
@@ -214,7 +232,7 @@ it matches the web table.
 | `DATA_DIR/harmony/{id}.duckdb`  | Finished package, default storage                | Persists on the volume          |
 | S3-compatible bucket            | Same file, used when `S3_ENDPOINT` is set        | Persists in the bucket          |
 | `sessionStorage` in the browser | Upload session under `harmony:upload-session:v1` | Browser session                 |
-| `localStorage` in the browser   | Period, selected artist, pane layouts            | Until the user clears it        |
+| `localStorage` in the browser   | Period, selected artist, detail panel width      | Until the user clears it        |
 
 Every DuckDB file holds the tables `artists`, `albums`, `tracks`, `interactions`
 and `package_meta`, plus the view `v_tracks_info`. The DDL is in

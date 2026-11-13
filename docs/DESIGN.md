@@ -345,15 +345,15 @@ The system is based on a compact 4px/8px rhythm: {spacing.xs} for toolbar gaps, 
 
 ### Application Shell
 
-The app shell is a fixed two-panel frame. {components.app-sidebar} occupies {spacing.sidebar-expanded} (256px) when expanded and {spacing.sidebar-collapsed} (48px) when collapsed. The main content fills the remaining viewport. Catalog routes (Explorer, artist and album lists) stay full width so tables can use horizontal space. Insight routes (Overview, Listening Habits, Discoveries, Milestones, artist and album pages, My Package) read as one centered column: `Pane.Body width="column"`, capped at 768px (`max-w-3xl`) with a 16px side gutter.
+The app shell is a fixed two-panel frame. {components.app-sidebar} occupies {spacing.sidebar-expanded} (256px) when expanded and {spacing.sidebar-collapsed} (48px) when collapsed. The main content fills the remaining viewport. Catalog routes (Explorer) stay full width so tables can use horizontal space. Insight routes (Overview, Listening Habits, Discoveries, Milestones, My Package) read as one centered column: `Pane.Body width="column"`, capped at 768px (`max-w-3xl`) with a 16px side gutter.
 
 ### Page Structure
 
 Most package routes follow a two-tier structure:
 
-- A {components.app-header} bar reduced to the page title on the left and the period filter on the right. Page-level filters such as the artist picker sit at the top of the column, in the lede, not in the header.
+- A {components.app-header} bar reduced to the page title on the left and, on the right, the detail panel toggle and the period filter. Page-level filters such as the artist picker sit at the top of the column, in the lede, not in the header.
 - A primary content region that is either a {components.catalog-table}, a column of insight sections, an upload pipeline card, or an empty state.
-- Track details open in the right side panel (sheet); artists and albums open their own page.
+- Artist, album, track and genre details open in the {components.detail-panel} on the right of the content, under the header. The page keeps its place; there are no artist, album or genre pages.
 
 ### Grid & Rhythm
 
@@ -431,6 +431,8 @@ Use no drop shadow for ordinary dashboard panels, cards, tables, or widgets. Sub
 
 **`catalog-row`** - Clickable table row. Transparent by default, `{colors.surface-muted}` on hover, `{colors.foreground}` for title, `{colors.body}` for description, row border `{colors.hairline}`. Metrics are right-aligned with tabular numerals; title cells truncate rather than wrap.
 
+**`detail-panel`** - The details of an artist, album, track or genre, beside the page. Background `{colors.background}`, separated from the content by a 1px `{colors.hairline}` handle that turns `{colors.focus-ring}` on hover and while dragged. Resizable from 320px to 60% of the content, 440px by default, the width remembered. Top to bottom: a quiet row with the back arrow (only after opening a detail from another), the kind in `{typography.micro}` muted and the close button; the cover at 64px with the name and its links; line tabs (Overview, Tracks, Albums, Artists, Plays, as the kind allows); then the scrolling content with 16px gutters. The overview stacks {components.section} blocks: a two-by-two grid of figures, ruled rows of facts (label left, value right), short bar charts and ranked lists of five. On mobile it is a sheet over the page.
+
 **`catalog-thumbnail`** - Album/artist image treatment. 32px by 32px, rounded `{rounded.md}`, fallback surface `{colors.surface-muted}`, fallback icon `{colors.body}`. Actual image corners can be slightly tighter inside the avatar frame.
 
 **`rank-badge-gold`** - First-place rank indicator. Fill `{colors.rank-gold-fill}`, text `{colors.rank-gold-text}`, rounded `{rounded.md}`, at least 20px by 20px. Use only for rank 1.
@@ -449,12 +451,12 @@ Use no drop shadow for ordinary dashboard panels, cards, tables, or widgets. Sub
 
 ## Responsive Behavior
 
-| Name    |       Width | Key Changes                                                                                                                                             |
-| ------- | ----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Mobile  |     < 768px | Sidebar becomes a sheet at {spacing.sidebar-mobile}; the column takes the full width with a 16px gutter; split cards stack; tables scroll horizontally. |
-| Tablet  |  768-1024px | Sidebar can persist or collapse; moment cards and split cards go side by side; headers keep toolbar controls compact.                                   |
-| Desktop | 1024-1536px | Full {spacing.sidebar-expanded} sidebar, full catalog tables, four KPI tabs in a row.                                                                   |
-| Wide    |    > 1536px | Insight pages keep the 768px column centered; catalog routes may continue full width for table legibility.                                              |
+| Name    |       Width | Key Changes                                                                                                                                                                          |
+| ------- | ----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Mobile  |     < 768px | Sidebar becomes a sheet at {spacing.sidebar-mobile}; the column takes the full width with a 16px gutter; split cards stack; tables scroll horizontally; the detail panel is a sheet. |
+| Tablet  |  768-1024px | Sidebar can persist or collapse; moment cards and split cards go side by side; headers keep toolbar controls compact.                                                                |
+| Desktop | 1024-1536px | Full {spacing.sidebar-expanded} sidebar, full catalog tables, four KPI tabs in a row.                                                                                                |
+| Wide    |    > 1536px | Insight pages keep the 768px column centered; catalog routes may continue full width for table legibility.                                                                           |
 
 ### Touch Targets
 

@@ -247,7 +247,11 @@ const conditionSql = (base: Base, { prop, op, value }: Condition) => {
 const sortColumn = (base: Base, sort: string) =>
   sort === "name" || sort === "id" || Object.hasOwn(base.props, sort) ? `"${sort}"` : "id";
 
-const rankedSql = (base: Base, filter: Filter, query: ListQuery) => {
+const rankedSql = (
+  base: Base,
+  filter: Filter,
+  query: Pick<ListQuery, "conditions" | "sort" | "desc">,
+) => {
   const conditions = (query.conditions ?? []).flatMap((c) => conditionSql(base, c) ?? []);
   const direction = query.desc ? "DESC" : "ASC";
   return `
@@ -278,6 +282,50 @@ const listSql = (query: ListQuery) => {
 export const listFn = async (query: ListQuery): Promise<List> => {
   const rows = await db.query<ListRow & { total: number }>(listSql(query));
   return { base: query.base, rows, total: rows[0]?.total ?? 0 };
+};
+
+type RankRow = { rank: number; total: number; prevRank: number | null };
+
+export const rankFn = async ({
+  base,
+  id,
+  filter,
+  previous,
+}: {
+  base: BaseId;
+  id: number | string;
+  filter: Filter;
+  previous: Filter;
+}) => {
+  const by = { sort: "playtime", desc: true };
+  const [row] = await db.query<RankRow>(`
+    WITH cur AS (${rankedSql(bases[base], filter, by)}),
+      prev AS (${rankedSql(bases[base], previous, by)})
+    SELECT cur.rank, (SELECT COUNT(*) FROM cur)::INTEGER AS total, prev.rank AS "prevRank"
+    FROM cur LEFT JOIN prev ON prev.id = cur.id
+    WHERE cur.id = ${typeof id === "number" ? int(id) : text(id)}`);
+  return row ?? null;
+};
+
+export const rankTrendFn = async ({
+  base,
+  id,
+  filter,
+}: {
+  base: BaseId;
+  id: number | string;
+  filter: Filter;
+}) => {
+  const { by } = bases[base];
+  if (!by) return [];
+  return await db.query<{ label: string; rank: number }>(`
+    WITH ranked AS (
+      SELECT key, period, RANK() OVER (PARTITION BY period ORDER BY playtime DESC)::INTEGER AS rank
+      FROM (${aggregateSql({ by, measures: ["playtime"], filter, over: "month" })})
+    )
+    SELECT period AS label, rank FROM ranked
+    WHERE key = ${typeof id === "number" ? int(id) : text(id)}
+    ORDER BY period`);
 };
 
 type TrendPoint = { period: string; playtime: number; streams: number };

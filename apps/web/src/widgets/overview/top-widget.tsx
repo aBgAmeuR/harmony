@@ -37,11 +37,11 @@ const config = {
 } as const;
 
 type TopWidgetProps = {
-  selectedId?: number;
+  selected: (by: By, row: TopRow) => boolean;
   onOpen: (by: By, row: TopRow) => void;
 };
 
-export const TopWidget = ({ selectedId, onOpen }: TopWidgetProps) => {
+export const TopWidget = ({ selected, onOpen }: TopWidgetProps) => {
   const [by, setBy] = useState<By>("tracks");
   const { range } = useRanges();
   const { all, open, noun } = config[by];
@@ -136,7 +136,7 @@ export const TopWidget = ({ selectedId, onOpen }: TopWidgetProps) => {
                 {data.map((row, index) => (
                   <Table.Row
                     key={row.id}
-                    selected={by === "tracks" && row.id === selectedId}
+                    selected={selected(by, row)}
                     onSelect={() => onOpen(by, row)}
                   >
                     <Table.Cell className="text-center">

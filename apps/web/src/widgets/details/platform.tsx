@@ -12,8 +12,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/
 
 import { platformLabel } from "@/shared/lib/format";
 
-export const InteractionsPlatform = ({ platform }: { platform: string }) => {
-  const icon = platformIconMap[platform] ?? MoreHorizontalIcon;
+export const Platform = ({ platform }: { platform: string }) => {
+  const icon = icons[platform] ?? MoreHorizontalIcon;
   const platformName = platformLabel(platform);
 
   return (
@@ -26,7 +26,7 @@ export const InteractionsPlatform = ({ platform }: { platform: string }) => {
   );
 };
 
-const platformIconMap: Record<string, typeof LaptopIcon> = {
+const icons: Record<string, typeof LaptopIcon> = {
   web_player: LaptopIcon,
   android: AndroidIcon,
   ios: AppleIcon,

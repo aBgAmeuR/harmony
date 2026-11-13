@@ -1,37 +1,17 @@
-import { useNavigate, useParams } from "@tanstack/react-router";
-
 import type { ListRow, Opens } from "@/data/bases";
 
 import { UNKNOWN_ALBUM } from "@/data/aggregate";
-import { useTrackPanel } from "@/features/track-panel";
+import { useDetail } from "@/features/detail-panel";
 
 export const useOpen = () => {
-  const { packageId = "" } = useParams({ strict: false });
-  const navigate = useNavigate();
-  const { setTrack } = useTrackPanel();
+  const { open } = useDetail();
 
   return (opens: Opens, row: Pick<ListRow, "id" | "track">) => {
-    const id = String(row.id);
-    switch (opens) {
-      case "track":
-        void setTrack(Number(row.track ?? row.id));
-        return;
-      case "artist":
-        void navigate({
-          to: "/app/$packageId/artists/$artistId",
-          params: { packageId, artistId: id },
-        });
-        return;
-      case "album":
-        if (row.id === UNKNOWN_ALBUM) return;
-        void navigate({
-          to: "/app/$packageId/albums/$albumId",
-          params: { packageId, albumId: id },
-        });
-        return;
-      case "genre":
-        void navigate({ to: "/app/$packageId/genres/$genre", params: { packageId, genre: id } });
-        return;
+    if (opens === "genre") {
+      void open({ kind: opens, id: String(row.id) });
+      return;
     }
+    const id = Number(row.track ?? row.id);
+    if (id !== UNKNOWN_ALBUM) void open({ kind: opens, id });
   };
 };

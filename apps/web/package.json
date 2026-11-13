@@ -19,7 +19,6 @@
     "@tanstack/react-query": "catalog:tanstack",
     "@tanstack/react-router": "catalog:tanstack",
     "@tanstack/react-start": "catalog:tanstack",
-    "@tanstack/react-table": "catalog:tanstack",
     "@tanstack/react-virtual": "catalog:tanstack",
     "@tanstack/router-plugin": "catalog:tanstack",
     "fflate": "catalog:app",

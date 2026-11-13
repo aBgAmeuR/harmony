@@ -24,7 +24,6 @@ export type ViewState = {
   desc?: boolean;
   q?: string;
   rules?: ViewRule[];
-  // Bars behind the rows of a list, for the sorted value. On unless turned off.
   bars?: boolean;
   // The places won or lost under each rank. On unless turned off.
   diffs?: boolean;
@@ -49,7 +48,7 @@ const ruleOf = (value: unknown): ViewRule[] => {
 export const parseView = (raw: Record<string, unknown>) => ({
   base: oneOf(EXPLORER_BASES, raw.base),
   view: oneOf(["table", "gallery"] as const, raw.view),
-  bars: raw.bars === false ? false : undefined,
+  bars: raw.bars === true ? true : undefined,
   diffs: raw.diffs === false ? false : undefined,
   sort: typeof raw.sort === "string" ? raw.sort : undefined,
   desc: typeof raw.desc === "boolean" ? raw.desc : undefined,
@@ -78,7 +77,7 @@ export const resolveView = (state: ViewState, fallback: ExplorerBaseId = "artist
     desc: state.desc ?? base.defaults.desc,
     q: state.q ?? "",
     rules: state.rules ?? [],
-    bars: state.bars ?? true,
+    bars: state.bars ?? false,
     diffs: state.diffs ?? true,
   };
 };
