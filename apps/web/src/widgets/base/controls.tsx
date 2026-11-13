@@ -163,7 +163,7 @@ export const ViewMenu = ({ view, onChange }: Props) => (
       <DropdownMenuCheckboxItem
         disabled={view.view !== "table"}
         checked={view.bars}
-        onCheckedChange={(on) => onChange({ bars: on ? undefined : false })}
+        onCheckedChange={(on) => onChange({ bars: on ? true : undefined })}
         className="cursor-pointer"
       >
         Bars behind rows

@@ -1,17 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { parseTrack } from "@/features/track-panel";
-import { loadAlbum } from "@/pages/album/load";
-import { AlbumPage } from "@/pages/album/page";
+import { formatTrail } from "@/features/detail-panel";
 
 export const Route = createFileRoute("/app/$packageId/albums/$albumId")({
-  ssr: false,
-  validateSearch: (raw: Record<string, unknown>): { track?: number } => ({
-    track: parseTrack(raw.track),
-  }),
-  loader: async ({ context: { queryClient }, params, parentMatchPromise }) => {
-    await parentMatchPromise;
-    loadAlbum(queryClient, Number(params.albumId));
+  beforeLoad: ({ params: { packageId, albumId } }) => {
+    throw redirect({
+      to: "/app/$packageId/explorer",
+      params: { packageId },
+      search: { base: "albums", detail: formatTrail([{ kind: "album", id: Number(albumId) }]) },
+    });
   },
-  component: AlbumPage,
 });

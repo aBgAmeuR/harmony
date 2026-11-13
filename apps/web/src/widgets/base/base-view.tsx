@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Rule } from "@/data/filter";
 
 import { type ExplorerBaseId, type ListRow } from "@/data/bases";
+import { useDetail } from "@/features/detail-panel";
 import { Empty } from "@/shared/primitives/empty";
 import { usePeriod } from "@/shared/scope";
 
@@ -31,7 +32,6 @@ type BaseViewProps = {
   fixed?: readonly Rule[];
   page?: boolean;
   limit?: number;
-  selectedId?: number | string;
 };
 
 const SEARCH_DELAY = 200;
@@ -71,11 +71,11 @@ export const BaseView = ({
   fixed = [],
   page = false,
   limit: first = PAGE_SIZE,
-  selectedId,
 }: BaseViewProps) => {
   const view = resolveView(state, fallback);
   const period = usePeriod();
   const open = useOpen();
+  const { current } = useDetail();
   const inputRef = useRef<HTMLInputElement>(null);
 
   // The search box is local so typing stays smooth, the view follows once typing pauses.
@@ -118,7 +118,7 @@ export const BaseView = ({
 
   const openRow = (row: ListRow) => open(view.base.opens, row);
   const selectedOf = (row: ListRow) =>
-    view.base.opens === "track" && selectedId !== undefined && (row.track ?? row.id) === selectedId;
+    current?.kind === view.base.opens && current.id === (row.track ?? row.id);
 
   useRowKeys({
     enabled: page,

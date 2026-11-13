@@ -9,11 +9,21 @@ type ItemKind = "artist" | "album" | "track" | "genre";
 
 export type ItemRef = { kind: ItemKind; id: number | string };
 
+export const baseOf = {
+  artist: "artists",
+  album: "albums",
+  track: "tracks",
+  genre: "genres",
+} as const;
+
 export const itemRule = ({ kind, id }: ItemRef): Rule => ({
   field: kind,
   op: "is",
   value: kind === "genre" ? String(id) : Number(id),
 });
+
+export const albumsRule = (item: ItemRef): Rule =>
+  item.kind === "artist" ? { ...itemRule(item), field: "albumArtist" } : itemRule(item);
 
 type Named = { id: number; name: string };
 

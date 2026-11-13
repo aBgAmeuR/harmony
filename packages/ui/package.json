@@ -20,6 +20,7 @@
     "react": "catalog:react",
     "react-day-picker": "catalog:ui",
     "react-dom": "catalog:react",
+    "react-resizable-panels": "catalog:ui",
     "shadcn": "catalog:ui",
     "tailwind-merge": "catalog:tailwind",
     "tw-animate-css": "catalog:tailwind"
