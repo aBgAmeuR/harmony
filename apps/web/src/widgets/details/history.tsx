@@ -70,7 +70,7 @@ const Timeline = ({ item, filter }: PartProps) => {
   }, [data, first, last]);
 
   return (
-    <Card title="Timeline" caption={`${from.getFullYear()} · selected period in bright green`}>
+    <Card title="Timeline" caption={from.getFullYear()}>
       <span className="text-[10px] text-muted-foreground">Minutes</span>
       <Chart
         definition={definition}
@@ -175,7 +175,7 @@ const Month = ({ filter }: PartProps) => {
   const calendar = mode === "month";
 
   return (
-    <Card title={periodLabel(mode, from, to)} caption="time per day">
+    <Card title={periodLabel(mode, from, to)}>
       <div className={cn("flex gap-5", !calendar && "flex-col")}>
         <div
           className={cn(

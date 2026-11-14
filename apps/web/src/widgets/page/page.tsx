@@ -1,5 +1,3 @@
-import { Icon, SidebarRightIcon } from "@harmony/icons";
-import { Button } from "@harmony/ui/components/button";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -20,12 +18,13 @@ import { DetailPanel } from "@/widgets/details/panel";
 type PageProps = {
   title: ReactNode;
   width?: "column" | "full";
+  fill?: boolean;
   className?: string;
   children: ReactNode;
 };
 
-export const Page = ({ title, width = "column", className, children }: PageProps) => {
-  const { trail, show, close } = useDetail();
+export const Page = ({ title, width = "column", fill, className, children }: PageProps) => {
+  const { trail, close } = useDetail();
   const mobile = useIsMobile();
   const open = trail.length > 0;
   const [last, setLast] = useState(trail);
@@ -39,32 +38,28 @@ export const Page = ({ title, width = "column", className, children }: PageProps
 
   return (
     <Pane>
-      <Pane.Header>
-        <SidebarTrigger className="-ml-2 md:hidden" />
-        {typeof title === "string" ? <Pane.Title>{title}</Pane.Title> : title}
-        <Toolbar.End>
-          <Button
-            variant="ghost"
-            size="icon"
-            disabled={last.length === 0}
-            aria-pressed={open}
-            onClick={() => (open ? close() : show(last))}
-          >
-            <Icon icon={SidebarRightIcon} />
-            <span className="sr-only">Details</span>
-          </Button>
-          <DateRangeFilter />
-        </Toolbar.End>
-      </Pane.Header>
       <ResizablePanelGroup className="min-h-0 flex-1">
-        <ResizablePanel id="page" minSize="30%" className="flex flex-col">
-          <Pane.Body width={width} className={className}>
-            {children}
-          </Pane.Body>
+        <ResizablePanel id="page" minSize="30%">
+          <Pane.Surface>
+            <Pane.Header>
+              <SidebarTrigger className="-ml-2 md:hidden" />
+              {typeof title === "string" ? <Pane.Title>{title}</Pane.Title> : title}
+              <Toolbar.End>
+                <DateRangeFilter />
+              </Toolbar.End>
+            </Pane.Header>
+            {fill ? (
+              <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+            ) : (
+              <Pane.Body width={width} className={className}>
+                {children}
+              </Pane.Body>
+            )}
+          </Pane.Surface>
         </ResizablePanel>
         {(open || closing) && !mobile ? (
           <>
-            <ResizableHandle />
+            <ResizableHandle className="w-2 bg-transparent hover:bg-transparent" />
             <ResizablePanel
               id="detail"
               defaultSize={detailWidth.read()}
@@ -83,7 +78,9 @@ export const Page = ({ title, width = "column", className, children }: PageProps
                   event.target === event.currentTarget && setClosing(false)
                 }
               >
-                <DetailPanel item={last.at(-1)} />
+                <Pane.Surface>
+                  <DetailPanel item={last.at(-1)} />
+                </Pane.Surface>
               </div>
             </ResizablePanel>
           </>

@@ -1,7 +1,9 @@
-import { ArrowLeft01Icon, ArrowRight01Icon, Cancel01Icon, Icon } from "@harmony/icons";
+import { ArrowLeft01Icon, ArrowUpRight01Icon, Cancel01Icon, Icon } from "@harmony/icons";
 import { Button, buttonVariants } from "@harmony/ui/components/button";
+import { ScrollArea } from "@harmony/ui/components/scroll-area";
 import { Spinner } from "@harmony/ui/components/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@harmony/ui/components/tabs";
+import { cn } from "@harmony/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
@@ -27,9 +29,13 @@ import { History } from "./history";
 import { Overview } from "./overview";
 import { Plays } from "./plays";
 
-const Scroll = ({ value, children }: { value: string; children: ReactNode }) => (
+type ScrollProps = { value: string; flush?: boolean; children: ReactNode };
+
+const Scroll = ({ value, flush, children }: ScrollProps) => (
   <TabsContent value={value} className="flex min-h-0 flex-col">
-    <Pane.Body className="flex flex-col gap-3 px-4 pt-3 pb-12">{children}</Pane.Body>
+    <Pane.Body className={cn("flex flex-col gap-6 pb-12", flush ? "pt-1" : "px-3 pt-4")}>
+      {children}
+    </Pane.Body>
   </TabsContent>
 );
 
@@ -67,53 +73,25 @@ const DetailView = ({ item, tab, onTab }: DetailViewProps) => {
       onValueChange={(value) => onTab(String(value))}
       className="h-full min-h-0 gap-0"
     >
-      <header className="flex shrink-0 flex-col gap-2 border-b border-border px-4 pt-2 pb-1">
-        <div className="flex items-center gap-1">
-          {trail.length > 1 ? (
-            <Button variant="ghost" size="icon" className="-ml-2" onClick={back}>
-              <Icon icon={ArrowLeft01Icon} />
-              <span className="sr-only">Back</span>
-            </Button>
-          ) : null}
-          <span className="text-xs text-muted-foreground capitalize">
-            {info?.type ?? item.kind}
-          </span>
-          {item.kind === "track" ? null : (
-            <Link
-              to="/app/$packageId/explorer"
-              params={{ packageId }}
-              search={{
-                base: "tracks",
-                rules: [{ ...rule, label: info?.name }],
-                detail: formatTrail(trail),
-              }}
-              className={buttonVariants({ variant: "ghost", className: "ml-auto" })}
-            >
-              Open in Explorer
-              <Icon icon={ArrowRight01Icon} />
-            </Link>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={item.kind === "track" ? "-mr-2 ml-auto" : "-mr-2"}
-            onClick={close}
-          >
-            <Icon icon={Cancel01Icon} />
-            <span className="sr-only">Close</span>
-          </Button>
-        </div>
-        {info ? (
-          <>
-            <Media size="lg">
+      <header className="flex shrink-0 flex-col gap-1.5 pt-3">
+        <div className="flex items-start gap-3.5 px-3">
+          {info ? (
+            <Media size="lg" className="flex-1 items-start gap-3.5">
               <Media.Art
                 src={info.image}
+                placeholder={info.thumb}
                 alt={info.name}
                 variant="glow"
                 fallback={item.kind === "artist" ? "initials" : "icon"}
+                className="size-18"
               />
-              <Media.Body>
-                <Media.Title className="line-clamp-2 whitespace-normal">{info.name}</Media.Title>
+              <Media.Body className="pt-1">
+                <span className="text-xs text-muted-foreground capitalize">
+                  {info.type ?? item.kind}
+                </span>
+                <Media.Title className="line-clamp-2 text-xl font-bold whitespace-normal">
+                  {info.name}
+                </Media.Title>
                 <Media.Sub className="whitespace-normal">
                   <Meta>
                     {info.artists.map((artist) => (
@@ -141,14 +119,54 @@ const DetailView = ({ item, tab, onTab }: DetailViewProps) => {
                 </Media.Sub>
               </Media.Body>
             </Media>
-            <TabsList variant="line" className="-ml-1.5">
+          ) : (
+            <span className="flex-1" />
+          )}
+          <div className="-mr-1 flex">
+            {trail.length > 1 ? (
+              <Button variant="ghost" size="icon" onClick={back}>
+                <Icon icon={ArrowLeft01Icon} />
+                <span className="sr-only">Back</span>
+              </Button>
+            ) : null}
+            {item.kind === "track" ? null : (
+              <Link
+                to="/app/$packageId/explorer"
+                params={{ packageId }}
+                search={{
+                  base: "tracks",
+                  rules: [{ ...rule, label: info?.name }],
+                  detail: formatTrail(trail),
+                }}
+                className={buttonVariants({ variant: "ghost", size: "icon" })}
+              >
+                <Icon icon={ArrowUpRight01Icon} />
+                <span className="sr-only">Open in Explorer</span>
+              </Link>
+            )}
+            <Button variant="ghost" size="icon" onClick={close}>
+              <Icon icon={Cancel01Icon} />
+              <span className="sr-only">Close</span>
+            </Button>
+          </div>
+        </div>
+        {info ? (
+          <ScrollArea className="border-b border-border">
+            <TabsList
+              variant="line"
+              className="w-max min-w-full justify-start gap-3.5 rounded-none px-3 pb-1"
+            >
               {TABS[item.kind].map((value) => (
-                <TabsTrigger key={value} value={value} className="capitalize">
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="flex-none px-0 capitalize after:bg-primary"
+                >
                   {value}
                 </TabsTrigger>
               ))}
             </TabsList>
-          </>
+          </ScrollArea>
         ) : null}
       </header>
 
@@ -169,17 +187,17 @@ const DetailView = ({ item, tab, onTab }: DetailViewProps) => {
           <Scroll value="mix">
             <Mix {...part} />
           </Scroll>
-          <Scroll value="tracks">
+          <Scroll value="tracks" flush>
             {item.kind === "album" ? (
               <AlbumTracks albumId={item.id} />
             ) : (
               <List base="tracks" fixed={[rule]} />
             )}
           </Scroll>
-          <Scroll value="artists">
+          <Scroll value="artists" flush>
             <List base="artists" fixed={[rule]} />
           </Scroll>
-          <Scroll value="albums">
+          <Scroll value="albums" flush>
             <List base="albums" fixed={[albumsRule(item)]} />
           </Scroll>
           <TabsContent value="plays" className="flex min-h-0 flex-col">

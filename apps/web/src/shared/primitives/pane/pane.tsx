@@ -6,7 +6,18 @@ import { cn } from "@harmony/ui/lib/utils";
 const Root = ({ className, ...props }: ComponentProps<"div">) => (
   <div
     data-slot="pane"
-    className={cn("flex h-svh min-h-0 flex-col overflow-hidden", className)}
+    className={cn("flex h-svh min-h-0 flex-col overflow-hidden md:py-2 md:pr-2", className)}
+    {...props}
+  />
+);
+
+const Surface = ({ className, ...props }: ComponentProps<"div">) => (
+  <div
+    data-slot="pane-surface"
+    className={cn(
+      "flex h-full min-h-0 flex-col overflow-hidden bg-background md:rounded-md md:border md:border-border",
+      className,
+    )}
     {...props}
   />
 );
@@ -14,7 +25,7 @@ const Root = ({ className, ...props }: ComponentProps<"div">) => (
 const Header = ({ className, ...props }: ComponentProps<"header">) => (
   <header
     data-slot="pane-header"
-    className={cn("flex shrink-0 items-center gap-1 px-4 py-2", className)}
+    className={cn("flex shrink-0 items-center gap-1 px-3 py-2", className)}
     {...props}
   />
 );
@@ -25,7 +36,7 @@ const Title = ({ className, ...props }: ComponentProps<"h1">) => (
 
 const widths = {
   full: "",
-  column: "mx-auto max-w-3xl px-4 pt-4 pb-12",
+  column: "mx-auto max-w-3xl px-3 pt-4 pb-12",
 } as const;
 
 type BodyProps = ComponentProps<"div"> & {
@@ -38,4 +49,4 @@ const Body = ({ width = "full", className, ...props }: BodyProps) => (
   </ScrollArea>
 );
 
-export const Pane = Object.assign(Root, { Header, Title, Body });
+export const Pane = Object.assign(Root, { Surface, Header, Title, Body });

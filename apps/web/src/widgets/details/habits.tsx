@@ -19,7 +19,7 @@ const When = ({ filter }: PartProps) => {
   const max = Math.max(0, ...grid.flat());
 
   return (
-    <Card title="When you listen" caption="time by weekday and hour">
+    <Card title="When you listen">
       <div
         role="img"
         aria-label="Listening time by weekday and hour"
@@ -58,7 +58,7 @@ const Context = ({ filter }: PartProps) => {
     stats && rate !== undefined ? format.count(Math.round(rate * stats.streams)) : "-";
 
   return (
-    <Card title="Context" caption={`${stats ? format.count(stats.streams) : "-"} plays`}>
+    <Card title="Context">
       <div className="flex h-1.5 gap-0.5">
         {platforms.map(({ platform, share }, index) => (
           <span
@@ -93,7 +93,7 @@ const Context = ({ filter }: PartProps) => {
 const Streams = ({ filter }: PartProps) => {
   const { data: behavior } = useQuery(detailQueries.behavior(filter));
   return (
-    <Card title="Every 100 plays" caption="one square is 1%">
+    <Card title="Every 100 plays">
       <Units
         label="How plays end"
         parts={[

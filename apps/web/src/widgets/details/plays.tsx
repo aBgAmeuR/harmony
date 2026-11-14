@@ -58,7 +58,7 @@ export const Plays = ({ filter, named }: PlaysProps) => {
           return (
             <div
               key={play.id}
-              className="absolute inset-x-0 flex h-9 items-center gap-3 border-b border-border px-4 text-xs"
+              className="absolute inset-x-0 flex h-9 items-center gap-3 border-b border-border px-3 text-xs"
               style={{ transform: `translateY(${item.start}px)` }}
             >
               <span className="w-36 shrink-0 text-muted-foreground tabular-nums">

@@ -5,6 +5,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@harmony/ui/components/sidebar";
 import { cn } from "@harmony/ui/lib/utils";
 
@@ -18,6 +19,7 @@ type NavSectionProps = {
 };
 
 export const NavSection = ({ items, title, link }: NavSectionProps) => {
+  const { setOpenMobile } = useSidebar();
   return (
     <SidebarGroup>
       {title && <SidebarGroupLabel>{title}</SidebarGroupLabel>}
@@ -29,6 +31,7 @@ export const NavSection = ({ items, title, link }: NavSectionProps) => {
               size="sm"
               tooltip={item.title}
               isActive={link.isActive(item)}
+              onClick={() => setOpenMobile(false)}
               className={cn(
                 "text-sm",
                 link.isActive(item) ? "text-sidebar-accent-foreground" : "text-sidebar-foreground",
