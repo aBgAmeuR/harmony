@@ -2,17 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { packageQueries } from "@/entities/package";
-import { buildYearRange, parsePeriodBounds } from "@/features/filter-period/lib";
+import { parsePeriodBounds } from "@/features/filter-period/lib";
 
-export const useDateRangeBounds = (monthlyListenLabels?: string[]) => {
+export const useDateRangeBounds = () => {
   const { data: period } = useQuery(packageQueries.period());
 
-  const { minDate, maxDate } = useMemo(() => parsePeriodBounds(period), [period]);
-
-  const years = useMemo(
-    () => buildYearRange(period, monthlyListenLabels),
-    [period, monthlyListenLabels],
-  );
-
-  return { period, minDate, maxDate, years };
+  return useMemo(() => parsePeriodBounds(period), [period]);
 };

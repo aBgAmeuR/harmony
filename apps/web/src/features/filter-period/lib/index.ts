@@ -1,15 +1,16 @@
 export type { DateRangeBounds, DateRangeDraft } from "./types";
-export { buildYearRange, parsePeriodBounds } from "./bounds";
+export { parsePeriodBounds } from "./bounds";
 export {
   buildDraftRangePreview,
   commitDateRangeDraft,
-  parseMonthLabel,
+  draftFromRange,
   snapshotDateRangeDraft,
 } from "./draft";
 export {
   formatMonthYearLabel,
   formatShortDate,
-  isDateInRange,
+  formatRangeTitle,
+  monthEnd,
   parsePeriodDate,
   toIsoDate,
 } from "./format";

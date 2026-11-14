@@ -1,6 +1,8 @@
 import { Button } from "@harmony/ui/components/button";
 import { Dialog, DialogContent, DialogTrigger } from "@harmony/ui/components/dialog";
+import { Drawer, DrawerContent, DrawerTrigger } from "@harmony/ui/components/drawer";
 import { Spinner } from "@harmony/ui/components/spinner";
+import { useIsMobile } from "@harmony/ui/hooks/use-mobile";
 import { useQueryClient } from "@tanstack/react-query";
 import { Suspense, lazy, useCallback } from "react";
 
@@ -19,6 +21,7 @@ type DateRangeDialogProps = {
 
 export const DateRangeDialog = ({ open, onOpenChange, triggerLabel }: DateRangeDialogProps) => {
   const queryClient = useQueryClient();
+  const mobile = useIsMobile();
   const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   const prefetchDialogData = useCallback(() => {
@@ -27,29 +30,35 @@ export const DateRangeDialog = ({ open, onOpenChange, triggerLabel }: DateRangeD
     void loadPanel();
   }, [queryClient]);
 
+  const trigger = (
+    <Button variant="secondary" onMouseEnter={prefetchDialogData} onFocus={prefetchDialogData} />
+  );
+  const panel = (
+    <Suspense
+      fallback={
+        <div className="flex h-72 items-center justify-center">
+          <Spinner />
+        </div>
+      }
+    >
+      <DateRangePanel open={open} onClose={handleClose} />
+    </Suspense>
+  );
+
+  if (mobile) {
+    return (
+      <Drawer open={open} onOpenChange={onOpenChange}>
+        <DrawerTrigger render={trigger}>{triggerLabel}</DrawerTrigger>
+        <DrawerContent showSwipeHandle>{panel}</DrawerContent>
+      </Drawer>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger
-        render={
-          <Button
-            variant="secondary"
-            onMouseEnter={prefetchDialogData}
-            onFocus={prefetchDialogData}
-          />
-        }
-      >
-        {triggerLabel}
-      </DialogTrigger>
-      <DialogContent className="p-0" showCloseButton={false}>
-        <Suspense
-          fallback={
-            <div className="flex h-96 items-center justify-center">
-              <Spinner />
-            </div>
-          }
-        >
-          <DateRangePanel open={open} onClose={handleClose} />
-        </Suspense>
+      <DialogTrigger render={trigger}>{triggerLabel}</DialogTrigger>
+      <DialogContent className="gap-0 p-0 sm:max-w-xl" showCloseButton={false}>
+        {panel}
       </DialogContent>
     </Dialog>
   );

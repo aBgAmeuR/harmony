@@ -6,15 +6,13 @@ import { useMemo, useState } from "react";
 import { formatShortDate } from "@/features/filter-period/lib";
 
 type DateDropdownFieldProps = {
-  label: string;
-  value: Date | null;
+  value: Date;
   onChange: (date: Date) => void;
   disabledBefore?: Date;
   disabledAfter?: Date;
 };
 
 export const DateDropdownField = ({
-  label,
   value,
   onChange,
   disabledBefore,
@@ -30,31 +28,24 @@ export const DateDropdownField = ({
   }, [disabledBefore, disabledAfter]);
 
   return (
-    <div className="flex flex-1 flex-col gap-1">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-        <PopoverTrigger
-          render={
-            <Button type="button" variant="outline" className="w-full justify-start font-normal" />
-          }
-        >
-          {value ? formatShortDate(value) : "Pick a date"}
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={value ?? undefined}
-            defaultMonth={value ?? undefined}
-            disabled={disabledMatchers}
-            onSelect={(date) => {
-              if (date) {
-                onChange(date);
-                setPopoverOpen(false);
-              }
-            }}
-          />
-        </PopoverContent>
-      </Popover>
-    </div>
+    <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+      <PopoverTrigger render={<Button type="button" variant="ghost" className="font-normal" />}>
+        {formatShortDate(value)}
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={value}
+          defaultMonth={value}
+          disabled={disabledMatchers}
+          onSelect={(date) => {
+            if (date) {
+              onChange(date);
+              setPopoverOpen(false);
+            }
+          }}
+        />
+      </PopoverContent>
+    </Popover>
   );
 };

@@ -8,23 +8,3 @@ export const parsePeriodBounds = (period: PackagePeriod | null | undefined) => {
     maxDate: period?.endDate ? parsePeriodDate(period.endDate) : undefined,
   };
 };
-
-export const buildYearRange = (
-  period: PackagePeriod | null | undefined,
-  monthlyListenLabels?: string[],
-) => {
-  if (period?.startDate && period?.endDate) {
-    const startYear = parsePeriodDate(period.startDate).getFullYear();
-    const endYear = parsePeriodDate(period.endDate).getFullYear();
-    return Array.from({ length: endYear - startYear + 1 }, (_, index) => startYear + index);
-  }
-
-  if (monthlyListenLabels?.length) {
-    const yearSet = new Set(
-      monthlyListenLabels.map((label) => Number.parseInt(label.slice(0, 4), 10)),
-    );
-    return [...yearSet].sort((a, b) => a - b);
-  }
-
-  return [new Date().getFullYear()];
-};

@@ -1,29 +1,18 @@
 import { createContext, use, useCallback, useMemo, useState, type ReactNode } from "react";
 
-import type { DateRangeMode } from "@/shared/scope";
-
 import {
   buildDraftRangePreview,
   commitDateRangeDraft,
-  parseMonthLabel,
+  draftFromRange,
   snapshotDateRangeDraft,
-  toIsoDate,
   type DateRangeDraft,
 } from "@/features/filter-period/lib";
 
 type DateRangeDraftContextValue = {
   draft: DateRangeDraft;
   draftRange: ReturnType<typeof buildDraftRangePreview>;
-  draftCursor: Date;
-  draftCustomFrom: Date | null;
-  draftCustomTo: Date | null;
   isCustomIncomplete: boolean;
-  setMode: (mode: DateRangeMode) => void;
-  setCursorMonth: (date: Date) => void;
-  setCursorYear: (year: number) => void;
-  setCustomFrom: (date: Date) => void;
-  setCustomTo: (date: Date) => void;
-  selectMonthFromLabel: (label: string) => void;
+  setRange: (from: Date, to: Date) => void;
   commit: () => void;
 };
 
@@ -41,7 +30,6 @@ export const DateRangeDraftProvider = ({
   onClose,
 }: DateRangeDraftProviderProps) => {
   const [draft, setDraft] = useState<DateRangeDraft>(snapshotDateRangeDraft);
-  // Start each opening from the committed range.
   const [prevOpen, setPrevOpen] = useState(open);
   if (open !== prevOpen) {
     setPrevOpen(open);
@@ -51,57 +39,10 @@ export const DateRangeDraftProvider = ({
   }
 
   const draftRange = useMemo(() => buildDraftRangePreview(draft), [draft]);
-  const draftCursor = useMemo(() => new Date(draft.cursorMs), [draft.cursorMs]);
-  const draftCustomFrom = useMemo(
-    () => (draft.customFrom ? new Date(draft.customFrom) : null),
-    [draft.customFrom],
-  );
-  const draftCustomTo = useMemo(
-    () => (draft.customTo ? new Date(draft.customTo) : null),
-    [draft.customTo],
-  );
   const isCustomIncomplete = draft.mode === "custom" && (!draft.customFrom || !draft.customTo);
 
-  const setMode = useCallback((mode: DateRangeMode) => {
-    setDraft((current) => ({ ...current, mode }));
-  }, []);
-
-  const setCursorMonth = useCallback((date: Date) => {
-    setDraft((current) => ({
-      ...current,
-      cursorMs: new Date(date.getFullYear(), date.getMonth(), 1).getTime(),
-    }));
-  }, []);
-
-  const setCursorYear = useCallback((year: number) => {
-    setDraft((current) => ({
-      ...current,
-      cursorMs: new Date(year, 0, 1).getTime(),
-    }));
-  }, []);
-
-  const setCustomFrom = useCallback((date: Date) => {
-    setDraft((current) => ({
-      ...current,
-      customFrom: toIsoDate(date),
-    }));
-  }, []);
-
-  const setCustomTo = useCallback((date: Date) => {
-    setDraft((current) => ({
-      ...current,
-      customTo: toIsoDate(date),
-    }));
-  }, []);
-
-  const selectMonthFromLabel = useCallback((label: string) => {
-    const parsed = parseMonthLabel(label);
-    if (!parsed) return;
-    setDraft((current) => ({
-      ...current,
-      mode: "month",
-      cursorMs: new Date(parsed.year, parsed.month - 1, 1).getTime(),
-    }));
+  const setRange = useCallback((from: Date, to: Date) => {
+    setDraft((current) => ({ ...current, ...draftFromRange(from, to) }));
   }, []);
 
   const commit = useCallback(() => {
@@ -109,37 +50,9 @@ export const DateRangeDraftProvider = ({
     onClose();
   }, [draft, onClose]);
 
-  const value = useMemo<DateRangeDraftContextValue>(
-    () => ({
-      draft,
-      draftRange,
-      draftCursor,
-      draftCustomFrom,
-      draftCustomTo,
-      isCustomIncomplete,
-      setMode,
-      setCursorMonth,
-      setCursorYear,
-      setCustomFrom,
-      setCustomTo,
-      selectMonthFromLabel,
-      commit,
-    }),
-    [
-      draft,
-      draftRange,
-      draftCursor,
-      draftCustomFrom,
-      draftCustomTo,
-      isCustomIncomplete,
-      setMode,
-      setCursorMonth,
-      setCursorYear,
-      setCustomFrom,
-      setCustomTo,
-      selectMonthFromLabel,
-      commit,
-    ],
+  const value = useMemo(
+    () => ({ draft, draftRange, isCustomIncomplete, setRange, commit }),
+    [draft, draftRange, isCustomIncomplete, setRange, commit],
   );
 
   return <DateRangeDraftContext value={value}>{children}</DateRangeDraftContext>;
