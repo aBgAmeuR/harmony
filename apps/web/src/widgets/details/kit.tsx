@@ -50,6 +50,14 @@ export const Card = ({ title, caption, className, children }: CardProps) => (
   </Section>
 );
 
+type PendingProps = { title: ReactNode; caption?: ReactNode; className?: string };
+
+export const Pending = ({ title, caption, className }: PendingProps) => (
+  <Card title={title} caption={caption}>
+    <div className={className} />
+  </Card>
+);
+
 export const Foot = ({ children }: { children: ReactNode }) => (
   <div className="flex flex-wrap justify-between gap-x-2.5 border-t border-border pt-2.5">
     {children}
@@ -171,11 +179,19 @@ type RankedProps = {
   title: string;
   caption?: ReactNode;
   base: ExplorerBaseId;
-  rows: (Pick<ListRow, "id" | "name" | "description"> & { playtime?: ListRow["playtime"] })[];
+  rows?: (Pick<ListRow, "id" | "name" | "description"> & { playtime?: ListRow["playtime"] })[];
+  count?: number;
 };
 
-export const Ranked = ({ title, caption, base, rows }: RankedProps) => {
+export const Ranked = ({ title, caption, base, rows, count = 5 }: RankedProps) => {
   const open = useOpen();
+  if (!rows) {
+    return (
+      <Card title={title} caption={caption}>
+        <div style={{ height: count * 29 }} />
+      </Card>
+    );
+  }
   if (rows.length === 0) return null;
 
   return (
@@ -205,13 +221,13 @@ export const Ranked = ({ title, caption, base, rows }: RankedProps) => {
 export const useTop = ({ item, filter }: PartProps, base: ExplorerBaseId, limit?: number) => {
   const rules = [base === "albums" ? albumsRule(item) : itemRule(item)];
   const { data } = useQuery(detailQueries.top({ base, filter: { ...filter, rules }, limit }));
-  return (data?.rows ?? []).filter((row) => row.id !== item.id);
+  return data?.rows.filter((row) => row.id !== item.id);
 };
 
 type TopProps = PartProps & { title: string; base: ExplorerBaseId; caption?: ReactNode };
 
 export const Top = ({ title, base, caption, ...part }: TopProps) => (
-  <Ranked title={title} caption={caption} base={base} rows={useTop(part, base).slice(0, 5)} />
+  <Ranked title={title} caption={caption} base={base} rows={useTop(part, base)?.slice(0, 5)} />
 );
 
 const days = (count: number) => `${format.count(count)} ${count === 1 ? "day" : "days"}`;

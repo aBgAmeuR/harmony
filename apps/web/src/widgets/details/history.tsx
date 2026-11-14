@@ -24,7 +24,7 @@ import { format } from "@/shared/lib/format";
 import { periodLabel, showPeriod, useDateRangeStore, usePeriod } from "@/shared/scope";
 
 import { detailQueries, monthlySpan } from "./api";
-import { Card, Foot, KeyFacts, ShareRow, Tip, type PartProps } from "./kit";
+import { Card, Foot, KeyFacts, Pending, ShareRow, Tip, type PartProps } from "./kit";
 
 const DIMMED = "color-mix(in srgb, var(--chart-1) 30%, transparent)";
 const SERIES = seriesOf("playtime", colors.primary);
@@ -36,7 +36,7 @@ const Timeline = ({ item, filter }: PartProps) => {
   const span = monthlySpan(mode, from, to);
   const base = bases[baseOf[item.kind]];
   const { data } = useQuery(detailQueries.monthly({ ...span, rules: filter.rules }));
-  const { data: ranks = [] } = useQuery(
+  const { data: ranks } = useQuery(
     detailQueries.rankTrend({ base: base.id, id: item.id, filter: span }),
   );
   const first = isoDay(new Date(from.getFullYear(), from.getMonth(), 1));
@@ -68,6 +68,15 @@ const Timeline = ({ item, filter }: PartProps) => {
       ...columnTooltip(SERIES),
     });
   }, [data, first, last]);
+
+  if (!data || !ranks) {
+    return (
+      <Card title="Timeline" caption={from.getFullYear()}>
+        <div className="aspect-5/1" />
+        <div className="h-28" />
+      </Card>
+    );
+  }
 
   return (
     <Card title="Timeline" caption={from.getFullYear()}>
@@ -168,7 +177,8 @@ const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
 const Month = ({ filter }: PartProps) => {
   const mode = useDateRangeStore((store) => store.mode);
   const { from, to } = usePeriod();
-  const { data: dayRows = [] } = useQuery(detailQueries.days(filter));
+  const { data: dayRows } = useQuery(detailQueries.days(filter));
+  if (!dayRows) return <Pending title={periodLabel(mode, from, to)} className="h-35" />;
   const max = Math.max(0, ...dayRows.map((day) => day.playtime));
   const [first] = dayRows;
   const offset = first ? (parseDay(first.key).getDay() + 6) % 7 : 0;

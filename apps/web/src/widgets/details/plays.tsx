@@ -1,5 +1,4 @@
 import { Icon, NextIcon, ShuffleIcon, WifiOffIcon } from "@harmony/icons";
-import { Spinner } from "@harmony/ui/components/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@harmony/ui/components/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -40,13 +39,7 @@ export const Plays = ({ filter, named }: PlaysProps) => {
     overscan: 8,
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex h-32 items-center justify-center">
-        <Spinner />
-      </div>
-    );
-  }
+  if (isLoading) return null;
   if (plays.length === 0) return <Empty className="py-8">No plays in this period.</Empty>;
 
   return (
