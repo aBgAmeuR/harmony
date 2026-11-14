@@ -152,6 +152,7 @@ export const UploadPackageStep = () => {
           <span>Don't have a package? </span>
           <Button
             variant="link"
+            nativeButton={false}
             className="-ml-1.5 text-foreground"
             render={<Link to="/app/$packageId" params={{ packageId: "demo" }} />}
           >

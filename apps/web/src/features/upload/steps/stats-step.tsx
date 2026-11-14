@@ -41,7 +41,10 @@ export const UploadStatsStep = () => {
           Back
         </Button>
         {publicId ? (
-          <Button render={<Link to="/app/$packageId" params={{ packageId: publicId }} />}>
+          <Button
+            nativeButton={false}
+            render={<Link to="/app/$packageId" params={{ packageId: publicId }} />}
+          >
             View dashboard
           </Button>
         ) : null}

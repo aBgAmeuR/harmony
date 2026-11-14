@@ -80,7 +80,14 @@ export const UploadStack = ({ children }: UploadStackProps) => {
             <div
               key={i}
               ref={cardRefs[i]}
-              onClick={canClickParked ? back : undefined}
+              onClick={
+                canClickParked
+                  ? (e) => {
+                      if (e.target instanceof Element && e.target.closest("button")) return;
+                      back();
+                    }
+                  : undefined
+              }
               style={{
                 transform: cardTransform(i, current, heights),
                 opacity: cardOpacity(i, current),
