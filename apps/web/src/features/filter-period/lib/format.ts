@@ -1,3 +1,5 @@
+import type { DateRangeMode } from "@/shared/scope";
+
 const MONTHS = [
   "January",
   "February",
@@ -33,7 +35,18 @@ export const parsePeriodDate = (value: string) => {
   return new Date(`${value}T00:00:00`);
 };
 
-export const isDateInRange = (date: Date, startDate?: Date, endDate?: Date) => {
-  const timestamp = date.getTime();
-  return timestamp >= (startDate?.getTime() ?? 0) && timestamp <= (endDate?.getTime() ?? Infinity);
+export const monthEnd = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+export const formatRangeTitle = (mode: DateRangeMode, from: Date, to: Date) => {
+  if (mode === "month") return formatMonthYearLabel(from);
+  if (mode === "year") return String(from.getFullYear());
+  if (from.getDate() !== 1 || to.getTime() !== monthEnd(to).getTime()) {
+    return `${formatShortDate(from)} - ${formatShortDate(to)}`;
+  }
+  const sameYear = from.getFullYear() === to.getFullYear();
+  const start = from.toLocaleDateString("en-US", {
+    month: "short",
+    year: sameYear ? undefined : "numeric",
+  });
+  return `${start} - ${to.toLocaleDateString("en-US", { month: "short", year: "numeric" })}`;
 };

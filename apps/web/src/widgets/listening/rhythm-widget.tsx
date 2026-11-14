@@ -374,7 +374,7 @@ export const RhythmWidget = () => {
             value={total > 0 ? (HOURS[hour] ?? "-") : "-"}
             hint={format.as(data.hours[hour] ?? 0, "minutes")}
           />
-          <Fact label="After midnight" value={format.as(night, "percent")} hint="00:00 – 06:00" />
+          <Fact label="After midnight" value={format.as(night, "percent")} hint="00:00 - 06:00" />
         </dl>
       </Card>
     </Section>
