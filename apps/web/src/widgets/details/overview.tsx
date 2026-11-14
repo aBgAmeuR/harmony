@@ -205,7 +205,8 @@ const Previews = ({ onTab, ...part }: PreviewsProps) => {
   const [weekday] = (habits?.weekdays ?? []).toSorted((a, b) => b.value - a.value);
   const [hour] = (habits?.hours ?? []).toSorted((a, b) => b.value - a.value);
   const topShare =
-    top.slice(0, 5).reduce((sum, row) => sum + Number(row.playtime), 0) / (stats?.playtime || 1);
+    (top ?? []).slice(0, 5).reduce((sum, row) => sum + Number(row.playtime), 0) /
+    (stats?.playtime || 1);
 
   const cards = [
     {

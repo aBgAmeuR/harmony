@@ -59,7 +59,7 @@ export const Page = ({ title, width = "column", fill, className, children }: Pag
         </ResizablePanel>
         {(open || closing) && !mobile ? (
           <>
-            <ResizableHandle className="w-2 bg-transparent hover:bg-transparent" />
+            <ResizableHandle className="w-1 bg-transparent hover:bg-transparent" />
             <ResizablePanel
               id="detail"
               defaultSize={detailWidth.read()}

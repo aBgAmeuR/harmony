@@ -6,7 +6,7 @@ import { cn } from "@harmony/ui/lib/utils";
 const Root = ({ className, ...props }: ComponentProps<"div">) => (
   <div
     data-slot="pane"
-    className={cn("flex h-svh min-h-0 flex-col overflow-hidden md:py-2 md:pr-2", className)}
+    className={cn("flex h-svh min-h-0 flex-col overflow-hidden md:py-1 md:pr-1", className)}
     {...props}
   />
 );

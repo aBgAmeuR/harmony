@@ -202,11 +202,7 @@ export const BaseView = ({
 
   const content = (
     <>
-      {list.isLoading ? (
-        <div className="flex h-32 items-center justify-center">
-          <Spinner />
-        </div>
-      ) : rows.length === 0 ? (
+      {list.isLoading ? null : rows.length === 0 ? (
         <Empty className="h-40">
           {view.q || view.rules.length > 0 ? (
             <>

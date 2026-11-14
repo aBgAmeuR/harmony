@@ -16,7 +16,7 @@ export const getRouter = () => {
         <Spinner />
       </div>
     ),
-    defaultPendingMs: 1000,
+    defaultPendingMs: 100,
     defaultNotFoundComponent: () => <div>Not Found</div>,
     Wrap: ({ children }) => <>{children}</>,
   });

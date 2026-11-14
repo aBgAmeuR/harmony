@@ -1,7 +1,6 @@
 import { ArrowLeft01Icon, ArrowUpRight01Icon, Cancel01Icon, Icon } from "@harmony/icons";
 import { Button, buttonVariants } from "@harmony/ui/components/button";
 import { ScrollArea } from "@harmony/ui/components/scroll-area";
-import { Spinner } from "@harmony/ui/components/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@harmony/ui/components/tabs";
 import { cn } from "@harmony/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -120,7 +119,7 @@ const DetailView = ({ item, tab, onTab }: DetailViewProps) => {
               </Media.Body>
             </Media>
           ) : (
-            <span className="flex-1" />
+            <span className="h-18 flex-1" />
           )}
           <div className="-mr-1 flex">
             {trail.length > 1 ? (
@@ -150,24 +149,22 @@ const DetailView = ({ item, tab, onTab }: DetailViewProps) => {
             </Button>
           </div>
         </div>
-        {info ? (
-          <ScrollArea className="border-b border-border">
-            <TabsList
-              variant="line"
-              className="w-max min-w-full justify-start gap-3.5 rounded-none px-3 pb-1"
-            >
-              {TABS[item.kind].map((value) => (
-                <TabsTrigger
-                  key={value}
-                  value={value}
-                  className="flex-none px-0 capitalize after:bg-primary"
-                >
-                  {value}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </ScrollArea>
-        ) : null}
+        <ScrollArea className="border-b border-border">
+          <TabsList
+            variant="line"
+            className="w-max min-w-full justify-start gap-3.5 rounded-none px-3 pb-1"
+          >
+            {TABS[item.kind].map((value) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className="flex-none px-0 capitalize after:bg-primary"
+              >
+                {value}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </ScrollArea>
       </header>
 
       {part ? (
@@ -204,10 +201,8 @@ const DetailView = ({ item, tab, onTab }: DetailViewProps) => {
             <Plays filter={part.filter} named={item.kind !== "track"} />
           </TabsContent>
         </>
-      ) : (
-        <div className="flex flex-1 items-center justify-center">
-          {isLoading ? <Spinner /> : <Empty>This {item.kind} is not in the package.</Empty>}
-        </div>
+      ) : isLoading ? null : (
+        <Empty className="flex-1">This {item.kind} is not in the package.</Empty>
       )}
     </Tabs>
   );

@@ -7,14 +7,29 @@ import { format } from "@/shared/lib/format";
 import { useOpen } from "@/widgets/base/open";
 
 import { detailQueries } from "./api";
-import { Card, Foot, Ranked, ShareRow, Strip, Tip, Top, useTop, type PartProps } from "./kit";
+import {
+  Card,
+  Foot,
+  Pending,
+  Ranked,
+  ShareRow,
+  Strip,
+  Tip,
+  Top,
+  useTop,
+  type PartProps,
+} from "./kit";
 
 const SPREAD = 22;
 const ROW = 32;
-const TILES = ["bg-chart-1 text-background", "bg-chart-2 text-background", "bg-chart-3"];
+const ALBUMS = 7;
+const TREE = 128;
+const OTHERS_MIN = 56;
+const OTHERS_MAX = 0.28;
 
 const Eras = ({ filter }: PartProps) => {
-  const { data: eras = [] } = useQuery(detailQueries.eras(filter));
+  const { data: eras } = useQuery(detailQueries.eras(filter));
+  if (!eras) return <Pending title="Release years" className="h-14" />;
   if (eras.length < 2) return null;
   const max = Math.max(...eras.map((era) => era.value));
   const x = (index: number) => `${((index + 0.5) / eras.length) * 100}%`;
@@ -57,51 +72,66 @@ const Eras = ({ filter }: PartProps) => {
   );
 };
 
-const Albums = (part: PartProps) => {
-  const { data: stats } = useQuery(detailQueries.stats(part.filter));
-  const top = useTop(part, "albums", 3);
-  const rest = (stats?.playtime ?? 0) - top.reduce((sum, row) => sum + Number(row.playtime), 0);
-  const tiles = [
-    ...top.map((row) => ({ name: row.name, playtime: Number(row.playtime) })),
-    ...((stats?.albums ?? 0) > top.length && rest > 0
-      ? [
-          {
-            name: `${format.count((stats?.albums ?? 0) - top.length)} other albums`,
-            playtime: rest,
-          },
-        ]
-      : []),
-  ];
+type Box = { x: number; y: number; w: number; h: number };
 
-  return (
-    <Card title="Albums" caption={`${stats ? format.count(stats.albums) : "-"} played`}>
-      <div role="img" aria-label="Treemap of listening time" className="flex h-30 gap-0.5">
-        {tiles.map((tile, index) => (
-          <Tip
-            key={tile.name}
-            text={`${tile.name} · ${format.as(tile.playtime, "minutes")}`}
-            render={
-              <span
-                className={cn(
-                  "flex min-w-0 flex-col overflow-hidden rounded-sm p-2 text-foreground",
-                  TILES[index] ?? "bg-muted",
-                )}
-                style={{ flexGrow: tile.playtime, flexBasis: 0 }}
-              >
-                <span className="truncate text-[11px] font-semibold">{tile.name}</span>
-                <span className="truncate text-[10px]">{format.as(tile.playtime, "minutes")}</span>
-              </span>
-            }
-          />
-        ))}
-      </div>
-    </Card>
+const total = (values: number[]) => values.reduce((sum, value) => sum + value, 0);
+
+const worst = (row: number[], side: number) => {
+  const sum = total(row);
+  return Math.max(
+    ...row.map((area) =>
+      Math.max((side * side * area) / (sum * sum), (sum * sum) / (side * side * area)),
+    ),
   );
 };
 
-const HeardWith = (part: PartProps) => {
+const squarify = (values: number[], box: Box) => {
+  const sum = total(values);
+  if (sum <= 0 || box.w <= 0 || box.h <= 0) return [];
+  const areas = values.map((value) => (value / sum) * box.w * box.h);
+  const boxes: Box[] = [];
+  let { x, y, w, h } = box;
+  let start = 0;
+  while (start < areas.length) {
+    const side = Math.min(w, h);
+    let end = start + 1;
+    while (
+      end < areas.length &&
+      worst(areas.slice(start, end + 1), side) <= worst(areas.slice(start, end), side)
+    )
+      end++;
+    const row = areas.slice(start, end);
+    const wide = w >= h;
+    const thick = total(row) / (wide ? h : w);
+    let offset = 0;
+    for (const area of row) {
+      const length = area / thick;
+      boxes.push(
+        wide
+          ? { x, y: y + offset, w: thick, h: length }
+          : { x: x + offset, y, w: length, h: thick },
+      );
+      offset += length;
+    }
+    if (wide) {
+      x += thick;
+      w -= thick;
+    } else {
+      y += thick;
+      h -= thick;
+    }
+    start = end;
+  }
+  return boxes;
+};
+
+const tone = (index: number) =>
+  index === 0 ? "bg-chart-1 text-background" : index < 3 ? "bg-chart-3" : "bg-chart-4";
+
+const Albums = (part: PartProps) => {
   const open = useOpen();
-  const rows = useTop(part, "artists").slice(0, 5);
+  const { data: stats } = useQuery(detailQueries.stats(part.filter));
+  const rows = useTop(part, "albums", ALBUMS)?.filter((row) => Number(row.playtime) > 0);
   const [width, setWidth] = useState(0);
   const measure = useCallback((element: HTMLDivElement | null) => {
     if (!element) return;
@@ -109,6 +139,93 @@ const HeardWith = (part: PartProps) => {
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
+  if (!rows || !stats) return <Pending title="Albums" className="h-32" />;
+  if (rows.length === 0) return null;
+  const values = rows.map((row) => Number(row.playtime));
+  const others = stats.albums - rows.length;
+  const rest = others > 0 ? Math.max(stats.playtime - total(values), 0) : 0;
+  const side =
+    rest > 0
+      ? Math.min(Math.max((rest / stats.playtime) * width, OTHERS_MIN), width * OTHERS_MAX)
+      : 0;
+  const boxes = squarify(values, { x: 0, y: 0, w: width - side, h: TREE });
+
+  return (
+    <Card title="Albums" caption={`${format.count(stats.albums)} played`}>
+      <div
+        ref={measure}
+        role="img"
+        aria-label="Treemap of listening time per album"
+        className="relative"
+        style={{ height: TREE }}
+      >
+        {rows.map((row, index) => {
+          const box = boxes[index];
+          if (!box) return null;
+          const label = box.w >= 64 && box.h >= 36;
+          const rank = !label && box.w >= 24 && box.h >= 20;
+          return (
+            <Tip
+              key={row.id}
+              text={`${row.name} · ${format.as(Number(row.playtime), "minutes")}`}
+              render={
+                <button
+                  type="button"
+                  onClick={() => open(bases.albums.opens, row)}
+                  className={cn(
+                    "absolute flex cursor-pointer flex-col overflow-hidden rounded-sm text-left text-foreground hover:brightness-110",
+                    label ? "p-2" : "p-1",
+                    tone(index),
+                  )}
+                  style={{ left: box.x + 1, top: box.y + 1, width: box.w - 2, height: box.h - 2 }}
+                >
+                  {label ? (
+                    <>
+                      <span className="truncate text-[11px] font-semibold">{row.name}</span>
+                      <span className="truncate text-[10px]">
+                        {format.as(Number(row.playtime), "minutes")}
+                      </span>
+                    </>
+                  ) : rank ? (
+                    <span className="text-[10px] opacity-80">{index + 1}</span>
+                  ) : null}
+                </button>
+              }
+            />
+          );
+        })}
+        {side > 0 ? (
+          <Tip
+            text={`${format.count(others)} other albums · ${format.as(rest, "minutes")}`}
+            render={
+              <span
+                className="absolute inset-y-px right-0 flex flex-col overflow-hidden rounded-sm border border-dashed border-accent p-2 text-muted-foreground"
+                style={{ width: side - 1 }}
+              >
+                <span className="truncate text-[11px] font-semibold text-foreground">
+                  +{format.count(others)}
+                </span>
+                <span className="truncate text-[10px]">{format.as(rest, "minutes")}</span>
+              </span>
+            }
+          />
+        ) : null}
+      </div>
+    </Card>
+  );
+};
+
+const HeardWith = (part: PartProps) => {
+  const open = useOpen();
+  const rows = useTop(part, "artists")?.slice(0, 5);
+  const [width, setWidth] = useState(0);
+  const measure = useCallback((element: HTMLDivElement | null) => {
+    if (!element) return;
+    const observer = new ResizeObserver(([entry]) => setWidth(entry?.contentRect.width ?? 0));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  if (!rows) return <Pending title="Heard with" className="h-40" />;
   if (rows.length === 0) return null;
   const link = Math.max(width * 0.45, 80);
   const max = Math.max(...rows.map((row) => Number(row.playtime)));
@@ -185,7 +302,8 @@ const HeardWith = (part: PartProps) => {
 };
 
 const Genres = (part: PartProps) => {
-  const rows = useTop(part, "genres").slice(0, 5);
+  const rows = useTop(part, "genres")?.slice(0, 5);
+  if (!rows) return <Pending title="Genres" className="h-32.5" />;
   if (rows.length === 0) return null;
   const max = Math.max(...rows.map((row) => Number(row.playtime)));
 
@@ -243,6 +361,7 @@ const Coverage = ({ filter }: PartProps) => {
 const Spread = (part: PartProps) => {
   const { data: stats } = useQuery(detailQueries.stats(part.filter));
   const rows = useTop(part, "tracks", SPREAD);
+  if (!rows) return <Pending title="Track spread" className="h-26.25" />;
   const [first] = rows;
 
   return (
@@ -287,7 +406,7 @@ export const Catalogue = (part: PartProps) => (
   </>
 );
 
-const topTime = (rows: ListRow[]) =>
+const topTime = (rows: ListRow[] = []) =>
   rows.slice(0, 5).reduce((sum, row) => sum + Number(row.playtime), 0);
 
 const Concentration = (part: PartProps) => {
@@ -333,7 +452,7 @@ export const Mix = (part: PartProps) => {
   const artists = useTop(part, "artists", 10);
   return (
     <>
-      <Ranked title="Artists" base="artists" rows={artists} />
+      <Ranked title="Artists" base="artists" rows={artists} count={10} />
       <Concentration {...part} />
       <Top {...part} title="Top tracks" base="tracks" />
       <Top {...part} title="Top albums" base="albums" />

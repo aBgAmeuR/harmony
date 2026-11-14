@@ -7,15 +7,16 @@ import { format, platformLabel } from "@/shared/lib/format";
 import { usePeriod } from "@/shared/scope";
 
 import { detailQueries } from "./api";
-import { Card, Foot, pts, ShareRow, Units, type PartProps } from "./kit";
+import { Card, Foot, Pending, pts, ShareRow, Units, type PartProps } from "./kit";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const SHADES = ["bg-chart-1", "bg-chart-4", "bg-chart-3", "bg-chart-5"];
 const RATES = ["finishedRate", "completion", "skipRate", "shuffleRate"] as const;
+const NO_GRID = WEEKDAYS.map(() => Array.from({ length: 24 }, () => 0));
 
 const When = ({ filter }: PartProps) => {
   const { data: habits } = useQuery(detailQueries.habits(filter));
-  const grid = habits?.grid ?? [];
+  const grid = habits?.grid ?? NO_GRID;
   const max = Math.max(0, ...grid.flat());
 
   return (
@@ -52,8 +53,9 @@ const When = ({ filter }: PartProps) => {
 };
 
 const Context = ({ filter }: PartProps) => {
-  const { data: platforms = [] } = useQuery(detailQueries.platforms(filter));
+  const { data: platforms } = useQuery(detailQueries.platforms(filter));
   const { data: stats } = useQuery(detailQueries.stats(filter));
+  if (!platforms || !stats) return <Pending title="Context" className="h-17.25" />;
   const count = (rate: number | undefined) =>
     stats && rate !== undefined ? format.count(Math.round(rate * stats.streams)) : "-";
 
