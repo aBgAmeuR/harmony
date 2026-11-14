@@ -1,7 +1,6 @@
-import type { ComponentProps } from "react";
-
 import { Icon, MusicNote03Icon } from "@harmony/icons";
 import { cn } from "@harmony/ui/lib/utils";
+import { useState, type ComponentProps } from "react";
 
 const sizes = {
   xs: "size-5",
@@ -31,8 +30,38 @@ const initials = (name: string) =>
     .map((word) => word.charAt(0).toUpperCase())
     .join("");
 
+type PictureProps = { src: string; placeholder: string | null | undefined; alt: string };
+
+const Picture = ({ src, placeholder, alt }: PictureProps) => {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <>
+      <div className="absolute inset-0 z-1 overflow-hidden rounded-sm bg-muted">
+        {placeholder && placeholder !== src ? (
+          <img src={placeholder} alt="" aria-hidden className="size-full object-cover" />
+        ) : null}
+      </div>
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        ref={(img) => {
+          if (img?.complete && img.naturalWidth > 0) setLoaded(true);
+        }}
+        onLoad={() => setLoaded(true)}
+        className={cn(
+          "relative z-2 size-full rounded-sm object-cover transition-opacity duration-150",
+          !loaded && "opacity-0",
+        )}
+      />
+    </>
+  );
+};
+
 type ArtProps = Omit<ComponentProps<"div">, "children"> & {
   src: string | null | undefined;
+  placeholder?: string | null;
   alt: string;
   size?: keyof typeof sizes;
   fallback?: "icon" | "initials";
@@ -41,6 +70,7 @@ type ArtProps = Omit<ComponentProps<"div">, "children"> & {
 
 export const Art = ({
   src,
+  placeholder,
   alt,
   size = "md",
   fallback = "icon",
@@ -56,19 +86,13 @@ export const Art = ({
   >
     {src ? (
       <>
-        <img
-          src={src}
-          alt={alt}
-          loading="lazy"
-          decoding="async"
-          className="relative z-2 size-full rounded-sm object-cover"
-        />
+        <Picture key={src} src={src} placeholder={placeholder} alt={alt} />
         {variant === "glow" ? (
           <div
             aria-hidden
             className="absolute bottom-0.75 left-0 size-full origin-bottom scale-90 opacity-20 blur-lg saturate-200"
           >
-            <img src={src} alt="" className="size-full" />
+            <img src={placeholder ?? src} alt="" className="size-full" />
           </div>
         ) : null}
       </>

@@ -22,7 +22,7 @@ const big = (src: string | null) => (src && DEEZER_IMAGE.test(src) ? `${src}?siz
 export const Gallery = ({ view, rows, selected, onOpen }: GalleryProps) => {
   const prop = view.base.props[view.sort];
   return (
-    <div className="@container">
+    <div className="@container p-3">
       <div className="grid grid-cols-4 gap-y-3 @2xl:grid-cols-6">
         {rows.map((row) => (
           <button
@@ -36,6 +36,7 @@ export const Gallery = ({ view, rows, selected, onOpen }: GalleryProps) => {
           >
             <Art
               src={big(row.cover ?? row.image)}
+              placeholder={row.image}
               alt={row.name}
               size="fill"
               fallback={view.base.id === "artists" ? "initials" : "icon"}

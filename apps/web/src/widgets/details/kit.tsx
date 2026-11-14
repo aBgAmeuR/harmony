@@ -36,7 +36,7 @@ type CardProps = {
 export const Card = ({ title, caption, className, children }: CardProps) => (
   <Section
     className={cn(
-      "gap-2.5 rounded-lg border border-border bg-card px-3.5 pt-3 pb-3.5 text-xs tabular-nums [&_b]:font-semibold [&_b]:text-foreground",
+      "gap-2.5 text-xs tabular-nums [&_b]:font-semibold [&_b]:text-foreground",
       className,
     )}
   >

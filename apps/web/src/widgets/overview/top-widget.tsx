@@ -99,6 +99,7 @@ export const TopWidget = ({ selected, onOpen }: TopWidgetProps) => {
           <Card size="xs" className="gap-3 p-3">
             <Art
               src={leader.cover ?? leader.image}
+              placeholder={leader.image}
               alt={leader.name}
               size="2xl"
               fallback="initials"

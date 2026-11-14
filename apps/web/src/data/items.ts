@@ -32,6 +32,7 @@ export type Item = {
   id: number | string;
   name: string;
   image: string | null;
+  thumb: string | null;
   artists: Named[];
   album: Named | null;
   type: string | null;
@@ -42,6 +43,7 @@ export type Item = {
 type ItemRow = {
   name: string;
   image: string | null;
+  thumb: string | null;
   type: string | null;
   release_date: string | null;
   track_count: number | null;
@@ -59,13 +61,13 @@ const sqlOf = ({ kind, id }: ItemRef) => {
   switch (kind) {
     case "artist":
       return `
-        SELECT a.name, ${picture("a")} AS image, NULL AS type, NULL AS release_date,
+        SELECT a.name, ${picture("a")} AS image, a.image AS thumb, NULL AS type, NULL AS release_date,
           NULL::INTEGER AS track_count, NULL::INTEGER AS album_id, NULL AS album_name,
           NULL::INTEGER AS artist_id, NULL AS artist_name
         FROM artists a WHERE a.id = ${int(Number(id))}`;
     case "album":
       return `
-        SELECT al.title AS name, ${picture("al")} AS image, al.album_type AS type,
+        SELECT al.title AS name, ${picture("al")} AS image, al.image AS thumb, al.album_type AS type,
           CAST(al.release_date AS VARCHAR) AS release_date,
           GREATEST(
             COALESCE(al.nb_tracks, 0),
@@ -77,7 +79,7 @@ const sqlOf = ({ kind, id }: ItemRef) => {
         ORDER BY u.position`;
     case "track":
       return `
-        SELECT t.title AS name, ${picture("al")} AS image, NULL AS type,
+        SELECT t.title AS name, ${picture("al")} AS image, al.image AS thumb, NULL AS type,
           CAST(t.release_date AS VARCHAR) AS release_date, NULL::INTEGER AS track_count,
           al.id AS album_id, al.title AS album_name, a.id AS artist_id, a.name AS artist_name
         FROM tracks t LEFT JOIN albums al ON al.id = t.album_id ${artistsOf("t.artists")}
@@ -85,7 +87,7 @@ const sqlOf = ({ kind, id }: ItemRef) => {
         ORDER BY u.position`;
     case "genre":
       return `
-        SELECT ${text(String(id))} AS name, NULL AS image, NULL AS type, NULL AS release_date,
+        SELECT ${text(String(id))} AS name, NULL AS image, NULL AS thumb, NULL AS type, NULL AS release_date,
           NULL::INTEGER AS track_count, NULL::INTEGER AS album_id, NULL AS album_name,
           NULL::INTEGER AS artist_id, NULL AS artist_name
         FROM albums WHERE list_contains(genres, ${text(String(id))})
@@ -101,6 +103,7 @@ export const itemFn = async (ref: ItemRef) => {
     ...ref,
     name: first.name,
     image: first.image,
+    thumb: first.thumb,
     type: first.type,
     releaseDate: first.release_date,
     trackCount: first.track_count,

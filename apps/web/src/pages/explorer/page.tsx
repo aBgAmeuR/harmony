@@ -27,7 +27,7 @@ export const ExplorerPage = () => {
   );
 
   return (
-    <Page title={title} width="full" className="mx-auto max-w-5xl">
+    <Page title={title} fill>
       <BaseView state={search} onChange={change} page />
     </Page>
   );

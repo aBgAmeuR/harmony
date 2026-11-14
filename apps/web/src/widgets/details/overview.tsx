@@ -9,7 +9,7 @@ import { format, platformLabel, toDate } from "@/shared/lib/format";
 import { Empty } from "@/shared/primitives/empty";
 import { Grid } from "@/shared/primitives/grid";
 import { Stat } from "@/shared/primitives/stat";
-import { periodLabel, useDateRangeStore, usePeriod } from "@/shared/scope";
+import { useDateRangeStore, usePeriod } from "@/shared/scope";
 
 import { AlbumFoot } from "./album-tracks";
 import { detailQueries, monthlySpan } from "./api";
@@ -100,10 +100,7 @@ const EveryPlay = ({ filter }: PartProps) => {
   });
 
   return (
-    <Card
-      title="Every play"
-      caption={`${format.count(plays.length)} plays · ${grain === "play" ? "height is time heard" : `one bar per ${grain}`}`}
-    >
+    <Card title="Every play" caption={`${format.count(plays.length)} plays`}>
       <Strip
         className="h-14"
         label={`${plays.length} plays in order, one bar per ${grain}, height is time heard`}
@@ -153,7 +150,7 @@ const AlbumShape = ({ item }: PartProps) => {
   const never = tracks.filter((track) => track.streams === 0);
 
   return (
-    <Card title="Album shape" caption="time per track, in album order">
+    <Card title="Album shape">
       <Strip
         className="h-14"
         label="Time per track in album order"
@@ -179,7 +176,7 @@ const GenreShare = ({ filter }: PartProps) => {
   const share = stats && all ? stats.playtime / all.playtime : 0;
 
   return (
-    <Card title="Share of your listening" caption="one square is 1%">
+    <Card title="Share of your listening">
       <Units
         label="Share of your listening"
         parts={[
@@ -293,11 +290,8 @@ const Previews = ({ onTab, ...part }: PreviewsProps) => {
 };
 
 const KeyDates = ({ filter }: PartProps) => {
-  const mode = useDateRangeStore((store) => store.mode);
-  const { from, to } = usePeriod();
-
   return (
-    <Card title="Key dates" caption={periodLabel(mode, from, to)}>
+    <Card title="Key dates">
       <div className="grid grid-cols-2 gap-x-3 gap-y-2">
         <KeyFacts filter={filter} />
       </div>

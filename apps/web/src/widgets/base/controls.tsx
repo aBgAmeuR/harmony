@@ -30,7 +30,7 @@ const LAYOUTS = {
   gallery: { label: "Gallery", icon: GridViewIcon },
 } as const;
 
-const SECTIONS = ["Listening", "Behaviour", "Dates", "Other"] as const;
+const SECTIONS = ["Listening", "Behaviour", "Dates"] as const;
 
 const SECTION_OF = {
   count: "Listening",
@@ -39,8 +39,8 @@ const SECTION_OF = {
   ratio: "Listening",
   percent: "Behaviour",
   date: "Dates",
-  text: "Other",
-  flag: "Other",
+  text: null,
+  flag: null,
 } as const;
 
 export const BaseMenu = ({ view, onChange }: Props) => (

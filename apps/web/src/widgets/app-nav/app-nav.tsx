@@ -17,7 +17,7 @@ export const AppNav = () => {
   const link = useAppLinkAdapter();
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>
         <NavBrand />
       </SidebarHeader>

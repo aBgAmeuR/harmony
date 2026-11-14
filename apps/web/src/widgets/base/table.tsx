@@ -60,7 +60,7 @@ const Move = ({ row }: { row: ListRow }) => {
   const places = row.prevRank - row.rank;
   if (places === 0) return <span className="text-muted-foreground">=</span>;
   return (
-    <span className={places > 0 ? "text-chart-1" : "text-destructive"}>
+    <span className={places > 0 ? "text-chart-1" : "text-muted-foreground"}>
       {places > 0 ? "↑" : "↓"}
       {Math.abs(places)}
     </span>
@@ -105,59 +105,62 @@ export const BaseTable = ({ view, rows, trends, active, selected, onOpen }: Base
   const below = sorted && view.sort !== MAIN ? view.sort : "streams";
   const main = base.props[MAIN];
   const sub = base.props[below];
+  const compared = view.diffs && rows.some((row) => row.prevRank !== null);
   return (
-    <Table>
-      <Table.Body>
-        {rows.map((row, index) => {
-          const points = trends?.points[String(row.id)];
-          return (
-            <Table.Row
-              key={row.id}
-              data-index={index}
-              selected={index === active || selected(row)}
-              onSelect={() => onOpen(row)}
-              className="border-0"
-              style={share(row)}
-            >
-              <Table.Cell className="w-10 pl-4">
-                <div className="flex flex-col items-center gap-0.5 text-micro leading-none font-medium tabular-nums">
-                  <Rank n={row.rank} variant={ranked ? "medal" : "plain"} />
-                  {view.diffs ? <Move row={row} /> : null}
-                </div>
-              </Table.Cell>
-              <Table.Cell className="max-w-0">
-                <Media>
-                  {pictured ? <Media.Art src={row.image} alt={row.name} /> : null}
-                  <Media.Body>
-                    <Media.Title>{row.name}</Media.Title>
-                    {row.description ? <Media.Sub>{row.description}</Media.Sub> : null}
-                  </Media.Body>
-                </Media>
-              </Table.Cell>
-              <Table.Cell className="w-24">
-                {points && points.length > 0 ? (
-                  <Trend data={points.map((point) => point[trendKey])} />
-                ) : null}
-              </Table.Cell>
-              <Table.Cell className="w-28 pr-4">
-                <div className="flex flex-col items-end gap-0.5">
-                  {main ? (
-                    <span className="text-foreground">
-                      <Value row={row} name={MAIN} prop={main} size="sm+" />
-                    </span>
+    <div className="@container">
+      <Table>
+        <Table.Body>
+          {rows.map((row, index) => {
+            const points = trends?.points[String(row.id)];
+            return (
+              <Table.Row
+                key={row.id}
+                data-index={index}
+                selected={index === active || selected(row)}
+                onSelect={() => onOpen(row)}
+                className="border-0"
+                style={share(row)}
+              >
+                <Table.Cell className="w-10 pl-3">
+                  <div className="flex flex-col items-center gap-0.5 text-micro leading-none font-medium tabular-nums">
+                    <Rank n={row.rank} variant={ranked ? "medal" : "plain"} />
+                    {compared ? <Move row={row} /> : null}
+                  </div>
+                </Table.Cell>
+                <Table.Cell className="max-w-0">
+                  <Media>
+                    {pictured ? <Media.Art src={row.image} alt={row.name} /> : null}
+                    <Media.Body>
+                      <Media.Title>{row.name}</Media.Title>
+                      {row.description ? <Media.Sub>{row.description}</Media.Sub> : null}
+                    </Media.Body>
+                  </Media>
+                </Table.Cell>
+                <Table.Cell className="hidden w-24 @xl:table-cell">
+                  {points && points.length > 0 ? (
+                    <Trend data={points.map((point) => point[trendKey])} />
                   ) : null}
-                  {sub ? (
-                    <span className="inline-flex items-baseline gap-1 text-[11px] whitespace-nowrap text-muted-foreground">
-                      <Value row={row} name={below} prop={sub} size="2xs" />
-                      {isNumeric(sub) ? sub.label.toLowerCase() : null}
-                    </span>
-                  ) : null}
-                </div>
-              </Table.Cell>
-            </Table.Row>
-          );
-        })}
-      </Table.Body>
-    </Table>
+                </Table.Cell>
+                <Table.Cell className="w-28 pr-3">
+                  <div className="flex flex-col items-end gap-0.5">
+                    {main ? (
+                      <span className="text-foreground">
+                        <Value row={row} name={MAIN} prop={main} size="sm+" />
+                      </span>
+                    ) : null}
+                    {sub ? (
+                      <span className="inline-flex items-baseline gap-1 text-[11px] whitespace-nowrap text-muted-foreground">
+                        <Value row={row} name={below} prop={sub} size="2xs" />
+                        {isNumeric(sub) ? sub.label.toLowerCase() : null}
+                      </span>
+                    ) : null}
+                  </div>
+                </Table.Cell>
+              </Table.Row>
+            );
+          })}
+        </Table.Body>
+      </Table>
+    </div>
   );
 };

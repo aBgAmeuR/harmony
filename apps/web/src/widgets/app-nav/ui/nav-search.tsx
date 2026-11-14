@@ -9,7 +9,10 @@ export const NavSearch = () => {
 
   return (
     <SidebarGroup>
-      <Button variant="outline" className="gap-2 overflow-hidden px-2">
+      <Button
+        variant="outline"
+        className="gap-2 overflow-hidden px-2 group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+      >
         <Icon icon={Search01Icon} strokeWidth={2} />
         <span className="me-auto group-data-[collapsible=icon]:hidden">Search</span>
         <KbdGroup className="gap-0.5 group-data-[collapsible=icon]:hidden">

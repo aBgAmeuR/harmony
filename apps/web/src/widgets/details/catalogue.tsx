@@ -20,7 +20,7 @@ const Eras = ({ filter }: PartProps) => {
   const x = (index: number) => `${((index + 0.5) / eras.length) * 100}%`;
 
   return (
-    <Card title="Release years" caption="circle area is time listened">
+    <Card title="Release years">
       <div role="img" aria-label="Listening by release year" className="relative h-14">
         <span className="absolute inset-x-0 top-5 border-t border-border" />
         {eras.map((era, index) => {
@@ -74,10 +74,7 @@ const Albums = (part: PartProps) => {
   ];
 
   return (
-    <Card
-      title="Albums"
-      caption={`${stats ? format.count(stats.albums) : "-"} played · area is time listened`}
-    >
+    <Card title="Albums" caption={`${stats ? format.count(stats.albums) : "-"} played`}>
       <div role="img" aria-label="Treemap of listening time" className="flex h-30 gap-0.5">
         {tiles.map((tile, index) => (
           <Tip
@@ -124,7 +121,7 @@ const HeardWith = (part: PartProps) => {
   );
 
   return (
-    <Card title="Heard with" caption="link width is time shared">
+    <Card title="Heard with">
       <div ref={measure} className="flex">
         <svg
           width={link}
@@ -213,30 +210,32 @@ const Coverage = ({ filter }: PartProps) => {
   const known = ever?.tracks ?? 0;
 
   return (
-    <Card title="Coverage" caption={`${played} played of the ${known} tracks you know`}>
+    <Card title="Coverage">
       <div
         role="img"
         aria-label="Tracks played among the tracks you know"
-        className="flex flex-wrap gap-1"
+        className="flex h-1.5 overflow-hidden rounded-full bg-muted"
       >
-        {Array.from({ length: known }, (_, index) => (
-          <span
-            key={index}
-            className={cn("size-2 rounded-full", index < played ? "bg-chart-1" : "bg-muted")}
-          />
-        ))}
+        <span className="bg-chart-1" style={{ width: `${(discovered / (known || 1)) * 100}%` }} />
+        <span
+          className="bg-chart-3"
+          style={{ width: `${((played - discovered) / (known || 1)) * 100}%` }}
+        />
       </div>
-      <Foot>
-        <span>
+      <div className="flex flex-wrap justify-between gap-x-2.5">
+        <span className="flex items-center gap-1.5">
+          <span className="size-2 rounded-xs bg-chart-1" />
           <b>{format.count(discovered)}</b> heard for the first time
         </span>
-        <span>
+        <span className="flex items-center gap-1.5">
+          <span className="size-2 rounded-xs bg-chart-3" />
           <b>{format.count(played - discovered)}</b> already known
         </span>
-        <span>
+        <span className="flex items-center gap-1.5">
+          <span className="size-2 rounded-xs bg-muted" />
           <b>{format.count(known - played)}</b> not played
         </span>
-      </Foot>
+      </div>
     </Card>
   );
 };
@@ -247,7 +246,7 @@ const Spread = (part: PartProps) => {
   const [first] = rows;
 
   return (
-    <Card title="Track spread" caption={`time per track, ${rows.length} most played`}>
+    <Card title="Track spread">
       <Strip
         className="h-14"
         label="Time per track, ranked"
@@ -301,7 +300,7 @@ const Concentration = (part: PartProps) => {
   ];
 
   return (
-    <Card title="Concentration" caption="share of the genre held by your top 5">
+    <Card title="Concentration">
       <div>
         {tops.map(({ label, playtime }) => (
           <ShareRow key={label} label={label} value={stats ? playtime / stats.playtime : 0}>
