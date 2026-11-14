@@ -1,11 +1,24 @@
-<img alt="Harmony overview page" src="https://github.com/user-attachments/assets/982c9842-9586-4964-ba5c-53c979da5c03" />
+<img alt="Harmony overview page" src="https://github.com/user-attachments/assets/a9ecdf83-08a6-4568-8bc8-664a3602c3a9" />
 
 # Harmony
 
 <p>
-  <a href="https://github.com/abgameur/harmony"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/abgameur/harmony/stars.svg?variant=secondary&amp;size=xs&amp;font=geist" /><img alt="badge" src="https://shieldcn.dev/github/abgameur/harmony/stars.svg?variant=secondary&amp;size=xs&amp;mode=light&amp;font=geist" /></picture></a>
-  <a href="https://github.com/abgameur/harmony"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/abgameur/harmony/license.svg?variant=secondary&amp;size=xs&amp;font=geist" /><img alt="license" src="https://shieldcn.dev/github/abgameur/harmony/license.svg?variant=secondary&amp;size=xs&amp;mode=light&amp;font=geist" /></picture></a>
-  <picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/flag/fr.svg?size=xs&amp;font=geist" /><img alt="built in" src="https://shieldcn.dev/flag/fr.svg?size=xs&amp;mode=light&amp;font=geist" /></picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/abgameur/harmony/stars.svg?variant=secondary&amp;size=xs&amp;font=geist" />
+    <img alt="badge" src="https://shieldcn.dev/github/abgameur/harmony/stars.svg?variant=secondary&amp;size=xs&amp;mode=light&amp;font=geist" />
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/github/release/abgameur/harmony.svg?size=xs&amp;mode=dark&amp;variant=secondary">
+    <img alt="Release" src="https://www.shieldcn.dev/github/release/abgameur/harmony.svg?size=xs&amp;mode=light&amp;variant=secondary">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/abgameur/harmony/license.svg?variant=secondary&amp;size=xs&amp;font=geist" />
+    <img alt="license" src="https://shieldcn.dev/github/abgameur/harmony/license.svg?variant=secondary&amp;size=xs&amp;mode=light&amp;font=geist" />
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/flag/fr.svg?size=xs&amp;font=geist" />
+    <img alt="built in" src="https://shieldcn.dev/flag/fr.svg?size=xs&amp;mode=light&amp;font=geist" />
+  </picture>
 </p>
 
 Harmony turns your Spotify Extended Streaming History into listening analytics.
