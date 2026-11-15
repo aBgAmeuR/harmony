@@ -4,6 +4,7 @@ mod client;
 mod payload;
 mod retry;
 
+use std::collections::HashSet;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
@@ -59,7 +60,7 @@ impl Lookup for Deezer {
         let mut artists = Vec::new();
         let mut album_ids = Vec::new();
         let mut small = Vec::new();
-        for row in track_rows.into_iter().flatten() {
+        for row in distinct(track_rows.into_iter().flatten(), |row| row.track.id()) {
             if !album_ids.contains(&row.album) {
                 album_ids.push(row.album);
             }
@@ -107,7 +108,7 @@ fn load_albums(
     })?;
 
     let mut albums = Vec::new();
-    for row in rows.into_iter().flatten() {
+    for row in distinct(rows.into_iter().flatten(), |(album, _, _)| album.id()) {
         let (album, people, pictures) = row;
         for artist in people {
             upsert(artists, artist);
@@ -161,6 +162,13 @@ fn unique_pictures(
         }
     }
     pending
+}
+
+fn distinct<T>(rows: impl IntoIterator<Item = T>, id: impl Fn(&T) -> catalog::Id) -> Vec<T> {
+    let mut seen = HashSet::new();
+    rows.into_iter()
+        .filter(|row| seen.insert(id(row)))
+        .collect()
 }
 
 fn upsert(artists: &mut Vec<Artist>, incoming: Artist) {
@@ -232,4 +240,18 @@ where
         .map_err(|_| LookupError::new("deezer fan poisoned"))?;
     rows.sort_by_key(|(index, _value)| *index);
     Ok(rows.into_iter().map(|(_index, value)| value).collect())
+}
+
+#[cfg(test)]
+mod tests {
+    use domain::catalog::Id;
+
+    use super::distinct;
+
+    #[test]
+    fn distinct_keeps_the_first_row_per_id() {
+        let rows = vec![(Id::new(7), "a"), (Id::new(9), "b"), (Id::new(7), "c")];
+        let kept = distinct(rows, |(id, _)| *id);
+        assert_eq!(kept, vec![(Id::new(7), "a"), (Id::new(9), "b")]);
+    }
 }
