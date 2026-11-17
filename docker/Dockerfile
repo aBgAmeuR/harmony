@@ -2,7 +2,7 @@
 # Build context: the repository root (docker build -f docker/Dockerfile .).
 
 # --- Rust toolchain with cargo-chef
-FROM docker.io/lukemathwalker/cargo-chef:0.1.77-rust-1.96.0-bookworm@sha256:fa7281503a177bd5af6261f4041ca6b36d9f0de8d3090886c33cbd8e65b88ca9 AS chef
+FROM docker.io/lukemathwalker/cargo-chef:0.1.78-rust-1.100.0-bookworm@sha256:9573268a2a874efc1c755a0094a50c25988b2c6a0b7a520ddb7fd08d868d1c43 AS chef
 WORKDIR /app
 
 # --- Prebuilt libduckdb matching the libduckdb-sys version in Cargo.lock
