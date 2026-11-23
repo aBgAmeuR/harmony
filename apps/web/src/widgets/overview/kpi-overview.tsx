@@ -260,17 +260,10 @@ type KpiOverviewProps = {
   data: Overview;
   names: Names;
   packageId: string;
-  showMore?: boolean;
-  onUnitChange?: (unit: Unit) => void;
+  onUnitChange: (unit: Unit) => void;
 };
 
-export const KpiOverview = ({
-  data,
-  names,
-  packageId,
-  showMore = true,
-  onUnitChange,
-}: KpiOverviewProps) => {
+export const KpiOverview = ({ data, names, packageId, onUnitChange }: KpiOverviewProps) => {
   const [key, setKey] = useState<Key>("minutes");
   const def = metrics.find((m) => m.key === key) ?? metrics[0]!;
 
@@ -318,39 +311,35 @@ export const KpiOverview = ({
       <Card size="xs" className="gap-0">
         <div className="flex min-h-7 flex-wrap items-center justify-between gap-2 px-4 pt-3">
           <Legend names={names} />
-          {onUnitChange ? (
-            <FigureViews
-              views={UNITS}
-              value={data.unit}
-              onChange={(next) => {
-                if (isUnit(next)) onUnitChange(next);
-              }}
-            />
-          ) : null}
+          <FigureViews
+            views={UNITS}
+            value={data.unit}
+            onChange={(next) => {
+              if (isUnit(next)) onUnitChange(next);
+            }}
+          />
         </div>
 
         <div className="px-4 pt-2 pb-3">
           <KpiChart data={data} def={def} names={names} />
         </div>
 
-        {showMore && (
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-2.5 text-sm">
-            <p className="text-muted-foreground tabular-nums">
-              {def.hint(data.current.totals, data.days)}
-            </p>
-            <Link
-              from="/app/$packageId"
-              to={def.to}
-              params={{ packageId }}
-              search={def.to === "./explorer" ? { base: "artists" } : {}}
-              preload="intent"
-              className="flex items-center gap-1 text-primary transition-colors hover:text-foreground"
-            >
-              {def.more}
-              <Icon icon={ArrowRight01Icon} size={14} />
-            </Link>
-          </div>
-        )}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-2.5 text-sm">
+          <p className="text-muted-foreground tabular-nums">
+            {def.hint(data.current.totals, data.days)}
+          </p>
+          <Link
+            from="/app/$packageId"
+            to={def.to}
+            params={{ packageId }}
+            search={def.to === "./explorer" ? { base: "artists" } : {}}
+            preload="intent"
+            className="flex items-center gap-1 text-primary transition-colors hover:text-foreground"
+          >
+            {def.more}
+            <Icon icon={ArrowRight01Icon} size={14} />
+          </Link>
+        </div>
       </Card>
     </section>
   );

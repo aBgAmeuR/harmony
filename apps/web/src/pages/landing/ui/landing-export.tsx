@@ -1,9 +1,23 @@
+import type { ReactNode } from "react";
+
 import { Link } from "@tanstack/react-router";
 
 import { useUploadEnabled } from "@/features/upload/use-upload-enabled";
 
-import { LINK, LandingSection } from "./landing-section";
+import { LandingSection } from "./landing-section";
 import { SPOTIFY_PRIVACY_URL } from "./links";
+
+type StepProps = {
+  n: number;
+  children: ReactNode;
+};
+
+const Step = ({ n, children }: StepProps) => (
+  <li className="flex grow basis-44 flex-col gap-2">
+    <span className="text-2xl leading-none font-bold text-primary tabular-nums">{n}</span>
+    <span className="text-pretty">{children}</span>
+  </li>
+);
 
 export const LandingExport = () => {
   const uploadEnabled = useUploadEnabled();
@@ -11,33 +25,30 @@ export const LandingExport = () => {
   return (
     <LandingSection>
       <LandingSection.Title>Get your data from Spotify</LandingSection.Title>
-      <LandingSection.Text>
-        Harmony works from the export Spotify makes for you. You ask for it once and it arrives by
-        email
-      </LandingSection.Text>
-      <LandingSection.Body>
-        <ol className="flex max-w-lg list-decimal flex-col gap-1.5 pl-5 text-sm text-pretty text-muted-foreground marker:text-muted-foreground/70">
-          <li>
-            Open your{" "}
-            <LandingSection.ExternalLink href={SPOTIFY_PRIVACY_URL}>
-              Spotify privacy settings
-            </LandingSection.ExternalLink>
-          </li>
-          <li>
-            Select <LandingSection.Em>Extended streaming history</LandingSection.Em> and send the
-            request
-          </li>
-          <li>Wait for the email with the download link. It can take up to 30 days</li>
-          {uploadEnabled ? (
-            <li>
-              <Link to="/upload" className={LINK}>
-                Upload the ZIP
-              </Link>{" "}
-              as it is, without unzipping it
-            </li>
-          ) : null}
-        </ol>
-      </LandingSection.Body>
+      <ol className="t-stagger-line t-stagger-line--2 flex flex-wrap gap-6 text-sm text-muted-foreground">
+        <Step n={1}>
+          Open your{" "}
+          <LandingSection.ExternalLink href={SPOTIFY_PRIVACY_URL}>
+            Spotify privacy settings
+          </LandingSection.ExternalLink>
+        </Step>
+        <Step n={2}>
+          Select <LandingSection.Em>Extended streaming history</LandingSection.Em> and send the
+          request
+        </Step>
+        <Step n={3}>Wait for the email with the download link. It can take up to 30 days</Step>
+        {uploadEnabled ? (
+          <Step n={4}>
+            <Link
+              to="/upload"
+              className="rounded-sm text-foreground underline decoration-foreground/30 underline-offset-3 transition-colors hover:decoration-foreground"
+            >
+              Upload the ZIP
+            </Link>{" "}
+            as it is, without unzipping it
+          </Step>
+        ) : null}
+      </ol>
     </LandingSection>
   );
 };

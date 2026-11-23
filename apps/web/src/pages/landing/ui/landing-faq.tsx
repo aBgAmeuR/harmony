@@ -30,19 +30,6 @@ const QUESTIONS: ReadonlyArray<{ q: string; a: ReactNode }> = [
     a: "There are no accounts. Your package lives at a six-character link, and anyone with that link can open it",
   },
   {
-    q: "Can I host it myself?",
-    a: (
-      <>
-        Yes. One Docker image serves the app and the API:
-        <pre className="mt-2 overflow-x-auto rounded-lg bg-card px-3 py-2.5 font-mono text-xs text-foreground ring-1 ring-border">
-          <span className="text-muted-foreground select-none">$ </span>
-          <span className="text-primary">docker</span>
-          {" run -p 3000:3000 -v harmony-data:/data ghcr.io/abgameur/harmony"}
-        </pre>
-      </>
-    ),
-  },
-  {
     q: "Where's the code?",
     a: (
       <>
@@ -51,16 +38,28 @@ const QUESTIONS: ReadonlyArray<{ q: string; a: ReactNode }> = [
       </>
     ),
   },
+  {
+    q: "Can I host it myself?",
+    a: (
+      <>
+        Yes. One Docker image serves the app and the API:
+        <pre className="mt-2 overflow-x-auto rounded-lg border border-foreground/10 bg-card px-3 py-2.5 font-mono text-xs text-foreground">
+          <span className="text-muted-foreground/70 select-none">$ </span>
+          {"docker run -p 3000:3000 -v harmony-data:/data ghcr.io/abgameur/harmony"}
+        </pre>
+      </>
+    ),
+  },
 ];
 
 export const LandingFaq = () => (
   <LandingSection>
     <LandingSection.Title>Questions</LandingSection.Title>
-    <dl className="t-stagger-line t-stagger-line--2 mt-4 flex flex-col gap-6">
+    <dl className="t-stagger-line t-stagger-line--2 flex flex-col gap-6 text-sm">
       {QUESTIONS.map((item) => (
-        <div key={item.q} className="flex max-w-xl flex-col gap-1 text-sm">
-          <dt className="font-medium text-foreground">{item.q}</dt>
-          <dd className="text-pretty text-muted-foreground/70">{item.a}</dd>
+        <div key={item.q} className="grid gap-1 sm:grid-cols-3 sm:gap-8">
+          <dt className="text-foreground">{item.q}</dt>
+          <dd className="min-w-0 text-pretty text-muted-foreground/70 sm:col-span-2">{item.a}</dd>
         </div>
       ))}
     </dl>

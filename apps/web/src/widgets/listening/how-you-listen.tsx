@@ -183,7 +183,7 @@ type ListeningSharesProps = {
   className?: string;
 };
 
-export const ListeningShares = ({ style, platforms, className }: ListeningSharesProps) => (
+const ListeningShares = ({ style, platforms, className }: ListeningSharesProps) => (
   <div className={cn("flex flex-col justify-center gap-5", className)}>
     <div className="flex flex-wrap gap-x-10 gap-y-4">
       <Ring value={shareOf(style, "shuffle")} label="on shuffle" />
