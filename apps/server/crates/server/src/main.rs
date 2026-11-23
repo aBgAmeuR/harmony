@@ -76,6 +76,7 @@ async fn serve(config: Config, blob: Arc<Shelf>, deezer: Arc<Deezer>) -> anyhow:
         blob,
         deezer,
         max_upload_bytes: config.max_upload_bytes(),
+        upload_disabled: config.upload_disabled(),
         public_url: config.public_url().map(str::to_owned),
     };
 
@@ -88,6 +89,7 @@ async fn serve(config: Config, blob: Arc<Shelf>, deezer: Arc<Deezer>) -> anyhow:
     tracing::info!(
         %address,
         static_dir = config.static_dir().map(|dir| dir.display().to_string()),
+        upload_disabled = config.upload_disabled(),
         "listening"
     );
 
@@ -220,10 +222,13 @@ async fn health() -> &'static str {
 }
 
 async fn limits(State(app): State<App>) -> Json<http::Limits> {
-    Json(http::config(app.max_upload_bytes))
+    Json(http::config(app.max_upload_bytes, !app.upload_disabled))
 }
 
 async fn upload(State(app): State<App>, mut multipart: Multipart) -> Response {
+    if app.upload_disabled {
+        return http_error(&HttpError::Disabled);
+    }
     let mut name = String::new();
     let mut bytes = None;
     let mut files = None;
@@ -447,6 +452,7 @@ mod tests {
             blob: Arc::new(Shelf::Dir(Fs::open(dir)?)),
             deezer: Arc::new(Deezer::open(Mode::Direct { per_second: 1 })?),
             max_upload_bytes: 1024,
+            upload_disabled: false,
             public_url: None,
         })
     }
@@ -486,6 +492,40 @@ mod tests {
 
             let plain = call(&router, "/files/abc123.duckdb").await?;
             assert_eq!(plain, (StatusCode::OK, package.clone()));
+            Ok(())
+        });
+        drop(runtime);
+        drop(router);
+        result
+    }
+
+    #[test]
+    fn disabled_upload_is_refused_and_advertised() -> Result<(), Box<dyn std::error::Error>> {
+        let root = tempfile::tempdir()?;
+        let app = App {
+            upload_disabled: true,
+            ..app(&root.path().join("data"))?
+        };
+        let router = routes(app, None);
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()?;
+        let result = runtime.block_on(async {
+            let request = Request::builder()
+                .method("POST")
+                .uri("/api/v1/packages")
+                .header(header::CONTENT_TYPE, "multipart/form-data; boundary=x")
+                .body(Body::from("--x--\r\n"))?;
+            let response = router.clone().oneshot(request).await?;
+            assert_eq!(response.status(), StatusCode::FORBIDDEN);
+
+            let config = call(&router, "/api/v1/config").await?;
+            assert_eq!(config.0, StatusCode::OK);
+            assert!(
+                config.1.contains("\"upload_enabled\":false"),
+                "{}",
+                config.1
+            );
             Ok(())
         });
         drop(runtime);

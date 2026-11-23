@@ -1,4 +1,5 @@
-//! One error for the HTTP verbs. `400` is a bad upload. `404` is a missing package.
+//! One error for the HTTP verbs. `400` is a bad upload. `403` is an upload while uploads are off.
+//! `404` is a missing package.
 
 use domain::source::SourceError;
 
@@ -13,14 +14,17 @@ pub enum HttpError {
     Zip(#[from] SourceError),
     #[error("not found")]
     Missing,
+    #[error("uploads are disabled on this server")]
+    Disabled,
 }
 
 impl HttpError {
-    /// `400` for a bad upload, `404` when the id or the file is absent.
+    /// `400` for a bad upload, `403` when uploads are off, `404` when the id or the file is absent.
     #[must_use]
     pub const fn status(&self) -> u16 {
         match self {
             Self::NoFile | Self::Files(_) | Self::Zip(_) => 400,
+            Self::Disabled => 403,
             Self::Missing => 404,
         }
     }

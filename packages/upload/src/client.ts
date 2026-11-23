@@ -21,8 +21,8 @@ export const deploy = async ({ file, selectedFiles }: DeployInput): Promise<Depl
 export const serverConfig = async (): Promise<ServerConfig> => {
   const response = await fetch("/api/v1/config");
   if (!response.ok) throw new UploadError("Failed to load server config", response.status);
-  const body = (await response.json()) as { max_upload_bytes: number };
-  return { maxUploadBytes: body.max_upload_bytes };
+  const body = (await response.json()) as { max_upload_bytes: number; upload_enabled: boolean };
+  return { maxUploadBytes: body.max_upload_bytes, uploadEnabled: body.upload_enabled };
 };
 
 export const streamUrl = (publicId: string): string =>

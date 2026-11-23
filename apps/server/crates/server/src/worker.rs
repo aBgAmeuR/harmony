@@ -46,6 +46,7 @@ pub(crate) struct App {
     pub(crate) blob: Arc<Shelf>,
     pub(crate) deezer: Arc<Deezer>,
     pub(crate) max_upload_bytes: u64,
+    pub(crate) upload_disabled: bool,
     pub(crate) public_url: Option<String>,
 }
 

@@ -44,6 +44,7 @@ pub(crate) struct Config {
     files: Files,
     deezer: Lookup,
     max_upload_bytes: u64,
+    upload_disabled: bool,
     log_format: LogFormat,
     static_dir: Option<PathBuf>,
 }
@@ -67,6 +68,10 @@ impl Config {
 
     pub(crate) const fn max_upload_bytes(&self) -> u64 {
         self.max_upload_bytes
+    }
+
+    pub(crate) const fn upload_disabled(&self) -> bool {
+        self.upload_disabled
     }
 
     pub(crate) const fn log_format(&self) -> LogFormat {
@@ -102,6 +107,7 @@ impl Config {
             deezer_proxy_secret: std::env::var("DEEZER_PROXY_SECRET").ok(),
             deezer_rate_limit: std::env::var("DEEZER_RATE_LIMIT").ok(),
             max_upload_mb: std::env::var("MAX_UPLOAD_MB").ok(),
+            disable_upload: std::env::var("DISABLE_UPLOAD").ok(),
             log_format: std::env::var("LOG_FORMAT").ok(),
             static_dir: std::env::var("STATIC_DIR").ok(),
         })
@@ -124,13 +130,31 @@ impl Config {
             2000,
             &mut problems,
         );
+        let upload_disabled = parse_flag(
+            input.disable_upload.as_deref(),
+            "DISABLE_UPLOAD",
+            &mut problems,
+        );
         let log_format = parse_log_format(input.log_format.as_deref(), &mut problems);
         let static_dir = parse_static_dir(input.static_dir.as_deref(), &mut problems);
         if !problems.is_empty() {
             return Err(ConfigError(join(&problems)));
         }
-        let (Some(port), Some(files), Some(deezer), Some(max_upload_mb), Some(log_format)) =
-            (port, files, deezer, max_upload_mb, log_format)
+        let (
+            Some(port),
+            Some(files),
+            Some(deezer),
+            Some(max_upload_mb),
+            Some(upload_disabled),
+            Some(log_format),
+        ) = (
+            port,
+            files,
+            deezer,
+            max_upload_mb,
+            upload_disabled,
+            log_format,
+        )
         else {
             return Err(ConfigError(join(&problems)));
         };
@@ -140,6 +164,7 @@ impl Config {
             files,
             deezer,
             max_upload_bytes: u64::from(max_upload_mb) * 1024 * 1024,
+            upload_disabled,
             log_format,
             static_dir,
         })
@@ -175,6 +200,7 @@ pub(crate) struct Input {
     pub(crate) deezer_proxy_secret: Option<String>,
     pub(crate) deezer_rate_limit: Option<String>,
     pub(crate) max_upload_mb: Option<String>,
+    pub(crate) disable_upload: Option<String>,
     pub(crate) log_format: Option<String>,
     pub(crate) static_dir: Option<String>,
 }
@@ -290,6 +316,23 @@ fn parse_log_format(value: Option<&str>, problems: &mut Vec<String>) -> Option<L
     }
 }
 
+fn parse_flag(value: Option<&str>, name: &str, problems: &mut Vec<String>) -> Option<bool> {
+    let Some(raw) = non_blank(value) else {
+        return Some(false);
+    };
+    match raw.trim().to_ascii_lowercase().as_str() {
+        "true" | "1" => Some(true),
+        "false" | "0" => Some(false),
+        _ => {
+            problems.push(format!(
+                "{name} is invalid: {} (expected true or false)",
+                raw.trim()
+            ));
+            None
+        }
+    }
+}
+
 fn parse_bounded(
     value: Option<&str>,
     name: &str,
@@ -374,6 +417,7 @@ mod tests {
         assert_eq!(config.host(), "127.0.0.1");
         assert_eq!(config.port(), 3000);
         assert_eq!(config.max_upload_bytes(), 50 * 1024 * 1024);
+        assert!(!config.upload_disabled());
         assert_eq!(config.log_format(), LogFormat::Compact);
         assert!(
             matches!(config.files(), Files::Disk { dir } if dir.ends_with("data") || dir == std::path::Path::new("./data"))
@@ -402,6 +446,28 @@ mod tests {
         };
         let config = Config::from_input(&ok);
         assert!(matches!(config, Ok(config) if config.max_upload_bytes() == 2000 * 1024 * 1024));
+    }
+
+    #[test]
+    fn disable_upload_reads_a_boolean() -> Result<(), super::ConfigError> {
+        for (raw, expected) in [("true", true), ("1", true), ("FALSE", false), ("0", false)] {
+            let input = Input {
+                disable_upload: Some(raw.to_owned()),
+                ..Input::default()
+            };
+            assert_eq!(
+                Config::from_input(&input)?.upload_disabled(),
+                expected,
+                "{raw}"
+            );
+        }
+
+        let bad = Input {
+            disable_upload: Some("yes".to_owned()),
+            ..Input::default()
+        };
+        assert!(Config::from_input(&bad).is_err());
+        Ok(())
     }
 
     #[test]

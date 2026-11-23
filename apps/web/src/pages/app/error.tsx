@@ -2,6 +2,7 @@ import { Alert02Icon, Icon, RefreshIcon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
 import { Link, type ErrorComponentProps } from "@tanstack/react-router";
 
+import { useUploadEnabled } from "@/features/upload/use-upload-enabled";
 import { openErrorKind, type OpenErrorKind } from "@/data/packages/open";
 
 import { AppFooter } from "./footer";
@@ -26,6 +27,7 @@ const contents = {
 } satisfies Record<OpenErrorKind, { title: string; description: string; showUpload: boolean }>;
 
 export const AppError = ({ error }: ErrorComponentProps) => {
+  const uploadEnabled = useUploadEnabled();
   const kind = openErrorKind(error);
   const { title, showUpload } = contents[kind];
   const message = error instanceof Error ? error.message : "";
@@ -48,7 +50,7 @@ export const AppError = ({ error }: ErrorComponentProps) => {
             <Icon icon={RefreshIcon} />
             Try again
           </Button>
-          {showUpload ? (
+          {showUpload && uploadEnabled ? (
             <Button nativeButton={false} render={<Link to="/upload" />}>
               Upload package
             </Button>

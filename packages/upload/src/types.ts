@@ -73,4 +73,5 @@ export type DeployResult = {
 
 export type ServerConfig = {
   maxUploadBytes: number;
+  uploadEnabled: boolean;
 };
