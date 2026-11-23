@@ -30,7 +30,7 @@ export const valuesFn = async ({
       base,
       filter,
       search,
-      sort: "playtime",
+      sort: "score",
       desc: true,
       limit: 25,
     });

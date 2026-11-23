@@ -102,7 +102,7 @@ export const BaseTable = ({ view, rows, trends, active, selected, onOpen }: Base
   const sorted = base.props[view.sort];
   const ranked = view.desc && sorted !== undefined && isNumeric(sorted);
   const share = useShare(view, rows);
-  const below = sorted && view.sort !== MAIN ? view.sort : "streams";
+  const below = sorted && view.sort !== MAIN && view.sort !== "score" ? view.sort : "streams";
   const main = base.props[MAIN];
   const sub = base.props[below];
   const compared = view.diffs && rows.some((row) => row.prevRank !== null);
