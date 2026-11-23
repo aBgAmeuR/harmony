@@ -20,7 +20,8 @@ const DEEZER_IMAGE = /^https:\/\/api\.deezer\.com\/[a-z]+\/\d+\/image$/;
 const big = (src: string | null) => (src && DEEZER_IMAGE.test(src) ? `${src}?size=big` : src);
 
 export const Gallery = ({ view, rows, selected, onOpen }: GalleryProps) => {
-  const prop = view.base.props[view.sort];
+  const shown = view.sort === "score" ? "playtime" : view.sort;
+  const prop = view.base.props[shown];
   return (
     <div className="@container p-3">
       <div className="grid grid-cols-4 gap-y-3 @2xl:grid-cols-6">
@@ -48,7 +49,7 @@ export const Gallery = ({ view, rows, selected, onOpen }: GalleryProps) => {
               ) : null}
               {prop ? (
                 <span className="text-xs text-muted-foreground">
-                  <Value row={row} name={view.sort} prop={prop} />
+                  <Value row={row} name={shown} prop={prop} />
                 </span>
               ) : null}
             </div>

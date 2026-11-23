@@ -28,6 +28,11 @@ const measureList = {
     kind: "minutes",
     sql: "(COALESCE(SUM(ms_played), 0) / 60000.0)::DOUBLE",
   },
+  score: {
+    label: "Score",
+    kind: "count",
+    sql: "SQRT(COUNT(*) * COALESCE(SUM(ms_played), 0) / 60000.0)::DOUBLE",
+  },
   tracks: { label: "Tracks played", kind: "count", sql: "COUNT(DISTINCT track_id)::INTEGER" },
   albums: {
     label: "Albums played",

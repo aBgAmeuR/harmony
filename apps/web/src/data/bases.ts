@@ -51,7 +51,7 @@ const grouped = (by: By, ids: readonly MeasureId[], filter: Filter) =>
 
 const measureColumns = (ids: readonly MeasureId[]) => ids.map((id) => `m."${id}"`).join(", ");
 
-const ENTITY = ["playtime", "streams", "skipRate", "days", "firstPlayed", "lastPlayed"] as const;
+const ENTITY = ["playtime", "streams", "score", "skipRate", "days", "firstPlayed", "lastPlayed"] as const;
 
 const artists: Base = (() => {
   const ids = [...ENTITY, "tracks", "albums"] as const;
@@ -60,7 +60,7 @@ const artists: Base = (() => {
     title: "Artists",
     props: measureProps(ids),
     views: ["table", "gallery"],
-    defaults: { sort: "playtime", desc: true },
+    defaults: { sort: "score", desc: true },
     by: "artist",
     opens: "artist",
     source: (filter) => `
@@ -82,7 +82,7 @@ const tracks: Base = (() => {
       releaseYear: { label: "Release year", kind: "text" },
     },
     views: ["table", "gallery"],
-    defaults: { sort: "playtime", desc: true },
+    defaults: { sort: "score", desc: true },
     by: "track",
     opens: "track",
     source: (filter) => `
@@ -107,7 +107,7 @@ const albums: Base = (() => {
       releaseYear: { label: "Release year", kind: "text" },
     },
     views: ["table", "gallery"],
-    defaults: { sort: "playtime", desc: true },
+    defaults: { sort: "score", desc: true },
     by: "album",
     opens: "album",
     source: (filter) => `
@@ -132,7 +132,7 @@ const genres: Base = (() => {
     title: "Genres",
     props: measureProps(ids),
     views: ["table"],
-    defaults: { sort: "playtime", desc: true },
+    defaults: { sort: "score", desc: true },
     by: "genre",
     opens: "genre",
     source: (filter) => `
@@ -297,7 +297,7 @@ export const rankFn = async ({
   filter: Filter;
   previous: Filter;
 }) => {
-  const by = { sort: "playtime", desc: true };
+  const by = { sort: "score", desc: true };
   const [row] = await db.query<RankRow>(`
     WITH cur AS (${rankedSql(bases[base], filter, by)}),
       prev AS (${rankedSql(bases[base], previous, by)})
@@ -320,8 +320,8 @@ export const rankTrendFn = async ({
   if (!by) return [];
   return await db.query<{ label: string; rank: number }>(`
     WITH ranked AS (
-      SELECT key, period, RANK() OVER (PARTITION BY period ORDER BY playtime DESC)::INTEGER AS rank
-      FROM (${aggregateSql({ by, measures: ["playtime"], filter, over: "month" })})
+      SELECT key, period, RANK() OVER (PARTITION BY period ORDER BY score DESC)::INTEGER AS rank
+      FROM (${aggregateSql({ by, measures: ["score"], filter, over: "month" })})
     )
     SELECT period AS label, rank FROM ranked
     WHERE key = ${typeof id === "number" ? int(id) : text(id)}
