@@ -22,6 +22,26 @@ const isZipFile = (file: File) => {
   return file.name.toLowerCase().endsWith(".zip");
 };
 
+const UploadDisabled = () => (
+  <Card>
+    <CardHeader>
+      <CardTitle>Uploads are turned off</CardTitle>
+      <CardDescription>
+        This instance only hosts the demo. Explore it, or self-host Harmony to look at your own
+        listening history.
+      </CardDescription>
+    </CardHeader>
+    <CardFooter className="justify-end">
+      <Button
+        nativeButton={false}
+        render={<Link to="/app/$packageId" params={{ packageId: "demo" }} />}
+      >
+        See the demo
+      </Button>
+    </CardFooter>
+  </Card>
+);
+
 export const UploadPackageStep = () => {
   const {
     state: { file },
@@ -54,6 +74,8 @@ export const UploadPackageStep = () => {
     setError(null);
     setFile(null);
   };
+
+  if (serverConfig?.uploadEnabled === false) return <UploadDisabled />;
 
   return (
     <>
