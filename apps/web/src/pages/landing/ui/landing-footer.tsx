@@ -1,15 +1,7 @@
-import { cn } from "@harmony/ui/lib/utils";
-
-import { COLUMN } from "./landing-section";
 import { AUTHOR_URL } from "./links";
 
 export const LandingFooter = () => (
-  <footer
-    className={cn(
-      COLUMN,
-      "flex items-center justify-between gap-4 border-t border-border pt-4 text-xs text-muted-foreground/70",
-    )}
-  >
+  <footer className="mt-auto flex flex-wrap items-center justify-between gap-x-6 gap-y-2 pb-8 text-xs text-muted-foreground/70">
     <p>
       Built by{" "}
       <a

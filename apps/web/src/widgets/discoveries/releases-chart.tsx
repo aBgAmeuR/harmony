@@ -101,19 +101,6 @@ const releasesDefinition = (rows: WeekPoint[], releases: ReleaseMark[]) => {
   });
 };
 
-type ReleasesLineProps = ChartProps & { aspectRatio?: number };
-
-export const ReleasesLine = ({ weekly, releases, aspectRatio = 3 }: ReleasesLineProps) => {
-  const definition = useMemo(() => releasesDefinition(weekly, releases), [weekly, releases]);
-  return (
-    <Chart
-      definition={definition}
-      ariaLabel="Weekly listening time with album releases"
-      aspectRatio={aspectRatio}
-    />
-  );
-};
-
 export const ListeningVsReleasesChart = ({ weekly, releases }: ChartProps) => {
   const weeks = useMemo(() => weekly.map((week) => week.name), [weekly]);
   const [range, setRange] = useWeekRange(weeks);

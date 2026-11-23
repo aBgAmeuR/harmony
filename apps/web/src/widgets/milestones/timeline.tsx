@@ -79,10 +79,10 @@ const useHorizontalPager = (itemCount: number) => {
 
 type MilestonesTimelineProps = {
   rows: TimelineEvent[];
-  isPending?: boolean;
+  isPending: boolean;
 };
 
-export const MilestonesTimeline = ({ rows, isPending = false }: MilestonesTimelineProps) => {
+export const MilestonesTimeline = ({ rows, isPending }: MilestonesTimelineProps) => {
   const { ref, canPrev, canNext, page } = useHorizontalPager(rows.length);
   const showNav = canPrev || canNext;
   const showYear = rows.map((event, index) => {
