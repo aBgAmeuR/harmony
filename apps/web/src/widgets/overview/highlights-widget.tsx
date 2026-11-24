@@ -33,9 +33,11 @@ const Moment = ({ label, value, hint, to, more, children }: MomentProps) => (
     <div className="flex flex-1 flex-col gap-4 p-4">
       <div className="flex min-w-0 flex-col gap-0.5">
         <span className="text-xs text-muted-foreground">{label}</span>
-        <span className="truncate text-lg font-semibold tabular-nums">{value}</span>
+        <span className="text-base leading-snug font-semibold text-pretty tabular-nums">
+          {value}
+        </span>
         {hint ? (
-          <span className="truncate text-xs text-muted-foreground tabular-nums">{hint}</span>
+          <span className="text-xs text-pretty text-muted-foreground tabular-nums">{hint}</span>
         ) : null}
       </div>
       <div className="mt-auto">{children}</div>
@@ -128,7 +130,7 @@ const NewDots = ({ share }: { share: number }) => {
   const filled = Math.round(share * DOTS);
   return (
     <div
-      className="grid grid-cols-20 gap-1"
+      className="grid max-w-56 grid-cols-10 gap-1.5"
       role="img"
       aria-label={`${format.as(share, "percent")} new`}
     >
@@ -151,92 +153,96 @@ export const HighlightsWidget = () => {
 
   return (
     <Section size="md">
-      <Section.Title>Where to look next</Section.Title>
-      <Section.Text>Four moments from this period, each one a way into the details.</Section.Text>
+      <Section.Title>Four moments</Section.Title>
+      <Section.Text>Each one is a way into the details.</Section.Text>
       {!data ? (
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
-          {["h-58", "h-58", "h-49", "h-49"].map((height, i) => (
-            <Skeleton key={i} className={cn("rounded-lg", height)} />
-          ))}
+        <div className="@container mt-3">
+          <div className="grid gap-3 @md:grid-cols-2 @2xl:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-58 rounded-lg" />
+            ))}
+          </div>
         </div>
       ) : (
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
-          <Moment
-            label="Peak day"
-            value={data.peakDay ? format.date(data.peakDay.date) : "-"}
-            hint={
-              data.peakDay
-                ? `${format.as(data.peakDay.minutes, "minutes")} · ${format.count(data.peakDay.streams)} streams`
-                : null
-            }
-            to="./listening"
-            more="Listening Habits"
-          >
-            {data.peakDay ? <PeakMonth days={data.peakMonth} peak={data.peakDay.date} /> : null}
-          </Moment>
-
-          <Moment
-            label="Longest streak"
-            value={`${format.count(data.streak.days)} days in a row`}
-            hint={
-              data.streak.start && data.streak.end
-                ? `${format.date(data.streak.start)} - ${format.date(data.streak.end)}`
-                : null
-            }
-            to="./milestones"
-            more="Milestones"
-          >
-            {data.streak.start && data.streak.end ? (
-              <StreakLine range={range} start={data.streak.start} end={data.streak.end} />
-            ) : null}
-          </Moment>
-
-          <Moment
-            label="New artists"
-            value={
-              data.newArtists === null ? "-" : `${format.count(data.newArtists)} first listens`
-            }
-            hint={
-              data.newArtists === null
-                ? "Needs history before this period"
-                : artists > 0
-                  ? `${format.as(data.newArtists / artists, "percent")} of the ${format.count(artists)} artists you played`
+        <div className="@container mt-3">
+          <div className="grid gap-3 @md:grid-cols-2 @2xl:grid-cols-4">
+            <Moment
+              label="Peak day"
+              value={data.peakDay ? format.date(data.peakDay.date) : "-"}
+              hint={
+                data.peakDay
+                  ? `${format.as(data.peakDay.minutes, "minutes")} · ${format.count(data.peakDay.streams)} streams`
                   : null
-            }
-            to="./discoveries"
-            more="Discoveries"
-          >
-            {data.newArtists !== null && artists > 0 ? (
-              <NewDots share={data.newArtists / artists} />
-            ) : null}
-          </Moment>
+              }
+              to="./listening"
+              more="Listening Habits"
+            >
+              {data.peakDay ? <PeakMonth days={data.peakMonth} peak={data.peakDay.date} /> : null}
+            </Moment>
 
-          <Moment
-            label="Most replayed"
-            value={data.replayed?.name ?? "-"}
-            hint={data.replayed?.description}
-            to="./explorer"
-            more="All your tracks"
-          >
-            {data.replayed ? (
-              <div className="flex items-center gap-3">
-                <Art
-                  src={data.replayed.image}
-                  alt={data.replayed.name}
-                  size="lg"
-                  fallback="initials"
-                />
-                <div className="flex flex-col">
-                  <span className="text-3xl leading-none font-semibold tracking-tight tabular-nums">
-                    {format.count(data.replayed.streams)}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    streams, more than any other track
-                  </span>
+            <Moment
+              label="Longest streak"
+              value={`${format.count(data.streak.days)} days in a row`}
+              hint={
+                data.streak.start && data.streak.end
+                  ? `${format.date(data.streak.start)} - ${format.date(data.streak.end)}`
+                  : null
+              }
+              to="./milestones"
+              more="Milestones"
+            >
+              {data.streak.start && data.streak.end ? (
+                <StreakLine range={range} start={data.streak.start} end={data.streak.end} />
+              ) : null}
+            </Moment>
+
+            <Moment
+              label="New artists"
+              value={
+                data.newArtists === null ? "-" : `${format.count(data.newArtists)} first listens`
+              }
+              hint={
+                data.newArtists === null
+                  ? "Needs history before this period"
+                  : artists > 0
+                    ? `${format.as(data.newArtists / artists, "percent")} of the ${format.count(artists)} artists you played`
+                    : null
+              }
+              to="./discoveries"
+              more="Discoveries"
+            >
+              {data.newArtists !== null && artists > 0 ? (
+                <NewDots share={data.newArtists / artists} />
+              ) : null}
+            </Moment>
+
+            <Moment
+              label="Most replayed"
+              value={data.replayed?.name ?? "-"}
+              hint={data.replayed?.description}
+              to="./explorer"
+              more="All your tracks"
+            >
+              {data.replayed ? (
+                <div className="flex items-center gap-3">
+                  <Art
+                    src={data.replayed.image}
+                    alt={data.replayed.name}
+                    size="lg"
+                    fallback="initials"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-2xl leading-none font-semibold tracking-tight tabular-nums">
+                      {format.count(data.replayed.streams)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      streams, more than any other track
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ) : null}
-          </Moment>
+              ) : null}
+            </Moment>
+          </div>
         </div>
       )}
     </Section>

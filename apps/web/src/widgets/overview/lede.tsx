@@ -21,7 +21,6 @@ const headline = (minutes: number, previous: number, against: string, period: st
 export const OverviewLede = () => {
   const { range, full } = useRanges();
   const { data: kpis } = useQuery(overviewQueries.kpis({ range, full }));
-  const { data: highlights } = useQuery(overviewQueries.highlights(range));
   const { data: artists = [] } = useQuery(
     overviewQueries.top({ base: "artists", filter: range, limit: TOP }),
   );
@@ -40,13 +39,11 @@ export const OverviewLede = () => {
     );
   }
 
-  // The chart below already says the period is empty.
   const { current, previous } = kpis;
   if (current.totals.streams === 0) return null;
 
   const artist = artists[0];
   const track = tracks[0];
-  const peak = highlights?.peakDay;
   const against = periodNames(full).previous;
 
   return (
@@ -60,20 +57,11 @@ export const OverviewLede = () => {
           periodWord(full.from, full.to),
         )}
       </Lede.Title>
-      <Lede.Text>
-        {artist && track ? (
-          <>
-            <Lede.Em>{artist.name}</Lede.Em> led the way, and <Lede.Em>{track.name}</Lede.Em> was
-            your top track.{" "}
-          </>
-        ) : null}
-        {peak ? (
-          <>
-            Your biggest day was <Lede.Em>{format.date(peak.date)}</Lede.Em>, with{" "}
-            <Lede.Em>{format.as(peak.minutes, "minutes")}</Lede.Em> of music.
-          </>
-        ) : null}
-      </Lede.Text>
+      {artist && track ? (
+        <Lede.Text>
+          Led by <Lede.Em>{artist.name}</Lede.Em>, with <Lede.Em>{track.name}</Lede.Em> on repeat.
+        </Lede.Text>
+      ) : null}
     </Lede>
   );
 };
