@@ -17,7 +17,7 @@ import { DetailPanel } from "@/widgets/details/panel";
 
 type PageProps = {
   title: ReactNode;
-  width?: "column" | "full";
+  width?: "column" | "wide" | "full";
   fill?: boolean;
   className?: string;
   children: ReactNode;

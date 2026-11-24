@@ -37,6 +37,7 @@ const Title = ({ className, ...props }: ComponentProps<"h1">) => (
 const widths = {
   full: "",
   column: "mx-auto max-w-3xl px-3 pt-4 pb-12",
+  wide: "mx-auto max-w-5xl px-3 pt-4 pb-12",
 } as const;
 
 type BodyProps = ComponentProps<"div"> & {
