@@ -1435,9 +1435,9 @@ dependencies = [
 
 [[package]]
 name = "init-tracing-opentelemetry"
-version = "0.43.0"
+version = "0.44.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61a291c5d51acf9f8fac7fc38716eb00f6777b9adc92efba632c20f787b59938"
+checksum = "3992e7f311413d4d56d4a6d3aa1e09a66729efdd59bf05e61a701a5374ea0ae3"
 dependencies = [
  "opentelemetry",
  "opentelemetry-appender-tracing",
@@ -1445,7 +1445,10 @@ dependencies = [
  "opentelemetry-semantic-conventions",
  "opentelemetry-stdout",
  "opentelemetry_sdk",
+ "reqwest 0.13.5",
+ "rustls",
  "thiserror",
+ "tonic",
  "tracing",
  "tracing-opentelemetry",
  "tracing-opentelemetry-instrumentation-sdk",
@@ -2993,6 +2996,7 @@ dependencies = [
  "pin-project",
  "sync_wrapper",
  "tokio",
+ "tokio-rustls",
  "tokio-stream",
  "tower",
  "tower-layer",
