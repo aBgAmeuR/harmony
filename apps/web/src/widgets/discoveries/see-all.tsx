@@ -1,6 +1,7 @@
 import type { Discovery } from "@/data/discoveries";
 
 import { parseDay } from "@/shared/lib/date";
+import { Band } from "@/shared/primitives/band";
 
 import type { DiscoveryList } from "./list";
 
@@ -8,7 +9,6 @@ import { FreshHistory, LoadFailed, useDiscoveries } from "./discoveries";
 import {
   awayLabel,
   backLabel,
-  Band,
   FindRow,
   FindTable,
   ReleaseGap,
