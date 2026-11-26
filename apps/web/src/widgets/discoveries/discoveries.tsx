@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { format } from "@/shared/lib/format";
+import { Band } from "@/shared/primitives/band";
 import { Empty } from "@/shared/primitives/empty";
 import { usePeriod } from "@/shared/scope";
 
@@ -16,7 +17,6 @@ import { NewArtistsChart } from "./new-artists-chart";
 import {
   awayLabel,
   backLabel,
-  Band,
   FindRow,
   FindTable,
   ReleaseGap,

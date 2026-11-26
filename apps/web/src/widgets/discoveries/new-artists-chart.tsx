@@ -19,8 +19,7 @@ import { useMemo } from "react";
 import type { Discovery } from "@/data/discoveries";
 
 import { addDays, isoDay, rangeDays, type Range } from "@/shared/lib/date";
-
-import { Band } from "./rows";
+import { Band } from "@/shared/primitives/band";
 
 const unitOf = (range: Range) => {
   const days = rangeDays(range);
