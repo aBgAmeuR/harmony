@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-
 import type { ListRow, Trends } from "@/data/bases";
 
+import { Bars } from "@/shared/primitives/bars";
 import { Media } from "@/shared/primitives/media";
 import { Rank } from "@/shared/primitives/rank";
 import { Table } from "@/shared/primitives/table";
@@ -9,51 +8,6 @@ import { Table } from "@/shared/primitives/table";
 import type { View } from "./view";
 
 import { isNumeric, Value } from "./value";
-
-// Drawn once its row scrolls into view: drawing every row at once blocks the first paint.
-const Trend = ({ data }: { data: number[] }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [seen, setSeen] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || seen) return;
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) setSeen(true);
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [seen]);
-
-  return (
-    <div ref={ref} className="h-4.5">
-      {seen ? <Bars data={data} /> : null}
-    </div>
-  );
-};
-
-const Bars = ({ data }: { data: number[] }) => {
-  const max = Math.max(...data) || 1;
-  const step = 100 / data.length;
-  return (
-    <svg viewBox="0 0 100 18" preserveAspectRatio="none" className="size-full" aria-hidden>
-      {data.map((value, index) => {
-        const height = Math.max(1.5, (value / max) * 18);
-        return (
-          <rect
-            key={index}
-            x={index * step + step * 0.15}
-            y={18 - height}
-            width={step * 0.7}
-            height={height}
-            rx={0.6}
-            className={index === data.length - 1 ? "fill-chart-1" : "fill-chart-4"}
-          />
-        );
-      })}
-    </svg>
-  );
-};
 
 const Move = ({ row }: { row: ListRow }) => {
   if (row.prevRank === null) return <span className="text-muted-foreground">new</span>;
@@ -138,7 +92,7 @@ export const BaseTable = ({ view, rows, trends, active, selected, onOpen }: Base
                 </Table.Cell>
                 <Table.Cell className="hidden w-24 @xl:table-cell">
                   {points && points.length > 0 ? (
-                    <Trend data={points.map((point) => point[trendKey])} />
+                    <Bars data={points.map((point) => point[trendKey])} />
                   ) : null}
                 </Table.Cell>
                 <Table.Cell className="w-28 pr-3">
