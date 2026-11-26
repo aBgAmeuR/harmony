@@ -51,7 +51,15 @@ const grouped = (by: By, ids: readonly MeasureId[], filter: Filter) =>
 
 const measureColumns = (ids: readonly MeasureId[]) => ids.map((id) => `m."${id}"`).join(", ");
 
-const ENTITY = ["playtime", "streams", "score", "skipRate", "days", "firstPlayed", "lastPlayed"] as const;
+const ENTITY = [
+  "playtime",
+  "streams",
+  "score",
+  "skipRate",
+  "days",
+  "firstPlayed",
+  "lastPlayed",
+] as const;
 
 const artists: Base = (() => {
   const ids = [...ENTITY, "tracks", "albums"] as const;

@@ -1,6 +1,6 @@
 //! Public package id: six ASCII alphanumeric bytes.
 
-use rand::Rng;
+use rand::RngExt;
 
 const LEN: usize = 6;
 
