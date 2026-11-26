@@ -16,10 +16,11 @@ RUN set -eu; \
     encoded=$(echo "$crate" | cut -d. -f2); \
     version="$((encoded / 10000)).$((encoded / 100 % 100)).$((encoded % 100))"; \
     echo "libduckdb-sys $crate uses DuckDB $version ($TARGETARCH)"; \
-    curl -fsSL -o libduckdb.zip \
-      "https://github.com/duckdb/duckdb/releases/download/v${version}/libduckdb-linux-${TARGETARCH}.zip"; \
-    unzip -q libduckdb.zip libduckdb.so -d /opt/duckdb; \
-    rm libduckdb.zip
+    mkdir -p /opt/duckdb; \
+    curl -fsSL -o libduckdb.tar.gz \
+      "https://github.com/duckdb/duckdb/releases/download/v${version}/duckdb-shared-libs-linux-${TARGETARCH}.tar.gz"; \
+    tar -xzf libduckdb.tar.gz -C /opt/duckdb libduckdb.so; \
+    rm libduckdb.tar.gz
 
 # --- API
 FROM chef AS planner

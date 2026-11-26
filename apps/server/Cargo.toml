@@ -38,7 +38,7 @@ chrono = { version = "0.4.44", features = ["serde"] }
 
 # Pipeline / upload
 dashmap = "6"
-rand = "0.9"
+rand = "0.10"
 zip = "8.6"
 regex = "1.12"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
@@ -47,17 +47,17 @@ base64 = "0.23"
 strsim = "0.11"
 futures = "0.3"
 tempfile = "3"
-duckdb = { version = "1.2", default-features = false }
+duckdb = { version = "1.20000", default-features = false, features = ["download-lib"] }
 
 # Object storage (S3-compatible / Cloudflare R2, SigV4 over reqwest)
 hmac = "0.12"
 sha2 = "0.10"
 
 # OpenTelemetry
-opentelemetry = "0.31"
-tracing-opentelemetry = "0.32.1"
-axum-tracing-opentelemetry = "0.33.1"
-init-tracing-opentelemetry = { version = "0.37.0", features = [
+opentelemetry = "0.33"
+tracing-opentelemetry = "0.34"
+axum-tracing-opentelemetry = "0.42.1"
+init-tracing-opentelemetry = { version = "0.43.0", features = [
   "otlp",
   "tracing_subscriber_ext",
   "metrics",
