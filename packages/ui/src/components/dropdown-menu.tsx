@@ -15,32 +15,40 @@ function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
   return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />;
 }
 
+const DropdownMenuLayer = React.createContext<HTMLElement | null>(null);
+
 function DropdownMenuContent({
   align = "start",
   alignOffset = 0,
   side = "bottom",
   sideOffset = 4,
+  container,
   className,
   ...props
 }: MenuPrimitive.Popup.Props &
-  Pick<MenuPrimitive.Positioner.Props, "align" | "alignOffset" | "side" | "sideOffset">) {
+  Pick<MenuPrimitive.Positioner.Props, "align" | "alignOffset" | "side" | "sideOffset"> &
+  Pick<MenuPrimitive.Portal.Props, "container">) {
+  const [layer, setLayer] = React.useState<HTMLElement | null>(null);
   return (
-    <MenuPrimitive.Portal>
+    <MenuPrimitive.Portal container={container}>
       <MenuPrimitive.Positioner
+        ref={setLayer}
         className="isolate z-50 outline-none"
         align={align}
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
       >
-        <MenuPrimitive.Popup
-          data-slot="dropdown-menu-content"
-          className={cn(
-            "z-50 max-h-(--available-height) w-(--anchor-width) min-w-32 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95",
-            className,
-          )}
-          {...props}
-        />
+        <DropdownMenuLayer.Provider value={layer}>
+          <MenuPrimitive.Popup
+            data-slot="dropdown-menu-content"
+            className={cn(
+              "z-50 max-h-(--available-height) w-(--anchor-width) min-w-32 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95",
+              className,
+            )}
+            {...props}
+          />
+        </DropdownMenuLayer.Provider>
       </MenuPrimitive.Positioner>
     </MenuPrimitive.Portal>
   );
@@ -126,8 +134,10 @@ function DropdownMenuSubContent({
   className,
   ...props
 }: React.ComponentProps<typeof DropdownMenuContent>) {
+  const layer = React.useContext(DropdownMenuLayer);
   return (
     <DropdownMenuContent
+      container={layer}
       data-slot="dropdown-menu-sub-content"
       className={cn(
         "w-auto min-w-32 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
@@ -226,6 +236,33 @@ function DropdownMenuSeparator({ className, ...props }: MenuPrimitive.Separator.
   );
 }
 
+function DropdownMenuFilter({ ...props }: MenuPrimitive.FilterProvider.Props) {
+  return <MenuPrimitive.FilterProvider {...props} />;
+}
+
+function DropdownMenuInput({ className, ...props }: MenuPrimitive.Input.Props) {
+  return (
+    <MenuPrimitive.Input
+      data-slot="dropdown-menu-input"
+      className={cn(
+        "mb-1 h-7 w-full min-w-0 rounded-md border border-input bg-input/30 px-2 text-xs outline-none placeholder:text-muted-foreground data-highlighted:border-ring data-highlighted:ring-2 data-highlighted:ring-ring/30",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function DropdownMenuList({ className, ...props }: MenuPrimitive.List.Props) {
+  return (
+    <MenuPrimitive.List
+      data-slot="dropdown-menu-list"
+      className={cn("max-h-72 overflow-y-auto outline-none", className)}
+      {...props}
+    />
+  );
+}
+
 function DropdownMenuShortcut({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
@@ -255,4 +292,7 @@ export {
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
+  DropdownMenuFilter,
+  DropdownMenuInput,
+  DropdownMenuList,
 };

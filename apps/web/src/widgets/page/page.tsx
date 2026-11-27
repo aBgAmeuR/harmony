@@ -17,13 +17,21 @@ import { DetailPanel } from "@/widgets/details/panel";
 
 type PageProps = {
   title: ReactNode;
+  actions?: ReactNode;
   width?: "column" | "wide" | "full";
   fill?: boolean;
   className?: string;
   children: ReactNode;
 };
 
-export const Page = ({ title, width = "column", fill, className, children }: PageProps) => {
+export const Page = ({
+  title,
+  actions,
+  width = "column",
+  fill,
+  className,
+  children,
+}: PageProps) => {
   const { trail, close } = useDetail();
   const mobile = useIsMobile();
   const open = trail.length > 0;
@@ -45,6 +53,7 @@ export const Page = ({ title, width = "column", fill, className, children }: Pag
               <SidebarTrigger className="-ml-2 md:hidden" />
               {typeof title === "string" ? <Pane.Title>{title}</Pane.Title> : title}
               <Toolbar.End>
+                {actions}
                 <DateRangeFilter />
               </Toolbar.End>
             </Pane.Header>

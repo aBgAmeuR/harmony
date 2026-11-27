@@ -37,6 +37,14 @@ export const valuesFn = async ({
     return rows.map((row) => ({ value: row.id, label: row.name, image: row.image }));
   }
   const { type, sql, needs } = fields[field];
+  if (field === "releaseDecade") {
+    const rows = await db.query<{ value: number }>(`
+      SELECT ${sql} AS value
+      ${playsFrom(filter, { needs: [needs], conditions: [`${sql} > 0`] })}
+      GROUP BY 1
+      ORDER BY 1 DESC`);
+    return rows.map(({ value }) => ({ value: Number(value), label: `${value}s`, image: null }));
+  }
   if (type !== "text") return [];
   const rows = await db.query<{ value: string }>(`
     SELECT ${sql} AS value

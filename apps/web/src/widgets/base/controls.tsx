@@ -1,12 +1,4 @@
-import {
-  ArrowDown01Icon,
-  ArrowDown02Icon,
-  ArrowUp02Icon,
-  GridViewIcon,
-  Icon,
-  ListViewIcon,
-  SlidersHorizontalIcon,
-} from "@harmony/icons";
+import { ArrowDown01Icon, GridViewIcon, Icon, LeftToRightListBulletIcon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
 import {
   DropdownMenu,
@@ -26,21 +18,8 @@ import { oneOf, switchBase, type View, type ViewState } from "./view";
 type Props = { view: View; onChange: (patch: ViewState) => void };
 
 const LAYOUTS = {
-  table: { label: "List", icon: ListViewIcon },
+  table: { label: "List", icon: LeftToRightListBulletIcon },
   gallery: { label: "Gallery", icon: GridViewIcon },
-} as const;
-
-const SECTIONS = ["Listening", "Behaviour", "Dates"] as const;
-
-const SECTION_OF = {
-  count: "Listening",
-  compact: "Listening",
-  minutes: "Listening",
-  ratio: "Listening",
-  percent: "Behaviour",
-  date: "Dates",
-  text: null,
-  flag: null,
 } as const;
 
 export const BaseMenu = ({ view, onChange }: Props) => (
@@ -74,85 +53,21 @@ export const BaseMenu = ({ view, onChange }: Props) => (
   </DropdownMenu>
 );
 
-export const SortChip = ({ view, onChange }: Props) => {
-  const props = Object.entries(view.base.props);
-  const sorted = view.base.props[view.sort];
-  const order =
-    sorted?.kind === "date"
-      ? { desc: "Newest first", asc: "Oldest first" }
-      : { desc: "Highest first", asc: "Lowest first" };
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" />}>
-        <Icon icon={view.desc ? ArrowDown02Icon : ArrowUp02Icon} />
-        {sorted?.label}
-        <Icon icon={ArrowDown01Icon} className="text-muted-foreground" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-52">
-        <DropdownMenuRadioGroup
-          value={view.desc ? "desc" : "asc"}
-          onValueChange={(dir) => onChange({ desc: dir === "desc" })}
-          className="mb-1 grid grid-cols-2 gap-0.5 rounded-md bg-muted p-0.5 text-muted-foreground"
-        >
-          {Object.entries(order).map(([dir, label]) => (
-            <DropdownMenuRadioItem
-              key={dir}
-              value={dir}
-              variant="toggle"
-              className="justify-center data-checked:bg-background data-checked:text-foreground"
-            >
-              {label}
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
-        {SECTIONS.map((section) => {
-          const options = props.filter(([, prop]) => SECTION_OF[prop.kind] === section);
-          return (
-            options.length > 0 && (
-              <DropdownMenuRadioGroup
-                key={section}
-                value={view.sort}
-                onValueChange={(sort) =>
-                  onChange({ sort: oneOf(Object.keys(view.base.props), sort) })
-                }
-              >
-                <DropdownMenuLabel>{section}</DropdownMenuLabel>
-                {options.map(([name, prop]) => (
-                  <DropdownMenuRadioItem key={name} value={name}>
-                    {prop.label}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            )
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-
 export const ViewMenu = ({ view, onChange }: Props) => (
   <DropdownMenu>
-    <DropdownMenuTrigger render={<Button variant="ghost" />}>
-      <Icon icon={SlidersHorizontalIcon} />
-      View
+    <DropdownMenuTrigger render={<Button variant="ghost" size="icon" aria-label="View options" />}>
+      <Icon icon={LAYOUTS[view.view].icon} />
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="end" className="w-42">
+    <DropdownMenuContent align="end" className="w-48">
       {view.base.views.length > 1 && (
         <>
           <DropdownMenuRadioGroup
             value={view.view}
             onValueChange={(value) => onChange({ view: oneOf(view.base.views, value) })}
-            className="grid auto-cols-fr grid-flow-col gap-1 text-muted-foreground"
           >
+            <DropdownMenuLabel>Layout</DropdownMenuLabel>
             {view.base.views.map((type) => (
-              <DropdownMenuRadioItem
-                key={type}
-                value={type}
-                variant="toggle"
-                className="cursor-pointer justify-center gap-1 rounded-lg border border-border px-0 py-3 data-checked:border-primary/60 data-checked:bg-primary/10 data-checked:text-foreground"
-              >
-                <Icon icon={LAYOUTS[type].icon} className="size-3" />
+              <DropdownMenuRadioItem key={type} value={type} className="cursor-pointer">
                 {LAYOUTS[type].label}
               </DropdownMenuRadioItem>
             ))}
