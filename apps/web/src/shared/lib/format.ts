@@ -54,6 +54,13 @@ export const format = {
     if (value < 24 * 60 * 60 * 1000) return `${(value / (60 * 60 * 1000)).toFixed(1)} h`;
     return `${(value / (24 * 60 * 60 * 1000)).toFixed(1)} d`;
   },
+  clock: (ms: number) => {
+    const seconds = Math.floor(ms / 1000);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const rest = `${pad(Math.floor(seconds / 60) % 60)}m${pad(seconds % 60)}s`;
+    if (seconds < 3600) return rest;
+    return `${pad(Math.floor(seconds / 3600))}h${rest}`;
+  },
   date: (value: DateLike) => (value ? shortDate.format(toDate(value)) : "-"),
   dateTime: (value: DateLike) => (value ? dateTime.format(toDate(value)) : "-"),
   time: (value: DateLike) => (value ? time.format(toDate(value)) : "-"),
