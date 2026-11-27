@@ -1,12 +1,10 @@
 import { Cancel01Icon, Icon, Search01Icon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
 import { Input } from "@harmony/ui/components/input";
-import { Kbd } from "@harmony/ui/components/kbd";
 import { ScrollArea } from "@harmony/ui/components/scroll-area";
 import { Spinner } from "@harmony/ui/components/spinner";
-import { cn } from "@harmony/ui/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import type { Rule } from "@/data/filter";
 
@@ -16,10 +14,10 @@ import { Empty } from "@/shared/primitives/empty";
 import { usePeriod } from "@/shared/scope";
 
 import { baseQueries } from "./api";
-import { SortChip, ViewMenu } from "./controls";
+import { ViewMenu } from "./controls";
+import { FilterMenu } from "./filter-menu";
 import { Gallery } from "./gallery";
 import { useOpen } from "./open";
-import { Rules } from "./rules";
 import { BaseTable } from "./table";
 import { useRowKeys } from "./use-keys";
 import { listQuery, PAGE_SIZE, resolveView, type ViewState } from "./view";
@@ -29,9 +27,9 @@ type BaseViewProps = {
   // `replace` swaps the history entry instead of adding one, for fast changes such as typing.
   onChange: (patch: ViewState, replace?: boolean) => void;
   fallback?: ExplorerBaseId;
-  // Rules set by the page, such as the artist of an artist page. They are not shown as chips.
+  // Rules set by the page, such as the artist of an artist page. The filter menu leaves them out.
   fixed?: readonly Rule[];
-  page?: boolean;
+  frame?: (parts: { tools: ReactNode; list: ReactNode }) => ReactNode;
   limit?: number;
 };
 
@@ -70,10 +68,11 @@ export const BaseView = ({
   onChange,
   fallback = "artists",
   fixed = [],
-  page = false,
+  frame,
   limit: first = PAGE_SIZE,
 }: BaseViewProps) => {
   const view = resolveView(state, fallback);
+  const page = frame !== undefined;
   const period = usePeriod();
   const open = useOpen();
   const { current } = useDetail();
@@ -138,7 +137,7 @@ export const BaseView = ({
   });
 
   const tools = (
-    <div className="ml-auto flex shrink-0 items-center gap-1">
+    <div className="flex shrink-0 items-center gap-1">
       {searchOpen ? (
         <div className="relative">
           <Icon
@@ -160,19 +159,18 @@ export const BaseView = ({
             aria-label={`Search ${view.base.title.toLowerCase()}`}
             className="w-40 pr-7 pl-7 sm:w-48"
           />
-          {text ? (
-            <button
-              type="button"
-              aria-label="Clear search"
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => setText("")}
-              className="absolute top-1/2 right-1.5 flex size-4 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
-            >
-              <Icon icon={Cancel01Icon} className="size-3" />
-            </button>
-          ) : page ? (
-            <Kbd className="absolute top-1/2 right-1.5 -translate-y-1/2">/</Kbd>
-          ) : null}
+          <button
+            type="button"
+            aria-label="Close search"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => {
+              setText("");
+              setSearching(false);
+            }}
+            className="absolute top-1/2 right-1.5 flex size-4 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
+          >
+            <Icon icon={Cancel01Icon} className="size-3" />
+          </button>
         </div>
       ) : (
         <Button
@@ -184,19 +182,8 @@ export const BaseView = ({
           <Icon icon={Search01Icon} />
         </Button>
       )}
+      <FilterMenu view={view} scope={period} fixed={fixed} onChange={onChange} />
       <ViewMenu view={view} onChange={onChange} />
-    </div>
-  );
-
-  const queryLine = (
-    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
-      <SortChip view={view} onChange={onChange} />
-      <Rules
-        base={view.base}
-        rules={view.rules}
-        scope={period}
-        onRules={(rules) => onChange({ rules: rules.length > 0 ? rules : undefined })}
-      />
     </div>
   );
 
@@ -240,13 +227,13 @@ export const BaseView = ({
     </>
   );
 
+  if (frame)
+    return frame({ tools, list: <ScrollArea className="min-h-0 flex-1">{content}</ScrollArea> });
+
   return (
-    <div className={cn("flex flex-col", page && "min-h-0 flex-1")}>
-      <div className="flex shrink-0 items-center gap-2 border-b border-border px-1 pb-1">
-        {queryLine}
-        {tools}
-      </div>
-      {page ? <ScrollArea className="min-h-0 flex-1">{content}</ScrollArea> : content}
+    <div className="flex flex-col">
+      <div className="flex shrink-0 justify-end border-b border-border px-1 pb-1">{tools}</div>
+      {content}
     </div>
   );
 };

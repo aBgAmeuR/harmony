@@ -28,6 +28,12 @@ const fieldList = {
     sql: "EXTRACT(YEAR FROM al.release_date)",
     needs: "album",
   },
+  releaseDecade: {
+    label: "Release year",
+    type: "number",
+    sql: "EXTRACT(YEAR FROM al.release_date) // 10 * 10",
+    needs: "album",
+  },
   shuffle: { label: "Shuffle", type: "flag", sql: "COALESCE(i.shuffle, FALSE)" },
   skipped: { label: "Skipped", type: "flag", sql: "COALESCE(i.skipped, FALSE)" },
   offline: { label: "Offline", type: "flag", sql: "COALESCE(i.offline, FALSE)" },
@@ -70,10 +76,15 @@ const filterNeeds = (filter: Filter) =>
     return needs ? [needs] : [];
   });
 
+const anyOf = (rules: readonly Rule[]) => {
+  const groups = Map.groupBy(rules, (rule) => (rule.op === "is" ? rule.field : rule));
+  return [...groups.values()].map((group) => `(${group.map(condition).join(" OR ")})`);
+};
+
 const filterConditions = ({ from, to, rules = [] }: Filter) => [
   ...(from ? [`CAST(i.ts AS DATE) >= ${day(from)}`] : []),
   ...(to ? [`CAST(i.ts AS DATE) <= ${day(to)}`] : []),
-  ...rules.map(condition),
+  ...anyOf(rules),
 ];
 
 type FromOptions = {

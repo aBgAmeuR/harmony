@@ -27,8 +27,14 @@ export const ExplorerPage = () => {
   );
 
   return (
-    <Page title={title} fill>
-      <BaseView state={search} onChange={change} page />
-    </Page>
+    <BaseView
+      state={search}
+      onChange={change}
+      frame={({ tools, list }) => (
+        <Page title={title} actions={tools} fill>
+          {list}
+        </Page>
+      )}
+    />
   );
 };
