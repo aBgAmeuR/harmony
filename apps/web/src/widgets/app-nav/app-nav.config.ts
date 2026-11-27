@@ -60,7 +60,7 @@ export const appNav = {
     },
     {
       title: "Export",
-      href: "#",
+      href: "/export",
       icon: Share08Icon,
     },
   ],
