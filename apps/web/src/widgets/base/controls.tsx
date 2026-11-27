@@ -1,4 +1,4 @@
-import { ArrowDown01Icon, GridViewIcon, Icon, LeftToRightListBulletIcon, ListViewIcon } from "@harmony/icons";
+import { ArrowDown01Icon, GridViewIcon, Icon, LeftToRightListBulletIcon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
 import {
   DropdownMenu,

@@ -1,4 +1,4 @@
-import { FilterHorizontalIcon, Icon, Menu08Icon } from "@harmony/icons";
+import { Icon, Menu08Icon } from "@harmony/icons";
 import { Button } from "@harmony/ui/components/button";
 import {
   DropdownMenu,
